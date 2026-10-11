@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:harmonia/domain/audio/rhythm_imitation.dart';
 import 'package:harmonia/domain/content/rhythm_patterns.dart';
+import 'package:harmonia/domain/learning/measured_exercise.dart';
 import 'package:harmonia/domain/learning/skill_graph.dart';
 import 'package:harmonia/domain/models/exercise.dart';
 import 'package:harmonia/domain/models/exercise_result.dart';
@@ -58,11 +59,7 @@ ExerciseResult _r(
 );
 
 MasteryState _state(String id, List<ExerciseResult> r) =>
-    SkillStatusEvaluator.stateOf(
-      draftSkillGraph[id],
-      r,
-      patterns: draftRhythmPatterns,
-    );
+    SkillStatusEvaluator.stateOf(draftSkillGraph[id], r);
 
 void main() {
   group('graph validation', () {
@@ -108,7 +105,7 @@ void main() {
         seen.add(n.id);
       }
       final patternIds = {
-        for (final p in draftRhythmPatterns) p.exercise.exercise.id,
+        for (final e in defaultMeasuredCatalog()) e.exerciseId,
       };
       for (final n in draftSkillGraph.nodes) {
         expect(patternIds.containsAll(n.exerciseIds), isTrue, reason: n.id);

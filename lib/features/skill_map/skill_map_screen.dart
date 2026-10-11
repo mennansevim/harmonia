@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../app/theme/harmonia_theme.dart';
 import '../../application/result_history.dart';
-import '../../domain/content/rhythm_patterns.dart';
+import '../../domain/learning/measured_exercise.dart';
 import '../../domain/learning/skill_graph.dart';
 import '../../domain/models/exercise_result.dart';
 import '../../domain/models/learner_profile.dart';
@@ -15,12 +15,12 @@ class SkillMapScreen extends StatefulWidget {
     required this.goal,
     this.history,
     this.graph,
-    this.patterns,
+    this.catalog,
   });
   final PracticeGoal goal;
   final ResultHistoryRepository? history;
   final SkillGraph? graph;
-  final List<RhythmPattern>? patterns;
+  final List<MeasuredExercise>? catalog;
   @override
   State<SkillMapScreen> createState() => _SkillMapScreenState();
 }
@@ -75,7 +75,7 @@ class _SkillMapScreenState extends State<SkillMapScreen> {
                       : SkillStatusEvaluator.stateOf(
                           node,
                           results,
-                          patterns: widget.patterns ?? draftRhythmPatterns,
+                          catalog: widget.catalog,
                         ),
                 ),
             ],

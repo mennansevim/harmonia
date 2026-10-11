@@ -191,6 +191,13 @@ String _trend(List<ExerciseResult> results) {
     return '$title: ${results.length} geçerli deneme — karşılaştırma için en az ${HistoryScreen.minComparable} gerekli, gelişim bilinmiyor.';
   }
   final last = results.sublist(results.length - HistoryScreen.minComparable);
+  if (last.first.measurements['dimension'] == 'perception') {
+    final correct = [
+      for (final r in last)
+        '${r.measurements['correct']}/${r.measurements['total']}',
+    ];
+    return '$title: son ${last.length} geçerli turda doğru ${correct.join(' → ')}.';
+  }
   final misses = [
     for (final r in last)
       '${(r.measurements['missed'] as int? ?? 0) + (r.measurements['extra'] as int? ?? 0)}',
@@ -211,14 +218,22 @@ class _EntryTile extends StatelessWidget {
         '${local.day.toString().padLeft(2, '0')}.${local.month.toString().padLeft(2, '0')}.${local.year} '
         '${local.hour.toString().padLeft(2, '0')}:${local.minute.toString().padLeft(2, '0')}';
     final status = r.isValid ? 'Ölçüldü' : 'Ölçülemedi — puanlanmadı';
-    final detail = r.skill == Skill.rhythm && r.isValid
+    final detail = !r.isValid
+        ? null
+        : r.measurements['dimension'] == 'perception'
+        ? '${r.measurements['correct']}/${r.measurements['total']} doğru (dinleme)'
+        : r.skill == Skill.rhythm
         ? '${r.measurements['matched']} eşleşme, ${r.measurements['missed']} eksik, ${r.measurements['extra']} fazla'
         : null;
     return Card(
       margin: const EdgeInsets.only(bottom: HarmoniaSpacing.sm),
       child: ListTile(
         leading: Icon(
-          r.skill == Skill.rhythm ? Icons.touch_app_outlined : Icons.music_note,
+          r.skill == Skill.rhythm
+              ? Icons.touch_app_outlined
+              : r.measurements['dimension'] == 'perception'
+              ? Icons.hearing
+              : Icons.music_note,
           color: r.isValid ? null : colors.notMeasured,
         ),
         title: Text(r.exerciseId),

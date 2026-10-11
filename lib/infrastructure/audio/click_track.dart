@@ -34,3 +34,30 @@ Pcm16Wav renderClickTrack(
     samples: [for (final s in samples) s.clamp(-1.0, 1.0)],
   );
 }
+
+/// Two synthetic tones (600 ms each, 300 ms silence between). Local only.
+Pcm16Wav renderTonePair(
+  double firstHz,
+  double secondHz, {
+  int sampleRateHz = 48000,
+}) {
+  final a = Pcm16Wav.tone(
+    frequencyHz: firstHz,
+    sampleRateHz: sampleRateHz,
+    durationSeconds: 0.6,
+  );
+  final b = Pcm16Wav.tone(
+    frequencyHz: secondHz,
+    sampleRateHz: sampleRateHz,
+    durationSeconds: 0.6,
+  );
+  return Pcm16Wav(
+    sampleRateHz: sampleRateHz,
+    samples: [
+      ...a.samples,
+      ...List.filled((0.3 * sampleRateHz).round(), 0.0),
+      ...b.samples,
+      ...List.filled((0.2 * sampleRateHz).round(), 0.0),
+    ],
+  );
+}

@@ -164,3 +164,5 @@ SESSION-01/02, CORE-02a/05, LEARN-03a, QA-01a, UX-03a, ANALYTICS-01 ve AI-02a ko
 Kayıtlar gelmeden chord placeholder doldurulmaz. Gerçek VAD/benchmark olmadan simülasyon başarı ekranı gerçek motora bağlanmaz. PeriodicFrameRatio voicedRatio değildir; enerji etkinliği VAD değildir. Ücretli API/ödeme/upload/push/deployment/dış mesaj yetkisi yok. Başka model/session'da otomasyon çalışıyor varsayma.
 
 **LEARN-01a (son paket):** `lib/domain/learning/skill_graph.dart` taslak grafik + `SkillStatusEvaluator`; `lib/features/skill_map/`. Gecikme (CAL-03a/b) başka bir ajanın işidir; bu iki işi aynı anda aynı dosyalarda yürütme.
+
+**PERC-01:** `lib/domain/perception/pitch_comparison.dart`, `lib/application/pitch_comparison_controller.dart`, `lib/features/pitch_comparison/`; beceri değerlendirmesi `lib/domain/learning/measured_exercise.dart` üzerinden. iOS simulator build son denemede araç hatasıyla düştü; diğer ajan bitince `flutter clean` + yeniden derleme dene.

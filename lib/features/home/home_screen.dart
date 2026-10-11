@@ -11,6 +11,7 @@ import '../audio_lab/audio_lab_screen.dart';
 import '../chord_exercise/chord_placeholder_screen.dart';
 import '../history/history_screen.dart';
 import '../onboarding/goal_selection_screen.dart';
+import '../pitch_comparison/pitch_comparison_screen.dart';
 import '../rhythm_imitation/rhythm_imitation_screen.dart';
 import '../skill_map/skill_map_screen.dart';
 import '../single_tone_exercise/single_tone_exercise_screen.dart';
@@ -103,6 +104,20 @@ class HomeScreen extends StatelessWidget {
                   'Gerçek kayıtla akış. Doğru/yanlış kararı ses tanıma doğrulanana kadar kapalı.',
               availability: ModuleAvailability.experimental,
               onTap: () => _push(context, const SingleToneSessionScreen()),
+            ),
+            _ModuleTile(
+              key: const Key('open_pitch_comparison'),
+              icon: Icons.swap_vert,
+              title: 'Tiz mi, pes mi?',
+              subtitle:
+                  'İki sesten tiz olanı seç; dinleme çalışması, mikrofon yok. Taslak içerik.',
+              availability: ModuleAvailability.experimental,
+              onTap: () => _push(
+                context,
+                PitchComparisonScreen(
+                  history: AppServices.maybeOf(context)?.history,
+                ),
+              ),
             ),
             _ModuleTile(
               key: const Key('open_rhythm_imitation'),

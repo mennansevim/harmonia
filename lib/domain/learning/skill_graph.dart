@@ -1,6 +1,7 @@
-import '../content/rhythm_patterns.dart';
+import '../content/rhythm_patterns.dart' show ContentReviewStatus;
 import '../models/exercise_result.dart';
 import '../models/learner_profile.dart';
+import 'measured_exercise.dart';
 import 'rhythm_next_step.dart';
 
 /// LEARN-01: draft skill graph from LEARNING_MODEL.md stages. Order is a
@@ -146,18 +147,19 @@ class SkillStatusEvaluator {
   static MasteryState stateOf(
     SkillNode node,
     List<ExerciseResult> results, {
-    List<RhythmPattern> patterns = const [],
+    List<MeasuredExercise>? catalog,
   }) {
     if (node.support != MeasurementSupport.measuredInApp) {
       return MasteryState.notMeasured;
     }
+    final known = catalog ?? defaultMeasuredCatalog();
     final states = <MasteryState>[];
     for (final id in node.exerciseIds) {
-      final p = patterns.where((p) => p.exercise.exercise.id == id);
+      final e = known.where((e) => e.exerciseId == id);
       states.add(
-        p.isEmpty
+        e.isEmpty
             ? MasteryState.notMeasured
-            : _exerciseState(p.single, results),
+            : _exerciseState(e.single, results),
       );
     }
     if (states.every((s) => s == MasteryState.notMeasured)) {
@@ -172,27 +174,26 @@ class SkillStatusEvaluator {
   }
 
   static MasteryState _exerciseState(
-    RhythmPattern p,
+    MeasuredExercise e,
     List<ExerciseResult> results,
   ) {
-    final valid = RhythmNextStepPolicy.comparable(
+    final valid = comparableResults(
       results,
-      p,
+      e,
     ).where((r) => r.isValid).toList();
     if (valid.isEmpty) return MasteryState.notMeasured;
     const k = RhythmNextStepPolicy.masteryStreak;
-    if (valid.length < k ||
-        !valid.sublist(valid.length - k).every(RhythmNextStepPolicy.isClean)) {
+    if (valid.length < k || !valid.sublist(valid.length - k).every(e.isClean)) {
       return MasteryState.practicing;
     }
     final streak = valid.sublist(valid.length - k);
     final retained = valid.any(
       (r) =>
           r.measurements['retentionCheck'] == true &&
-          RhythmNextStepPolicy.isClean(r) &&
+          e.isClean(r) &&
           valid.any(
             (earlier) =>
-                RhythmNextStepPolicy.isClean(earlier) &&
+                e.isClean(earlier) &&
                 RhythmNextStepPolicy.laterDay(earlier.createdAt, r.createdAt),
           ),
     );
@@ -227,7 +228,7 @@ SkillNode _n(
 );
 
 /// Draft graph (developer proposal from LEARNING_MODEL; educator review
-/// pending). Measured links exist only for rhythm today.
+/// pending). Measured links: rhythm imitation and tone-pair perception.
 final SkillGraph draftSkillGraph = SkillGraph([
   _n(
     'pitch-high-low',
@@ -235,7 +236,8 @@ final SkillGraph draftSkillGraph = SkillGraph([
     'İki sesten hangisinin daha tiz olduğunu duymak.',
     SkillStage.voiceAndPulse,
     SkillDimension.perception,
-    MeasurementSupport.awaitingContent,
+    MeasurementSupport.measuredInApp,
+    exercises: ['draft-perc-highlow-200', 'draft-perc-highlow-100'],
   ),
   _n(
     'pitch-match',
