@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "kind": "prerecorded_piano_chords",
+  "slots": [
+    {
+      "id": "piano-2-voices",
+      "voiceCount": 2,
+      "assetDirectory": "assets/audio/piano/chords/2-notes/",
+      "status": "awaiting_recording",
+      "assetPath": null,
+      "targetMidiNotes": null,
+      "rightsReference": null
+    },
+    {
+      "id": "piano-3-voices",
+      "voiceCount": 3,
+      "assetDirectory": "assets/audio/piano/chords/3-notes/",
+      "status": "awaiting_recording",
+      "assetPath": null,
+      "targetMidiNotes": null,
+      "rightsReference": null
+    },
+    {
+      "id": "piano-4-voices",
+      "voiceCount": 4,
+      "assetDirectory": "assets/audio/piano/chords/4-notes/",
+      "status": "awaiting_recording",
+      "assetPath": null,
+      "targetMidiNotes": null,
+      "rightsReference": null
+    }
+  ]
+}
