@@ -108,6 +108,29 @@ void main() {
     expect(chip.selected, isTrue);
   });
 
+  testWidgets('home opens the goal-filtered skill map', (tester) async {
+    await tester.pumpWidget(
+      HarmoniaApp(
+        startupCleanup: _noSweep,
+        history: InMemoryResultHistory(),
+        profiles: InMemoryProfileRepository(
+          LearnerProfile(
+            goal: PracticeGoal.choir,
+            createdAt: DateTime.utc(2026, 10, 1),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('open_skill_map')));
+    await tester.pumpAndSettle();
+    expect(find.text('Beceri haritası'), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('skill_part-independence')),
+      300,
+    );
+  });
+
   testWidgets('home opens local history through app services', (tester) async {
     await tester.pumpWidget(
       HarmoniaApp(

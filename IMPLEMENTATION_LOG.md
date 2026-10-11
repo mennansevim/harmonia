@@ -237,3 +237,34 @@ korundu; yeni commit/push/deployment/API/upload yapılmadı. Agora değiştirilm
 `CoachInput` (izinli, yuvarlanmış, metinsiz yük; mock/sentetik/doğrulanmamış kaynak reddi), `CoachReplyValidator` (skor alanı, olmayan egzersiz, yüzde/hazırlık/garanti, eğitimci taklidi, sağlık teşhisi, geçersiz ölçümde övgü, uzunluk, bozuk/enjekte metin reddi), `CoachService` (zaman aşımı, etiketli yedek). 12 eval testi. UI'ya bağlanmadı; sunucu gateway ve ücretli çağrı onay bekliyor. Model durumu web aramasıyla kontrol edildi (AI_COACH.md).
 
 **Oturum sonu doğrulaması:** **401 test**, `flutter analyze` temiz, format 120 dosya/0 değişiklik, `flutter build ios --simulator --debug` başarılı. Android: SDK 36 var, cmdline-tools eksik, lisanslar kabul edilmemiş — build denenmedi (lisans kabulü kullanıcı kararı). Fiziksel iPhone'lar ağda görünüyor, bağlı/Developer Mode değil. Hiçbir commit/push/ödeme/API/upload/deployment yapılmadı; Agora değiştirilmedi.
+
+## 2026-10-11 21:40 TRT — CAL-03a gecikme diagnostic tahmincisi
+
+Devralınan 401-test paketinin kalibrasyon, kabuk, oturum, ritim, geçmiş,
+öğrenme ve AI değişiklikleri korundu; dirty tree reset/commit yapılmadı.
+Güncel handoff hazır sıradaki iş olarak CAL-03a'yı gösterdiği için uygulandı.
+
+Domain `latency_estimator.dart`: bounded 8–64 paired trial, ortak observed
+clock/chronology ve route/rate binding; medyan/MAD/ham P90–P10, rejected indeksleri,
+minimum retained ve hipotez spread sınırları. Bozuk tail/mixed clock/scheduled
+playback/inferred route fail-closed. Immutable source/method/evidence; invalid
+istatistik null, unstable retained estimate null. Diagnostic ayrı tip,
+LatencyCalibration bridge/scoring/count-in açma yok; correctionEnabled=false.
+Tap bias veya loopback toplamı hardware/touch correction olarak sunulmadı.
+
+**Doğrulama:** 422 test (+21), format 122/0, son analyze temiz. İlk koşudaki
+iki brace uyarısı düzeltildi. Sentetik trial
+testleri fiziksel gecikme/cihaz/öğretim kanıtı değil. Mobil build, mic, upload,
+API, ödeme, commit/push/deployment yok; Agora temiz ve değiştirilmedi.
+ADR-023, roadmap, testing ve handoff güncellendi. Sonraki bağımsız paket
+LEARN-01 beceri grafiği; CAL-03b fiziksel clock/pipeline protokolü ve cihaz
+girdisi ister. CORE-02b, VAD/BENCH, eğitimci ve piyano kapıları açık.
+
+Git whitespace kontrolünde devralınan ADR-021/022 satırlarındaki iki Markdown
+hard-break trailing-space uyarısı sürüyor; kullanıcıya ait satırlar değiştirilmedi.
+
+## 2026-10-11 — LEARN-01a taslak beceri grafiği ve beceri haritası
+
+Kullanıcı gecikme işini diğer ajana bıraktı (CAL-03a dosyaları o ajana ait; bu oturum dokunmadı ve `f4dfe51` commit'ine almadı). Bu paket: `skill_graph.dart` — LEARNING_MODEL basamaklarından 15 düğümlük **taslak** grafik (temel + konservatuvar + koro, aktarım düğümleri eğitimci gözlemli). Doğrulama: tekil kimlik, bilinen önkoşul, rota-arası önkoşul yasağı (rota düğümü yalnız temel veya kendi rotasına dayanır), döngü reddi, `measuredInApp` ⇔ bağlı egzersiz. `SkillStatusEvaluator`: yalnız ölçülen düğümler (puls → dört dörtlük; ritim tekrarı → sekizlik + senkop) kanıtla ilerler; son iki geçerli deneme taslak ölçütü karşılamazsa “çalışılıyor”, karşılarsa tekrar dinlemeyle “destekle”, tek dinlemeyle “bağımsız”, daha sonraki bir günde temiz kalıcılık kontrolüyle “korundu”; denenmemiş bağlı egzersiz düğümü “çalışılıyor”da tutar; farklı analyzer/içerik sürümü sayılmaz. Ses motoru/içerik/eğitimci gerektiren düğümler geçmiş ne olursa olsun “henüz ölçülmedi”. `RhythmNextStepPolicy` ölçüt yardımcıları paylaşıma açıldı (davranış değişmedi). Beceri haritası ekranı: hedefe göre rota, önerilen sıra, kilit yok, algı/üretim etiketi, ölçüm desteği açıklaması, geçmiş hatasında durum gösterilmez. Home app bar'dan erişim.
+
+**Doğrulama:** 436 test (bu paketin 14'ü + diğer ajanın CAL-03a 21 testi dahil); analyze temiz; format 126/0. Mikroders içeriği, günlük süre planı ve eğitimci onayı yok.

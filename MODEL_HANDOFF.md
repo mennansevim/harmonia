@@ -143,7 +143,7 @@ doğal sönüş ve kısa sessizlik; mümkünse WAV. Teacher/pilot doğrulaması 
 
 ## 6. Doğrulama ve ortam
 
-Son suite: **401 test**, analyze temiz; format **120 Dart dosyası/0 değişiklik**; `flutter build ios --simulator --debug --no-pub` bu turda geçti ve iPhone 17 Pro simülatöründe elle gezildi (mikrofon kullanılmadı). Domain/mock/synthetic/widget + native isolate testleri; insan kayıt/gerçek telefon/öğretim pilotu değil. Android cmdline-tools/SDK lisans kapısı önceki kontrolde eksik/unknown; kurulmuş/kabul edilmiş varsayma. Yerelde Flutter 3.44.4/Dart 3.12.2.
+Son suite: **422 test**, analyze temiz, format **122 Dart dosyası/0 değişiklik** (21:40 TRT heartbeat). Önceki 401-test paketinde iOS simulator build/elle gezinti başarılıydı; bu tur build/cihaz testi yok. Domain/mock/synthetic/widget + native isolate testleri; insan kayıt/gerçek telefon/öğretim pilotu değil. Android cmdline-tools/SDK lisans kapısı önceki kontrolde eksik/unknown; kurulmuş/kabul edilmiş varsayma. Yerelde Flutter 3.44.4/Dart 3.12.2.
 
 ```sh
 flutter pub get
@@ -159,6 +159,8 @@ ve ölçüm yapılmadan mic/latency/build başarısı iddia etme.
 
 Modül envanteri ve kritik yol: `CURRENT_ROADMAP.md` başı; iş ID'leri `IMPLEMENTATION_ROADMAP.md` §11. Bu turda CAL-01 ve SHELL-01 kod-test oldu; `85f301b` sonrasındaki tüm değişiklikler commit edilmedi (commit yalnız kullanıcı isterse).
 
-SESSION-01, CORE-02a, CORE-05 ve SESSION-02 de kod-test oldu. LEARN-03a, QA-01a, UX-03a, ANALYTICS-01 (gönderimsiz), AI-02a (canlı çağrısız) da kod-test; ECON-01 ve UXR-01 dokümanda. Sıradaki onaysız paketler: **CAL-03a** gecikme tahmincisi → CORE-02b count-in; LEARN-01 beceri grafiği iskeleti. Android build için cmdline-tools + lisans kabulü (kullanıcı) gerekir. SHELL-02 yeni plugin bağımlılığı için kullanıcı kararı bekliyor. Kullanıcıdan beklenen: CAL-02 cihaz protokolü (AUDIO_TESTING.md), BENCH-01 izinli etiketli kayıtlar, UXR-01 katılımcılar, piyano kayıtları.
+SESSION-01/02, CORE-02a/05, LEARN-03a, QA-01a, UX-03a, ANALYTICS-01 ve AI-02a kod-testli. CAL-03a `latency_estimator.dart` eklendi: immutable diagnostic, kaynak/method, 8–64 trial, ortak observed clock, route/rate ve chronology; raw median/MAD/P90–P10 + rejected indices. LatencyCalibration'a dönüşüm yok, correctionEnabled=false; count-in açılmaz. Tap motor bias ve loopback toplamını hardware/touch correction gibi kullanma. Sıradaki bağımsız paket LEARN-01 beceri grafiği; CAL-03b fiziksel clock/pipeline adapter ve protokol bekler. Android cmdline-tools/lisans, SHELL-02 plugin kararı, CAL-02 cihazları, BENCH-01 izinli kayıtlar, UXR-01 katılımcılar ve piyano kayıtları kullanıcı koordinasyonunda.
 
 Kayıtlar gelmeden chord placeholder doldurulmaz. Gerçek VAD/benchmark olmadan simülasyon başarı ekranı gerçek motora bağlanmaz. PeriodicFrameRatio voicedRatio değildir; enerji etkinliği VAD değildir. Ücretli API/ödeme/upload/push/deployment/dış mesaj yetkisi yok. Başka model/session'da otomasyon çalışıyor varsayma.
+
+**LEARN-01a (son paket):** `lib/domain/learning/skill_graph.dart` taslak grafik + `SkillStatusEvaluator`; `lib/features/skill_map/`. Gecikme (CAL-03a/b) başka bir ajanın işidir; bu iki işi aynı anda aynı dosyalarda yürütme.

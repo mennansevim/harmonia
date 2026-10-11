@@ -2,6 +2,13 @@
 
 ## Mimari prensipler
 
+21:40 TRT heartbeat: CAL-03a `LatencyEstimator` pure Dart bounded trial
+istatistiği (8–64), explicit source/method/route/rate ve observed shared clock.
+`LatencyEstimate` ayrı diagnostic tipidir; LatencyCalibration veya scorer'a
+bridge yok. Scheduled playback zamanı, mikrofondaki loopback toplamı ve
+dokunma/motor bias birbirinin yerine geçmez. Count-in hâlâ kapalı; CAL-03b
+pipeline'a özel fiziksel ölçüm adapter'ı/cihaz raporu ister. [ADR-023](./DECISIONS.md).
+
 2026-10-11 devam paketi: doğrulanan `ExerciseProtocol` yeni `ConfiguredExercise` binding'i üzerinden katalog için hazırdır; legacy demo henüz migrate edilmedi. Sonuç evidence deep snapshot, pitch provenance ve kaynak/analyzer cohort uygulanmıştır. İlk codec mono PCM16 WAV; sentetik tone ve fixture metadata ayrı katmanlardır. Bunlar kayıt adaptörü/frame analyzer değildir. Detay ve devam sınırları: [AUDIO_TESTING.md](./AUDIO_TESTING.md).
 
 Sonraki “şimdi başlat” paketi: `AudioCapture`/`ReferencePlayback`/`AudioLabBackend` domain arayüzleri, application `AudioLabController`, infrastructure `PluginAudioLabBackend` ve ayrı laboratuvar ekranı eklendi. Domain codec'e bağımlı değildir; yalnız `CapturedAudio` metadata taşır. iOS/Android record/player kendi temp dosyalarında çalışır; skor ekranının mock analyzer'ını henüz değiştirmez. Cancel epoch ve serialized resource komutları session yarışlarını kapatır; kesintide yeniden başlamak kullanıcı eylemi gerektirir. Native build/fake test doğrulandı; fiziksel cihaz ve gerçek DSP ayrı kapılardır.

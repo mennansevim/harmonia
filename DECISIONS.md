@@ -166,6 +166,26 @@ Eşikler (−45 dBFS taban, 12 dB burst yayılımı, 10 dB etkinlik marjı, 0,4 
 
 İlk değer için hesap yok (ADR-004 uygulaması): uygulama yükleniyor → hedef seçimi (konservatuvar/temel/koro) → home. Profil yalnız hedef ve oluşturma zamanını, uygulamaya özel dizinde atomik (temp + rename) JSON olarak tutar; e-posta, ses veya cihaz kimliği yok, sunucuya gitmez. Bozuk profil sessizce silinmez veya üzerine yazılmaz; yeniden dene ve açık “profili sil ve yeniden başla” sunulur. Home yalnız gerçekte var olanı gösterir: Deneysel (ses/ortam kontrolü), Simülasyon (tek ses sonuç örnekleri), Kayıt bekleniyor (2/3/4 piyano), Henüz yok (planlananlar). Ayarlar satın alma/abonelik/hesap olmadığını açıkça söyler. Sonuç renk token'larında yanlış oktav başarı rengi, geçersiz ölçüm hata kırmızısı değildir; 4,5:1 metin kontrastı birim testlidir. Tasarımın nihai kabulü kullanıcı testine bağlıdır.
 
+## ADR-023 — Gecikme tahmini diagnostic; düzeltme ayrı fiziksel kapı
+
+**Durum:** CAL-03a sentetik kod-testli; CAL-03b/cihaz ölçümü bekliyor.
+**Tarih:** 2026-10-11, 21:40 TRT
+
+`LatencyEstimate` LatencyCalibration değildir; otomatik conversion, öğrenci
+skoru veya count-in açma yolu yok. Gözlenmiş ortak monoton saat gereklidir;
+play() çağrısı/scheduled timestamp fiziksel duyulma anı sayılmaz. Trial eşleme
+adapter sorumluluğudur; estimator öğrenci cevaplarından eşleme/shift üretmez.
+Tap alignment insan motor yanlılığını içerir. Loopback output+capture+fiziksel
+yayılım toplamını ölçebilir; bu toplam output→touch pipeline düzeltmesi olarak
+taşınmaz. Bağımsız fiziksel protokol, clock mapping ve ölçüm belirsizliği gerekir.
+
+Kod bütçesi 8–64 trial, 0–500 ms offset, JS-safe mikrosecond timestamp ve
+strict chronology. Hipotezler: raw MAD≤5 ms, interpolated P90−P10≤20 ms,
+retained≥8, rejected≤%25. Outlier uzaklığı max(10 ms, 3×1.4826×MAD).
+Ham dağılım trimming sonrası saklanır; bozuk/negatif/oversize tail tüm batch'i
+reddeder. Bu değerler öğrenci rubriği değildir, cihaz kabulüyle doğrulanmamıştır;
+sonuçlara bakılarak gevşetilmez. Kaynak korunur; correctionEnabled her zaman false.
+
 ## Mevcut kararları değiştirme sınırı
 
 Şu kararlar benchmark veya kullanıcı görüşmesi olmadan değiştirilmemeli:

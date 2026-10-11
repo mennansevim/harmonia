@@ -12,6 +12,7 @@ import '../chord_exercise/chord_placeholder_screen.dart';
 import '../history/history_screen.dart';
 import '../onboarding/goal_selection_screen.dart';
 import '../rhythm_imitation/rhythm_imitation_screen.dart';
+import '../skill_map/skill_map_screen.dart';
 import '../single_tone_exercise/single_tone_exercise_screen.dart';
 import '../single_tone_session/single_tone_session_screen.dart';
 
@@ -54,6 +55,18 @@ class HomeScreen extends StatelessWidget {
               icon: const Icon(Icons.history),
               onPressed: () => _push(context, HistoryScreen(history: history)),
             ),
+          IconButton(
+            key: const Key('open_skill_map'),
+            tooltip: 'Beceri haritası',
+            icon: const Icon(Icons.account_tree_outlined),
+            onPressed: () => _push(
+              context,
+              SkillMapScreen(
+                goal: profile.goal,
+                history: AppServices.maybeOf(context)?.history,
+              ),
+            ),
+          ),
           IconButton(
             key: const Key('open_settings'),
             tooltip: 'Ayarlar ve yardım',

@@ -52,6 +52,8 @@ class RhythmNextStepPolicy {
   static const maxMeanAbsOffsetMs = 60.0;
 
   /// Retention check opens on a later calendar day (local time).
+  static bool laterDay(DateTime a, DateTime b) => _laterDay(a, b);
+
   static bool _laterDay(DateTime a, DateTime b) {
     final x = a.toLocal(), y = b.toLocal();
     return DateTime(
@@ -61,6 +63,9 @@ class RhythmNextStepPolicy {
     ).isAfter(DateTime(x.year, x.month, x.day));
   }
 
+  /// Shared draft criterion: valid, no missed/extra, mean |offset| ≤ limit.
+  static bool isClean(ExerciseResult r) => _clean(r);
+
   static bool _clean(ExerciseResult r) =>
       r.isValid &&
       (r.measurements['missed'] as int? ?? 1) == 0 &&
@@ -68,6 +73,12 @@ class RhythmNextStepPolicy {
       ((r.measurements['meanAbsoluteOffsetMs'] as num?)?.toDouble() ??
               double.infinity) <=
           maxMeanAbsOffsetMs;
+
+  /// Comparable results for one pattern, oldest first.
+  static List<ExerciseResult> comparable(
+    List<ExerciseResult> results,
+    RhythmPattern p,
+  ) => _comparable(results, p);
 
   static List<ExerciseResult> _comparable(
     List<ExerciseResult> results,

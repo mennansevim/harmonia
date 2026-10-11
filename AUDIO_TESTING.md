@@ -155,3 +155,34 @@ ve shutdown-error UI kapıları açık; üstteki “henüz bağlı değil” not
 **Testler (31 yeni):** 16 domain (route politikası, sentetik sessiz/gürültülü oda, konuşma burst'ü, kırpılma, kısa/NaN/aşırı uzun, route/rate/yaş geçersizliği, ton SNR'ı, eksik/bayat kalibrasyon, sessizlik/kısa blip/düşük SNR, hoparlörde erken enerji vs kulaklık, latency sözleşmesi), 4 route eşleme, 10 controller (kalibrasyon kaydının silinmesi, route bağlama, route değişimi/süre dolumu, probe hatası, kesinti iptali, izin reddi, metadata uyuşmazlığı, okuyucusuz backend), 1 widget (320px/1,8× kalibrasyon → kalite raporu), shell testleri ayrı. Hepsi sentetik/fake; oda akustiği, gerçek mikrofon AGC'si veya cihaz gecikmesi değildir.
 
 **CAL-02 cihaz protokolü (yapılmadı):** Her cihaz × route (hoparlör, kablolu, Bluetooth, varsa USB) için: (1) sessiz oda 3 kalibrasyon, (2) TV/konuşma açıkken kalibrasyon → `tooNoisy`/`activityDetected` beklenir, (3) referans sonrası hemen ve 0,5 sn sonra söyleme, (4) yalnız referansı hoparlörden çalıp sessiz kalma → `usable` çıkmamalı, (5) fısıltı/kısa “a”/öksürük, (6) yüksek sesle kırpılma. Eşikler yukarıdaki ADR-021 değerleridir; sonuçlar raporlanır, eşik gevşetilmez. Android'de route `inferred` olduğundan kulaklık tespiti iddia edilmez. Bu protokol çalışmadan CAL-01 “cihazda doğrulandı” sayılmaz.
+
+## CAL-03a — Gecikme diagnostic istatistiği (21:40 TRT heartbeat)
+
+`LatencyEstimator` 8–64 explicit paired trial üzerinde çalışır; DSP/onset,
+player veya dokunma capture başlatmaz. Reference/response ortak observed clock
+token'ında ve strict kronolojik olmalı; saat reset/different clock/scheduled
+playback, inferred/unknown route, değişen route/rate ve bozuk tail reddedilir.
+Timestamp 0..2^53−1 µs, offset 0..500 ms; out-of-budget list traversal yok.
+
+Stable diagnostic: raw MAD≤5 ms, interpolated raw P90−P10≤20 ms, retained≥8,
+rejected≤%25; outlier distance max(10 ms, 3×1.4826×MAD). Median/MAD/spread,
+rejected trial indeksleri, source/method ve binding immutable evidence'da
+korunur. İstatistik hesaplanamıyorsa retained count ve estimate null; unstable
+durumda retained median null. Threshold'lar ADR-023 hipotezi, cihaz kabulü değil.
+
+**21 yeni test:** determinism/source/no-correction; empty/7/retained<8,
+isolated outlier/çoklu outlier/bimodal/drift, mixed/reset/invalid/scheduled clock,
+route/rate/inferred bağlamı, negative/oversize late offset, gerçek 0/500 ms,
+timestamp sınırı/sıralama, pre-traversal budget, immutable sonuç ve tap bias.
+Full suite 422 test geçti; format 122/0; analyze ilk iki brace uyarısı sonrası
+düzeltilip temiz doğrulandı. Tüm trial'lar sentetik; gerçek
+hardware delay, insan tap bias veya cihaz geçerliliği ölçülmedi. Build yapılmadı.
+
+**CAL-03b gerçek protokol kapısı (yapılmadı):** aynı pipeline/route/sample rate
+için bağımsız tekrar batch'leri, reference ve observed event'in aynı monoton
+saatte fiziksel kaydı, clock mapping/reset ve onset belirsizliği; route değişimi,
+kablosuz değişkenlik, cancellation ve geç callback testleri. Scheduled playback
+timestamp'ini duyulmuş klik olarak kullanma. Loopback toplamı capture/yayılım
+içerebilir; touch correction'a aktarma. Tap insan motor bias'ını ayrı raporla;
+hardware offset diye kabul etme. Bu paket LatencyCalibration üretmez ve
+correctionEnabled=false; CORE-02b count-in hâlâ kapalı. CAL-02/BENCH-01 açık.
