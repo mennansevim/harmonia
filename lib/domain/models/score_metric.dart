@@ -32,4 +32,24 @@ class ScoreMetric {
   bool get isMeasured => status == ScoreMetricStatus.measured;
 
   Map<String, Object?> toJson() => {'status': status.wireValue, 'value': value};
+
+  /// Strict: a measured metric needs a finite 0–100 value, others none.
+  factory ScoreMetric.fromJson(Map<String, Object?> json) {
+    final value = json['value'];
+    switch (json['status']) {
+      case 'measured':
+        if (value is! num) throw const FormatException('Missing metric value');
+        try {
+          return ScoreMetric.measured(value.toDouble());
+        } on ArgumentError {
+          throw const FormatException('Metric value out of range');
+        }
+      case 'not_measured' when value == null:
+        return const ScoreMetric.notMeasured();
+      case 'not_applicable' when value == null:
+        return const ScoreMetric.notApplicable();
+      default:
+        throw const FormatException('Invalid metric status/value');
+    }
+  }
 }

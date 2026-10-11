@@ -140,3 +140,14 @@ AI şu kararları veremez:
 - Leaderboard sırası.
 
 Bu kararlar kural tabanlı ve ölçüm temelli kalır.
+
+## AI-02a — kodda olan sözleşme (2026-10-11)
+
+`lib/domain/coach/coach_contract.dart` ve `lib/application/coach_service.dart`. **Canlı API çağrısı, sunucu gateway'i ve mobil anahtar yok.**
+
+- `CoachInput.fromResult`: yalnız `touch`/`microphone` kaynaklı sonuçlar; mock/sentetik/doğrulanmamış sonuç koça gitmez. Yük: beceri, mod, ölçüm durumu, metrik durumları (ölçülmüş değer yuvarlanmış), izinli sayaçlar (eşleşme/eksik/fazla/erken/geç), hata kodları, izinli sonraki egzersiz listesi, `promptVersion = coach-prompt-1`, `model = gpt-4o-mini`. Serbest metin ve ölçüm dışı alanlar taşınmaz.
+- `CoachReplyValidator`: şema `{schemaVersion:1, summary ≤280, nextExerciseId?}`; skor/puan alanı, izinsiz anahtar, olmayan egzersiz, yüzde/hazırlık/garanti iddiası, eğitimci taklidi, sağlık/teşhis ifadesi, geçersiz ölçümde övgü reddedilir.
+- `CoachService`: 6 sn zaman aşımı; her hata/ret deterministik yedek metne düşer; çıktı `ai`/`fallback` etiketli; skor değiştirmez.
+- Yerel eval: 12 test (9 simüle model yanıtı + zaman aşımı/gateway hatası/gateway yok + kaynak kapısı + yük içeriği).
+
+Model durumu: OpenAI deprecations sayfasının 2026-10-11 tarihli arama indeksine göre temel `gpt-4o-mini` sohbet modeli için duyurulmuş kapanış görülmedi; audio/realtime/transcribe varyantları 2026–2027'de kapanıyor. Canlı entegrasyondan önce resmî sayfa ve fiyat yeniden doğrulanmalı. Sonraki: AI-01 sunucu gateway'i (hesap/maliyet onayı), AI-03 Türkçe eval setinin gerçek modelde koşulması (ücretli API onayı).

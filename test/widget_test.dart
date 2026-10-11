@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:harmonia/app/harmonia_app.dart';
+import 'package:harmonia/features/single_tone_exercise/single_tone_exercise_screen.dart';
+
+Widget _demo() => MaterialApp(home: SingleToneExerciseScreen());
 
 void main() {
   testWidgets('invalid feedback fits a narrow screen with enlarged text', (
@@ -13,7 +15,7 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
     addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
-    await tester.pumpWidget(const HarmoniaApp());
+    await tester.pumpWidget(_demo());
     await tester.pumpAndSettle();
     await tester.ensureVisible(find.byKey(const Key('scenario_silence')));
     await tester.tap(find.byKey(const Key('scenario_silence')));
@@ -22,10 +24,8 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('HarmoniaApp shows the single-tone exercise as its home screen', (
-    tester,
-  ) async {
-    await tester.pumpWidget(const HarmoniaApp());
+  testWidgets('single-tone demo screen shows its C4 target', (tester) async {
+    await tester.pumpWidget(_demo());
     await tester.pumpAndSettle();
 
     expect(find.text('Tek Ses: Do (C4)'), findsWidgets);
@@ -35,7 +35,7 @@ void main() {
   testWidgets('picking the correct scenario shows success feedback', (
     tester,
   ) async {
-    await tester.pumpWidget(const HarmoniaApp());
+    await tester.pumpWidget(_demo());
     await tester.pumpAndSettle();
 
     await tester.tap(find.byKey(const Key('scenario_correct')));
@@ -49,7 +49,7 @@ void main() {
   testWidgets('picking a wrong-octave scenario shows the octave warning', (
     tester,
   ) async {
-    await tester.pumpWidget(const HarmoniaApp());
+    await tester.pumpWidget(_demo());
     await tester.pumpAndSettle();
 
     await tester.tap(find.byKey(const Key('scenario_wrongOctaveDown')));
@@ -63,7 +63,7 @@ void main() {
     testWidgets('$scenario is an unscored measurement, not a zero grade', (
       tester,
     ) async {
-      await tester.pumpWidget(const HarmoniaApp());
+      await tester.pumpWidget(_demo());
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(Key('scenario_$scenario')));
       await tester.pumpAndSettle();

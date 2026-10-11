@@ -2,9 +2,9 @@
 
 Konservatuvar hazırlığı için kişisel kulak, ritim, ezgi ve ses koçu.
 
-Flutter iskeleti, mock tek ses egzersizi ve ayrı gerçek kayıt laboratuvarı hazırdır. Sonuç v2/ölçüm geçerliliği, metrik bazlı gelişim ve ritim event eşleştirme uygulandı; gerçek DSP henüz bağlı değildir. Proje yarım kalırsa önce [`CURRENT_ROADMAP.md`](./CURRENT_ROADMAP.md), ardından ayrıntılı [`IMPLEMENTATION_ROADMAP.md`](./IMPLEMENTATION_ROADMAP.md) okunur.
+Flutter iskeleti, mock tek ses egzersizi ve yerel kayıt→deneysel DSP laboratuvarı hazırdır. Sonuç v2/ölçüm geçerliliği, metrik bazlı gelişim ve ritim event eşleştirme uygulandı; gerçek öğrenci başarı ölçümü doğrulanmadı. Proje yarım kalırsa önce [`CURRENT_ROADMAP.md`](./CURRENT_ROADMAP.md), ardından ayrıntılı [`IMPLEMENTATION_ROADMAP.md`](./IMPLEMENTATION_ROADMAP.md) okunur.
 
-**Yeni yerel prototip:** Tek ses ekranının sağ üst mikrofon düğmesi “Ses laboratuvarı”nı açar. Sentetik C4 dinle → açık izinle kısa kayıt → kendi kaydını dinle/sil. iOS/Android adapter'ları eklendi; fiziksel mikrofon/route QA ve gerçek nota analizi bekliyor. Puanlama ekranı hâlâ mock. iOS simulator debug build doğrulandı; testler fiziksel cihaz testi değildir.
+**Yerel prototip:** Tek ses ekranının sağ üst mikrofon düğmesi “Ses laboratuvarı”nı açar. Sentetik C4 dinle → açık izinle kısa kayıt → dinle/sil veya açık eylemle deneysel analiz et. Native worker frekans/periodic pencere kanıtı gösterir; ses kimliği veya doğru nota/başarı puanı değildir. Kayıt yüklenmez. iOS/Android adapter'ları var; fiziksel mikrofon/route/VAD QA bekliyor. Puanlama ekranı hâlâ mock. Önceki iOS simulator build fiziksel cihaz testi değildir.
 
 ## Doküman haritası
 
@@ -33,7 +33,7 @@ Flutter iskeleti, mock tek ses egzersizi ve ayrı gerçek kayıt laboratuvarı h
 Yeni model önce `MODEL_HANDOFF.md` ve `AGENTS.md` okusun. Ana ekran mock,
 mikrofon düğmesi yerel laboratuvar, müzik-kitaplığı düğmesi 2/3/4 sesli
 placeholder bölümüdür. Gerçek piyano dosyaları gelene kadar bu bölüm dinleme,
-kayıt ve skor başlatmaz. En son suite 230 test; bunlar gerçek cihaz/öğrenme
+kayıt ve skor başlatmaz. En son suite 248 test; bunlar gerçek cihaz/öğrenme
 doğrulaması değildir.
 
 Her çalışma oturumunda:

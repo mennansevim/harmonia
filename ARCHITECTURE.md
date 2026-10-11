@@ -19,7 +19,20 @@ Kullanıcı devam paketi: domain `RecordingPitchAnalyzer` sabit-config/10 sn bü
 5. AI sonucu değil, sonucu açıklamayı ve sonraki çalışmayı seçmeyi üstlenir.
 6. Ham ses kişisel veri gibi ele alınır; varsayılan olarak gereksiz yere gönderilmez.
 
+2026-10-11 modül envanteri paketi: domain `capture_quality.dart` (`AudioRouteSnapshot`/`RoutePolicy`, `CalibrationStamp`, `NoiseFloorCalibrator`, `CaptureQualityAssessor`, `LatencyCalibration`) saf Dart ve O(n)'dir; IO/plugin bağımlılığı yoktur. Opsiyonel `AudioRouteProbe` yetkinliği infrastructure `audio_route_mapping.dart` ile audio_session cihaz listesinden route çıkarır (API deneysel; yükseltmede yeniden test). `AudioLabController` kalibrasyon kaydını alıp siler, cevap kaydında kalite raporunu worker'dan önce hesaplar. Uygulama kabuğu: `HarmoniaApp` → `AppShellController` (application) → `ProfileRepository` (application arayüzü) → `FileProfileRepository`/`JsonFileStore` (infrastructure). Tema token'ları `lib/app/theme/harmonia_theme.dart`; sonuç renkleri `HarmoniaResultColors` ThemeExtension. Ekranlar `features/onboarding|home|settings`. Karar: ADR-021/022.
+
 ## Katmanlar
+
+13:44 UTC diagnostic integration: `AudioRecordingReader` optional domain
+capability, immutable `CapturedAudioSamples` explicit origin taşır. Plugin
+yalnız kendi tamamlanmış WAV'ını aynı file handle/bounded read/header kontrolüyle
+okur (`readLabWav`); decode/snapshot henüz ana isolate'da, performans kapısı açık.
+Controller file load'u resource queue'da tutar; native DSP işi queue dışında.
+Cancel/background/route/close epoch eski sonucu reddeder; hard cancel yok,
+aynı controller eski iş bitmeden yeni analiz başlatmaz. Analysis failure replay
+dosyasını silmez. UI PCM-free evidence gösterir, scorer/AI/progress'e göndermez.
+Yukarıdaki bağlantısız paket notları tarihsel durumdur; gerçek voice/device QA
+kapısı hâlâ geçilmedi.
 
 Son kullanıcı açıklamasıyla ana chord stimulus **prerecorded** oldu. Domain `ChordRecordingCatalog` üç reserved 2/3/4-note klasör/slot'u doğrular; infrastructure `AssetChordRecordingCatalog` yalnız bundled JSON okur; UI `ChordPlaceholderScreen` loading/error/retry ve disabled actions sunar. File/target/rights null; no player/capture/score veya fake assets. Home'dan ayrı route var. Sesler gelince reviewed asset manifest/adapter eklenecek; önceki renderer alternatif olarak korunur.
 

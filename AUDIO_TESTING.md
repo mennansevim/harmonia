@@ -115,3 +115,43 @@ Kullanıcı referans çalgısını piyano seçti. [PIANO_REFERENCES.md](./PIANO_
 Gerçek piyano dosyası/etiket/lisans, import/player/capture ve sıralı öğrenci segment/alignment yok. Settle default 250 ms yankı/latency doğrulaması değildir; yeni chord session'da playback bitene kadar mikrofonun kapalı tutulması ayrıca fake/cihaz testi ister. Bu paragrafın eski biçim sorusu kullanıcı son açıklamasıyla çözüldü: hazır 2/3/4 sesli kayıtlar klasörden çalınacak. Renderer alternatif; ana akış mevcut WAV'ı oynatır. Monofonik record median/periodic ratio chord cevabını doğru saymak için kullanılamaz. Tek ses toleransları ve cihaz/öğretmen kabul kapıları değişmedi.
 
 **Placeholder devam paketi:** 230 test (+9), analyze temiz, format 63 dosya/0 değişiklik. Üç reserved klasör, strict null-file/null-target katalog ve yalnız JSON asset; gerçek kayıt yok. Ana ekran route'undan disabled-action placeholder; bundled load, malformed/ready/path fail-closed, immutable list, narrow/large text, load error/retry/dispose testleri. UI ses çalmaz/mikrofon açmaz/skor üretmez. Kullanıcı dosyaları getirince birlikte QA, sonra reviewed manifest/player/session; sadece dosya varlığı veya placeholder status değişimi feature'ı açmaz. Gerçek ses/telefon/mobil build kapısı bu paketle geçilmedi.
+
+## 13:44 UTC — Lab kayıt/worker diagnostic bağlantısı
+
+`AudioRecordingReader` yalnız backend-owned tamamlanmış kayıt; immutable PCM
+snapshot ve explicit source. Plugin gerçek header mono PCM16'yı `readLabWav`
+ile okur: regular-file kontrolü, aynı handle length/read/length, 4,224,044 byte
+bütçe, malformed/missing/symlink reddi. Private temp sahipliği varsayılır;
+kernel sandbox, kötü niyetli eşzamanlı filesystem mutation veya içerik QA değil.
+Decode ve snapshot ana isolate'da; cihaz performansı ölçülmedi.
+
+Explicit analyze: controller metadata eşleşmesini ve 8–48 kHz/10 sn bütçesini
+worker öncesi doğrular. Lab'ın stop overshoot (≤11 sn) kaydı replay için korur
+ama strict 10 sn analiz bütçesini aşanı açıklayıcı hata ile reddeder; truncate yok.
+File load kaynak kuyruğundadır, silme/close bounded read bitişini bekler; DSP
+queue dışında olduğundan silme/close hesaplamayı beklemez. Epoch eski sonuç/hata
+yayınını engeller; tek active iş, iptal edilen iş bitene kadar yeni analiz kapalı.
+Hard cancel yok; PCM çalışan worker belleğinde bitişe kadar kalabilir, silme
+dosya/UI sonucunu temizler, anlık bellek silme garantisi değildir.
+
+Analysis failure kayıt/replay'i korur. Sonuç ekranı nullable frekans/dispersion
+ve bütün full-frame periodic oranını gösterir, VAD/nota başarısı/skor yapmaz.
+Source mock/synthetic/microphone korunur; microphone kökeni doğruluk kanıtı değil.
+Ana mock scorer, toleranslar, piyano placeholder, AI/upload/progress değişmedi.
+
+**Doğrulama:** 248 test (+18: 12 controller/PCM snapshot/native pipeline,
+4 temporary synthetic file IO, 2 widget/lifecycle), analyze temiz; format 67
+Dart dosyası/0 değişiklik. Duplicate analysis/load cancel, stale new recording,
+worker/load/playback errors, route/background/close ve narrow 320px/1.8× text;
+sentetik WAV→gerçek IsolateRecordingPitchWorker 440 Hz regresyonu geçti.
+Gerçek mikrofon/insan kaydı/mobil build veya pedagojik pilot çalıştırılmadı.
+Sonraki kalibrasyon/route sözleşmesi, VAD/cihaz benchmark, startup orphan cleanup
+ve shutdown-error UI kapıları açık; üstteki “henüz bağlı değil” notları tarihsel.
+
+## CAL-01 — Kalibrasyon ve kayıt kalite kapısı (2026-10-11)
+
+**Kodda:** `lib/domain/audio/capture_quality.dart` — 20 ms çerçeve RMS (dBFS); noise-floor = medyan, burst = %90 persentil; 1,5–5 sn kalibrasyon. Kalite kapısı sırası: geçersiz/oran/süre → kısa → desteklenmeyen route → kalibrasyon gerekli → kırpılma → sessizlik → etkinlik yok → referans kuyruğu (yalnız `sequentialOnly`) → yetersiz etkinlik → düşük SNR → usable. Lab `calibrateNoiseFloor()` 2 sn sessizlik kaydeder, ölçer ve kaydı siler; cevap analizinde rapor `requireCalibration: false` ile hesaplanır ve ekranda “insan sesi tespiti değildir” uyarısıyla gösterilir. Route, kayıt başlangıcında alınır; probe hatası `unknown`/`unverified`.
+
+**Testler (31 yeni):** 16 domain (route politikası, sentetik sessiz/gürültülü oda, konuşma burst'ü, kırpılma, kısa/NaN/aşırı uzun, route/rate/yaş geçersizliği, ton SNR'ı, eksik/bayat kalibrasyon, sessizlik/kısa blip/düşük SNR, hoparlörde erken enerji vs kulaklık, latency sözleşmesi), 4 route eşleme, 10 controller (kalibrasyon kaydının silinmesi, route bağlama, route değişimi/süre dolumu, probe hatası, kesinti iptali, izin reddi, metadata uyuşmazlığı, okuyucusuz backend), 1 widget (320px/1,8× kalibrasyon → kalite raporu), shell testleri ayrı. Hepsi sentetik/fake; oda akustiği, gerçek mikrofon AGC'si veya cihaz gecikmesi değildir.
+
+**CAL-02 cihaz protokolü (yapılmadı):** Her cihaz × route (hoparlör, kablolu, Bluetooth, varsa USB) için: (1) sessiz oda 3 kalibrasyon, (2) TV/konuşma açıkken kalibrasyon → `tooNoisy`/`activityDetected` beklenir, (3) referans sonrası hemen ve 0,5 sn sonra söyleme, (4) yalnız referansı hoparlörden çalıp sessiz kalma → `usable` çıkmamalı, (5) fısıltı/kısa “a”/öksürük, (6) yüksek sesle kırpılma. Eşikler yukarıdaki ADR-021 değerleridir; sonuçlar raporlanır, eşik gevşetilmez. Android'de route `inferred` olduğundan kulaklık tespiti iddia edilmez. Bu protokol çalışmadan CAL-01 “cihazda doğrulandı” sayılmaz.

@@ -182,3 +182,31 @@ AI bu skorları değiştiremez; yalnızca yorumlar ve öneri üretir.
 - Kullanıcı hesabı takma adla leaderboard’a katılabilmeli.
 - Profil, ölçüm ve ses kayıtları ayrı silinebilir olmalı.
 - AI’ye mümkün olduğunca yalnızca ölçüm özeti gönderilmeli.
+
+## Ürün metrikleri ve olay sözleşmesi (ANALYTICS-01, 2026-10-11)
+
+Kodda `lib/domain/analytics/product_event.dart`: izinli olay adları ve her olay için izinli özellik anahtarları; değerler yalnız enum/bool/küçük tamsayı/içerik kimliği. Serbest metin, ses/PCM, ad/e-posta, konum ve kalıcı cihaz/kullanıcı kimliği şema tarafından reddedilir; oturum kimliği her açılışta rastgele hex, zaman damgası dakika hassasiyetinde. Tek uygulama sınırlı bellek içi kayıttır; **ağ gönderimi yok**. Sağlayıcı seçimi, rıza metni ve gönderim ayrı karar/onay ister (mağaza gizlilik beyanı dahil).
+
+| Ürün sorusu | Olay(lar) | Not |
+|---|---|---|
+| İlk egzersiz tamamlama, ilk değer süresi | `appOpened` → `goalSelected` → `exerciseStarted` → `exerciseFinished(measured)` | Süre aynı oturum içinde dakika farkıyla; saniye hassasiyeti kullanıcı testinde (UXR-01) ölçülür |
+| Sonuç anlama | `resultDetailsOpened`, `nextStepShown` → `nextStepApplied` | Anlama kanıtı değil; UXR-01 görev başarısıyla birlikte okunur |
+| D7/D30 geri dönüş, haftalık çalışma | `appOpened`, `exerciseFinished` gün sayıları | Kalıcı kimlik olmadan cihaz bazlı ölçüm ancak hesap/rıza sonrası; o zamana kadar yalnız pilot |
+| Yeni/gecikmeli soru başarısı | `exerciseFinished(retentionCheck, measured)` | Doğru/yanlış değil, geçerli ölçüm + sonuç geçmişiyle eşlenir |
+| Kalibrasyon/izin sürtünmesi | `calibrationFinished(status, route)`, `microphonePermission(granted)` | Route yalnız token (`wired`, `builtIn`…) |
+| Silme hakkı kullanımı | `historyDeleted(scope)`, `profileDeleted` | İçerik gönderilmez |
+| Ödeme dönüşümü, iptal nedeni, destek yükü | — | PAY/OPS paketlerinde mağaza/sunucu doğrulamalı olaylar olarak eklenecek; şu an satın alma yok |
+
+## Birim ekonomi modeli (ECON-01, 2026-10-11)
+
+**Formül (ödeyen kullanıcı başına aylık net katkı):** brüt fiyat ÷ (1+KDV) × (1 − mağaza komisyonu) − iade − AI − altyapı − destek − edinim (ömre yayılmış) − içerik (sabit maliyet ÷ ödeyen kullanıcı) − eğitimci (yalnız Plus).
+
+**Tamamı varsayımdır; fiyat teklifi değildir.** Örnek fiyatlar 149 TL/ay Premium ve 449 TL/ay Plus yalnız hesap içindir. KDV %20 ve mağaza komisyonu %15/%30 (küçük işletme/abonelik programı vs standart) **güncel mağaza ve vergi danışmanı doğrulaması gerektirir**; dijital hizmet vergisi gibi ek kalemler henüz eklenmedi. AI: `gpt-4o-mini` ayda düşük/orta/yüksek 0,2/0,6/1,5 TL (güncel resmî fiyat ve kurla yeniden hesaplanacak). Altyapı 1/2/4 TL, destek 2/4/8 TL, edinim 0 / 150 / 400 TL ÷ 6 ay ömür, içerik 60.000 TL/yıl ÷ 1.000 ödeyen, iade %3 (Plus %5). Plus eğitimci maliyeti değerlendirme başına 400 TL + %15 QA × kullanım oranı (%40/%70/%100).
+
+| Senaryo (kullanım + edinim) | Premium, %15 komisyon | Premium, %30 komisyon | Plus, %15 komisyon | Plus, %30 komisyon |
+|---|---|---|---|---|
+| Düşük (organik, az kullanım; Plus %40 kullanım) | ≈ 94 TL | ≈ 76 TL | ≈ 109 TL | ≈ 56 TL |
+| Orta (150 TL edinim; Plus %70) | ≈ 66 TL | ≈ 48 TL | ≈ −59 TL | ≈ −112 TL |
+| Yüksek (400 TL edinim, yoğun kullanım; Plus %100) | ≈ 17 TL | ≈ −1 TL | ≈ −247 TL | ≈ −300 TL |
+
+**Çıkarımlar (hipotez):** (1) Premium'un katkısını en çok edinim maliyeti ve komisyon belirliyor; AI maliyeti bu varsayımlarda küçük. (2) Plus, eğitimci ücreti ve kullanım oranı pilotla ölçülmeden fiyatlanamaz; örnek fiyat %70 kullanımda zarar eder — kota, teslim süresi ve fiyat HUM-07 pilotundan sonra belirlenmeli, sınırsız hizmet vaat edilmemeli. (3) Abonelik değeri tek seferlik ses aralığı testine değil tekrarlanan eğitim faydasına bağlanmalı; D30 ve haftalık çalışma ölçülmeden gelir projeksiyonu yapılmaz. Gelir garantisi yoktur.

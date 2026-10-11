@@ -150,6 +150,22 @@ Detector hedef frekans almaz; oktav adayını hedefe yaklaştırıp başarı yar
 
 Kayıt bütçesi 8–48 kHz/10 sn/512 frame; target bağımsız detector defaults sabit, version config dahil. Regular half-hop + gerekirse tek end-anchor (tail sıfır doldurulmaz/atlanmaz); counts duration weighted değil. Native worker bounded snapshot/tek active iş; UI'da DSP fallback yok. [Dart Isolate.run resmi sözleşmesi](https://api.dart.dev/dart-isolate/Isolate/run.html) incelendi. Browser desteklenmez; worker hard cancel yok. Session owner eski sonuçları epoch ile reddetmeden capture/UI'ya bağlanmaz. Mevcut öğrenci başarı rubriği/toleransları değiştirilmedi.
 
+## ADR-021 — Kalibrasyon ve kayıt kalite kapısı skordan önce
+
+**Durum:** Kod/fake/widget testli (CAL-01); cihaz eşik doğrulaması (CAL-02) bekliyor  
+**Tarih:** 2026-10-11
+
+Ürün oturumunda her cevap kaydı pitch analizinden önce `CaptureQualityAssessor` kapısından geçer. Yalnız `usable` analiz edilebilir; sessizlik, kırpılma, düşük SNR, yetersiz etkinlik, referans kuyruğu şüphesi, geçersiz/kısa giriş ve eksik/bayat kalibrasyon **nötr yeniden deneme**dir, öğrenci hatası veya sıfır puan değildir. Kalibrasyon route imzası, sample rate ve yaşa (30 dk hipotezi) bağlıdır; biri değişince geçersizdir. iOS aktif route bildirir; Android yalnız mevcut cihaz listesini verdiği için route `inferred` olur ve politika `unverified` döner. Hoparlör+mikrofonda tek ses `sequentialOnly`: referans bitmeden cevap penceresi açılmaz ve ilk 150 ms içindeki enerji referans kuyruğu sayılır. Ritim her route'ta bağımsız ölçülmüş gecikme ister; ölçülmemiş gecikme sıfır kabul edilmez ve cevap otomatik kaydırılmaz. Hoparlörde rehberli koro partisi desteklenmez.
+
+Eşikler (−45 dBFS taban, 12 dB burst yayılımı, 10 dB etkinlik marjı, 0,4 sn etkinlik, 15 dB SNR, %0,1 kırpılma, 150 ms tepki) **benchmark öncesi kayda geçirilmiş hipotezlerdir**; cihaz sonuçlarına bakılarak gevşetilmez, değişiklik gerekçeli ADR ister. Enerji etkinliği insan sesi tespiti değildir; VAD-01 ayrı iştir. Lab kalibrasyonsuz çalışabilir ama SNR/taban null ve etiketlidir.
+
+## ADR-022 — Misafir-önce uygulama kabuğu ve yerel profil
+
+**Durum:** Kod/widget testli (SHELL-01); kullanıcı testi (UXR-01) bekliyor  
+**Tarih:** 2026-10-11
+
+İlk değer için hesap yok (ADR-004 uygulaması): uygulama yükleniyor → hedef seçimi (konservatuvar/temel/koro) → home. Profil yalnız hedef ve oluşturma zamanını, uygulamaya özel dizinde atomik (temp + rename) JSON olarak tutar; e-posta, ses veya cihaz kimliği yok, sunucuya gitmez. Bozuk profil sessizce silinmez veya üzerine yazılmaz; yeniden dene ve açık “profili sil ve yeniden başla” sunulur. Home yalnız gerçekte var olanı gösterir: Deneysel (ses/ortam kontrolü), Simülasyon (tek ses sonuç örnekleri), Kayıt bekleniyor (2/3/4 piyano), Henüz yok (planlananlar). Ayarlar satın alma/abonelik/hesap olmadığını açıkça söyler. Sonuç renk token'larında yanlış oktav başarı rengi, geçersiz ölçüm hata kırmızısı değildir; 4,5:1 metin kontrastı birim testlidir. Tasarımın nihai kabulü kullanıcı testine bağlıdır.
+
 ## Mevcut kararları değiştirme sınırı
 
 Şu kararlar benchmark veya kullanıcı görüşmesi olmadan değiştirilmemeli:

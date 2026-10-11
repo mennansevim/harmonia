@@ -1,7 +1,27 @@
 import 'dart:async';
 import 'package:harmonia/domain/audio/audio_capture.dart';
+import 'package:harmonia/domain/audio/capture_quality.dart';
+import 'package:harmonia/domain/models/measurement_provenance.dart';
 
-class FakeAudioLabBackend implements AudioLabBackend {
+class FakeAudioLabBackend implements AudioLabBackend, AudioRecordingReader {
+  Completer<CapturedAudioSamples>? readGate;
+  Object? readFailure;
+
+  /// Optional PCM returned by readRecording; caller keeps `captured` in sync.
+  List<double>? recordedSamples;
+  @override
+  Future<CapturedAudioSamples> readRecording() async {
+    calls.add('read');
+    if (readFailure != null) throw readFailure!;
+    return readGate == null
+        ? CapturedAudioSamples(
+            sampleRateHz: captured.sampleRateHz,
+            samples: recordedSamples ?? List.filled(captured.sampleCount, 0),
+            source: MeasurementSource.mock,
+          )
+        : await readGate!.future;
+  }
+
   final events = StreamController<AudioLabInterruption>.broadcast(sync: true);
   final calls = <String>[];
   bool permission = true;
@@ -71,5 +91,33 @@ class FakeAudioLabBackend implements AudioLabBackend {
     calls.add('close');
     capturing = false;
     await events.close();
+  }
+}
+
+class FakeRoutedAudioLabBackend extends FakeAudioLabBackend
+    implements AudioRouteProbe, InputLevelSource {
+  final levels = StreamController<double>.broadcast(sync: true);
+  @override
+  Stream<double> get inputLevelDb => levels.stream;
+
+  AudioRouteSnapshot route = const AudioRouteSnapshot(
+    input: AudioRouteKind.builtIn,
+    output: AudioRouteKind.wired,
+  );
+  Object? routeFailure;
+  @override
+  Future<AudioRouteSnapshot> currentRoute() async {
+    calls.add('route');
+    if (routeFailure != null) throw routeFailure!;
+    return route;
+  }
+
+  /// Sets matching metadata + PCM for the next stop/read pair.
+  void nextClip(List<double> samples, {int sampleRateHz = 16000}) {
+    recordedSamples = samples;
+    captured = CapturedAudio(
+      sampleRateHz: sampleRateHz,
+      sampleCount: samples.length,
+    );
   }
 }

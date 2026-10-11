@@ -24,6 +24,19 @@ class RhythmAnalysisRequest {
   final int latencyCompensationMs;
 }
 
+/// One aligned step: matched (both indices), missed (reference only) or
+/// extra (user only). Offsets are user − reference after latency handling.
+class RhythmEventMatch {
+  const RhythmEventMatch({this.referenceIndex, this.userIndex, this.offsetMs})
+    : assert(referenceIndex != null || userIndex != null);
+  final int? referenceIndex;
+  final int? userIndex;
+  final int? offsetMs;
+  bool get isMatched => referenceIndex != null && userIndex != null;
+  bool get isMissed => userIndex == null;
+  bool get isExtra => referenceIndex == null;
+}
+
 /// Deterministic output of matching user onsets against expected beats.
 ///
 /// Missing, extra, early and late beats are reported separately so the UI
@@ -40,6 +53,7 @@ class RhythmAnalysisResult {
     required this.timingAccuracy,
     required this.averageAbsoluteOffsetMs,
     this.measurementStatus = MeasurementStatus.valid,
+    this.alignment = const [],
   });
 
   final int matchedCount;
@@ -55,6 +69,9 @@ class RhythmAnalysisResult {
 
   /// Reference-tempo score. Tempo-independent shape scoring is a later mode.
   final ScoreMetric timingAccuracy;
+
+  /// Chronological alignment for per-beat explanation (timeline UI).
+  final List<RhythmEventMatch> alignment;
 }
 
 /// Contract for rhythm/onset-matching engines. See [PitchAnalyzer] for the

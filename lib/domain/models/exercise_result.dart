@@ -55,6 +55,26 @@ class ExerciseError {
     'severity': severity.name,
     'evidence': evidence,
   };
+
+  factory ExerciseError.fromJson(Map<String, Object?> json) {
+    final type = ExerciseErrorType.values.where(
+      (t) => t.wireValue == json['type'],
+    );
+    final severity = ExerciseErrorSeverity.values.where(
+      (s) => s.name == json['severity'],
+    );
+    final evidence = json['evidence'];
+    if (type.length != 1 ||
+        severity.length != 1 ||
+        evidence is! Map<String, Object?>) {
+      throw const FormatException('Invalid exercise error');
+    }
+    return ExerciseError(
+      type: type.single,
+      severity: severity.single,
+      evidence: evidence,
+    );
+  }
 }
 
 /// Metrics retain their evidence status, not just a number.
@@ -77,6 +97,24 @@ class ExerciseScores {
 
   bool get hasMeasurements =>
       [overall, accuracy, timing, stability, memory].any((s) => s.isMeasured);
+
+  factory ExerciseScores.fromJson(Map<String, Object?> json) {
+    ScoreMetric metric(String key) {
+      final raw = json[key];
+      if (raw is! Map<String, Object?>) {
+        throw FormatException('Missing metric $key');
+      }
+      return ScoreMetric.fromJson(raw);
+    }
+
+    return ExerciseScores(
+      overall: metric('overall'),
+      accuracy: metric('accuracy'),
+      timing: metric('timing'),
+      stability: metric('stability'),
+      memory: metric('memory'),
+    );
+  }
 
   Map<String, Object?> toJson() => {
     'overall': overall.toJson(),
@@ -166,4 +204,63 @@ class ExerciseResult {
     'errors': errors.map((e) => e.toJson()).toList(),
     'createdAt': createdAt.toIso8601String(),
   };
+
+  /// Strict v2 reader for local history. Any unknown enum, missing field,
+  /// non-finite evidence or invalid-with-scores combination throws.
+  factory ExerciseResult.fromJson(Map<String, Object?> json) {
+    T field<T>(String key) {
+      final value = json[key];
+      if (value is! T) throw FormatException('Invalid result field $key');
+      return value;
+    }
+
+    T one<T extends Enum>(List<T> values, String key, String Function(T) wire) {
+      final raw = field<String>(key);
+      final match = values.where((v) => wire(v) == raw);
+      if (match.length != 1) throw FormatException('Unknown $key');
+      return match.single;
+    }
+
+    if (json['schemaVersion'] != 2) {
+      throw const FormatException('Unsupported result schema');
+    }
+    final created = DateTime.tryParse(field<String>('createdAt'));
+    if (created == null) throw const FormatException('Invalid createdAt');
+    try {
+      return ExerciseResult(
+        sessionId: field<String>('sessionId'),
+        exerciseId: field<String>('exerciseId'),
+        skill: one(Skill.values, 'skill', (s) => s.name),
+        target: field<Map<String, Object?>>('target'),
+        measurements: field<Map<String, Object?>>('measurements'),
+        scores: ExerciseScores.fromJson(field<Map<String, Object?>>('scores')),
+        errors: [
+          for (final e in field<List<Object?>>('errors'))
+            if (e is Map<String, Object?>)
+              ExerciseError.fromJson(e)
+            else
+              throw const FormatException('Invalid error entry'),
+        ],
+        createdAt: created,
+        provenance: MeasurementProvenance.fromJson(
+          field<Map<String, Object?>>('provenance'),
+        ),
+        measurementStatus: one(
+          MeasurementStatus.values,
+          'measurementStatus',
+          (s) => s.name,
+        ),
+        exerciseMode: one(
+          ExerciseMode.values,
+          'exerciseMode',
+          (m) => m.wireValue,
+        ),
+        difficulty: field<int>('difficulty'),
+        contentVersion: field<String>('contentVersion'),
+        scoringVersion: field<String>('scoringVersion'),
+      );
+    } on ArgumentError catch (e) {
+      throw FormatException('Result contract violation: ${e.message}');
+    }
+  }
 }

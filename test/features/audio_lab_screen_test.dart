@@ -2,9 +2,75 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:harmonia/features/audio_lab/audio_lab_screen.dart';
+import 'package:harmonia/domain/audio/recording_pitch_analyzer.dart';
 import '../support/fake_audio_lab_backend.dart';
+import '../support/fake_recording_pitch_worker.dart';
 
 void main() {
+  testWidgets('diagnostics stay unscored and fit narrow enlarged text', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(320, 800);
+    tester.view.devicePixelRatio = 1;
+    tester.platformDispatcher.textScaleFactorTestValue = 1.8;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+    final backend = FakeAudioLabBackend();
+    final worker = FakeRecordingPitchWorker();
+    await tester.pumpWidget(
+      MaterialApp(
+        home: AudioLabScreen(backend: backend, worker: worker),
+      ),
+    );
+    for (final key in [
+      'audio_lab_record',
+      'audio_lab_stop',
+      'audio_lab_analyze',
+    ]) {
+      await tester.ensureVisible(find.byKey(Key(key)));
+      await tester.tap(find.byKey(Key(key)));
+      await tester.pumpAndSettle();
+    }
+    expect(find.text('Yerel analiz • Başarı skoru değildir'), findsOneWidget);
+    expect(find.text('Temsilî frekans: Ölçülmedi'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox());
+    await tester.pumpAndSettle();
+  });
+  testWidgets(
+    'background clears pending diagnostics and consumes late worker error',
+    (tester) async {
+      final backend = FakeAudioLabBackend();
+      final worker = FakeRecordingPitchWorker()
+        ..gate = Completer<RecordingPitchEvidence>();
+      await tester.pumpWidget(
+        MaterialApp(
+          home: AudioLabScreen(backend: backend, worker: worker),
+        ),
+      );
+      for (final key in [
+        'audio_lab_record',
+        'audio_lab_stop',
+        'audio_lab_analyze',
+      ]) {
+        await tester.ensureVisible(find.byKey(Key(key)));
+        await tester.tap(find.byKey(Key(key)));
+        await tester.pumpAndSettle();
+      }
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+      await tester.pumpAndSettle();
+      expect(backend.calls, contains('discard'));
+      worker.gate!.completeError(StateError('late worker failure'));
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('audio_lab_diagnostics')), findsNothing);
+      expect(find.byKey(const Key('audio_lab_analysis_error')), findsNothing);
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox());
+      await tester.pumpAndSettle();
+    },
+  );
   testWidgets(
     'inactive permission dialog does not cancel intentional recording',
     (tester) async {

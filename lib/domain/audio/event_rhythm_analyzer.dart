@@ -78,15 +78,32 @@ class EventRhythmAnalyzer implements RhythmAnalyzer {
     var i = n;
     var j = m;
     final offsets = <int>[];
+    final steps = <RhythmEventMatch>[];
     while (i > 0 || j > 0) {
-      switch (cells[i][j].step) {
+      // Row 0 only holds extras and column 0 only misses; guard explicitly.
+      final step = i == 0
+          ? _Step.extra
+          : j == 0
+          ? _Step.missed
+          : cells[i][j].step;
+      switch (step) {
         case _Step.matched:
-          offsets.add(user[j - 1] - expected[i - 1]);
+          final offset = user[j - 1] - expected[i - 1];
+          offsets.add(offset);
+          steps.add(
+            RhythmEventMatch(
+              referenceIndex: i - 1,
+              userIndex: j - 1,
+              offsetMs: offset,
+            ),
+          );
           i--;
           j--;
         case _Step.missed:
+          steps.add(RhythmEventMatch(referenceIndex: i - 1));
           i--;
         case _Step.extra:
+          steps.add(RhythmEventMatch(userIndex: j - 1));
           j--;
       }
     }
@@ -126,6 +143,39 @@ class EventRhythmAnalyzer implements RhythmAnalyzer {
       timingAccuracy: m == 0
           ? const ScoreMetric.notMeasured()
           : ScoreMetric.measured(100 * coverage * fidelity),
+      alignment: List.unmodifiable(
+        _chronological(steps.reversed, expected, user),
+      ),
     );
   }
+}
+
+/// Orders each run of unmatched steps between two matches by event time
+/// (reference time for misses, latency-corrected user time for extras), so a
+/// timeline reads left to right. Matches keep their positions.
+List<RhythmEventMatch> _chronological(
+  Iterable<RhythmEventMatch> steps,
+  List<int> expected,
+  List<int> user,
+) {
+  int time(RhythmEventMatch e) =>
+      e.isExtra ? user[e.userIndex!] : expected[e.referenceIndex!];
+  final out = <RhythmEventMatch>[];
+  final run = <RhythmEventMatch>[];
+  void flush() {
+    run.sort((a, b) => time(a).compareTo(time(b)));
+    out.addAll(run);
+    run.clear();
+  }
+
+  for (final step in steps) {
+    if (step.isMatched) {
+      flush();
+      out.add(step);
+    } else {
+      run.add(step);
+    }
+  }
+  flush();
+  return out;
 }

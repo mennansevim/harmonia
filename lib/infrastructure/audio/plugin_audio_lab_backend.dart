@@ -5,12 +5,33 @@ import 'package:just_audio/just_audio.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
 import '../../domain/audio/audio_capture.dart';
+import '../../domain/audio/capture_quality.dart';
+import '../../domain/models/measurement_provenance.dart';
+import 'audio_route_mapping.dart';
 import 'pcm16_wav.dart';
+import 'read_lab_wav.dart';
 
 /// IO-only laboratory adapter. Files are created in its own temporary directory;
 /// no arbitrary recorder-returned path is read, deleted, shared or uploaded.
-class PluginAudioLabBackend implements AudioLabBackend {
+class PluginAudioLabBackend
+    implements
+        AudioLabBackend,
+        AudioRecordingReader,
+        AudioRouteProbe,
+        InputLevelSource {
   final _events = StreamController<AudioLabInterruption>.broadcast();
+  final _levels = StreamController<double>.broadcast();
+  StreamSubscription<Amplitude>? _levelSubscription;
+
+  /// Plugin amplitude (documented as dBFS; device-unverified) every 100 ms.
+  @override
+  Stream<double> get inputLevelDb => _levels.stream;
+
+  Future<void> _stopLevels() async {
+    await _levelSubscription?.cancel();
+    _levelSubscription = null;
+  }
+
   final List<StreamSubscription<dynamic>> _subscriptions = [];
   AudioRecorder? _recorder;
   AudioPlayer? _player;
@@ -57,6 +78,14 @@ class PluginAudioLabBackend implements AudioLabBackend {
     );
   }
 
+  /// Device-unverified mapping: iOS active route, Android inferred list.
+  @override
+  Future<AudioRouteSnapshot> currentRoute() async {
+    await _initialize();
+    final devices = await (await AudioSession.instance).getDevices();
+    return routeFromDevices(devices, activeRouteReported: Platform.isIOS);
+  }
+
   File _file(String name) => File('${_directory!.path}/$name.wav');
   @override
   Future<bool> requestMicrophonePermission() async {
@@ -79,20 +108,26 @@ class PluginAudioLabBackend implements AudioLabBackend {
       ),
       path: _file('recording').path,
     );
+    await _stopLevels();
+    _levelSubscription = _recorder!
+        .onAmplitudeChanged(const Duration(milliseconds: 100))
+        .listen((amplitude) {
+          final db = amplitude.current;
+          if (db.isFinite && !_levels.isClosed) {
+            _levels.add(db.clamp(-160.0, 0.0));
+          }
+        }, onError: (Object _) {});
   }
 
   @override
   Future<CapturedAudio> stopCapture() async {
+    await _stopLevels();
     final path = await _recorder!.stop();
     _capturing = false;
     if (path != _file('recording').path) {
       throw const FormatException('Unexpected recording file');
     }
-    final file = _file('recording');
-    if (await file.length() > 4224044) {
-      throw const FormatException('Capture exceeds size budget');
-    }
-    final wav = Pcm16Wav.decode(await file.readAsBytes());
+    final wav = await readLabWav(_file('recording'));
     return CapturedAudio(
       sampleRateHz: wav.sampleRateHz,
       sampleCount: wav.samples.length,
@@ -100,7 +135,21 @@ class PluginAudioLabBackend implements AudioLabBackend {
   }
 
   @override
+  Future<CapturedAudioSamples> readRecording() async {
+    if (_directory == null || _capturing) {
+      throw StateError('No completed local recording');
+    }
+    final wav = await readLabWav(_file('recording'));
+    return CapturedAudioSamples(
+      sampleRateHz: wav.sampleRateHz,
+      samples: wav.samples,
+      source: MeasurementSource.microphone,
+    );
+  }
+
+  @override
   Future<void> discardCapture() async {
+    await _stopLevels();
     if (_capturing) {
       await _recorder!.cancel();
       _capturing = false;
@@ -131,6 +180,10 @@ class PluginAudioLabBackend implements AudioLabBackend {
   }
 
   Future<PlaybackHandle> _playFile(File file) async {
+    // just_audio keeps `playing` true after completion and a later play()
+    // then returns immediately; stop first so `completed` means this clip
+    // really ended (the session opens the mic on that signal).
+    await _player!.stop();
     await _player!.setFilePath(file.path);
     return PlaybackHandle(_player!.play());
   }
@@ -176,6 +229,8 @@ class PluginAudioLabBackend implements AudioLabBackend {
         await _directory!.delete();
       });
     }
+    await attempt(_stopLevels);
+    await attempt(_levels.close);
     await attempt(_events.close);
     if (failure != null) Error.throwWithStackTrace(failure!, failureStack!);
   }

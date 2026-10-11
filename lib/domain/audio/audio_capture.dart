@@ -1,3 +1,6 @@
+import '../models/measurement_provenance.dart';
+import 'capture_quality.dart';
+
 enum AudioLabInterruption { routeChanged, audioFocusLost }
 
 class CapturedAudio {
@@ -35,4 +38,41 @@ abstract interface class AudioLabBackend
     implements AudioCapture, ReferencePlayback {
   Stream<AudioLabInterruption> get interruptions;
   Future<void> close();
+}
+
+/// Immutable local snapshot. Origin does not certify voice or accuracy.
+class CapturedAudioSamples {
+  CapturedAudioSamples({
+    required this.sampleRateHz,
+    required List<double> samples,
+    required this.source,
+  }) : samples = List.unmodifiable(samples);
+  final int sampleRateHz;
+  final List<double> samples;
+  final MeasurementSource source;
+}
+
+/// Optional capability: reads only the backend's current owned recording.
+abstract interface class AudioRecordingReader {
+  Future<CapturedAudioSamples> readRecording();
+}
+
+/// Optional capability: current audio route. Implementations must report
+/// `RouteCertainty.inferred` when the platform only lists available devices.
+abstract interface class AudioRouteProbe {
+  Future<AudioRouteSnapshot> currentRoute();
+}
+
+/// Plays a generated/bundled reference clip (e.g. rhythm clicks). Encoded
+/// WAV bytes stay local; implementations own and delete their temp files.
+abstract interface class ReferenceClipPlayer {
+  Future<PlaybackHandle> playWav(List<int> wavBytes);
+  Future<void> stop();
+  Future<void> close();
+}
+
+/// Optional: live input level (dBFS, ≤ 0) while capturing. Display only:
+/// never scored, never a voice/pitch claim, not calibrated across devices.
+abstract interface class InputLevelSource {
+  Stream<double> get inputLevelDb;
 }

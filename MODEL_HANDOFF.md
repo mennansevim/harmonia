@@ -44,18 +44,27 @@ sample hakları varsayılmadı; Harmonia'ya kopyalanmadı.
 
 ## 3. Uygulamayı açınca ne çalışıyor?
 
-`lib/main.dart` → `HarmoniaApp` → `SingleToneExerciseScreen`.
+`lib/main.dart` → `HarmoniaApp` → `AppShellController` → yükleniyor → (profil yoksa) hedef seçimi → `HomeScreen`. Profil yalnız hedef + oluşturma zamanı; uygulamaya özel dizinde atomik JSON (`FileProfileRepository`). Widget testleri `HarmoniaApp(profiles: InMemoryProfileRepository(...), history: InMemoryResultHistory(), startupCleanup: ...)` kullanmalı; gerçek dosya IO'su FakeAsync içinde tamamlanmaz.
 
-- Ana ekran C4 **mock** senaryolarıyla scorer/sonuç gösterir. Gerçek öğrenci
-  DSP sonucu değil. Yeni motor var diye bu ekran gerçek olmuş sayılmaz.
-- App bar mikrofonu → **Ses laboratuvarı**: sentetik C4 referans, açık izinle
-  kısa yerel WAV kaydı, header metadata, replay/delete. iOS/Android adapter
-  var; fiziksel mic/route QA yapılmadı. Upload/skor yok.
-- App bar müzik-kitaplığı → **2 / 3 / 4 Ses** placeholder ekranı: üç kart,
-  “Piyano kaydı bekleniyor”; dinle/tekrar disabled. Mikrofon/player/skor yok.
-  JSON loading/error/retry/disposal ve büyük yazı testli.
+- Home birincil kart → **Ses laboratuvarı** (Deneysel): ortam sessizliği kalibrasyonu (2 sn, klip silinir), sentetik C4 referans, açık izinle kısa yerel WAV kaydı, replay/delete, kalite raporu (enerji/SNR/route; insan sesi tespiti değil) ve deneysel frekans diagnostics. iOS/Android adapter var; fiziksel mic/route QA yapılmadı. Upload/skor yok.
+- **Tek ses: dinle ve söyle** (Deneysel, SESSION-01): kalibrasyon → referans → bekleme → cevap → kalite kapısı → puansız diagnostics; `SingleToneSessionOutcome.scoringEnabled == false`.
+- **Ritim tekrarı** (Deneysel, CORE-02a): sentetik klik dinle → dokunarak tekrar; ilk dokunuş çapa (ölçülmez); vuruş zaman çizelgesi; 3 taslak desen.
+- **Tek ses sonuç örnekleri** (Simülasyon): eski C4 mock senaryo ekranı; gerçek öğrenci DSP sonucu değil.
+- **2 / 3 / 4 sesli piyano** (Kayıt bekleniyor): üç kart, dinle/tekrar disabled.
+- Planlananlar (ritim, ezgi, aralık, günlük rota) disabled “Henüz yok”.
+- **Bugünkü öneri** (home üstü, LEARN-03a): `RhythmNextStepPolicy` geçmişten tek adım önerir (tekrar/yeni desen/ertesi gün kalıcılık kontrolü); taslak ölçüt görünür.
+- **Çalışma geçmişi** (home app bar / ayarlar): yerel `FileResultHistory`; ritim sonuçları `touch` kaynağıyla; cohort içinde ≥3 geçerli deneme yoksa “bilinmiyor”.
+- Ayarlar: hedef değiştir, mikrofon yardımı, gizlilik ve veriler (geçmiş, yetim temizlik uyarısı), “satın alma yok”, misafir hesap, onaylı yerel profil silme.
+- Açılışta `OrphanAudioCleaner` (SESSION-02) önceki oturumlardan kalan kendi temp ses dizinlerini temizler.
 
 ## 4. Kod haritası ve önemli sözleşmeler
+
+- `lib/domain/audio/capture_quality.dart` (CAL-01, ADR-021): route politikası, kalibrasyon damgası (route/rate/30 dk), noise-floor, kalite kapısı, `LatencyCalibration.notMeasured()`. Eşikler benchmark öncesi hipotez; sonuca bakıp gevşetme. Sadece `usable` analiz edilir; diğer her durum nötr yeniden deneme.
+- `lib/application/single_tone_session.dart` (SESSION-01): puansız ürün oturumu; `lib/domain/audio/rhythm_imitation.dart` + `lib/application/rhythm_imitation_controller.dart` (CORE-02a): ilk dokunuş çapası, taslak desenler `lib/domain/content/rhythm_patterns.dart`. Oynatıcılar her play öncesi `stop()` (just_audio tamamlanma notu).
+- `lib/application/result_history.dart` + `lib/infrastructure/storage/file_result_history.dart` (CORE-05): attempt ID tekilleştirme/çakışma/kapasite; `lib/app/app_services.dart` geçmiş + temizlik raporu. `ExerciseResult.fromJson` katıdır.
+- `lib/domain/learning/rhythm_next_step.dart` (LEARN-03a): taslak ustalık ölçütü (2 temiz deneme, ≤60 ms) ve öncelik sırası; testler ölçütü sabitler.
+- `lib/domain/analytics/product_event.dart` (gönderim yok), `lib/domain/coach/coach_contract.dart` + `lib/application/coach_service.dart` (canlı API yok, UI'ya bağlı değil), `lib/features/common/input_level_meter.dart` (yalnız görüntü).
+- `lib/app/theme/harmonia_theme.dart` (ADR-022): spacing/radius, `HarmoniaResultColors`. `lib/application/app_shell_controller.dart`, `profile_repository.dart`; `lib/infrastructure/storage/`.
 
 - `lib/domain/models`: Exercise/Protocol/ConfiguredExercise, sonuç v2,
   ScoreMetric measured/notMeasured/notApplicable; invalid sayısal skor taşımaz.
@@ -82,16 +91,21 @@ sample hakları varsayılmadı; Harmonia'ya kopyalanmadı.
   olarak otomatik takılmaz. Overlap'li frame'ler bağımsız deneme değildir.
 - `isolate_recording_pitch_worker.dart`: native VM Isolate.run, bounded input
   snapshot ve tek active iş/instance. Native testli; web fallback/hard cancel
-  yok. Session epoch/stale-result ve lab bağlantısı bekliyor.
+  yok. Lab/controller epoch stale result/error reddi bağlandı; worker cleanup kuyruğunu tutmaz.
 - `pcm16_wav.dart` + fixture manifest/loader: narrow mono PCM16, actual header
   rate, bounded reads, hash/path/symlink/rate/count tutarlılığı. Private
   immutable dataset varsayımı; kernel sandbox veya label/consent QA değildir.
 - `AudioLabController`: serialized native commands + cancel epoch;
-  route/focus/background'ta cancel, auto resume yok. Capture metadata-only;
-  raw PCM'yi analiz worker'ına henüz vermez. Plugin backend kendi temp
+  route/focus/background'ta cancel, auto resume yok. Optional `AudioRecordingReader`
+  owned WAV'ı bounded `readLabWav` ile immutable PCM/source'a dönüştürür;
+  açık analyze eylemi worker'a iletir. Plugin backend kendi temp
   reference/recording dosyalarını yönetir. Startup orphan cleanup ve shutdown
   error UI aktarımı açık. Lab timer overshoot ≤11 sn kabulü ile strict 10 sn
   analyzer bütçesi farklı; sessiz truncate veya öğrenci hatası yapma.
+  Analysis error kayıt/replay'i korur. Load kaynak kuyruğunda, DSP dışında;
+  cancel epoch hemen invalid, eski worker bitmeden yeni analiz kapalı.
+  `_analysisInFlight` yeni kaydı engellemez; sadece analiz concurrency'sini sınırlar.
+  Source microphone köken beyanıdır, cihaz/voice/accuracy onayı değildir.
 - `piano_chord_reference.dart` / `piano_chord_renderer.dart`: bilinen MIDI
   hedef/protokol ve alternatif single-clock sample mix; origin/rate/tuning/
   key/headroom testli. Gerçek piyano bankası veya player bağlantısı yok.
@@ -129,12 +143,7 @@ doğal sönüş ve kısa sessizlik; mümkünse WAV. Teacher/pilot doğrulaması 
 
 ## 6. Doğrulama ve ortam
 
-Son suite: **230 test**, analyze temiz; format **63 Dart dosyası/0 değişiklik**.
-Domain/mock/synthetic/widget + native isolate testleri; insan kayıt/gerçek
-telefon/öğretim pilotu değil. iOS simulator debug build önceki lab paketinde
-geçti, bu commit tesliminde tekrar yapılmadı. Android cmdline-tools/SDK lisans
-kapısı önceki kontrolde eksik/unknown; kurulmuş/kabul edilmiş varsayma.
-Yerelde Flutter 3.44.4/Dart 3.12.2 kullanıldı; pubspec/lockfile kaynak olsun.
+Son suite: **401 test**, analyze temiz; format **120 Dart dosyası/0 değişiklik**; `flutter build ios --simulator --debug --no-pub` bu turda geçti ve iPhone 17 Pro simülatöründe elle gezildi (mikrofon kullanılmadı). Domain/mock/synthetic/widget + native isolate testleri; insan kayıt/gerçek telefon/öğretim pilotu değil. Android cmdline-tools/SDK lisans kapısı önceki kontrolde eksik/unknown; kurulmuş/kabul edilmiş varsayma. Yerelde Flutter 3.44.4/Dart 3.12.2.
 
 ```sh
 flutter pub get
@@ -148,19 +157,8 @@ ve ölçüm yapılmadan mic/latency/build başarısı iddia etme.
 
 ## 7. En yakın güvenli geliştirme dilimi
 
-Öncelik: lab-owned PCM güvenli okuma + ayrı “kaydını analiz et” diagnostic
-akışı. Domain/fake adapter sınırı üzerinden worker'ı bağla; load/analyze
-sırasında delete/cancel/background/route/close ve stale callback/new-recording
-epoch regresyonlarını yaz. Busy/overshoot/error davranışı açık, score yok.
-Worker hard cancel yokken yeni işler/isolate sayısı kontrolsüz büyümesin.
+Modül envanteri ve kritik yol: `CURRENT_ROADMAP.md` başı; iş ID'leri `IMPLEMENTATION_ROADMAP.md` §11. Bu turda CAL-01 ve SHELL-01 kod-test oldu; `85f301b` sonrasındaki tüm değişiklikler commit edilmedi (commit yalnız kullanıcı isterse).
 
-Kayıtlar gelmeden chord placeholder doldurulmaz; bu diğer bağımsız işleri
-bekletmez. Sonraki VAD/kalibrasyon/etiketli insan holdout, cihaz performance,
-nota segment/alignment, gerçek Aurora evidence UI, öğretim rotaları roadmap
-bağımlılıklarıyla ilerler. Frame kod kapısı R1/ürün bitiş kapısı değildir.
+SESSION-01, CORE-02a, CORE-05 ve SESSION-02 de kod-test oldu. LEARN-03a, QA-01a, UX-03a, ANALYTICS-01 (gönderimsiz), AI-02a (canlı çağrısız) da kod-test; ECON-01 ve UXR-01 dokümanda. Sıradaki onaysız paketler: **CAL-03a** gecikme tahmincisi → CORE-02b count-in; LEARN-01 beceri grafiği iskeleti. Android build için cmdline-tools + lisans kabulü (kullanıcı) gerekir. SHELL-02 yeni plugin bağımlılığı için kullanıcı kararı bekliyor. Kullanıcıdan beklenen: CAL-02 cihaz protokolü (AUDIO_TESTING.md), BENCH-01 izinli etiketli kayıtlar, UXR-01 katılımcılar, piyano kayıtları.
 
-Yeni pakette uygun test/format/analyze + CURRENT_ROADMAP/IMPLEMENTATION_LOG
-güncelle. Kullanıcı değişikliklerini koru; scope büyütme. Ücretli API/ödeme/
-upload/push/deployment/dış mesaj yetkisi yok. Saatlik takip bu sohbette
-kurulmuştu; başka model/session'da otomasyon çalışıyor varsayma, tekrarını
-kendi kendine oluşturma veya tüm iş bitti demeden kapatma.
+Kayıtlar gelmeden chord placeholder doldurulmaz. Gerçek VAD/benchmark olmadan simülasyon başarı ekranı gerçek motora bağlanmaz. PeriodicFrameRatio voicedRatio değildir; enerji etkinliği VAD değildir. Ücretli API/ödeme/upload/push/deployment/dış mesaj yetkisi yok. Başka model/session'da otomasyon çalışıyor varsayma.

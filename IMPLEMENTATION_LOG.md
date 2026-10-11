@@ -149,3 +149,91 @@ bulunmadı; kapsamlı security audit iddiası değil. Agora git durumu temiz kal
 Commit kullanıcı talebiyle yerel yapılacak; git push/ödeme/API/upload/deployment
 yetkisi verilmedi ve uygulanmadı. Commit kimliği `git log`/teslim yanıtından
 alınır; bu dosya kendi commit hash'ini gömmez.
+
+## 2026-10-11 13:44 UTC — Yerel kayıt → deneysel analiz
+
+AGENTS/devir/roadmap ve ilgili ses sözleşmeleri okundu; başlangıç git temiz.
+Optional AudioRecordingReader + immutable source/PCM DTO; Plugin backend fixed
+owned WAV'ını bounded same-handle regular-file/header reader ile yükler.
+Controller açık analyze eylemini native worker'a bağlar. File load serialized,
+DSP queue dışında; epoch cancel/route/background/close eski sonucu reddeder.
+Eski worker bitmeden yeni analiz yok, yeni kayıt/replay mümkün. Analiz hatası
+kayıt dosyasını korur; metadata mismatch/48 kHz üstü/10 sn aşımı explicit hata.
+UI frekans/periodic pencere/dispersion diagnostic gösterir; ses kimliği veya
+öğrenci başarı kararı vermez. Mock scorer ve 2/3/4 piyano placeholder değişmedi.
+
+248 test (+18), analyze temiz, format 67 dosya/0 değişiklik. Native worker
+sentetik 440 Hz WAV ile controller üzerinden çalıştırıldı; gerçek mikrofon
+veya fiziksel cihaz doğrulaması değil. Mobil build/pilot yok. Decode/snapshot
+UI isolate maliyeti, hard cancel, VAD/noise-floor/latency, orphan cleanup ve
+shutdown error görünürlüğü açık. Dosya silme worker belleğini anında silmez.
+Roadmap/testing/mimari/devir/README güncellendi. Önceki yerel commit 85f301b
+korundu; yeni commit/push/deployment/API/upload yapılmadı. Agora değiştirilmedi.
+
+## 2026-10-11 — Modül envanteri, CAL-01 kalibrasyon ve SHELL-01 misafir kabuğu
+
+**Kullanıcı isteği:** Projeyi incele, A–Q eksik modül envanteri ve yayın roadmap'i çıkar, onay gerektirmeyen en öncelikli paketleri uygula. Başlangıçta 248 test/analyze/format (67/0) yeniden doğrulandı; önceki commit'lenmemiş lab→worker değişiklikleri korundu. Agora değiştirilmedi.
+
+**Roadmap:** CURRENT_ROADMAP'e A–Q modül/kanıt tablosu, üç teslim kapsamı, mermaid kritik yol ve 30/60/90 planı; IMPLEMENTATION_ROADMAP §11'e yeni ID'ler (SHELL-01–04, UXR-01, CAL-01–03, SESSION-01/02, VAD-01, BENCH-01, CORE-05/HIST-01, RANGE-01, INT-01, ANALYTICS-01, ECON-01) ve mevcut ID eşlemesi. COMPETITOR_RESEARCH 2026-10-10 tarihli resmî kaynak incelemesi bir gün önce yapıldığı için bu turda yenilenmedi; uygulamalı rakip testi hâlâ yok.
+
+**CAL-01 (AUD-DEV-05 kod alt paketi):** `capture_quality.dart` — route politikası (hoparlörde tek ses sıralı, ritim her zaman ölçülmüş gecikme, hoparlörde rehberli koro yok, inferred/unknown route doğrulanmamış), kalibrasyonun route/rate/yaş bağlaması, noise-floor (medyan/burst), kayıt kalite kapısı ve `LatencyCalibration.notMeasured()` varsayılanı. `AudioRouteProbe` + audio_session eşlemesi (iOS reported, Android inferred; deneysel API). Lab: “Ortam sessizliğini ölç (2 sn)”, kalibrasyon klibi silinir; cevap analizinde kalite raporu + route açıklaması. Eşikler ADR-021'de benchmark öncesi hipotez olarak kayıtlı.
+
+**SHELL-01:** Aurora tema token'ları ve `HarmoniaResultColors` (yanlış oktav ≠ başarı rengi, geçersiz = nötr; kontrast testli), light/dark. `AppShellController` + `ProfileRepository` + atomik `JsonFileStore`/`FileProfileRepository`. Hedef seçimi (hesap yok), home (Deneysel/Simülasyon/Kayıt bekleniyor/Henüz yok etiketleri), ayarlar: hedef değiştir, mikrofon yardımı, gizlilik, “satın alma yok” abonelik metni, misafir hesap ve onaylı yerel profil silme; bozuk profil için yeniden dene/açık yeniden başla. Simülasyon tek ses ekranındaki kısayollar home'a taşındı; ekranın kendisi değişmedi.
+
+**Doğrulama:** `flutter test --no-pub`: **299 test geçti (+51: CAL-01 31, SHELL-01 20)**. `flutter analyze --no-pub` temiz. Format **85 dosya/0 değişiklik**. `flutter build ios --simulator --debug --no-pub` başarılı. Eski app testleri yeni kabuğa göre güncellendi (tek ses demo ekranı doğrudan; piyano placeholder home'dan). Testler sentetik/fake/widget; fiziksel mikrofon/route, Android build, ekran okuyucu ve kullanıcı testi yapılmadı.
+
+**Sınırlar:** Enerji etkinliği VAD değildir; kalite `usable` doğru nota demek değildir. Android route çıkarımı aktif route değildir. Profil deposu tek cihaz/yerel; hesap, sync, export yok. Kalıcı izin reddinde OS ayarına derin bağlantı yok (SHELL-02). Mock başarı ekranı gerçek motora bağlanmadı; toleranslar değişmedi. Commit/push/deployment/ödeme/API/upload yapılmadı.
+
+**Sonraki:** SESSION-01 tek ses ürün oturum koordinatörü (puansız), CORE-05 yerel geçmiş, CORE-02 tap ritim; dış kapılar CAL-02 cihaz protokolü, BENCH-01, UXR-01.
+
+## 2026-10-11 — SESSION-01 tek ses oturumu ve CORE-02a ritim taklidi
+
+**SESSION-01:** `SingleToneSessionController` — kalibrasyon (2 sn sessizlik, klip silinir), route/yaş kontrolü, izin referanstan önce, referans → bekleme → cevap penceresi (en çok 4 sn, “Bitirdim”) → stop/read → **ham cevap analizden önce silinir** → kalite kapısı (`requireCalibration: true`) → worker → `PitchDeviation` (oktav korunur). `scoringEnabled = false`: VAD-01/BENCH-01 olmadan doğru/yanlış/puan yok. Kesinti/iptal epoch ile eski sonucu reddeder; worker bitene kadar yeni deneme kapalı. Ekran: adım kartları, nötr yeniden deneme metinleri, isteğe bağlı ölçüm ayrıntısı (etiketli). Home'a “Deneysel” kart.
+
+**Hata düzeltmesi:** just_audio `play()` tamamlanmış oynatmadan sonra `playing=true` kaldığı için sonraki çağrıda hemen dönebiliyordu (resmî API notu). Lab backend ve yeni clip player her oynatmadan önce `stop()` çağırıyor; aksi halde oturum ikinci denemede mikrofonu referans çalarken açabilirdi. Cihazda ayrıca doğrulanmalı.
+
+**CORE-02a:** `EventRhythmAnalyzer` artık kronolojik vuruş hizalaması (`RhythmEventMatch`) döndürür; rubrik/toleranslar değişmedi. `RhythmImitationEvaluator`: dinle→tekrar modunda ortak saat olmadığı için ilk dokunuş ilk referans vuruşuna **tanım gereği** eşlenir; bu çapa gösterilir ama zamanlanmaz/puanlanmaz, gecikme uygulanmaz/çıkarılmaz. Kalan vuruşlar referans tempoda eşleşir; eksik/fazla/erken/geç zaman çizelgesi, span oranıyla tempo ipucu (%15 hipotez). `RhythmImitationController`: pointer `event.timeStamp` (monoton engine zamanı), referans çalarken dokunuşlar yalnız sayılır, dinleme kotası (taslakta 3), ilk dokunuştan sonra tekrar dinleme yok, 2,5 sn hareketsizlikte bitiş. Sentetik 1 kHz klik referansı (`click_track.dart`), `ReferenceClipPlayer`/`JustAudioClipPlayer`. Üç **taslak** desen (eğitimci onayı bekliyor; sınav modunda kullanılamaz). `toResult` geçerli ölçümde yalnız timing/overall ölçülü, memory ölçülmedi, accuracy uygulanamaz; çapa `anchorTimingMeasured: false`.
+
+**Doğrulama:** **338 test (+39: SESSION-01 17, CORE-02a 22)**; analyze temiz; format 100 dosya/0. iOS simulator build geçti; iPhone 17 Pro simülatöründe onboarding (gerçek dosya profili yeniden açılışta korundu), home, kalibrasyonsuz oturumun izin istemeden yönlendirmesi ve ritimde gerçek just_audio oynatma tamamlanması → dokunma alanı → açıklamalı sonuç elle denendi. Simülatör mikrofonu kullanılmadı; fiziksel dokunma örnekleme gecikmesi, cihaz ses çıkışı ve kullanıcı testi yapılmadı.
+
+**Sınırlar:** Ekran okuyucuda dokunma zamanlaması değişebilir (ipucu metni var, alternatif giriş yok). Count-in ritim (CORE-02b) CAL-03 gerektirir. Tek ses oturumu doğru/yanlış göstermez. Sonuçlar henüz kalıcı değil (CORE-05 sıradaki iş). Commit/push/ödeme/API/upload yok.
+
+## 2026-10-11 — CORE-05 yerel geçmiş ve SESSION-02 yetim ses temizliği
+
+**CORE-05:** `ExerciseResult`/`ExerciseScores`/`ExerciseError`/`ScoreMetric`/`MeasurementProvenance` için katı `fromJson` (bilinmeyen enum/kaynak, eksik alan, ölçülmüş metrikte değer yokluğu, ölçülmemişte değer, invalid+skor ve sözleşme ihlalleri `FormatException`). `MeasurementSource.touch` eklendi (ritim dokunuşları; ses değil). `ResultHistoryRepository` + `classifyRecord` kuralı: aynı attempt ID ve aynı içerik → duplicate (çift sayım yok), farklı içerik → conflict (üzerine yazılmaz), kapasite → storageFull (sessiz budama yok). `FileResultHistory`: tek atomik JSON (`JsonFileStore`), işlemler seri, bozuk dosya raporlanır ve yeniden yazılmaz (yalnız açık “tümünü sil” ile). Ritim controller her denemeye tek ID verir (tekrar dinleme aynı deneme), bitişte bir kez kaydeder; kayıt hatası sonucu kaybettirmez. `AppServices` (InheritedWidget) navigator üstünde. Geçmiş ekranı: boş/hata/bozuk durumları, en yeni üstte, kaynak etiketi, cohort (egzersiz/zorluk/mod/içerik/puanlama/kaynak/analyzer sürümü) içinde ≥3 geçerli deneme yoksa “gelişim bilinmiyor”, varsa son üç denemede eksik+fazla vuruş dizisi; tek ve onaylı toplu silme. Home app bar ve ayarlardan erişim.
+
+**Hata düzeltmesi:** geçmiş ekranında `setState(() => _entries = …)` Future döndürüyordu; widget testi yakaladı, blok gövdeye çevrildi.
+
+**SESSION-02:** `OrphanAudioCleaner` açılışta, ses ekranları oluşmadan çalışır; temp kökünde yalnız `harmonia-audio-lab-*`/`harmonia-clip-*` dizinleri, içlerinde yalnız `recording.wav`/`reference.wav`/`clip.wav` silinir, dizin boşsa kaldırılır; symlink izlenmez, beklenmeyen içerik korunup raporlanır. Başarısızlık ayarlarda anlaşılır uyarı olarak görünür.
+
+**Doğrulama:** **363 test (+25: CORE-05 19, SESSION-02 6)**; analyze temiz; format 109/0. Gerçek cihazda kill sonrası temizlik ve büyük geçmiş dosyası performansı ölçülmedi. Export ve hesap/sync yok. Commit/push/ödeme/API/upload yok.
+
+## 2026-10-11 — LEARN-03a sonuçtan tek somut sonraki adım
+
+`RhythmNextStepPolicy` (deterministik, AI yok): yalnız karşılaştırılabilir sonuçlar (touch kaynağı, güncel analyzer ve içerik sürümü). Öncelik: vadesi gelen kalıcılık kontrolü (taslak ölçüte ulaşılan günden sonraki bir takvim günü, tek dinleme, sonuçta `retentionCheck: true`) → az önce çalışılan desen ustalaşılmadıysa onun tekrarı (son denemenin baskın hatası: eksik > fazla > geç > erken) veya ölçülemeyen denemenin yeniden denenmesi → ilk ustalaşılmamış desen → bitti. Taslak ölçüt: art arda iki geçerli deneme eksik/fazla vuruşsuz ve ortalama mutlak sapma ≤ 60 ms; ekranda “eğitimci onayı bekliyor” notuyla görünür. Tek temiz deneme, seri, süre veya aynı soruyu tekrarlamak tek başına ustalık sayılmaz. Home'da “Bugünkü öneri” kartı (geçmişten hesaplanır, dönüşte yenilenir, hata durumunda açıklama), ritim sonucunda “Sonraki adım” kartı ve tek dokunuşla uygulama.
+
+**Doğrulama:** **377 test (+14)**; analyze temiz; format 112/0. Uygulama testlerine bellek içi geçmiş/temizlik enjekte edildi (FakeAsync içinde gerçek dosya IO'su tamamlanmadığı için). Öğrenme etkisi, eşiklerin pedagojik uygunluğu ve kullanıcı anlayışı test edilmedi.
+
+## 2026-10-11 — QA-01a erişilebilirlik kılavuzları ve UX-03a canlı giriş seviyesi
+
+**QA-01a:** `meetsGuideline` ile Android/iOS dokunma hedefi, etiketli dokunma hedefi ve metin kontrastı; onboarding ve home açık/koyu tema, ayrıca tek ses oturumu, ritim, laboratuvar ve geçmiş ekranları. İlk çalıştırmada değişiklik gerekmedi. Otomatik kılavuzlar VoiceOver/TalkBack ile manuel testin yerini tutmaz; ritimde ekran okuyucu dokunma zamanlamasını değiştirir (ipucu metni var, alternatif giriş yok).
+
+**UX-03a:** `InputLevelSource` (opsiyonel yetkinlik); `PluginAudioLabBackend` kayıt sırasında `record` eklentisinin `onAmplitudeChanged(100 ms)` akışını dBFS olarak yayınlar, stop/discard/close'da abonelik kapanır. `InputLevelMeter`: bekleniyor/uygun/çok düşük (< −50)/çok yüksek (≥ −3) etiketleri, yalnız çizimde 3 dB tepe-tutma azalması, “notanın doğru olduğunu göstermez” notu; oturumda kalibrasyon/cevap, laboratuvarda kayıt/kalibrasyon sırasında görünür. Ölçüm, kalite kapısı veya skor bu akışı kullanmaz. Eklenti genliğinin cihazlar arası dBFS doğruluğu doğrulanmadı.
+
+**Doğrulama:** **384 test (+7)**; analyze temiz; format 115/0; iOS simulator build geçti.
+
+## 2026-10-11 — ANALYTICS-01 sözleşmesi, ECON-01 modeli, UXR-01 protokolü, UX akış/durumları
+
+**ANALYTICS-01 (kod):** `product_event.dart` — 11 izinli olay, olay başına izinli anahtarlar ve değer doğrulayıcıları (enum/bool/0–1000 tamsayı/içerik kimliği/token); bilinmeyen anahtar, serbest metin, ses dizisi, kişisel/kalıcı kimlik reddedilir; oturum kimliği rastgele hex; zaman dakika hassasiyeti; sınırlı bellek içi kayıt. Ağ gönderimi ve UI bağlantısı yok (sağlayıcı/rıza kararı gerekir). Metrik eşlemesi PRODUCT_SPEC'te.
+
+**ECON-01 (doküman):** formül ve düşük/orta/yüksek × %15/%30 komisyon tablosu PRODUCT_SPEC'te; tüm girdiler doğrulanacak varsayım. Örnek varsayımlarda Premium katkısını en çok edinim ve komisyon belirliyor; Plus örnek fiyatı eğitimci kullanımı %70'te zarar ediyor → fiyat/kota pilot sonrası.
+
+**UXR-01 / UX:** DESIGN_QA'ya üretim Flutter akış diyagramı, ekran × durum matrisi ve önceden kayıtlı eşikli kullanıcı testi protokolü eklendi (yürütülmedi; katılımcı daveti kullanıcıda).
+
+**Doğrulama:** **389 test (+5)**; analyze temiz.
+
+## 2026-10-11 — AI-02a koç sözleşmesi ve yerel eval (canlı API yok)
+
+`CoachInput` (izinli, yuvarlanmış, metinsiz yük; mock/sentetik/doğrulanmamış kaynak reddi), `CoachReplyValidator` (skor alanı, olmayan egzersiz, yüzde/hazırlık/garanti, eğitimci taklidi, sağlık teşhisi, geçersiz ölçümde övgü, uzunluk, bozuk/enjekte metin reddi), `CoachService` (zaman aşımı, etiketli yedek). 12 eval testi. UI'ya bağlanmadı; sunucu gateway ve ücretli çağrı onay bekliyor. Model durumu web aramasıyla kontrol edildi (AI_COACH.md).
+
+**Oturum sonu doğrulaması:** **401 test**, `flutter analyze` temiz, format 120 dosya/0 değişiklik, `flutter build ios --simulator --debug` başarılı. Android: SDK 36 var, cmdline-tools eksik, lisanslar kabul edilmemiş — build denenmedi (lisans kabulü kullanıcı kararı). Fiziksel iPhone'lar ağda görünüyor, bağlı/Developer Mode değil. Hiçbir commit/push/ödeme/API/upload/deployment yapılmadı; Agora değiştirilmedi.

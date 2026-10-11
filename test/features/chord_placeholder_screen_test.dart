@@ -3,6 +3,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:harmonia/app/harmonia_app.dart';
+import 'package:harmonia/infrastructure/audio/orphan_audio_cleaner.dart';
+import 'package:harmonia/application/result_history.dart';
+import 'package:harmonia/application/profile_repository.dart';
+import 'package:harmonia/domain/models/learner_profile.dart';
 import 'package:harmonia/domain/audio/chord_recording_catalog.dart';
 import 'package:harmonia/features/chord_exercise/chord_placeholder_screen.dart';
 import 'package:harmonia/infrastructure/audio/asset_chord_recording_catalog.dart';
@@ -31,9 +35,22 @@ void main() {
   testWidgets(
     'home entry opens real bundled placeholders with disabled actions',
     (tester) async {
-      await tester.pumpWidget(const HarmoniaApp());
+      await tester.pumpWidget(
+        HarmoniaApp(
+          startupCleanup: _noSweep,
+          history: InMemoryResultHistory(),
+          profiles: InMemoryProfileRepository(
+            LearnerProfile(
+              goal: PracticeGoal.conservatory,
+              createdAt: DateTime.utc(2026, 10, 11),
+            ),
+          ),
+        ),
+      );
       await tester.pumpAndSettle();
-      await tester.tap(find.byKey(const Key('open_chord_placeholders')));
+      await tester.scrollUntilVisible(find.text('2 / 3 / 4 sesli piyano'), 200);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('2 / 3 / 4 sesli piyano'));
       await tester.pump();
       await tester.runAsync(() => AssetChordRecordingCatalog().load());
       await tester.pumpAndSettle();
@@ -104,3 +121,5 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 }
+
+Future<OrphanCleanupReport> _noSweep() async => const OrphanCleanupReport();

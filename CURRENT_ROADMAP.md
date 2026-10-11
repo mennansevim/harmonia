@@ -1,13 +1,81 @@
 # Harmonia — Current Roadmap
 
-**Tarih:** 2026-10-11
-**Durum:** Faz 0/1 — REL-01–05, fixture loader, yerel kayıt laboratuvarı, deneysel frame/kayıt DSP ve native isolate worker uygulandı. Tek ses skor ekranı hâlâ mock; kayıt–DSP ekran bağlantısı/cihaz/pedagoji doğrulaması yok  
+**Tarih:** 2026-10-11 (son güncelleme: modül envanteri + kalibrasyon/kabuk paketleri)
+**Durum:** Faz 1 — güvenilirlik sözleşmeleri, yerel kayıt laboratuvarı, deneysel DSP/worker, kalibrasyon/kalite kapısı ve misafir uygulama kabuğu kod-test seviyesinde. Tek ses skor ekranı hâlâ simülasyon; fiziksel cihaz, insan sesi benchmark'ı, eğitimci içerik onayı ve öğretim pilotu kapıları açık. **Hiçbir modül cihazda/pilotta doğrulanmış veya yayında değil.**
 **Sahip:** Mennan Sevim  
 **Platform:** Flutter mobil uygulama; ileride web ve öğretmen paneli
 
-**Son devam paketi:** Kullanıcı netleştirdi: klasörden hazır 2/3/4 sesli piyano kayıtları çalınacak, öğrenci tekrar edecek. Sesler gelene kadar placeholder. Üç asset klasörü + null-file/null-target katalog ve ana ekrandan açılan disabled-action placeholder ekranı eklendi. Agora tek ses loader read-only incelendi; dosya kopyalanmadı. Tekil sample mix alternatif, live chord transcription yok. [Piyano sözleşmesi](./PIANO_REFERENCES.md).
+**Son kod doğrulaması (2026-10-11, bu oturum):** 401 test geçti (+153), `flutter analyze` temiz, format 120 dosya/0 değişiklik, `flutter build ios --simulator --debug` başarılı; iPhone 17 Pro simülatöründe onboarding → home → oturum (kalibrasyonsuz nötr yönlendirme) → ritim (gerçek just_audio oynatma → dokunma → açıklamalı sonuç) elle gezildi. Sentetik/fake/widget/simülatör kanıtıdır; fiziksel mikrofon, gerçek kullanıcı veya Android build kanıtı değildir.
 
-**Son kod doğrulaması:** 230 test geçti (+9); analyze temiz; 63 dosyada format değişikliği yok. iOS simulator build önceki kayıt-laboratuvarı paketinde başarılıydı, bu tur tekrar çalıştırılmadı. Aşağıdaki eski test sayıları tarihsel; fiziksel cihaz/pedagoji QA hâlâ bekliyor.
+## Modül envanteri (A–Q) — kanıt durumu
+
+Durum sözlüğü: **Planlandı → Geliştiriliyor → Kod-test tamamlandı → Cihazda doğrulandı → Eğitim pilotunda doğrulandı → Yayında.** Bir modül, alt paketlerinden biri kod-test olduğunda değil, kendi kabul kapılarının hepsi geçtiğinde ilerler. Tamamlanma yüzdesi verilmez. İş ID'leri: [IMPLEMENTATION_ROADMAP.md §11](./IMPLEMENTATION_ROADMAP.md#11-modül-envanteri-iş-idleri-2026-10-11).
+
+| Modül | Durum | Kodda olan (kanıt) | Eksik / sonraki ID | Dış kapı |
+|---|---|---|---|---|
+| A. Kabuk ve başlangıç | Geliştiriliyor | Misafir hedef seçimi, home, ayarlar/yardım/gizlilik/abonelik/hesap bilgi ekranları, yükleniyor/hata/yeniden dene, yerel profil silme, light/dark, 320px/1.8× testleri (SHELL-01); **Flutter erişilebilirlik kılavuz testleri: dokunma hedefi (Android/iOS), etiketli hedef, metin kontrastı — açık/koyu home/onboarding + oturum/ritim/lab/geçmiş (QA-01a)** | Kalıcı izin reddi → OS ayarı (SHELL-02), başlangıç değerlendirmesi (SHELL-03), kaldığı yerden devam/offline (SHELL-04) | Ekran okuyucu ve kullanıcı testi (UXR-01) |
+| B. Ses motoru ve oturum | Geliştiriliyor | Kayıt/çalma lab, bounded WAV, YIN frame, kayıt diagnostics, native isolate, epoch iptal; **noise-floor kalibrasyonu, kalite kapısı, route politikası, latency sözleşmesi (CAL-01)**; **tek ses ürün oturum koordinatörü (SESSION-01)**; **canlı giriş seviyesi göstergesi (UX-03a; eklenti genliği, yalnız görüntü)**; just_audio tekrar oynatma düzeltmesi; **açılışta yetim geçici ses temizliği + ayarlarda hata uyarısı (SESSION-02)** | Gerçek VAD (VAD-01), latency ölçüm prosedürü (CAL-03), worker hard cancel | Fiziksel iOS/Android route matrisi (CAL-02), etiketli insan benchmark'ı (BENCH-01) |
+| C. Tek ses | Geliştiriliyor | Scorer v2, oktav kuralı, nötr geçersiz sonuç; mock senaryo ekranı (Simülasyon); **gerçek kayıtlı “dinle ve söyle” oturum ekranı — puansız, doğru/yanlış kapalı** | Gerçek karar (CORE-01) yalnız VAD/benchmark sonrası | BENCH-01, cihaz QA |
+| D. Ses aralığı | Planlandı | — | AUD-DEV-06 | BENCH-01; SATB/sağlık iddiası yok |
+| E. Aralık / fonksiyonel duyma | Planlandı | `Skill.interval` enum'u | INT-01 içerik+algı/üretim ayrımı | Eğitimci (fixed/movable-do kararı) |
+| F. Ritim | Geliştiriliyor | Event alignment + vuruş bazlı hizalama; **dinle→tekrar et taklit modu (CORE-02a): pointer engine timestamp, ilk dokunuş çapası (zamanlaması ölçülmez), sentetik klik referansı, dinleme kotası, zaman çizelgesi, tempo ipucu**; 3 taslak desen | Eşzamanlı/count-in mod CAL-03'e bağlı (CORE-02b); ritim okuma/dikte | Eğitimci desen onayı ve tolerans kalibrasyonu; fiziksel dokunma örnekleme ölçümü |
+| G. Ezgi | Planlandı | Fail-closed placeholder analyzer | Segmentleme/sequence alignment (CORE-03/04) | Ezgi fixture'ları |
+| H. 2/3/4 piyano | Geliştiriliyor (içerik bekliyor) | Kapalı placeholder katalog/ekran, renderer alternatifi | Reviewed manifest/player/session (CONS-01/02) | **Kullanıcının piyano kayıtları** + birlikte QA |
+| I. Dersler / rotalar | Geliştiriliyor | LEARNING_MODEL tasarımı; **kural tabanlı tek sonraki adım (LEARN-03a): hedefli tekrar (baskın hata) → yeni desen → ertesi gün tek dinlemeli kalıcılık kontrolü; home “Bugünkü öneri” ve sonuç ekranı kartı; taslak ölçüt görünür** | Beceri grafiği/mikroders (LEARN-01/02), günlük plan süreleri (LEARN-03), EDU-01 | Eğitimci ölçüt ve içerik onayı; öğrenme etkisi pilotu |
+| J. Sonuçlar / gelişim | Geliştiriliyor | Sonuç v2 + katı `fromJson`; **yerel geçmiş (CORE-05): attempt ID tekilleştirme, çakışmada üzerine yazmama, açık kapasite, seri atomik yazma, bozuk dosyayı koruma; geçmiş ekranı (aynı cohort'ta ≥3 geçerli deneme yoksa “bilinmiyor”), tek/toplu silme**; ritim sonuçları `touch` kaynağıyla kaydediliyor | Export (DATA-03) | — |
+| K. Offline / hesap / backend | Geliştiriliyor | Atomik yerel JSON store + misafir profil + yerel sonuç geçmişi (tamamen offline) | Backend ADR (DATA-01), sync/outbox (DATA-02), consent (DATA-03) | Backend hesabı/maliyet onayı |
+| L. AI koç | Geliştiriliyor | **Girdi/çıktı sözleşmesi, katı doğrulayıcı, zaman aşımı + yedek, 12 yerel eval (AI-02a); canlı çağrı yok** | AI-01 sunucu gateway, AI-03 gerçek model eval, UI bağlantısı | Ücretli API onayı, gateway |
+| M. Plus eğitimci | Planlandı | HUMAN_REVIEW tasarımı | HUM-01–07 | Gerçek eğitimci kapasitesi, hukuk |
+| N. İleri konservatuvar | Planlandı | — | CONS-03–05 | Güncel resmî kaynak, eğitimci rubriği |
+| O. Koro | Planlandı | Route politikası: hoparlörde rehberli parti desteklenmez | CHOIR-01–05 | Kulaklıklı cihaz spike, eğitimci |
+| P. Abonelik / haklar | Planlandı | Ayarlarda “satın alma yok” bilgisi | PAY-01–03 | Mağaza hesabı, sandbox, canlı ödeme onayı |
+| Q. Öğretmen / sosyal | Planlandı | — | TEACH-01, SOC-01 | İzinli sınıf pilotu |
+
+## Üç teslim kapsamı
+
+1. **Kapalı beta Core** — A (izin/kalibrasyon dahil), B (oturum + kalite kapısı + en az 1 iOS ve 1 düşük/orta Android cihaz raporu), C (benchmark kapısı geçerse gerçek tek ses; geçmezse kapalı), F (ölçülmüş gecikmeyle tap ritim), G (3–5 nota, segmentleme benchmark'ı geçerse), J yerel geçmiş, I ilk mikroüniteler (eğitimci onaylı). Ödeme, hesap, AI ve bulut yok; ham ses cihazdan çıkmaz. Internal/TestFlight dağıtımı ayrı onay ister.
+2. **İlk ücretli yayın** — Core + D, E, günlük rota ve gecikmeli kontrol (I), hesap/sync/silme/export (K), isteğe bağlı sınırlı AI koç (L), Premium abonelik sandbox senaryoları (P), crash/hata izleme ve destek (OPS-01), hukuk/çocuk güvenliği/mağaza metni (LAUNCH-01). Plus, pilot kapıları geçmeden satılmaz.
+3. **Genişleme** — H (kayıtlar gelince; sequence motoru hazırsa daha erken), M Plus, N ileri konservatuvar, O koro, Q öğretmen/sosyal.
+
+## Kritik yol ve bağımlılıklar
+
+```mermaid
+flowchart LR
+  REL[REL-01–05 ✓ kod] --> LAB[AUD-DEV-02/03/04 ✓ kod]
+  LAB --> CAL[CAL-01 ✓ kod]
+  CAL --> SES[SESSION-01 oturum]
+  CAL --> CAL2[CAL-02 cihaz route matrisi]
+  BENCH[BENCH-01 etiketli insan kaydı] --> VAD[VAD-01 ses etkinliği / çekimserlik]
+  SES --> CORE1[CORE-01 gerçek tek ses]
+  CAL2 --> CORE1
+  VAD --> CORE1
+  CAL --> CAL3[CAL-03 gecikme ölçümü] --> CORE2[CORE-02 tap ritim]
+  CORE1 --> CORE3[CORE-03 segmentleme] --> CORE4[CORE-04 kısa ezgi]
+  CORE3 --> H[H: 2/3/4 piyano]
+  PIANO[Kullanıcı piyano kayıtları] --> H
+  SHELL[SHELL-01 ✓ kod] --> UX[UX-01/03 + UXR-01 kullanıcı testi]
+  CORE1 --> HIST[CORE-05 yerel geçmiş]
+  CORE2 --> HIST
+  HIST --> LEARN[LEARN-01–03 + EDU-01 eğitimci onayı]
+  LEARN --> BETA((Kapalı beta Core))
+  UX --> BETA
+  BETA --> DATA[DATA-01–03 backend/consent] --> AI[AI-01–03]
+  DATA --> PAY[PAY-01–03 sandbox] --> PAID((İlk ücretli yayın))
+  AI --> PAID
+  OPS[OPS-01 + LAUNCH-01] --> PAID
+```
+
+Kritik yoldaki insan/dış kapılar: etiketli izinli kayıtlar (BENCH-01), fiziksel cihazlar (CAL-02), eğitimci içerik onayı (EDU-01), kullanıcı testleri (UXR-01), piyano kayıtları (H), backend/AI/mağaza hesapları ve hukuk incelemesi. Kod işleri bu kapıları geçmiş saymaz.
+
+## 30 / 60 / 90 günlük kapasiteye bağlı plan
+
+Tek geliştirici + kullanıcı koordinasyonu varsayımıyla öneridir; tarih garantisi değildir, dış kapılar gecikirse kayar.
+
+| Pencere | Kod (onay gerektirmeyen) | Kullanıcı/dış girdi gerektiren | Çıkış kanıtı |
+|---|---|---|---|
+| 0–30 gün | SESSION-01/02, CAL-03 prosedür kodu, CORE-02 tap ekranı, CORE-05 yerel geçmiş, SHELL-02/04 | 2 fiziksel cihazda CAL-02 protokolü; BENCH-01 için izinli 100+ kayıt planı ve ilk etiketler; UXR-01 5 kişilik ilk değer testi | Cihaz raporu, ilk etiketli set, kullanıcı testi notları |
+| 31–60 gün | VAD-01 (development seti), CORE-01 kapılı bağlantı, CORE-03 segmentleme spike, EDU-01 içerik şeması | Holdout benchmark ölçümü; eğitimci ilk 12 mikroünite onayı; internal build dağıtım onayı | Holdout raporu (yanlış başarı/çekimserlik), onaylı içerik, kapalı beta adayı |
+| 61–90 gün | LEARN-01–03, DATA-01 ADR + adapter'lar, AI-03 eval seti (canlı çağrısız), PAY-02 sandbox entegrasyon kodu | Kapalı beta kullanıcıları; backend/AI/mağaza hesabı ve maliyet onayları; hukuk incelemesi | Beta öğrenme/geri dönüş ölçümü, ücretli yayın kapı listesi |
 
 ## Kuzey yıldızı
 
@@ -21,7 +89,7 @@ Harmonia, konservatuvar ve müzik sınavlarına hazırlanan öğrencinin her gü
 - 2026-10-11 geliştirme başlangıcı: ScoreMetric/sonuç v2, valid-invalid, metrik örnek sayıları ve zorluk/mod/sürüm cohort; ritim event alignment; ezgi placeholder'ın sahte skoru kapatıldı. 58 test geçti; analyze temiz, format kontrolü değişiklik bulmadı. Gerçek ses/pedagoji kapısı geçilmedi.
 - Agora Voice içinde çalışan tek sesli ses aralığı testi referans prototip olarak incelendi.
 - Referans projede yukarı/aşağı nota taraması, mikrofon kontrolü, pitch analizi, ses kayıtları ve skor tablosu bulunuyor.
-- Harmonia'da domain/mock tek ses ekranı, ayrı kayıt adapter'lı laboratuvar ve sentetik testli deneysel frame DSP var; kayıt–DSP bağlantısı ve fiziksel mikrofon doğrulaması bekliyor.
+- Harmonia'da domain/mock tek ses ekranı ve yerel kayıt→native DSP diagnostic laboratuvarı var; VAD/gerçek başarı ve fiziksel mikrofon doğrulaması bekliyor.
 - Ses ölçümü deterministik ses işleme ile yapılacak; AI ölçümün yerine geçmeyecek.
 - `gpt-4o-mini`, ölçüm sonuçlarını açıklayan ve egzersiz seçen metin tabanlı koç olarak kullanılacak.
 
@@ -180,9 +248,11 @@ Faz 0/1 kapsamında kod tabanı ilk kez oluşturuldu (`agoravoiceweb`'e dokunulm
 
 **Başka modele devir:** Önce [MODEL_HANDOFF.md](./MODEL_HANDOFF.md) ve [AGENTS.md](./AGENTS.md) oku; kod/akış haritası, gerçek doğrulama sınırları, önerilen ama kaydedilmemiş piyano listesi ve en yakın diagnostic integration dilimi burada özetlenir. Bu teslim kullanıcı isteğiyle ilk yerel commit olarak kaydediliyor; push/yayın yok.
 
-**Yeni kullanıcı yönü:** Hazır 2/3/4 sesli piyano kayıtları klasörlerden çalınacak; kayıtları kullanıcı sağlayınca birlikte incelenecek. [PIANO_REFERENCES.md](./PIANO_REFERENCES.md) ve placeholder katalog geçerli ana yön. Dosyalar gelmeden placeholder'ı açma, sinüs/mix ile gerçek içerik gibi doldurma veya nota etiketlerini tahmin ederek kaydetme. Live multipitch işi başlatma. Önceki renderer alternatif olarak korunuyor. Kayıtlar gelince hak/nota/oktav/akort/format QA + reviewed asset player/session; bu arada bağımsız lab PCM/diagnostics ve kalan roadmap işleriyle devam et.
+**Yeni kullanıcı yönü (geçerli):** Hazır 2/3/4 sesli piyano kayıtları klasörlerden çalınacak; kayıtlar gelince birlikte incelenecek. O zamana kadar placeholder kapalı. Live multipitch yok. [PIANO_REFERENCES.md](./PIANO_REFERENCES.md).
 
-Önce bu dosya, `IMPLEMENTATION_ROADMAP.md`, `IMPLEMENTATION_LOG.md` ve `AUDIO_TESTING.md` okunmalı. AUD-DEV-02 laboratuvarı, fixture loader, frame/kayıt diagnostic analyzer ve native isolate worker kod/testli. **Bir sonraki paket:** lab-owned PCM'yi güvenli yükleme + ayrı “kaydını analiz et” diagnostic akışı; worker fake'leriyle analyze/load sırasında silme, cancel/background/route/close, eski callback/new recording epoch testleri. Worker'ın hard cancel'ı yok: devam eden bounded işi veya sonucunu yeni kayda sızdırma, busy/reset davranışı açık olsun. PeriodicFrameRatio'yu voicedRatio'ya, pitchDispersion'ı voice stability/öğrenci skoruna otomatik çevirme. VAD/kayıt benchmark ve cihaz profili olmadan mock score ekranını gerçek başarı ekranına çevirme. Toleranslar, dataset/etiket, protokol/session ve startup orphan cleanup kapıları açık; mağaza/ödeme/upload/ücretli API ayrı yetki ister.
+**Bu oturumda tamamlanan kod paketleri:** CAL-01 (noise-floor kalibrasyonu, kayıt kalite kapısı, route politikası, latency sözleşmesi, laboratuvara bağlantı) ve SHELL-01 (Aurora token'ları, misafir hedef seçimi, home, ayarlar/yardım/gizlilik/abonelik/hesap, yerel profil). Ayrıntı: [IMPLEMENTATION_LOG.md](./IMPLEMENTATION_LOG.md).
+
+**Ek tamamlanan paketler:** SESSION-01 (tek ses ürün oturumu, puansız), CORE-02a (ritim taklit modu), CORE-05 (yerel geçmiş) ve SESSION-02 (yetim ses temizliği). LEARN-03a (sonuçtan tek sonraki adım), QA-01a (erişilebilirlik kılavuz testleri) ve UX-03a (canlı giriş seviyesi) da tamamlandı. ANALYTICS-01 olay sözleşmesi (gönderimsiz), ECON-01 modeli ve UXR-01 protokolü de hazır. AI-02a koç sözleşmesi de hazır. **Bir sonraki bağımsız paket:** CAL-03a gecikme tahmincisi (count-in ritim için), LEARN-01 beceri grafiği iskeleti; ardından kullanıcı/cihaz kapıları. SHELL-02 (kalıcı izin reddinde OS ayarına derin bağlantı) yeni plugin bağımlılığı kararı bekliyor. Gerçek VAD/benchmark olmadan simülasyon başarı ekranını gerçek motora bağlama; eşikleri sonuca bakarak değiştirme. Mağaza/ödeme/upload/ücretli API/push ayrı yetki ister.
 
 - [x] Öncelikli tasarım yönünü kaydet: Aurora + Konservatuvar. Nihai doğrulama değil.
 - [ ] Öğrenci ve eğitimciyle hibrit tasarımın sonuç anlama/sonraki eylem testini yap.
@@ -196,6 +266,16 @@ Faz 0/1 kapsamında kod tabanı ilk kez oluşturuldu (`agoravoiceweb`'e dokunulm
 - [x] AUD-DEV-02 kod alt paketi: açık kullanıcı eylemiyle yerel kayıt/çalma laboratuvarı ve fake-testli iptal/lifecycle coordinator. Fiziksel cihaz/Android QA bekliyor.
 - [x] AUD-DEV-03 frame alt paketi: hedef bağımsız deneysel DSP, bounds/abstention, sentetik nota/oktav ve WAV→frame regresyonları. Tam kayıt analizi, VAD/benchmark/isolate ve cihaz kapısı açık.
 - [x] AUD-DEV-03 kayıt/worker alt paketi: bounded overlapping/end-anchor frame diagnostics, tüm denominator'lar, explicit source/version, log dispersion ve native isolate testleri. Lab bağlantısı/hard cancel, VAD ve gerçek benchmark/cihaz kapısı açık.
+- [x] AUD-DEV-04 diagnostic bağlantı alt paketi: owned file bütçesi/header, explicit PCM kaynak, isteğe bağlı worker, stale load/result/error ve lifecycle testleri. Tam exercise session/VAD/cihaz ve hard cancel kapıları açık.
+- [x] CAL-01 (AUD-DEV-05 kod alt paketi): noise-floor kalibrasyonu, kalite kapısı, route politikası, latency sözleşmesi ve lab bağlantısı. Cihaz eşik doğrulaması (CAL-02) açık.
+- [x] SESSION-01: tek ses ürün oturum koordinatörü + ekran; puansız, hoparlörde referans bitmeden kayıt yok, cevap analizden önce silinir. Cihaz QA açık.
+- [x] QA-01a: erişilebilirlik kılavuz testleri (dokunma hedefi/etiket/kontrast). Ekran okuyucu ile manuel test açık.
+- [x] UX-03a: kayıt/kalibrasyon sırasında canlı giriş seviyesi (yalnız görüntü). Cihazda dBFS doğrulaması açık.
+- [x] LEARN-03a: kural tabanlı tek sonraki adım (tekrar → yeni desen → ertesi gün kalıcılık kontrolü). Eşikler taslak; eğitimci onayı ve öğrenme pilotu açık.
+- [x] CORE-05: yerel sonuç geçmişi + geçmiş ekranı; aynı attempt iki kez sayılmaz.
+- [x] SESSION-02: açılışta yetim geçici ses dizini temizliği; hata ayarlarda görünür.
+- [x] CORE-02a: ritim taklit modu (ilk dokunuş çapası, vuruş zaman çizelgesi). Eğitimci desen onayı ve cihaz dokunma ölçümü açık; count-in modu CAL-03'e bağlı.
+- [x] SHELL-01: Aurora token'ları, misafir hedef seçimi, home, ayarlar/yardım/gizlilik/abonelik/hesap, yerel profil. Kullanıcı testi (UXR-01) açık.
 - [ ] AUDIO-01: referans motorun kısa buffer/oktav testlerini ve fixture sözleşmesini çıkar.
 - [ ] AUDIO-02: gerçek mikrofon + frame pipeline; ölçülmeyen timing/memory değerlerini sonuçta gösterme.
 - [ ] AUDIO-03: gerçek VisualFeedbackFrame ile seçili ses efektini Flutter'da bağla.
@@ -238,3 +318,10 @@ Kod yazmaya başlamadan önce `PRODUCT_SPEC.md`, `ARCHITECTURE.md` ve `DECISIONS
 | 2026-10-10 | 10 rakibin resmî kaynakları; F01–F20 özellik backlog'u; beş uçtan uca etkileşimli tasarım; 3/4 sesli sıralı cevap/multipitch ayrımı ve ses-görsel sözleşmesi. Flutter kaynakları değiştirilmedi; bu oturumda eski 26 test yeniden çalıştırılmadı. |
 | 2026-10-11 | Kod/eğitim yeterliliği incelemesi; 26 test ve temiz analiz yeniden doğrulandı. Aurora + Konservatuvar öncelikli yön; öğrenme modeli/iki rota, Plus gerçek eğitimci servisi, F21–F26 ve ADR-013–016 dokümante edildi. Flutter ve Agora kaynakları değiştirilmedi; canlı servis/ödeme/AI bağlanmadı. |
 | 2026-10-11 — geliştirme başlangıcı | Kullanıcı uygulama başlangıcını istedi. Ayrıntılı roadmap; REL-01–05 kaynak/test değişiklikleri ve dar ekran/büyük yazı kontrolü. 58 test geçti; önceki yalnız doküman oturumundan farklı olarak Harmonia kaynakları değiştirildi. Agora, gerçek mikrofon, AI, ödeme ve dış servisler değişmedi. |
+| 2026-10-11 — modül envanteri | A–Q modül envanteri, üç teslim kapsamı, kritik yol ve 30/60/90 planı. CAL-01 kalibrasyon/kalite kapısı ve SHELL-01 misafir kabuğu kod-test; 299 test, analyze/format temiz, iOS simulator build. Cihaz/pilot/yayın doğrulaması yok. |
+| 2026-10-11 — oturum + ritim | SESSION-01 tek ses oturumu (puansız) ve CORE-02a ritim taklit modu; just_audio tekrar oynatma düzeltmesi. 338 test, analyze/format temiz, iOS simulator build ve elle simülatör gezintisi. Cihaz/pilot doğrulaması yok. |
+| 2026-10-11 — geçmiş | CORE-05 yerel sonuç geçmişi (katı JSON, tekilleştirme/çakışma/kapasite, bozuk dosya koruma, ekran) ve SESSION-02 yetim ses temizliği. 363 test, analyze/format temiz. |
+| 2026-10-11 — sonraki adım | LEARN-03a kural tabanlı sonraki adım + home “Bugünkü öneri”. 377 test, analyze/format temiz. Öğrenme etkisi doğrulanmadı. |
+| 2026-10-11 — erişilebilirlik + seviye | QA-01a erişilebilirlik kılavuz testleri ve UX-03a canlı giriş seviyesi. 384 test, analyze/format temiz, iOS simulator build. |
+| 2026-10-11 — metrik/ekonomi/UXR | ANALYTICS-01 olay sözleşmesi (gönderim yok), ECON-01 birim ekonomi tablosu, UXR-01 protokolü ve üretim UX akış/durum matrisi. 389 test. |
+| 2026-10-11 — AI sözleşmesi | AI-02a koç girdi/çıktı sözleşmesi ve yerel eval (canlı API yok). Oturum sonu: 401 test, analyze/format temiz, iOS simulator build. |

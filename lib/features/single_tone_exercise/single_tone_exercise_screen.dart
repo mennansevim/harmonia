@@ -6,8 +6,6 @@ import '../../domain/models/exercise_result.dart';
 import '../../domain/models/score_metric.dart';
 import '../../domain/scoring/pitch_exercise_scorer.dart';
 import '../../infrastructure/audio/mock/mock_pitch_analyzer.dart';
-import '../audio_lab/audio_lab_screen.dart';
-import '../chord_exercise/chord_placeholder_screen.dart';
 
 /// The first user-facing exercise screen (PRODUCT_SPEC.md § Egzersiz
 /// türleri: "Tek ses" / "Dinle ve söyle").
@@ -90,29 +88,7 @@ class _SingleToneExerciseScreenState extends State<SingleToneExerciseScreen> {
   Widget build(BuildContext context) {
     final exercise = widget.exercise;
     return Scaffold(
-      appBar: AppBar(
-        title: Text(exercise.title),
-        actions: [
-          IconButton(
-            key: const Key('open_chord_placeholders'),
-            tooltip: '2 / 3 / 4 sesli örnekler',
-            icon: const Icon(Icons.library_music_outlined),
-            onPressed: () => Navigator.of(context).push(
-              MaterialPageRoute<void>(
-                builder: (_) => const ChordPlaceholderScreen(),
-              ),
-            ),
-          ),
-          IconButton(
-            key: const Key('open_audio_lab'),
-            tooltip: 'Gerçek kayıt laboratuvarı',
-            icon: const Icon(Icons.mic_none),
-            onPressed: () => Navigator.of(context).push(
-              MaterialPageRoute<void>(builder: (_) => const AudioLabScreen()),
-            ),
-          ),
-        ],
-      ),
+      appBar: AppBar(title: Text(exercise.title)),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
