@@ -47,7 +47,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Konservatuvar hazırlığı'), findsOneWidget);
     expect(find.text('Bugünkü öneri'), findsOneWidget);
-    expect(find.textContaining('Ritimle başla'), findsOneWidget);
+    expect(find.textContaining('Başla: Tiz / pes ayırt etme'), findsOneWidget);
     expect(find.textContaining('Taslak ölçüt'), findsOneWidget);
     await tester.scrollUntilVisible(find.text('Tek ses: dinle ve söyle'), 200);
     expect(find.text('Ses ve ortam kontrolü'), findsOneWidget);
@@ -60,7 +60,7 @@ void main() {
     expect((await repo.load())!.goal, PracticeGoal.conservatory);
   });
 
-  testWidgets('today card follows history and opens the suggested pattern', (
+  testWidgets('today card follows the route and opens the suggested exercise', (
     tester,
   ) async {
     final history = InMemoryResultHistory();
@@ -97,13 +97,16 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    expect(find.textContaining('Yeni desen: Sekizlik çifti'), findsOneWidget);
+    // Pulse is mastered; the route's first unmastered measured skill is
+    // tone-pair perception, so the card opens that screen.
+    expect(
+      find.textContaining('Sıradaki: Tiz / pes ayırt etme — Tam ses farkı'),
+      findsOneWidget,
+    );
     await tester.tap(find.byKey(const Key('today_action')));
     await tester.pumpAndSettle();
     final chip = tester.widget<ChoiceChip>(
-      find.byKey(
-        Key('rhythm_pattern_${draftRhythmPatterns[1].exercise.exercise.id}'),
-      ),
+      find.byKey(const Key('perc_level_draft-perc-highlow-200')),
     );
     expect(chip.selected, isTrue);
   });

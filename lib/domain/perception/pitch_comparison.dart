@@ -135,6 +135,7 @@ class PitchComparisonOutcome {
   ExerciseResult toResult({
     required String sessionId,
     required DateTime createdAt,
+    bool retentionCheck = false,
   }) {
     final measured = status == PitchComparisonStatus.measured;
     final total = round.items.length;
@@ -148,7 +149,7 @@ class PitchComparisonOutcome {
         'correct': measured ? correctCount : null,
         'total': total,
         'referencePlays': referencePlays,
-        'retentionCheck': false,
+        'retentionCheck': retentionCheck,
       },
       scores: measured
           ? ExerciseScores(

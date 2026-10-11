@@ -94,4 +94,19 @@ void main() {
     expect(c.playbackFailed, isTrue);
     expect(c.canAnswer, isFalse);
   });
+
+  test(
+    'retention check allows one listen per pair and flags the result',
+    () async {
+      c.retentionCheck = true;
+      for (var i = 0; i < 8; i++) {
+        await play();
+        expect(c.canPlay, isFalse, reason: 'no replay in retention check');
+        c.answer(c.round.items[i].correct);
+        await c.next();
+      }
+      final saved = await history.load();
+      expect(saved.single.result.measurements['retentionCheck'], isTrue);
+    },
+  );
 }

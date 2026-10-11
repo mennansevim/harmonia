@@ -157,9 +157,7 @@ class SkillStatusEvaluator {
     for (final id in node.exerciseIds) {
       final e = known.where((e) => e.exerciseId == id);
       states.add(
-        e.isEmpty
-            ? MasteryState.notMeasured
-            : _exerciseState(e.single, results),
+        e.isEmpty ? MasteryState.notMeasured : exerciseState(e.single, results),
       );
     }
     if (states.every((s) => s == MasteryState.notMeasured)) {
@@ -173,7 +171,7 @@ class SkillStatusEvaluator {
     return capped.reduce((a, b) => a.index <= b.index ? a : b);
   }
 
-  static MasteryState _exerciseState(
+  static MasteryState exerciseState(
     MeasuredExercise e,
     List<ExerciseResult> results,
   ) {

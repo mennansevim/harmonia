@@ -166,3 +166,5 @@ Kayıtlar gelmeden chord placeholder doldurulmaz. Gerçek VAD/benchmark olmadan 
 **LEARN-01a (son paket):** `lib/domain/learning/skill_graph.dart` taslak grafik + `SkillStatusEvaluator`; `lib/features/skill_map/`. Gecikme (CAL-03a/b) başka bir ajanın işidir; bu iki işi aynı anda aynı dosyalarda yürütme.
 
 **PERC-01:** `lib/domain/perception/pitch_comparison.dart`, `lib/application/pitch_comparison_controller.dart`, `lib/features/pitch_comparison/`; beceri değerlendirmesi `lib/domain/learning/measured_exercise.dart` üzerinden. iOS simulator build son denemede araç hatasıyla düştü; diğer ajan bitince `flutter clean` + yeniden derleme dene.
+
+**LEARN-03b:** `lib/domain/learning/today_planner.dart`; home kartı buna bağlı. **iOS simulator build engeli:** Xcode 26.6 lipo + Flutter 3.44.4 `-verify_arch` uyumsuzluğu (ortam); kod değil.

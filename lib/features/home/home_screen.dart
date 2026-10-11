@@ -3,10 +3,12 @@ import 'package:flutter/material.dart';
 import '../../app/app_services.dart';
 import '../../app/theme/harmonia_theme.dart';
 import '../../application/result_history.dart';
-import '../../domain/content/rhythm_patterns.dart';
+import '../../domain/learning/measured_exercise.dart';
 import '../../domain/learning/rhythm_next_step.dart';
-import '../learning/next_step_text.dart';
+import '../../domain/learning/skill_graph.dart';
+import '../../domain/learning/today_planner.dart';
 import '../../domain/models/learner_profile.dart';
+import '../learning/next_step_text.dart';
 import '../audio_lab/audio_lab_screen.dart';
 import '../chord_exercise/chord_placeholder_screen.dart';
 import '../history/history_screen.dart';
@@ -89,7 +91,7 @@ class HomeScreen extends StatelessWidget {
             Text('Bugün buradan başla', style: text.headlineSmall),
             const SizedBox(height: HarmoniaSpacing.md),
             if (AppServices.maybeOf(context)?.history case final history?) ...[
-              _TodayCard(history: history),
+              _TodayCard(history: history, goal: profile.goal),
               const SizedBox(height: HarmoniaSpacing.md),
             ],
             _PrimaryCard(
@@ -272,36 +274,46 @@ class _StatusChip extends StatelessWidget {
   }
 }
 
-/// One recommended action from local history (LEARN-03a). Rule-based, no AI.
+/// One recommended action across the goal's measured skills (LEARN-03b).
+/// Rule-based, no AI.
 class _TodayCard extends StatefulWidget {
-  const _TodayCard({required this.history});
+  const _TodayCard({required this.history, required this.goal});
   final ResultHistoryRepository history;
+  final PracticeGoal goal;
   @override
   State<_TodayCard> createState() => _TodayCardState();
 }
 
 class _TodayCardState extends State<_TodayCard> {
-  late Future<NextStep> _step = _load();
+  late Future<TodayStep> _step = _load();
 
-  Future<NextStep> _load() async {
+  Future<TodayStep> _load() async {
     final entries = await widget.history.load();
-    return RhythmNextStepPolicy.recommend(
+    return TodayPlanner.recommend(
+      graph: draftSkillGraph,
+      goal: widget.goal,
       results: [for (final e in entries) e.result],
-      patterns: draftRhythmPatterns,
       now: DateTime.now(),
     );
   }
 
-  Future<void> _open(NextStep step) async {
-    await Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => RhythmImitationScreen(
-          history: widget.history,
-          initialPatternId: step.pattern?.exercise.exercise.id,
-          retentionCheck: step.kind == NextStepKind.delayedCheck,
-        ),
-      ),
-    );
+  Future<void> _open(TodayStep step) async {
+    final retention = step.kind == NextStepKind.delayedCheck;
+    final e = step.exercise;
+    final Widget screen = e is PitchComparisonMeasuredExercise
+        ? PitchComparisonScreen(
+            history: widget.history,
+            initialLevelId: e.exerciseId,
+            retentionCheck: retention,
+          )
+        : RhythmImitationScreen(
+            history: widget.history,
+            initialPatternId: e?.exerciseId,
+            retentionCheck: retention,
+          );
+    await Navigator.of(
+      context,
+    ).push(MaterialPageRoute<void>(builder: (_) => screen));
     if (!mounted) return;
     setState(() {
       _step = _load();
@@ -309,7 +321,7 @@ class _TodayCardState extends State<_TodayCard> {
   }
 
   @override
-  Widget build(BuildContext context) => FutureBuilder<NextStep>(
+  Widget build(BuildContext context) => FutureBuilder<TodayStep>(
     future: _step,
     builder: (context, snapshot) {
       if (snapshot.connectionState != ConnectionState.done) {
@@ -322,7 +334,7 @@ class _TodayCardState extends State<_TodayCard> {
         );
       }
       final step = snapshot.data!;
-      final (title, reason, action) = nextStepText(step);
+      final (title, reason, action) = todayStepText(step);
       return Card(
         key: const Key('today_card'),
         child: Padding(
@@ -347,7 +359,7 @@ class _TodayCardState extends State<_TodayCard> {
               ],
               const SizedBox(height: HarmoniaSpacing.xs),
               Text(
-                draftCriterionNote,
+                'Taslak ölçütler eğitimci onayı bekliyor. Sıra beceri haritasındaki rotana göre.',
                 style: Theme.of(context).textTheme.bodySmall,
               ),
             ],

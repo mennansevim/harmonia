@@ -8,6 +8,7 @@ import 'rhythm_next_step.dart';
 /// An in-app exercise that can produce comparable evidence for a skill.
 abstract interface class MeasuredExercise {
   String get exerciseId;
+  String get title;
   String get contentVersion;
   String get analyzerVersion;
 
@@ -20,6 +21,8 @@ class RhythmMeasuredExercise implements MeasuredExercise {
   final RhythmPattern pattern;
   @override
   String get exerciseId => pattern.exercise.exercise.id;
+  @override
+  String get title => pattern.title;
   @override
   String get contentVersion => pattern.exercise.exercise.contentVersion;
   @override
@@ -37,6 +40,8 @@ class PitchComparisonMeasuredExercise implements MeasuredExercise {
 
   @override
   String get exerciseId => level.exerciseId;
+  @override
+  String get title => level.title;
   @override
   String get contentVersion => level.contentVersion;
   @override

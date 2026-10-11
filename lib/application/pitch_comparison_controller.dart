@@ -61,9 +61,14 @@ class PitchComparisonController extends ChangeNotifier {
   int _epoch = 0;
 
   bool get _closed => phase == PitchComparisonPhase.closed;
+
+  /// Retention check: each pair may be heard once (no replays).
+  bool retentionCheck = false;
+
   bool get canPlay =>
-      phase == PitchComparisonPhase.idle ||
-      phase == PitchComparisonPhase.awaitingAnswer;
+      (phase == PitchComparisonPhase.idle ||
+          phase == PitchComparisonPhase.awaitingAnswer) &&
+      !(retentionCheck && plays[index] > 0);
   bool get canAnswer =>
       phase == PitchComparisonPhase.awaitingAnswer && _heardCurrent;
 
@@ -95,6 +100,7 @@ class PitchComparisonController extends ChangeNotifier {
     if (!canChangeLevel) return;
     ++_epoch;
     _level = next;
+    retentionCheck = false;
     _newRound();
     _set(PitchComparisonPhase.idle);
   }
@@ -159,7 +165,11 @@ class PitchComparisonController extends ChangeNotifier {
       final saved = await store.record(
         ResultHistoryEntry(
           attemptId: id,
-          result: result.toResult(sessionId: id, createdAt: _now().toUtc()),
+          result: result.toResult(
+            sessionId: id,
+            createdAt: _now().toUtc(),
+            retentionCheck: retentionCheck,
+          ),
         ),
       );
       if (epoch != _epoch || _closed) return;

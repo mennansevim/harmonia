@@ -18,7 +18,11 @@ class PitchComparisonScreen extends StatefulWidget {
     this.player,
     this.history,
     this.levels,
+    this.initialLevelId,
+    this.retentionCheck = false,
   });
+  final String? initialLevelId;
+  final bool retentionCheck;
   final ReferenceClipPlayer? player;
   final ResultHistoryRepository? history;
   final List<PitchComparisonLevel>? levels;
@@ -38,9 +42,12 @@ class _PitchComparisonScreenState extends State<PitchComparisonScreen>
     c = PitchComparisonController(
       player: widget.player ?? JustAudioClipPlayer(),
       renderPair: (a, b) => renderTonePair(a, b).encode(),
-      initialLevel: levels.first,
+      initialLevel: levels.firstWhere(
+        (l) => l.exerciseId == widget.initialLevelId,
+        orElse: () => levels.first,
+      ),
       history: widget.history,
-    );
+    )..retentionCheck = widget.retentionCheck;
     WidgetsBinding.instance.addObserver(this);
   }
 
@@ -95,6 +102,11 @@ class _PitchComparisonScreenState extends State<PitchComparisonScreen>
                   Text(
                     'Taslak içerik — eğitimci onayı bekliyor. Sesler sentetik tondur.',
                     style: text.bodySmall,
+                  ),
+                if (c.retentionCheck)
+                  const Text(
+                    'Kalıcılık kontrolü: her çifti bir kez dinleyebilirsin.',
+                    key: Key('perc_retention_label'),
                   ),
                 const SizedBox(height: HarmoniaSpacing.md),
                 if (o == null) ...[

@@ -1,4 +1,6 @@
+import '../../domain/learning/measured_exercise.dart';
 import '../../domain/learning/rhythm_next_step.dart';
+import '../../domain/learning/today_planner.dart';
 
 /// (title, reason, action label) for one recommended next step.
 (String, String, String) nextStepText(NextStep step) {
@@ -50,3 +52,56 @@ import '../../domain/learning/rhythm_next_step.dart';
 
 const draftCriterionNote =
     'Taslak ölçüt: art arda iki deneme eksik/fazla vuruşsuz ve ortalama sapma ≤ 60 ms. Eğitimci onayı bekliyor.';
+
+/// (title, reason, action) for the home recommendation across skills.
+(String, String, String) todayStepText(TodayStep step) {
+  final e = step.exercise;
+  final name = e == null ? '' : '${step.node!.title} — ${e.title}';
+  final last = step.lastResult;
+  final perception = e is PitchComparisonMeasuredExercise;
+  String repeatReason() {
+    if (last == null) return 'Ölçüt için art arda iki temiz deneme gerekiyor.';
+    if (perception) {
+      return 'Son turda ${last.measurements['total']} sorudan ${last.measurements['correct']} doğru. Ölçüt: art arda iki turda en az ${PitchComparisonMeasuredExercise.minCorrect}.';
+    }
+    int n(String k) => last.measurements[k] as int? ?? 0;
+    if (n('missed') > 0) {
+      return 'Son denemede ${n('missed')} vuruş eksikti. Dinlerken vuruşları say.';
+    }
+    if (n('extra') > 0) {
+      return 'Son denemede ${n('extra')} fazla vuruş vardı. Vuruş sayısına dikkat et.';
+    }
+    if (n('late') > 0) return 'Son denemede ${n('late')} vuruş geç geldi.';
+    if (n('early') > 0) return 'Son denemede ${n('early')} vuruş erken geldi.';
+    return 'Ölçüt için art arda iki temiz deneme gerekiyor.';
+  }
+
+  return switch (step.kind) {
+    NextStepKind.start => (
+      'Başla: $name',
+      'Henüz ölçülmüş çalışman yok. Rotandaki ilk ölçülebilir beceriyle başlayalım.',
+      'Başla',
+    ),
+    NextStepKind.retryUnmeasured => (
+      'Yeniden dene: $name',
+      'Son deneme ölçülemedi (tamamlanmadı). Baştan tekrar et.',
+      'Yeniden dene',
+    ),
+    NextStepKind.repeat => ('Tekrar et: $name', repeatReason(), 'Tekrar et'),
+    NextStepKind.nextPattern => (
+      'Sıradaki: $name',
+      'Önceki çalışmayı taslak ölçüte göre tamamladın; rotadaki sıradaki ölçülebilir çalışma bu.',
+      'Başla',
+    ),
+    NextStepKind.delayedCheck => (
+      'Kalıcılık kontrolü: $name',
+      'Bunu daha önceki bir gün tamamlamıştın. Bugün tek dinlemeyle tekrar et; öğrenmenin kalıcı olup olmadığını böyle kontrol ederiz.',
+      'Kontrol et',
+    ),
+    NextStepKind.allDone => (
+      'Şimdilik ölçülebilen her şey tamam',
+      'Yeni içerikler eğitimci onayından sonra eklenecek. Beceri haritasında sıradaki becerileri görebilirsin.',
+      '',
+    ),
+  };
+}
