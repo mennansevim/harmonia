@@ -604,3 +604,12 @@ Xcode 27.0 ile de düştü: `debug_unpack_ios` "Flutter.framework does not conta
 architectures arm64 x86_64" diyor, oysa `lipo -info` x86_64+arm64 gösteriyor.
 Aynı Flutter 3.44.4 lipo uyumsuzluğu; kod kaynaklı değil. Çözüm Flutter
 güncellemesi (kullanıcının global SDK'sını değiştirir → kullanıcı onayı gerekir).
+
+**2026-10-13 22:10 TRT — Flutter güncellemesi (kullanıcı onayıyla):** Flutter
+3.44.4 → **3.47.7** (Dart 3.13.5). `flutter build ios --simulator --debug`
+Xcode 27.0 ile **başarılı** (Runner.app); lipo engeli kapandı. Upgrade iOS
+minimum hedefini 13.0 → 15.0 yaptı, analysis_options build/android/ios'u
+dışladı, pubspec.lock'ta yalnız SDK'ya bağlı test paketleri değişti. Quality
+check yeni SDK'da exit 0: 596 test, analyze temiz, 174/0 format. Simulator'da
+elle gezinti/gerçek cihaz/mikrofon testi yapılmadı. Android cmdline-tools/lisans
+hâlâ eksik.

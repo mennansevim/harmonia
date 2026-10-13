@@ -5,7 +5,7 @@
 **Sahip:** Mennan Sevim  
 **Platform:** Flutter mobil uygulama; ileride web ve öğretmen paneli
 
-**Son kod doğrulaması (2026-10-13, 21:30 TRT):** `dart tool/quality_check.dart` exit 0: 596 test geçti, analyze temiz, format 174 dosya/0 değişiklik. CI etkin değil; cihaz testi yapılmadı. Xcode 27.0 kurulu; Android cmdline-tools/lisans eksik. Gerçek voice/cihaz ve eğitimci kapıları açık.
+**Son kod doğrulaması (2026-10-13, 21:30 TRT):** `dart tool/quality_check.dart` exit 0: 596 test geçti, analyze temiz, format 174 dosya/0 değişiklik. CI etkin değil; cihaz testi yapılmadı. Flutter 3.47.7/Xcode 27.0 ile iOS simulator build başarılı; Android cmdline-tools/lisans eksik. Gerçek voice/cihaz ve eğitimci kapıları açık.
 
 **CAL-03a:** Ortak gözlenen saat, route/rate bağlamı ve 8–64 trial doğrulanır; medyan/MAD/ham P90–P10, aykırı trial indeksleri ve çekimser durumlar raporlanır. Planlanan playback timestamp'i duyulmuş klik değildir; mixed clock ve inferred route reddedilir. Tap hizalama motor yanlılığını içerir; loopback toplam gecikmesi dokunma pipeline'ına taşınamaz. Bu diagnostic **LatencyCalibration üretmez, ritim düzeltmez ve count-in açmaz**. Gerçek ölçüm adapter'ı/protokolü CAL-03b ve cihaz kapısı açık.
 
@@ -15,7 +15,7 @@
 
 **LEARN-03b (23:10 TRT):** Home “Bugünkü öneri” artık beceri grafiği üzerinden, hedefin rotasındaki **tüm ölçülen egzersizleri** (tiz/pes + ritim) kapsıyor: vadesi gelen kalıcılık kontrolü → rotadaki ilk tamamlanmamış ölçülebilir çalışma (tekrar/yeniden dene/sıradaki) → tamam. Ölçülemeyen önkoşullar engellemez. Algı turunda kalıcılık kontrolü = her çift tek dinleme, sonuç işaretli. 454 test, analyze/format temiz.
 
-**iOS simulator build engeli (ortam):** Xcode 26.6 `lipo`, Flutter 3.44.4'ün `lipo <bin> -verify_arch arm64 x86_64` çağrısını reddediyor (“requires exactly one input file”); mimariler tek tek doğrulanınca geçiyor. Önceki başarılı derlemeler bu adımı önbellekten atlamıştı; motor önbelleği yenilenince ortaya çıktı. Kod kaynaklı değil. Çözüm kullanıcı ortamında: Flutter'ı bu Xcode'u destekleyen sürüme güncellemek veya uyumlu Xcode/Command Line Tools seçmek.
+**iOS simulator build (2026-10-13 22:10 güncel):** Flutter 3.47.7 + Xcode 27.0 ile `flutter build ios --simulator --debug` başarılı; eski Xcode 26.6/Flutter 3.44.4 lipo engeli kapandı. iOS minimum hedef 15.0. Elle gezinti ve gerçek cihaz testi yapılmadı.
 
 **INT-01a (23:30 TRT, ADR-024 hareketli do):** “Dereceyi bul” dinleme çalışması — her soruda tonik bağlamı (do–mi–sol), sonra do → hedef derece; ton soru başına değişir; cevap hece + aralık adı; seçenekler dengeli; şans düzeyi ve en çok karışan derece çifti gösterilir; 3 taslak seviye. Sonuç `Skill.interval`, `solfege: movable_do`, algı boyutu. Beceri grafiğinde “Tonik ve dereceler” ölçülüyor (ilk iki seviye, ≥7/8 × 2); günlük öneri rotada buraya ulaşır. 466 test, analyze/format temiz. Eğitimci terminoloji/içerik onayı yok; iOS simulator build engeli (Xcode lipo) sürüyor.
 
