@@ -53,6 +53,10 @@ void main() {
     await h.record(entry('attempt-0001'));
     await pump(tester, PracticeGoal.foundations, history: h);
     // Fixture result uses a version the evaluator does not compare.
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('skill_state_pulse-tap')),
+      200,
+    );
     final chip = tester.widget<Chip>(
       find.byKey(const Key('skill_state_pulse-tap')),
     );
@@ -79,5 +83,39 @@ void main() {
     await expectLater(tester, meetsGuideline(textContrastGuideline));
     await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
     handle.dispose();
+  });
+
+  testWidgets('report: counts, unknown skills and one focus that opens', (
+    tester,
+  ) async {
+    final opened = <String>[];
+    await tester.pumpWidget(
+      MaterialApp(
+        home: SkillMapScreen(
+          goal: PracticeGoal.foundations,
+          history: InMemoryResultHistory(),
+          clock: () => DateTime(2026, 10, 11, 12),
+          exerciseScreen: (e, retention) {
+            opened.add(e.exerciseId);
+            return const Scaffold(body: Text('egzersiz'));
+          },
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    Text t(String k) => tester.widget<Text>(find.byKey(Key(k)));
+    expect(t('report_scope').data, contains('9 becerinin 4 tanesi'));
+    expect(t('report_counts').data, contains('Henüz denenmedi: 4'));
+    expect(t('report_unknown').data, startsWith('5 beceri'));
+    expect(find.textContaining('%'), findsNothing);
+    await tester.tap(find.byKey(const Key('report_focus_action')));
+    await tester.pumpAndSettle();
+    expect(opened, ['draft-perc-highlow-200']);
+  });
+
+  testWidgets('without history the report has no action', (tester) async {
+    await pump(tester, PracticeGoal.foundations);
+    expect(find.byKey(const Key('skill_report')), findsOneWidget);
+    expect(find.byKey(const Key('report_focus_action')), findsNothing);
   });
 }

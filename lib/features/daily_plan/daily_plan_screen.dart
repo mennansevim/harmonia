@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../app/theme/harmonia_theme.dart';
+import '../../application/practice_preferences.dart';
 import '../../application/result_history.dart';
 import '../../domain/learning/daily_plan.dart';
 import '../../domain/learning/measured_exercise.dart';
@@ -18,11 +19,15 @@ class DailyPlanScreen extends StatefulWidget {
     required this.history,
     this.graph,
     this.catalog,
+    this.preferences,
     this.clock,
     this.exerciseScreen,
   });
   final PracticeGoal goal;
   final ResultHistoryRepository history;
+
+  /// Remembers the chosen budget on this device (optional).
+  final PracticePreferencesRepository? preferences;
   final SkillGraph? graph;
   final List<MeasuredExercise>? catalog;
   final DateTime Function()? clock;
@@ -39,7 +44,14 @@ class _DailyPlanScreenState extends State<DailyPlanScreen> {
   var _budget = DailyBudget.twelve;
   late Future<DailyPlan> _plan = _load();
 
+  var _budgetRestored = false;
+
   Future<DailyPlan> _load() async {
+    if (!_budgetRestored) {
+      _budgetRestored = true;
+      final saved = await widget.preferences?.loadDailyBudget();
+      if (saved != null && mounted) setState(() => _budget = saved);
+    }
     final entries = await widget.history.load();
     return DailyPlanner.plan(
       graph: widget.graph ?? draftSkillGraph,
@@ -97,6 +109,10 @@ class _DailyPlanScreenState extends State<DailyPlanScreen> {
               selected: {_budget},
               onSelectionChanged: (s) {
                 _budget = s.single;
+                // Convenience only; a failed save keeps today's choice.
+                widget.preferences
+                    ?.saveDailyBudget(_budget)
+                    .catchError((Object _) {});
                 _reload();
               },
             ),

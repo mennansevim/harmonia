@@ -2,7 +2,9 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:harmonia/application/practice_preferences.dart';
 import 'package:harmonia/application/result_history.dart';
+import 'package:harmonia/domain/learning/daily_plan.dart';
 import 'package:harmonia/domain/models/exercise_result.dart';
 import 'package:harmonia/domain/models/learner_profile.dart';
 import 'package:harmonia/domain/perception/pitch_comparison.dart';
@@ -172,5 +174,31 @@ void main() {
     await expectLater(tester, meetsGuideline(labeledTapTargetGuideline));
     await expectLater(tester, meetsGuideline(textContrastGuideline));
     handle.dispose();
+  });
+
+  testWidgets('chosen budget is remembered on this device', (tester) async {
+    final prefs = InMemoryPracticePreferences();
+    Future<void> open() async {
+      await tester.pumpWidget(
+        MaterialApp(
+          key: UniqueKey(),
+          home: DailyPlanScreen(
+            goal: PracticeGoal.foundations,
+            history: InMemoryResultHistory(),
+            preferences: prefs,
+            clock: () => _now,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+    }
+
+    await open();
+    expect(find.text('Plan: 8 / 12 dk'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('budget_5')));
+    await tester.pumpAndSettle();
+    expect(await prefs.loadDailyBudget(), DailyBudget.five);
+    await open();
+    expect(find.text('Plan: 4 / 5 dk'), findsOneWidget);
   });
 }

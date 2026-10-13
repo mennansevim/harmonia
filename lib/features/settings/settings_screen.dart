@@ -6,6 +6,7 @@ import '../../application/app_shell_controller.dart';
 import '../../application/result_history.dart';
 import '../history/history_screen.dart';
 import '../onboarding/goal_selection_screen.dart';
+import 'data_transfer_screen.dart';
 
 /// Settings, help, privacy, subscription and account — all describing only
 /// what exists today. No purchase, account or upload flow is implemented.
@@ -138,6 +139,19 @@ class SettingsScreen extends StatelessWidget {
                       ),
                     ),
                     child: const Text('Çalışma geçmişini gör veya sil'),
+                  ),
+                if (history != null)
+                  TextButton(
+                    key: const Key('open_data_transfer'),
+                    onPressed: () => Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => DataTransferScreen(
+                          history: history!,
+                          profile: controller.profile,
+                        ),
+                      ),
+                    ),
+                    child: const Text('Verilerini dışa veya içe aktar'),
                   ),
               ]),
               section('Abonelik', const [

@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:harmonia/app/harmonia_app.dart';
 import 'package:harmonia/app/theme/harmonia_theme.dart';
 import 'package:harmonia/application/profile_repository.dart';
+import 'package:harmonia/application/practice_preferences.dart';
 import 'package:harmonia/application/result_history.dart';
 import 'package:harmonia/domain/audio/rhythm_imitation.dart';
 import 'package:harmonia/domain/content/rhythm_patterns.dart';
@@ -38,6 +39,7 @@ void main() {
         profiles: repo,
         history: InMemoryResultHistory(),
         startupCleanup: _noSweep,
+        preferences: InMemoryPracticePreferences(),
       ),
     );
     await tester.pumpAndSettle();

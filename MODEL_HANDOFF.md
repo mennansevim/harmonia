@@ -273,3 +273,14 @@ sonuçlarla sabit; kontrol (1/3/7/14) → zayıf → yeni, günde ≤1/2 yeni, b
 açık. 19 test, 574 suite. Bütçe kalıcı değil. Eşikler/aralıklar taslak;
 EDU-01/pilot açık. Bu paket ve önceki 10 paket kullanıcı isteğiyle tek yerel
 commit'te toplandı (push yok).
+
+**2026-10-13 21:40 TRT — en güncel:** DATA-03a (`application/data_export.dart`,
+Ayarlar → "Verilerini taşı": ses-siz JSON pano, strict import), LEARN-04a
+(`domain/learning/skill_report.dart`, beceri haritası rapor kartı, yüzde yok),
+SHELL-04a (`application/practice_preferences.dart` + file adapter; günlük bütçe
+hatırlanır; AppServices.preferences). 596 test, analyze/format temiz. Bu üç paket
+commit edilmedi. iOS simulator build Xcode 27.0'da da Flutter 3.44.4 lipo
+kontrolüyle düşüyor; Flutter güncellemesi kullanıcı onayı ister. Android
+cmdline-tools/lisans eksik. Kalan işler dış kapı veya kullanıcı kararı:
+SHELL-02 plugin, DATA-01 backend, AI-01 ücretli API, PAY mağaza, OPS-01 servis,
+CAL-02/03b cihaz, BENCH-01/VAD-01 kayıt, EDU-01 eğitimci, UXR-01, piyano kayıtları.

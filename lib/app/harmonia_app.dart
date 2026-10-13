@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../application/app_shell_controller.dart';
 import '../application/profile_repository.dart';
+import '../application/practice_preferences.dart';
 import '../application/result_history.dart';
 import '../features/home/home_screen.dart';
 import '../features/onboarding/goal_selection_screen.dart';
@@ -10,6 +11,7 @@ import 'package:path_provider/path_provider.dart';
 
 import '../infrastructure/audio/orphan_audio_cleaner.dart';
 import '../infrastructure/storage/file_profile_repository.dart';
+import '../infrastructure/storage/file_practice_preferences.dart';
 import '../infrastructure/storage/file_result_history.dart';
 import 'app_services.dart';
 import 'theme/harmonia_theme.dart';
@@ -21,6 +23,7 @@ class HarmoniaApp extends StatefulWidget {
     this.profiles,
     this.history,
     this.startupCleanup,
+    this.preferences,
   });
 
   /// Defaults to the on-device JSON profile; tests inject in-memory storage.
@@ -32,6 +35,9 @@ class HarmoniaApp extends StatefulWidget {
   /// Defaults to sweeping orphan audio temp dirs left by a crash/kill.
   final Future<OrphanCleanupReport> Function()? startupCleanup;
 
+  /// Defaults to on-device practice preferences (daily plan budget).
+  final PracticePreferencesRepository? preferences;
+
   @override
   State<HarmoniaApp> createState() => _HarmoniaAppState();
 }
@@ -40,6 +46,8 @@ class _HarmoniaAppState extends State<HarmoniaApp> {
   late final AppShellController _shell;
   late final ResultHistoryRepository _history =
       widget.history ?? FileResultHistory();
+  late final PracticePreferencesRepository _preferences =
+      widget.preferences ?? FilePracticePreferences();
   final _cleanup = ValueNotifier<OrphanCleanupReport?>(null);
   final _navigator = GlobalKey<NavigatorState>();
 
@@ -75,8 +83,12 @@ class _HarmoniaAppState extends State<HarmoniaApp> {
   );
 
   @override
-  Widget build(BuildContext context) =>
-      AppServices(history: _history, cleanup: _cleanup, child: _app());
+  Widget build(BuildContext context) => AppServices(
+    history: _history,
+    cleanup: _cleanup,
+    preferences: _preferences,
+    child: _app(),
+  );
 
   Widget _app() => MaterialApp(
     title: 'Harmonia',

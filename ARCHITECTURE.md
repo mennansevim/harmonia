@@ -374,3 +374,19 @@ günde en fazla 1/2 yeni. `MeasuredExercise.draftMinutes` (ritim/tiz-pes 2,
 derece 3) geliştirici tahmini. Boş süre doldurulmaz, açıkça gösterilir.
 Mastery merdiveni/eşikleri değişmedi; `exercise_launcher.dart` home önerisi
 ve plan ekranının ortak egzersiz açıcısı. Bütçe seçimi kalıcı değil (ekran state).
+
+## DATA-03a / LEARN-04a / SHELL-04a — Yerel taşıma, rapor, tercih (2026-10-13)
+
+`application/data_export.dart`: `harmonia-local-export` schema 1; profil +
+sonuç özetleri, ses yok, exportedAt dakika hassasiyeti. Decode önce bütün
+belgeyi doğrular (4 MiB, ≤5000 kayıt, exact root keys, strict profile/result,
+yinelenen attempt reddi); hata kodu metni yankılamaz. Import yalnız
+`ResultHistoryRepository.record` kurallarıyla (duplicate/conflict korunur),
+profil değişmez. UI: Ayarlar → "Verilerini taşı", panoya kopyala/yapıştır;
+uygulama hiçbir yere göndermez.
+`domain/learning/skill_report.dart`: rota becerileri durum sayıları + ölçülemeyen
+(bilinmiyor) sayısı + TodayPlanner ile tek hedef; yüzde yok. Beceri haritası
+üstünde rapor kartı.
+`application/practice_preferences.dart` + `infrastructure/storage/
+file_practice_preferences.dart`: günlük bütçe schema 1; bozuk/eksik → varsayılan,
+bozuk dosya kullanıcı yeni seçim yapana dek korunur. AppServices.preferences.

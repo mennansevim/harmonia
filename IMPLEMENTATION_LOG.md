@@ -580,3 +580,27 @@ kararsızlığı bu koşuda görülmedi. Build/cihaz/insan testi yapılmadı.
 geliştirici hipotezi; eğitimci onayı ve öğrenme pilotu (EDU-01, LAUNCH öncesi)
 bekliyor. Bütçe seçimi kalıcı değil. Mikroders okuma, ezgi/tek ses (puansız)
 modülleri plana girmez; yalnız ölçülen dokunma egzersizleri planlanır.
+
+## 2026-10-13 21:30 TRT — DATA-03a, LEARN-04a, SHELL-04a (kod-yalnız eksikler)
+
+Kullanıcı "tüm eksikleri tamamla" dedi; dış kapı gerektirmeyen işler yapıldı.
+- **DATA-03a yerel taşıma:** `LocalDataExport` + Ayarlar → "Verilerini taşı".
+  Ses içermeyen sürümlü JSON panoya; yapıştırılan belge önce tamamen doğrulanır,
+  sonra mevcut geçmiş kurallarıyla eklenir (aynı deneme tekrar sayılmaz, çakışan
+  korunur, kapasite aşılmaz). Upload/consent/signed URL kısmı backend'e bağlı, açık.
+- **LEARN-04a beceri raporu:** `SkillReport` + beceri haritası rapor kartı:
+  ölçülebilen/ölçülemeyen sayıları, durum dağılımı, tek hedef ve eylem. Yüzde yok;
+  ölçülemeyen beceri "bilinmiyor", zayıf değil.
+- **SHELL-04a tercih:** günlük plan bütçesi cihazda hatırlanır (bozuk → varsayılan).
+  Ortak durum bileşenleri ve offline göstergesi (uygulama zaten tamamen offline) ayrı.
+
+**Doğrulama:** `dart tool/quality_check.dart` exit 0: **596 test geçti (+22)**,
+analyze temiz, **174 dosya/0 format değişikliği**. `flutter doctor`: Xcode artık
+27.0; Android cmdline-tools eksik ve lisans durumu bilinmiyor (değişmedi).
+Gerçek cihaz/pano/insan testi yapılmadı.
+
+**iOS simulator build (21:40 TRT):** `flutter build ios --simulator --debug`
+Xcode 27.0 ile de düştü: `debug_unpack_ios` "Flutter.framework does not contain
+architectures arm64 x86_64" diyor, oysa `lipo -info` x86_64+arm64 gösteriyor.
+Aynı Flutter 3.44.4 lipo uyumsuzluğu; kod kaynaklı değil. Çözüm Flutter
+güncellemesi (kullanıcının global SDK'sını değiştirir → kullanıcı onayı gerekir).

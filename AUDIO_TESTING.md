@@ -354,3 +354,13 @@ nothingDue/noMeasuredContent, immutable. 6 widget testi: bütçe değişimi,
 dönüşte ilerleme, kontrol bayrağı, bozuk geçmiş, ölçülemeyen rota,
 320px/1.8× + dört a11y kılavuzu; shell testi home kartından plan açar.
 Süre/aralıklar öğrenci üzerinde ölçülmedi; pedagojik etki veya cihaz kanıtı değil.
+
+## DATA-03a / LEARN-04a / SHELL-04a testleri (2026-10-13)
+
+Export: 7 birim (round-trip/dakika/ses alanı yok, profilsiz, strict format/
+sürüm/anahtar/tip/duplicate, geç bozuk kayıt tüm belgeyi reddeder, boyut
+bütçesi, hata metni yankılamaz, import dedup/conflict/kapasite) + 4 widget
+(panoya kopyala, onaylı import raporu, bozuk yapıştırma hiçbir şey eklemez,
+320px/1.8× + a11y). Rapor: 5 birim + 2 widget (sayılar, bilinmeyen ≠ zayıf,
+tekrar dinleme bağımsız saymaz, % yok, odak eylemi). Tercih: 3 birim + 1 widget.
+Gerçek pano/cihaz arası taşıma ve dosya sistemi hataları cihazda denenmedi.

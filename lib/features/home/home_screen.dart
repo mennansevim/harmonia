@@ -134,7 +134,11 @@ class HomeScreen extends StatelessWidget {
                 availability: ModuleAvailability.experimental,
                 onTap: () => _push(
                   context,
-                  DailyPlanScreen(goal: profile.goal, history: history),
+                  DailyPlanScreen(
+                    goal: profile.goal,
+                    history: history,
+                    preferences: AppServices.maybeOf(context)?.preferences,
+                  ),
                 ),
               ),
             _ModuleTile(
