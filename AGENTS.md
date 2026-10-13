@@ -31,3 +31,9 @@ kullanıcı açıklaması ve handoff mevcut durumu belirler.
 Yerel kontrol: `dart format --output=none --set-exit-if-changed lib test`,
 `flutter test --no-pub --reporter expanded`, `flutter analyze --no-pub`.
 Yeni checkout'ta önce `flutter pub get` gerekebilir.
+
+REL-08 ortak komut: `dart tool/quality_check.dart` (lib/test/tool read-only
+format → analyze → full test; ilk hatada durur). `dart run` kullanma: standalone
+giriş implicit package/build-hook çözümlemesini önler. `--plan` dry run;
+`--fetch` açık locked dependency fetch, varsayılan indirme yok. CI taslağı
+docs/ci/README.md; aktif hosted workflow/deploy yok. Kod kontrolü cihaz/pilot değil.

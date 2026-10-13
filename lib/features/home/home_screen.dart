@@ -3,15 +3,18 @@ import 'package:flutter/material.dart';
 import '../../app/app_services.dart';
 import '../../app/theme/harmonia_theme.dart';
 import '../../application/result_history.dart';
-import '../../domain/learning/measured_exercise.dart';
 import '../../domain/learning/rhythm_next_step.dart';
 import '../../domain/learning/skill_graph.dart';
 import '../../domain/learning/today_planner.dart';
 import '../../domain/models/learner_profile.dart';
+import '../daily_plan/daily_plan_screen.dart';
+import '../learning/exercise_launcher.dart';
 import '../learning/next_step_text.dart';
 import '../audio_lab/audio_lab_screen.dart';
 import '../chord_exercise/chord_placeholder_screen.dart';
 import '../history/history_screen.dart';
+import '../interval/interval_screen.dart';
+import '../melody/melody_session_screen.dart';
 import '../onboarding/goal_selection_screen.dart';
 import '../pitch_comparison/pitch_comparison_screen.dart';
 import '../rhythm_imitation/rhythm_imitation_screen.dart';
@@ -121,6 +124,31 @@ class HomeScreen extends StatelessWidget {
                 ),
               ),
             ),
+            if (AppServices.maybeOf(context)?.history case final history?)
+              _ModuleTile(
+                key: const Key('open_daily_plan'),
+                icon: Icons.calendar_today_outlined,
+                title: 'Günlük çalışma rotası',
+                subtitle:
+                    '5, 12 veya 15 dakikalık plan: kontrol, tekrar ve yeni. Taslak süreler.',
+                availability: ModuleAvailability.experimental,
+                onTap: () => _push(
+                  context,
+                  DailyPlanScreen(goal: profile.goal, history: history),
+                ),
+              ),
+            _ModuleTile(
+              key: const Key('open_interval'),
+              icon: Icons.stacked_line_chart,
+              title: 'Dereceyi bul (hareketli do)',
+              subtitle:
+                  'Tonu duy, do\'ya göre dereceyi seç; dinleme çalışması. Taslak içerik.',
+              availability: ModuleAvailability.experimental,
+              onTap: () => _push(
+                context,
+                IntervalScreen(history: AppServices.maybeOf(context)?.history),
+              ),
+            ),
             _ModuleTile(
               key: const Key('open_rhythm_imitation'),
               icon: Icons.touch_app_outlined,
@@ -134,6 +162,15 @@ class HomeScreen extends StatelessWidget {
                   history: AppServices.maybeOf(context)?.history,
                 ),
               ),
+            ),
+            _ModuleTile(
+              key: const Key('open_melody_session'),
+              icon: Icons.queue_music_outlined,
+              title: 'Kısa ezgi tekrarı',
+              subtitle:
+                  'Sentetik üç ton: dinle ve söyle. Yerel analiz, puan yok.',
+              availability: ModuleAvailability.experimental,
+              onTap: () => _push(context, const MelodySessionScreen()),
             ),
             const SizedBox(height: HarmoniaSpacing.lg),
             Text('Önizlemeler', style: text.titleMedium),
@@ -155,20 +192,6 @@ class HomeScreen extends StatelessWidget {
               availability: ModuleAvailability.awaitingContent,
               onTap: () => _push(context, const ChordPlaceholderScreen()),
             ),
-            const SizedBox(height: HarmoniaSpacing.lg),
-            Text('Planlanan çalışmalar', style: text.titleMedium),
-            const SizedBox(height: HarmoniaSpacing.sm),
-            for (final (icon, title) in const [
-              (Icons.queue_music_outlined, 'Kısa ezgi tekrarı'),
-              (Icons.swap_vert, 'Aralık duyma'),
-              (Icons.calendar_today_outlined, 'Günlük çalışma rotası'),
-            ])
-              _ModuleTile(
-                icon: icon,
-                title: title,
-                subtitle: 'Ölçümü doğrulanınca eklenecek.',
-                availability: ModuleAvailability.planned,
-              ),
           ],
         ),
       ),
@@ -299,18 +322,11 @@ class _TodayCardState extends State<_TodayCard> {
 
   Future<void> _open(TodayStep step) async {
     final retention = step.kind == NextStepKind.delayedCheck;
-    final e = step.exercise;
-    final Widget screen = e is PitchComparisonMeasuredExercise
-        ? PitchComparisonScreen(
-            history: widget.history,
-            initialLevelId: e.exerciseId,
-            retentionCheck: retention,
-          )
-        : RhythmImitationScreen(
-            history: widget.history,
-            initialPatternId: e?.exerciseId,
-            retentionCheck: retention,
-          );
+    final screen = measuredExerciseScreen(
+      step.exercise,
+      history: widget.history,
+      retentionCheck: retention,
+    );
     await Navigator.of(
       context,
     ).push(MaterialPageRoute<void>(builder: (_) => screen));

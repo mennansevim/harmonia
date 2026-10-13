@@ -54,9 +54,15 @@ void main() {
     await tester.scrollUntilVisible(find.text('Kayıt bekleniyor'), 200);
     expect(find.text('Simülasyon'), findsOneWidget);
     expect(find.text('Kayıt bekleniyor'), findsOneWidget);
-    await tester.scrollUntilVisible(find.text('Günlük çalışma rotası'), 200);
-    expect(find.text('Henüz yok'), findsWidgets);
+    await tester.scrollUntilVisible(find.text('Günlük çalışma rotası'), -200);
+    expect(find.text('Henüz yok'), findsNothing);
     expect(find.text('Doğru!'), findsNothing);
+    await tester.tap(find.byKey(const Key('open_daily_plan')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('plan_block_0')), findsOneWidget);
+    expect(find.textContaining('Tiz / pes ayırt etme'), findsWidgets);
+    await tester.pageBack();
+    await tester.pumpAndSettle();
     expect((await repo.load())!.goal, PracticeGoal.conservatory);
   });
 

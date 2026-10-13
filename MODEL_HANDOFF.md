@@ -168,3 +168,108 @@ Kayıtlar gelmeden chord placeholder doldurulmaz. Gerçek VAD/benchmark olmadan 
 **PERC-01:** `lib/domain/perception/pitch_comparison.dart`, `lib/application/pitch_comparison_controller.dart`, `lib/features/pitch_comparison/`; beceri değerlendirmesi `lib/domain/learning/measured_exercise.dart` üzerinden. iOS simulator build son denemede araç hatasıyla düştü; diğer ajan bitince `flutter clean` + yeniden derleme dene.
 
 **LEARN-03b:** `lib/domain/learning/today_planner.dart`; home kartı buna bağlı. **iOS simulator build engeli:** Xcode 26.6 lipo + Flutter 3.44.4 `-verify_arch` uyumsuzluğu (ortam); kod değil.
+
+**INT-01a (ADR-024 hareketli do):** `lib/domain/perception/interval_identification.dart`, `lib/application/interval_controller.dart`, `lib/features/interval/`. Hece ve aralık adı birlikte; mutlak nota adı yalnız mutlak yükseklik görevlerinde.
+
+**2026-10-12 02:47 TRT heartbeat:** LEARN-01/PERC/INT paketlerini tekrar
+uygulamadan bağımsız CORE-03a eklendi. `lib/domain/audio/pitch_sequence_alignment.dart`
+known segmented Hz events→exact-order 1:1 alignment; missing/extra/wrongPitch/
+wrongOctave. Null unmeasured response, immutable source; no score/timing/memory,
+PCM segmentleme ve UI bağlantısı yok. 480 test/analyze temiz, format 143/0;
+build veya cihaz testi yapılmadı. Sonraki CORE-03b frame→segment adapter'ı ve
+sentetik regresyonlar, sonra CORE-04; VAD/insan benchmark kapısını geçilmiş sayma.
+Dirty INT/grafik/günlük plan değişiklikleri korundu, commit/push yapılmadı.
+
+**2026-10-12 07:51 TRT:** CORE-03b `pitch_segmenter.dart` eklendi; recording
+evidence→target-independent periodic run candidates. 35 cent anchor/3 frame/
+200 ms defaults deneysel; min span overlap count değil center-clock süre.
+Raw octave korunur, gap/silence/unreliable/clip bridge yok; short run discarded
+indices. Diagnostic boundaries gerçek onset/duration/VAD değildir. Ürün skoru
+ve UI bağlantısı yok; gerçek kalite/etiket benchmark bekliyor. Sıradaki CORE-04
+puansız response session/fake lifecycle; anyOrder veya memory skorunu ekleme.
+Son doğrulama: 493 test (+13), analyze temiz, format 145/0; ayrıntı
+IMPLEMENTATION_LOG'da. Build yapılmadı. Agora temiz; commit/push yapılmadı.
+
+**2026-10-12 13:13 TRT — güncel sıradaki iş:** CORE-04a
+`lib/application/melody_session.dart` + 10 fake/sentetik test eklendi; 503 suite,
+147/0 format. Puansız session SESSION-01'i kompozisyonla kullanır, segment
+adaylarını raporlar; tek ses deviation, sıra kararı veya score dışarı çıkmaz.
+`MelodyReferenceBackend` reference declaration'ı gerçek review/rights QA değil.
+Native queue pending start→cancel discard yarışını sıralar; error recovery var.
+Eski native/read/worker settle olmadan restart yok; hard cancel/permission dialog
+kapatma yok. CORE-04b bound synthetic reference adapter + puansız ekran/home
+bağlantısını uygula; default C4 backend'i ezgi reference olarak takma. Bölüm
+loop/memory başarı ve piano dosyalarını kendiliğinden açma. Gerçek benchmark/
+cihaz/öğretim kapıları açık; son analyze sonucu IMPLEMENTATION_LOG'da.
+
+**2026-10-12 18:20 TRT — en güncel devam:** CORE-04b1
+`lib/infrastructure/audio/synthetic_melody_backend.dart` + infrastructure test.
+3–5 note reference binding → immutable sine WAV (600/200/400 ms, 8–48 kHz),
+capture backend'in default C4 reference'i kullanılmaz. Mobile factory mevcut
+capture+clip plugin'lerini birleştirir; origin ayrı, route yoksa unverified.
+Stop/close her iki owned resource'u dener; close idempotent/error korunur.
+Son doğrulama IMPLEMENTATION_LOG'da. **Sonraki CORE-04b2** puansız ezgi
+ekranı/home bağlantısı ve fake widget/lifecycle/narrow/a11y testleri; native
+session'i concurrent başka caller'la kullanma. Bu adapter sentetik, gerçek
+piyano veya eğitimci onaylı ders değildir. Skor/hafıza/history/AI bağlantısı ve
+cihaz/human benchmark yok; chord placeholder değişmedi.
+
+**2026-10-12 23:20 TRT — en güncel:** CORE-04b2
+lib/features/melody/melody_session_screen.dart + 8 fake widget testi;
+home open_melody_session Deneysel route. Üç sentetik ton, kalibrasyon,
+play→wait→record→quality→puansız candidate detail. Piyano değil; source açık,
+history/mastery/AI/scorer bağı yok. Background cancel, permission inactive
+istisna, dispose queued close; girişte izin/kayıt yok. 320px/1.8× ve a11y
+kılavuzları testli; physical reader/device/voice kanıtı değil. Son doğrulama
+IMPLEMENTATION_LOG'da. CORE-04 bölüm loop/recall ve gerçek benchmark kapısı açık.
+Sıradaki bağımsız iş REL-08 local QA runner/CI taslağı (dış CI etkinleştirme/
+push/yayın yetkisi değil), ardından LEARN-02 mikroders şeması/onaysız taslak.
+
+**2026-10-13 04:20 TRT — güncel:** REL-08 standalone
+`dart tool/quality_check.dart` root-bound read-only format(lib/test/tool),
+no-pub analyze + full test; ilk hatada exit korur. --plan dry run; --fetch
+explicit locked pub get. `dart run` yerine doğrudan dart kullan, implicit pub/
+build hook olmasın. CI docs/ci/README.md sağlayıcı-bağımsız ve etkin değil;
+push/hosted activation/deploy yetkisi yok. AGENTS güncellendi. Son doğrulama
+IMPLEMENTATION_LOG'da. Sıradaki LEARN-02 mikroders şeması: önce LEARNING_MODEL
+ve mevcut skill graph/readiness'i oku; taslak eğitimci onayına dönüşmesin.
+Gerçek VAD/benchmark/cihaz/eğitimci/piyano kapıları açık.
+
+**2026-10-13 09:15 TRT — en güncel:** LEARN-02a mikroders schema:
+lib/domain/learning/micro_lesson.dart + content/draft_micro_lessons.dart.
+Tam beş faz, immutable/bounded, graph skill/route/dimension binding ve held-out
+ID separation. İki developer text draft (tiz/pes algı, puls üretim); boş örnek
+slotları pending. EducatorApproved/assessmentEnabled false; onay/JSON/asset/
+UI/exercise/result/mastery bridge yok. ID disjointliği acoustic novelty kanıtı
+değil; gerçek reviewed content/hak/hash QA daha sonra gerekir. Son doğrulama
+IMPLEMENTATION_LOG'da. Sonraki LEARN-02b draft lesson okuma ekranı/skill-map
+erişimi; görünür taslak/örnek bekleme, okuma skill mastery yaratmasın. EDU-01
+gerçek eğitimci/içerik ve pedagojik pilot kapılarını açık tut.
+
+**2026-10-13 14:17 TRT — en güncel:** LEARN-02b
+features/learning/micro_lesson_screen.dart, skill-map lesson buttons + 6 widget
+test. Salt metin draft reader: onay/örnek bekleme, beş faz/algı-üretim/version,
+disabled practice. No audio/mic/completion/history/mastery dependency. Custom
+graph default lessons boş; injectable catalog route/dimension matching.
+320px/1.8× ve a11y guideline code-test, gerçek cihaz/reader/pedagoji değil.
+Son doğrulama IMPLEMENTATION_LOG'da. Sıradaki LEARN-02c strict versioned JSON
+draft catalog round-trip/import guard; educator approval/rights/sample review
+ve öğrenci completion→mastery dönüşümü ekleme. EDU-01/benchmark/cihaz açık.
+
+**2026-10-13 19:17 TRT — en güncel:** LEARN-02c
+domain/learning/micro_lesson_codec.dart + 11 tests; schema1/draft kind/review,
+strict keys/types/enums/budgets, constructor+graph+held-out guards. Immutable
+restore/no prefix, 1MiB UTF8, sanitized parser errors. Standard JSON duplicate
+keys, not canonical/signed/hak/etiket/waveform verifier. No auto file/asset
+replacement/import UI/approval. Son doğrulama IMPLEMENTATION_LOG'da. Sonraki
+LEARN-03 süreli günlük 5/12/15dk plan (taslak süreleri açık), mastery threshold
+değiştirme; gerçek voice/cihaz/eğitimci/piyano/pedagoji kapıları açık.
+
+**2026-10-13 20:45 TRT — en güncel:** LEARN-03c
+domain/learning/daily_plan.dart + features/daily_plan/daily_plan_screen.dart,
+ortak features/learning/exercise_launcher.dart; MeasuredExercise.draftMinutes.
+Home "Günlük çalışma rotası" artık Deneysel. Plan gece yarısından önceki
+sonuçlarla sabit; kontrol (1/3/7/14) → zayıf → yeni, günde ≤1/2 yeni, boş süre
+açık. 19 test, 574 suite. Bütçe kalıcı değil. Eşikler/aralıklar taslak;
+EDU-01/pilot açık. Bu paket ve önceki 10 paket kullanıcı isteğiyle tek yerel
+commit'te toplandı (push yok).

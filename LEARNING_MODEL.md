@@ -5,6 +5,12 @@
 
 **Geliştirme notu:** Sonuç/metrik geçerliliği ve SkillProgress cohort/denominator temeli uygulandı; tam müfredat, adaptive plan/mastery ve öğretim pilotu hâlâ yok. [İş planı](./IMPLEMENTATION_ROADMAP.md).
 
+**2026-10-13 LEARN-02a:** Typed draft mikroders domain sözleşmesi eklendi:
+açıklama/karşılaştırma/destekli pratik/yeni kontrol/gecikmeli kontrol; tek skill
+ve algı/üretim binding'i; training/control ID ayrımı. İki yalnız metin taslağı
+(tiz-pes/puls), gerçek örnek bankası/onay/UI yok. Okuma tamamlandı durumu
+beceri veya öğrenme kanıtı değildir; 12 onaylı ünite teslim edilmiş sayılmaz.
+
 ## Ürün test yaptırmaktan nasıl öğretmeye geçer?
 
 Her çalışma bir beceri hedefi taşır: **anla → örneği duy → ayırt et → destekle üret → desteksiz hatırla → başka örneğe aktar → yeniden kontrol et**. Doğru cevap sonrası sadece daha zor soruya geçilmez; yanlış cevap sonrası sadece aynı kayıt tekrar çalınmaz.

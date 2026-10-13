@@ -280,3 +280,303 @@ Kullanıcı gecikme işini diğer ajana bıraktı (CAL-03a dosyaları o ajana ai
 `TodayPlanner`: hedefin rotasındaki ölçülen düğümlerin egzersizleri üzerinde vadesi gelen kalıcılık kontrolü → ilk tamamlanmamış (başla/yeniden dene/tekrar/sıradaki) → tamam; ölçülemeyen önkoşullar engellemez. `MeasuredExercise.title`, `SkillStatusEvaluator.exerciseState` açıldı. Algı controller'ında `retentionCheck` (çift başına tek dinleme, sonuçta işaret). Home kartı egzersiz türüne göre algı veya ritim ekranını önerilen seviye/desenle açar; metinler son kanıtı alıntılar (son turda X/8; son denemede N eksik vuruş). PERC-01 commit'i `44d8d82`.
 
 **Doğrulama:** 454 test (+6), analyze/format temiz. **iOS simulator build:** Xcode 26.6 `lipo` çoklu mimari `-verify_arch` çağrısını reddediyor; Flutter 3.44.4 `debug_unpack_ios` bu çağrıyı yapıyor. Tek mimarili doğrulama geçiyor. Temiz `build/ios` ile de tekrarlandı. Sahipsiz kalmış bir `flutter_tester` süreci (üst süreç launchd, 22:33) görüldü; dokunulmadı.
+
+## 2026-10-11 — INT-01a hareketli do derece duyma (ADR-024)
+
+Kullanıcı hareketli do'yu seçti (ADR-024). `interval_identification.dart`: `SolfegeDegree` (re…do', majör dizide yarım ton, hece, Türkçe aralık adı), 3 taslak seviye (re·mi·sol; re→la; re→do'), 8 soruluk tur — seçenekler eşit dağıtılır ve karıştırılır, tonik her soruda A3–G4 arasından seçilir. Ses: do–mi–sol bağlamı, duraklama, do → hedef (sentetik ton dizisi, `renderToneSequence`). `IntervalOutcome`: doğru sayısı, şans yüzdesi, “duyulan→seçilen” karışma sayıları, `Skill.interval`, `solfege: movable_do`, algı boyutu, eksik tur geçersiz. `IntervalController` PERC-01 kurallarıyla (dinlemeden/seçenek dışı cevap yok, tur ortası seviye kilidi, iptal kaydetmez, kalıcılık kontrolünde tek dinleme). `PerceptionCriterion.minCorrect = 7` paylaşıldı; “Tonik ve dereceler” düğümü ilk iki seviyeye bağlandı; günlük öneri ve home kartı aralık ekranını açabiliyor; geçmiş algı metnini kullanıyor.
+
+**Doğrulama:** 466 test (+12), analyze/format temiz. Simülatörde deneme yok (Xcode lipo engeli). Aralık söyleme (üretim) ses motoru kapısına bağlı; inen/harmonik aralıklar ve minör bağlam sonraki içerik.
+
+## 2026-10-12 02:47 TRT — CORE-03a symbolic pitch sequence alignment
+
+Dirty tree'deki INT-01a, beceri grafiği/günlük plan ve diğer kullanıcı/ajan
+değişiklikleri korundu. LEARN-01 zaten uygulanmış olduğundan tekrar yapılmadı;
+CAL-03b fiziksel kapısına atlamadan bağımsız CORE-03a uygulandı.
+
+Yeni `pitch_sequence_alignment.dart`: segmented monophonic event DTO ve
+immutable source/evidence; 64 event/60 sn, finite positive Hz/non-overlap/süre
+doğrulaması. Exact-order 1:1 DP: edit cost→correct count→absolute cents tie.
+Yanlış pitch/oktav/eksik/fazla ayrımı; ham octave fold yok. Boş/invalid cevap
+wholeSequenceCorrect=null; invalid tail clean prefix'i güvenilir yapmaz.
+Timing, memory, VAD, PCM segmentation ve ExerciseResult/scorer bridge yok.
+
+**Doğrulama:** 480 test (+14), analyze temiz, format 143 dosya/0 değişiklik.
+İlk targeted koşudaki iki num→double test type ve bir braces uyarısı düzeltildi;
+targeted 14 ve full suite geçti. Testler sentetik Hz/event listeleridir; gerçek
+ezgi kaydı/öğrenci/cihaz/pedagoji kanıtı değil. Bu tur build yapılmadı; önceki
+Xcode lipo engeli çözülmüş sayılmadı. Agora değiştirilmedi; commit/push/ödeme/
+API/upload/deployment yok. CURRENT/roadmap/testing/mimari/handoff güncellendi.
+
+## 2026-10-12 07:51 TRT — CORE-03b diagnostic pitch segmentation
+
+Mevcut dirty INT-01a/grafik/günlük öneri ve diğer kullanıcı/ajan değişiklikleri
+korundu. `pitch_segmenter.dart` ve 13 regresyon testi eklendi. RecordingPitchEvidence
+frame'lerinden hedef bağımsız periodic pitch adayları; bounded/strict input,
+ham oktav, ilk frekansa bağlı 35 cent run, en az 3 frame ve 200 ms center-clock
+span. Sessizlik/unreliable/clip/kapsanmayan boşluk hard boundary; kısa run ve
+spike indeksleri discarded evidence'da. Immutable provenance ve frame indeksleri
+korunur. Bozuk tail tüm girdiyi reddeder; overlap sayısı süreyi şişirmez.
+
+Sınırlar window-center tahminidir: gerçek onset/duration, VAD veya insan nota
+kimliği değildir. Hızlı notalar elenebilir, artefaktlar run'ı bölebilir; defaults
+detector hipotezi, öğrenci başarı rubriği değil. Ürün analyzer/scorer/ExerciseResult
+ve UI bağlantısı eklenmedi. Sentetik iki ton PCM→gerçek DSP→segment→symbolic
+alignment yalnız testte açıkça bağlandı; insan ezgi başarısı olarak sunulmadı.
+
+**Doğrulama:** full suite 493 test geçti (+13); son `flutter analyze --no-pub`
+temiz (4.3 sn), format 145 dosya/0 değişiklik. İlk e2e koşusundaki 2 Hz test
+varsayımı başarısızdı (660 Hz aday ≈662.25 Hz); assertion mevcut frame regression
+15 cent sınırına alındı. Üretim eşikleri ve scorer toleransı değiştirilmedi.
+İlk brace lint'leri düzeltildi. Son whitespace kontrolü paket dosyalarında temiz.
+
+CURRENT/IMPLEMENTATION_ROADMAP/ARCHITECTURE/AUDIO_TESTING/MODEL_HANDOFF
+güncellendi. Agora git durumu temiz; değiştirilmedi. Mobil build, fiziksel mic,
+API, upload, ödeme, commit/push veya deployment yok. Xcode lipo ortam engeli,
+insan VAD/ezgi benchmark, cihaz/eğitimci ve piyano kayıt kapıları açık.
+Sıradaki bağımsız paket CORE-04 puansız response session + fake lifecycle;
+gerçek doğrulama olmadan memory/timing/başarı kararı bağlama.
+
+## 2026-10-12 13:13 TRT — CORE-04a puansız ezgi koordinatörü
+
+Önce güncel roadmap/log/testing/mimari/kararlar ve dirty kod okundu; kullanıcı/
+diğer ajan INT/grafik/home değişiklikleri korunarak iki yeni dosya eklendi:
+`lib/application/melody_session.dart`, `test/application/melody_session_test.dart`.
+
+Immutable 3–5 nota reference declaration + typed backend binding; SESSION-01
+kalibrasyon/kalite/capture/epoch akışının private kompozisyonu. Tek ses deviation
+sonuca verilmez; yalnız diagnostic segment/quality/retry ve completed reference
+callback sayısı. Skor/sequence başarı/hafıza/timing/ExerciseResult/history bağlantısı
+yok. Player declaration gerçek content/hak veya duyma doğrulaması değildir;
+production reference adapter/ekran CORE-04b'de hâlâ bekliyor.
+
+Private native queue mutation/read/route çağrılarını sıralar; delayed capture
+start→cancel→discard sırası ve failed-command recovery testli. Callback/worker
+kuyruğu bloklamaz, facade eski işlem settle olmadan restart vermez. İzin/native
+callback cleanup'ı geciktirebilir; hard cancel yok. Close eski DSP sonucunu ve
+notification'ı reddeder. Placeholder ve mevcut scorer toleransları değişmedi.
+
+**Doğrulama:** 10 targeted ve full suite **503 test** geçti (+10);
+format **147 dosya/0 değişiklik**; son analyze **temiz** (2.4 sn).
+İlk targeted koşuda tam sıfır sinyalin status assertion'ı `silent` olarak
+düzeltildi (üretim kalite davranışı değişmedi). Serialization sonrası pending
+permission testinin yanlış await sırası timeout oldu; callback çözülüp cleanup
+beklenecek biçimde düzeltilerek suite tekrar geçti. Son analyze'daki bir
+unnecessary-underscores info'su düzeltildi; final analyze temiz.
+
+CURRENT/IMPLEMENTATION_ROADMAP/AUDIO_TESTING/ARCHITECTURE/MODEL_HANDOFF
+güncellendi. Agora read-only git kontrolü temiz; kaynaklarına dokunulmadı.
+Bu tur mobil build, gerçek mic/insan/cihaz/pilot, dış sistem, API, ödeme, upload,
+commit/push/deployment yok. Gerçek VAD/benchmark/cihaz/öğretim kapıları ve
+önceki iOS lipo araç engeli açık. Sıradaki bağımsız iş CORE-04b reference'e bağlı
+yerel sentetik player adapter ve puansız ezgi ekranı/home bağlantısı.
+
+## 2026-10-12 18:20 TRT — CORE-04b1 bağlı sentetik ezgi oynatıcısı
+
+Güncel git/roadmap/log/testing/devir/mimari/kararlar ve mevcut session/player/
+capture kodu incelendi. Dirty INT/grafik/home ve diğer kullanıcı/ajan değişiklikleri
+korundu; bu paket yalnız yeni infrastructure renderer+backend ve test dosyasını
+ekler, mevcut home/UI kodunu değiştirmez.
+
+`SyntheticMelodyBackend`: immutable typed reference → mono PCM16 sine WAV,
+3–5 sıralı ton, 600 ms tone/200 ms gap/400 ms final silence, bounded 8–48 kHz.
+Tek doğru frequency kaynağı reference; encoded bytes immutable. Ayrı clip
+player bu WAV'ı çalar, capture default C4 reference'e fallback yapmaz. Capture
+PCM/source/route/interruption/replay forwarded; unknown route unverified kalır.
+Mobile factory mevcut PluginAudioLabBackend/JustAudioClipPlayer'ı lazy bağlar.
+Stop/close hata halinde diğer kaynağı yine kapatır; close future idempotent ve
+ilk hata korunur. Closed backend yeni play/capture reddeder. Session native
+serialization/epoch sahibi; adapter dışarıda concurrent kullanılmamalı.
+
+**Doğrulama:** 8 yeni fake/sentetik test dahil **511 full test geçti**;
+format **149 dosya/0 değişiklik**, son analyze **temiz** (7.1 sn).
+3/4/5 × 8/48 kHz render/codec/raw Hz (<15 cent existing synthetic bound)/gap/
+amplitude/determinism; exact WAV/binding/completion, forwarding/unknown route,
+failure/no fallback/close-idempotence; session+adapter capture only after clip
+completion/cancel-cleanup. İlk test compile'da List<int>→List<double> literal
+tipi ve unused import düzeltildi; initializing-formal lint düzeltildi. Üretim
+rubriği veya kalite eşikleri değiştirilmedi. Nihai full suite sonrası analyze
+temiz; önceki 510-test koşusu entegrasyon testi eklenmeden tarihsel kontrol.
+
+Bu kod-test alt paketi: ekran/home, gerçek duyulma/latency, fiziksel native
+focus/route/mikrofon QA ve eğitimci içerik onayı yok. Sine WAV piyano kaydı
+değil. Skor/başarı/hafıza/history/AI/abonelik bağlantısı açılmadı. Piano placeholder
+değişmedi; lisansı belirsiz ses eklenmedi. Agora git durumu temiz, kaynakları
+değiştirilmedi. Build/cihaz/insan/pilot/API/upload/ödeme/commit/push/deployment
+yok; iOS lipo ortam engeli hâlâ açık. Roadmap/testing/mimari/handoff güncellendi.
+Sıradaki hazır iş CORE-04b2 puansız ezgi ekranı + home + fake widget/lifecycle QA.
+
+## 2026-10-12 23:20 TRT — CORE-04b2 puansız ezgi ekranı/home
+
+Güncel git, roadmap/log/testing/devir/mimari/kararlar ve session/adapter/widget
+kodları okundu. Kullanıcı/ajan INT/grafik/learning değişiklikleri korundu;
+home'a yalnız yeni Deneysel ezgi route eklendi, eski disabled ezgi satırı kaldırıldı.
+Yeni MelodySessionScreen, üç sentetik C4/E4/G4 reference (synthetic-1) ve native
+worker: açık kalibrasyon/başlat/bitir/iptal, phase live region, nötr quality/
+permission/error retry, isteğe bağlı candidate Hz/source ve reference callback
+sayısı. Piyano/başarı/VAD/hafıza iddiası yok; history/mastery/AI/scorer bağlanmadı.
+Girişte izin/capture yok, background cancel, permission inactive istisnası,
+dispose owned resource close. Mevcut theme token'ları; fake success animation yok.
+
+**Doğrulama:** 8 targeted widget ve full suite **519 test geçti** (+8),
+format **151 dosya/0 değişiklik**, son analyze **temiz** (3.0 sn).
+Giriş/kalibrasyon eksikliği, izin reddi, 320px/1.8× tam flow+mock source,
+sessizlik, stuck playback cancel/background/no autoresume, pending permission
+dispose, home default synthetic route ve tap/label/contrast guideline testleri.
+İlk Dart pattern guard syntax ve void lifecycle await düzeltildi. İlk dispose
+assertion (targeted + erken full suite) native permission/stream cleanup'ı fake
+frame pump ile bekliyordu; mevcut audio-lab testleri gibi runAsync completion/
+event-loop tick ile düzeltildi, targeted ve full suite tekrar geçti. Üretim
+quality/scorer eşikleri değiştirilmedi. Native cleanup anlık/bellek erase garantisi
+değil; fiziksel test yapılmadı. Widget screenshot/native görsel QA yok.
+
+Roadmap/testing/mimari/handoff güncellendi. Agora git durumu temiz; değiştirilmedi.
+Mobil build, gerçek mic/insan/cihaz/eğitimci pilotu, API/upload/ödeme/commit/push/
+deployment yok; piano placeholder aynı. Xcode lipo engeli çözülmüş sayılmadı.
+CORE-04 tamamı değil: gerçek segment/voice/benchmark, recall protokolü ve
+güvenilir hata bölüm loop hâlâ açık. Sıradaki bağımsız hazır iş REL-08 local QA
+runner/CI taslağı (dış CI etkinleştirme değil); ardından LEARN-02 mikroders şeması.
+
+## 2026-10-13 04:20 TRT — REL-08 yerel ortak kalite runner
+
+Git/roadmap/log/testing/devir/mimari/kararlar ve pubspec/analysis ayarları
+okundu; mevcut kullanıcı/ajan dirty değişiklikleri korundu. Yeni standalone
+tool/quality_check.dart + 10 test + docs/ci/README.md; AGENTS ortak komutu aldı.
+Runner script root Harmonia guard ile cwd'den bağımsız; immutable argv/process
+spawn (shell string yok), read-only lib/test/tool format → no-pub analyze →
+full test. İlk tool exit aynen korunur; ProcessException 127, otomatik SDK kurma
+yok. --plan hiçbir step çalıştırmaz; --fetch explicit pub get --enforce-lockfile.
+Flag yerel help ile kontrol edildi, fetch uygulanmadı. Doğrudan dart giriş
+implicit pub/build hooks başlamasını önler; dart run tavsiye edilmez.
+
+**Doğrulama:** Son gerçek `dart tool/quality_check.dart` pipeline exit 0:
+**529 test geçti (+10)**, analyze temiz (2.8 sn), **153 dosya/0 format değişikliği**.
+CLI plan alternatif temp cwd'de ve read-only Agora cwd'de Harmonia'ya bağlı;
+unknown option, plan/no-fetch/locked-fetch, immutable snapshots, sequential
+success, her stepte fail-fast exit, missing executable, unexpected failure
+ve yanlış repo adı testli. İlk koşuda CLI testi Platform.resolvedExecutable'ı
+Dart sandı; Flutter test host'unda flutter_tester döndüğü için iki alt süreç
+bekledi. Yalnız bu testin gözlenen child PID'leri sonlandırıldı, eski/başka
+ajan süreçlerine dokunulmadı; CLI testleri açık `dart` ile düzeltildi ve tüm
+pipeline tekrar geçti. Üretim ses/scorer eşikleri veya SDK değiştirilmedi.
+
+CI sağlayıcı-bağımsız taslağı etkinleştirilmedi; secrets/private audio/fixture
+upload yok. Hard subprocess timeout yok; hosted job timeout ayrı ayarlanmalı.
+Hosted CI/diğer OS/mobil build/gerçek mic/cihaz/insan/pedagoji doğrulaması değil.
+Piano placeholder/scorer kapıları aynı; iOS lipo araç engeli açık. Agora kaynakları
+değiştirilmedi. API/ödeme/upload/commit/push/deploy yok. Roadmap/testing/mimari/
+devir/AGENTS güncellendi. Sıradaki LEARN-02 mikroders şeması: taslak ile gerçek
+eğitimci onayını ayrı tut; BENCH/VAD/cihaz kapılarını sentetik testle kapatma.
+
+## 2026-10-13 09:15 TRT — LEARN-02a draft mikroders sözleşmesi
+
+Git/roadmap/log/testing/devir/mimari/kararlar, LEARNING_MODEL ve skill graph/
+measured catalog okundu. Kullanıcı/ajan dirty değişiklikleri korunarak üç yeni
+dosya: domain/learning/micro_lesson.dart, content/draft_micro_lessons.dart,
+test/domain/learning/micro_lesson_test.dart.
+
+Immutable/bounded draft LessonStep/MicroLesson/Catalog, tam sıralı beş faz;
+graph known skillId/route/dimension doğrulaması; training/guided vs independent
+vs delayed ID partition sızıntı reddi. Kimlik ayrımı waveform novelty/consent/
+telif/etiket/çalıştırılabilir exercise kabulü değildir. Boş örnek slotu pending;
+educatorApproved/assessmentEnabled false. İki text draft tiz/pes algı ve puls
+üretim; no audio, UI, JSON importer/onay flow, ExerciseResult/mastery bridge.
+Okuma completion beceri kanıtı sayılmaz. 12/120 içerik hedefi tamamlanmadı.
+
+**Doğrulama:** Ortak `dart tool/quality_check.dart` exit 0; **538 full test
+geçti (+9)**, analyze temiz (2.6 sn), **156 dosya/0 format değişikliği**.
+Draft gate/binding, immutable snapshot, missing/duplicate/shuffled phases,
+train-independent-delayed/guided leak, malformed/budget reference/text,
+unknown skill/route/dimension, duplicate/128 catalog budget, pending vs bound
+ids ama approval/assessment kapalı regresyonları. Üretim scorer eşikleri,
+skill mastery ve mevcut UI değiştirilmedi. Gerçek ses/cihaz/pedagoji onayı yok.
+
+Roadmap/testing/mimari/devir/LEARNING_MODEL güncellendi. Agora read-only git
+kontrolü temiz; değiştirilmedi. Build/mic/insan/eğitimci pilotu/API/upload/ödeme/
+commit/push/deployment yok; piano placeholder aynı, iOS lipo engeli açık.
+Sıradaki LEARN-02b draft okuma ekranı + skill-map erişimi, görünür içerik/onay
+bekleme ve completion'dan mastery üretmeme widget testleri. EDU-01 gerçek
+eğitimci, izinli örnek bankası ve yeni/gecikmeli öğrenme pilotu kapıları açık.
+
+## 2026-10-13 14:17 TRT — LEARN-02b salt metin mikroders ekranı
+
+Git/roadmap/log/testing/devir/mimari/kararlar ve mevcut skill-map/mikroders
+kodları okundu; dirty kullanıcı/ajan değişiklikleri korundu. Yeni stateless
+MicroLessonScreen ve 6 widget test; skill_map_screen'e ders katalog injection/
+button navigation eklendi. Default graph iki text draft alır, custom graph
+implicit unrelated ders almaz; skillId/route/dimension filtrelenir.
+
+Reader: görünür metin taslağı/eğitimci onayı bekliyor; algı/üretim, content
+version/goal, beş faz/semantic headings. Bekleyen örnekler ve disabled practice,
+bound ID varsa bile play/assessment yok. Audio/mic/repository/completion marker
+dependency yok; okuma history/SkillStatusEvaluator'a dönüşmez. Back dönünce
+mevcut history ve mastery state korunur. Mevcut theme/scrollable layout kullanıldı.
+
+**Doğrulama:** İlk ortak runner koşusu exit 0: **544 full test geçti (+6)**,
+analyze temiz (8.3 sn), **158 dosya/0 format değişikliği**. Draft/disabled phase,
+skill-map→reader→back history boş + state unchanged, puls üretim route, custom
+graph, 320px/1.8× tüm fazlar ve Android/iOS target/label/contrast guideline.
+Widget testleri gerçek device/reader/visual/performance/pedagogy kabulü değil.
+Yeni failure veya eşik değişimi yok; gerçek reviewed ses bankası/onay eklenmedi.
+
+Roadmap/testing/mimari/devir güncellendi. Agora read-only git temiz; kaynakları
+değiştirilmedi. Build/mic/cihaz/insan/eğitimci pilot/API/upload/ödeme/commit/push/
+deploy yok. Piano placeholder ve scorer kapıları aynı; Xcode lipo engeli açık.
+Sıradaki LEARN-02c strict versioned JSON draft catalog round-trip/import guard;
+EDU-01 kayıt/hak/etiket/onay ve öğretim pilotu ayrı kapı. Okuma completion'dan
+mastery veya exam eligibility çıkarma.
+
+## 2026-10-13 19:17 TRT — LEARN-02c draft katalog JSON codec
+
+Git/roadmap/log/testing/devir/mimari/kararlar ve mikroders kodu okundu; mevcut
+kullanıcı/ajan dirty değişiklikleri korundu. Yeni MicroLessonCodec + 11 test:
+schema1/draft kind/review only; exact root/lesson/step keys/types/enums,
+1MiB UTF8 ve lesson/step/ID/text bütçeleri, constructor + graph + held-out
+partition guard. Geç bozuk lesson whole-catalog reject, restore immutable,
+fresh export maps; malformed parser errors source temizlenir. IO/file/asset
+ve mobile import UI eklenmedi. Approval/assessment/mastery/scorer açılmadı.
+Standard jsonDecode duplicate keys çözümler; signed/canonical belge veya
+hak/hash/etiket/acoustic novelty doğrulaması değildir.
+
+**Doğrulama:** 11 targeted test geçti; son ortak runner exit 0 **555 full
+test geçti (+11)**, analyze temiz (3.1 sn), **160 dosya/0 format değişikliği**.
+Round-trip/draft gate, strict version/kind/key/type/enum, graph/duplicate,
+invalid tail, phase/control leak, UTF8/text/list budget, immutable input/export
+ve sanitized error testli. İlk analyze'da 3 braces info + 3 unnecessary cast
+düzeltildi. İlk tam suite'de mevcut `melody_session_test.dart: late worker
+after route interruption cannot publish candidates` başarısız oldu; bu test/
+üretim session kodu değiştirilmedi. Tekrar full suite tamamen geçti. Bu tur
+tekil failure'ın kök nedeni teşhis edilmedi; async test timing riski gizlenmedi,
+yeniden tekrarlanırsa state-based wait teşhisi gerekir. Codec rubriği gevşetilmedi.
+
+Roadmap/testing/mimari/devir güncellendi; Agora git read-only kontrolü temiz,
+kaynakları değiştirilmedi.
+Build/gerçek mic/voice/cihaz/eğitimci pilotu/API/upload/ödeme/commit/push/deploy
+yok. Piano placeholder, real success kapıları ve iOS lipo araç engeli aynı.
+Sıradaki LEARN-03 süreli günlük 5/12/15dk plan; taslak süreleri, gerçek içerik/
+eğitimci onayı ve öğrenme etkisi pilotunu ayrı tut.
+
+## 2026-10-13 20:45 TRT — LEARN-03c süreli günlük plan (5/12/15 dk)
+
+Kullanıcı isteğiyle LEARN-03 uygulandı. Yeni `lib/domain/learning/daily_plan.dart`
+(DailyBudget/PlanBlock/DailyPlan/DailyPlanner), `lib/features/daily_plan/
+daily_plan_screen.dart`, ortak `lib/features/learning/exercise_launcher.dart`;
+`MeasuredExercise.draftMinutes` eklendi; `lastResultReason` next_step_text'ten
+ayrıldı. Home'daki "Günlük çalışma rotası" planlanan karttan Deneysel karta
+dönüştü (geçmiş servisi varsa); "Planlanan çalışmalar" bölümü boşaldığı için kalktı.
+
+Kurallar: plan gece yarısından önceki sonuçlardan kurulur ve gün boyu sabit
+kalır; bugünkü geçerli turlar ilerleme işaretler. Öncelik: en gecikmiş kontrol
+→ ilk zayıf → yeni(ler) → diğer kontroller → diğer zayıflar; açgözlü bütçe,
+sonra tekrar/yeni bloklara ikinci tur (ölçüt art arda iki temiz tur). Kontrol
+tek tur, retentionCheck bayrağıyla açılır. Kuyruk 1/3/7/14 gün; günde ≤1 (5 dk)
+/≤2 yeni. Boş süre "planlanmadı" diye yazılır, sahte blokla doldurulmaz.
+Mastery eşikleri, skor kuralları ve beceri durum merdiveni değiştirilmedi.
+
+**Doğrulama:** `dart tool/quality_check.dart` exit 0: **574 test geçti (+19)**,
+analyze temiz, **165 dosya/0 format değişikliği**. Önceki tekil ezgi testi
+kararsızlığı bu koşuda görülmedi. Build/cihaz/insan testi yapılmadı.
+
+**Sınırlar:** Süreler (2/2/3 dk), 1/3/7/14 aralıkları ve yeni sınırları
+geliştirici hipotezi; eğitimci onayı ve öğrenme pilotu (EDU-01, LAUNCH öncesi)
+bekliyor. Bütçe seçimi kalıcı değil. Mikroders okuma, ezgi/tek ses (puansız)
+modülleri plana girmez; yalnız ölçülen dokunma egzersizleri planlanır.

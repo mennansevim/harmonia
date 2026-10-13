@@ -186,3 +186,171 @@ timestamp'ini duyulmuş klik olarak kullanma. Loopback toplamı capture/yayılı
 içerebilir; touch correction'a aktarma. Tap insan motor bias'ını ayrı raporla;
 hardware offset diye kabul etme. Bu paket LatencyCalibration üretmez ve
 correctionEnabled=false; CORE-02b count-in hâlâ kapalı. CAL-02/BENCH-01 açık.
+
+## CORE-03a — Symbolic ezgi sıra kanıtı (2026-10-12 02:47 TRT)
+
+`PitchSequenceAligner` kayıt çözümlemez: önceden segmentlenmiş frequency/onset/
+duration olayları karşılaştırır. Reference boş/invalid ise ArgumentError;
+response invalid ise alignment yok ve karar null. Cevap yoksa reference missing
+adımları gösterilebilir ama öğrenciye ölçülmüş yanlış sıra/0 puan üretilmez.
+
+DP 1:1 monotonic Levenshtein (substitution/missing/extra=1, correct=0); tie
+correct count, sonra signed absolute-cents mutlak toplamıyla kırılır. Exact
+sıra korunur, reference sıralanmaz ve response duplicate tekrar kullanılamaz.
+Octave residual yakın ama raw cents uzaksa wrongOctave; tolerans içinde raw
+Hz farkı correct. Varsayılan 50 cent mevcut rubriği değiştirmez. 64 olay ve
+60 sn timeline; overlap/zero duration/nonfinite Hz/bozuk tail fail-closed.
+
+**14 yeni test:** correct index/source, reversed same count, missing/extra,
+duplicate response/repeated reference, +/-octave, substitution, no-response,
+invalid tail, overlap/onset/duration, budget/reference/tolerance, 49/51 cent,
+immutable ve tempo/onset'in pitch evidence ile karıştırılmaması. 480 full test,
+analyze temiz, format 143/0. Symbolic/sentetik veri; gerçek segmentation,
+memory veya timing ölçümü yok. Mock melody adapter/scorer/UI değişmedi.
+
+CORE-03b PCM/frame→segment, VAD/insan ezgi etiketleri, timing/hint/recall
+protokolü ve cihaz/öğretmen kapıları açık. Bu sınıf MelodyAnalyzer değildir;
+wholeSequenceCorrect yalnız sağlanan event sırası/pitch karşılaştırmasıdır,
+öğrencinin ezgi hafızası veya mikrofon doğruluğu kanıtı değildir.
+
+## CORE-03b — Deneysel periodic pitch segmentleme (2026-10-12 07:51 TRT)
+
+Önce tüm trace doğrulanır: 8–48 kHz/10 sn/512 frame, strict start+center order,
+window recording içinde, pitched Hz 50–2000 finite; diğer status'ta Hz null.
+Invalid tail bütün sonucu reddeder. Window-center midpoint partition; dış
+sınırlar observed center'da kalır, gap üzerinden süre üretmez. Frame'lerin
+örtüşen süreleri toplanmaz; bunlar bağımsız ses örneği değildir.
+
+Run anchor ilk Hz; ≤35 cent (hipotez). Run≥3 frame ve center-based span≥200 ms
+(hipotez), representative observed lower median. Yumuşak glissando komşu farkla
+sonsuz chain yapılmaz; octave pitch-class'a katlanmaz. Silence/unreliable/clip
+ve coverage gap hard boundary; kısa run/spike discarded indices, nonpitched
+indices ayrıca korunur. Artifacts sonucunda gerçek nota bölünebilir; bu durum
+VAD/insan benchmark olmadan başarı skoruna çevrilemez. Hızlı ezgiler bu defaults
+ile kaçabilir. Onset/süreler fiziksel doğru kabul edilmez.
+
+13 test: stable/source, changes/octave, tekrar+silence, uncertain/clip,
+short spike/run, overlap denominator, gap duration, invalid tail/timeline,
+anchor drift, immutable adapter ve sentetik iki ton PCM→gerçek DSP→segment→
+symbolic alignment. İlk fixed 2Hz assertion 660Hz'de başarısız oldu; existing
+frame synthetic regression'ın 15-cent bound'u kullanıldı (production eşik veya
+öğrenci rubriği değişmedi). Gerçek waveform/insan/cihaz/pilot kanıtı değil.
+Son tam suite/analyze/format sonucu IMPLEMENTATION_LOG'da; build yapılmadı.
+
+## CORE-04a — Puansız ezgi koordinatörü (2026-10-12 13:13 TRT)
+
+10 yeni fake/sentetik test: immutable/bounded 3–5 nota declaration,
+kalibrasyonsuz kayıt/playback yok; reference tamamlanmadan capture yok; PCM
+DSP'den önce silinir; üç ton aday/source korunur; tam sessizlik neutral retry;
+pending permission sırasında restart kapalı; bitmemiş playback cancel sayılmaz;
+geciken native start ardından discard; stop hatası sonrası cleanup queue canlı;
+route kesintisinden sonra late worker publish yok; close sonrası notification yok.
+
+SESSION-01 kalite/kalibrasyon yeniden kullanılır; segmentleme başarıya, VAD'a
+veya nota sırası kararına çevrilmez. Tamamlanan player callback sayısı gerçek
+duyma/recall ölçümü değil. İlk sessizlik assertion'ı `insufficientActivity` idi;
+tam sıfır sinyalin mevcut doğru status'u `silent` olarak düzeltildi. Serial queue
+eklendiğinde eski test pending izin tamamlanmadan cancel cleanup'ını bekleyip
+timeout oldu; test iptali başlatıp izin callback'ini çözerek sonra cleanup'ı
+bekler hale getirildi. Üretim kalite eşikleri/rubrik değişmedi. Hard cancel yok;
+pending native callback bitişi cleanup için gerekebilir, bu fiziksel QA kapısıdır.
+
+503 full test geçti (+10), format 147/0. Son analyze IMPLEMENTATION_LOG'da.
+Ekran/home/gerçek reference adapter henüz yok; mobil build/cihaz/insan kaydı
+yapılmadı. CORE-04b adapter + puansız ekran sırada; gerçek başarı/hafıza ve bölüm
+döngüsü ayrı doğrulama kapıları. Piano placeholder'a dosya eklenmedi.
+
+## CORE-04b1 — Sentetik ezgi reference binding (2026-10-12 18:20 TRT)
+
+Yeni renderer+adapter regresyonları: 3/4/5 ton × 8/48 kHz, PCM16 round-trip,
+örnek sayısı/ara sessizlik ve sırada ham Hz (<15 cent existing synthetic frame
+bound), amplitüd≤0.25/determinism; unsupported rate; immutable WAV exact
+reference; default C4'ü çağırmama ve playback completed bekleme; mock capture
+PCM/source/route/replay/interruption forwarding; capability yoksa unverified;
+play failure'da fallback yok; stop/close failure'da her iki kaynak cleanup ve
+idempotent close; kapandıktan sonra yeni play/capture yok. Session+adapter fake
+entegrasyonu reference bitmeden capture açmadığını, cancel'ın iki kaynağı
+temizlediğini sınar. Kayıt/Hz ve player olaylarının tamamı fake/sentetik.
+
+600/200/400 ms reference düzeni içerik/detector taslağıdır, eğitimci rubriği veya
+fiziksel gecikme ölçümü değil. Capture kesintileri forwarded; gerçek native
+audio focus/route/izin/close matrisi cihazda test edilmeli. Mobile factory'nin
+varlığı native mic QA/build başarısı sayılmaz. UI/home henüz bağlı değil;
+CORE-04b2 sırada. Son suite/format/analyze kanıtı IMPLEMENTATION_LOG'da.
+
+## CORE-04b2 — Ezgi ekranı widget doğrulaması (2026-10-12 23:20 TRT)
+
+8 test: girişte permission/capture yok, uncalibrated start nötr; permission
+denial OS ayarı açıklaması; 320px/1.8× kalibrasyon→play→answer→detail ve mock
+source; silent quality retry puansız; stuck playback cancel + background/resume
+auto capture yok; dispose pending permission late UI/native work reddi; home
+synthetic route; Android/iOS tap target, labeled target, text contrast guidelines.
+Fake/synthetic testler gerçek mic/voice/reader/jank/pedagoji kanıtı değildir.
+
+Dart pattern guard ve void lifecycle callback await düzeltildi. Pending
+permission dispose kontrolünde pumpAndSettle native/stream cleanup'ı tek başına
+drain etmedi; mevcut lab testi gibi runAsync içinde permission completion ve
+event-loop tick bekletildi. Üretim scorer/quality eşikleri değişmedi. Son tam
+suite/analyze/format IMPLEMENTATION_LOG'da. Bölüm loop/recall ve gerçek cihaz/
+VAD/benchmark/eğitimci kapıları açık.
+
+## REL-08 — Ortak yerel kod kapısı (2026-10-13 04:20 TRT)
+
+`dart tool/quality_check.dart` format/analyze/full suite'i sequential fail-fast
+çalıştırır. Script-root guard invoking cwd'ye dayanmaz; Agora'dan --plan çağrısı
+yalnız Harmonia komutlarını gösterir. 10 runner testi: CLI plan/unknown option,
+default no-fetch plan, explicit lock fetch, immutable argv, sırayla success,
+her adımda failure exit/short-circuit, missing executable, unexpected exception
+ve yanlış repo adı. Bunlar test otomasyonu regresyonları, audio QA değil.
+Fetch flag yerel CLI help ile doğrulandı, gerçek fetch uygulanmadı. Hosted CI
+taslağı etkinleştirilmedi; external accounts/secrets/fixtures/upload yok.
+Son suite/format/analyze IMPLEMENTATION_LOG'da. Gerçek mic/voice/device/pilot
+ve iOS araç engeli ayrı kapı olarak kalır.
+
+## LEARN-02a — Mikroders domain sözleşme testleri (2026-10-13 09:15 TRT)
+
+9 yeni test: iki text draft graph/dimension/approval-gate; defensive snapshot;
+tam faz sırası/missing/duplicate/shuffle; training-independent-delayed ID
+sızıntısı; guided training leak; invalid/duplicate/oversize reference ve
+malformed step; unknown skill/cross-route/wrong dimension; catalog immutable/
+duplicate/128 budget; boş slot pending ve tüm ID'ler dolsa bile assessment/
+approval kapalı. Örnekler sadece ID, waveform/telif/etiket/oynatma doğrulanmadı.
+
+Tiz/pes ve puls açıklamaları developer draft; eğitimci onayı, 12 mikroünite,
+görülmemiş ses bankası, UI veya pedagojik etki yok. Okumak/mastery kaydetmek
+aynı şey değil; assessment/result/history bağlanmadı. Son runner suite/analyze/
+format IMPLEMENTATION_LOG'da. BENCH/VAD/cihaz/eğitimci ve piyano kapıları açık.
+
+## LEARN-02b — Draft reader/widget kapısı (2026-10-13 14:17 TRT)
+
+6 test: draft/onay/dimension/no-mastery etiketi ve disabled phase actions;
+skill-map→reader→back history boş/status değişmedi; puls üretim route;
+custom graph unrelated default lesson yok; 320px/1.8× tüm fazlar overflow yok;
+Android/iOS tap target, labeled target, text contrast guideline. Widget kod
+kontrolü, gerçek ekran okuyucu/eğitimci/öğrenme etkisi veya cihaz QA değil.
+Reader hiç audio/mic başlatmaz; örnek kimlikleri bağlı olsa bile play/assessment
+yok. Son full runner test/analyze/format IMPLEMENTATION_LOG'da. Onaylı örnek
+bankası ve EDU-01/pilot bekliyor; mastery sonuç kuralları değişmedi.
+
+## LEARN-02c — Draft JSON codec testleri (2026-10-13 19:17 TRT)
+
+11 test: deterministic round-trip/pending gates; exact int schema/kind;
+unknown/missing keys her depth; imported approval reddi; invalid types/enums/
+strings/refs; graph+duplicate guard; late invalid whole-catalog rejection;
+phase/held-out separation; list/text/UTF8 budgets; immutable restore/export
+snapshot; malformed parser error source null. Sahte onay/gerçek ses yok.
+Standard JSON duplicate-key semantics, canonical/imza/hak/label/hash QA değil.
+IO/asset/file import UI yok. Son tam suite ve önceki failures IMPLEMENTATION_LOG'da.
+Code gate gerçek mic/cihaz/eğitimci/pedagoji kabulü değil.
+
+## LEARN-03c — Günlük plan testleri (2026-10-13 20:45 TRT)
+
+13 domain testi: yeni öğrenci (beceri başına bir yeni, iki tur, bütçe içi),
+5/15 dk yeni sınırı, zayıf kardeş seviyeyi bekletir, dünkü ustalık → 1 günlük
+tek tur kontrol, 1→3→7→14 kuyruk ve sonraki gün, başarısız kontrol → tekrar,
+en gecikmiş önce + kontrol→tekrar→yeni sırası, gün içi sabit plan, yalnız
+retention işaretli kontrol tamamlar, geçersiz tur ilerleme sayılmaz,
+nothingDue/noMeasuredContent, immutable. 6 widget testi: bütçe değişimi,
+dönüşte ilerleme, kontrol bayrağı, bozuk geçmiş, ölçülemeyen rota,
+320px/1.8× + dört a11y kılavuzu; shell testi home kartından plan açar.
+Süre/aralıklar öğrenci üzerinde ölçülmedi; pedagojik etki veya cihaz kanıtı değil.

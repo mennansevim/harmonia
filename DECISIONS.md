@@ -186,6 +186,13 @@ Ham dağılım trimming sonrası saklanır; bozuk/negatif/oversize tail tüm bat
 reddeder. Bu değerler öğrenci rubriği değildir, cihaz kabulüyle doğrulanmamıştır;
 sonuçlara bakılarak gevşetilmez. Kaynak korunur; correctionEnabled her zaman false.
 
+## ADR-024 — Solfej yaklaşımı: hareketli do
+
+**Durum:** Kullanıcı kararı (2026-10-11); kod INT-01a'da uygulandı, eğitimci terminoloji onayı bekliyor
+**Tarih:** 2026-10-11
+
+Derece/aralık çalışmalarında **hareketli do** kullanılır: “do” her zaman o anki tonun ilk sesidir; ton soru başına değişir, böylece mutlak nota adı ezberi yardım etmez. Cevaplar hece (re, mi, fa, sol, la, ti, do') ile, aralık adı (büyük 2'li … tam 8'li) ikincil etiket olarak verilir; iki terminoloji karıştırılmaz. Mutlak nota adları (C4, Do4) yalnız tek ses/oktav gibi mutlak yükseklik görevlerinde kalır. İleride sabit do kullanan kurum şablonu gerekirse ayrı içerik sürümü ve açık etiketle eklenir; mevcut sonuçlarla aynı cohort'ta karşılaştırılmaz.
+
 ## Mevcut kararları değiştirme sınırı
 
 Şu kararlar benchmark veya kullanıcı görüşmesi olmadan değiştirilmemeli:

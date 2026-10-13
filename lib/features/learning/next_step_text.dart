@@ -1,4 +1,5 @@
 import '../../domain/learning/measured_exercise.dart';
+import '../../domain/models/exercise_result.dart';
 import '../../domain/learning/rhythm_next_step.dart';
 import '../../domain/learning/today_planner.dart';
 
@@ -57,24 +58,7 @@ const draftCriterionNote =
 (String, String, String) todayStepText(TodayStep step) {
   final e = step.exercise;
   final name = e == null ? '' : '${step.node!.title} — ${e.title}';
-  final last = step.lastResult;
-  final perception = e is PitchComparisonMeasuredExercise;
-  String repeatReason() {
-    if (last == null) return 'Ölçüt için art arda iki temiz deneme gerekiyor.';
-    if (perception) {
-      return 'Son turda ${last.measurements['total']} sorudan ${last.measurements['correct']} doğru. Ölçüt: art arda iki turda en az ${PitchComparisonMeasuredExercise.minCorrect}.';
-    }
-    int n(String k) => last.measurements[k] as int? ?? 0;
-    if (n('missed') > 0) {
-      return 'Son denemede ${n('missed')} vuruş eksikti. Dinlerken vuruşları say.';
-    }
-    if (n('extra') > 0) {
-      return 'Son denemede ${n('extra')} fazla vuruş vardı. Vuruş sayısına dikkat et.';
-    }
-    if (n('late') > 0) return 'Son denemede ${n('late')} vuruş geç geldi.';
-    if (n('early') > 0) return 'Son denemede ${n('early')} vuruş erken geldi.';
-    return 'Ölçüt için art arda iki temiz deneme gerekiyor.';
-  }
+  String repeatReason() => lastResultReason(step.lastResult);
 
   return switch (step.kind) {
     NextStepKind.start => (
@@ -104,4 +88,23 @@ const draftCriterionNote =
       '',
     ),
   };
+}
+
+/// Evidence-citing reason for repeating an exercise, from its last valid
+/// comparable result (null: nothing measured yet).
+String lastResultReason(ExerciseResult? last) {
+  if (last == null) return 'Ölçüt için art arda iki temiz deneme gerekiyor.';
+  if (last.measurements['dimension'] == 'perception') {
+    return 'Son turda ${last.measurements['total']} sorudan ${last.measurements['correct']} doğru. Ölçüt: art arda iki turda en az ${PerceptionCriterion.minCorrect}.';
+  }
+  int n(String k) => last.measurements[k] as int? ?? 0;
+  if (n('missed') > 0) {
+    return 'Son denemede ${n('missed')} vuruş eksikti. Dinlerken vuruşları say.';
+  }
+  if (n('extra') > 0) {
+    return 'Son denemede ${n('extra')} fazla vuruş vardı. Vuruş sayısına dikkat et.';
+  }
+  if (n('late') > 0) return 'Son denemede ${n('late')} vuruş geç geldi.';
+  if (n('early') > 0) return 'Son denemede ${n('early')} vuruş erken geldi.';
+  return 'Ölçüt için art arda iki temiz deneme gerekiyor.';
 }

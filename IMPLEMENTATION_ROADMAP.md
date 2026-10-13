@@ -39,7 +39,7 @@ Durum sözlüğü: **bekliyor / geliştiriliyor / kod tamamlandı / doğrulandı
 | REL-05 | Ezgi placeholder fail-closed | Aynı nota sayısı sıra/timing/memory başarısı üretmez; ölçüm yoksa null/status | Kod/test doğrulandı; gerçek analyzer değil |
 | REL-06 | Egzersiz v2: nota/vuruş dizisi, tuning, hint, gecikme, order/set | Geçersiz egzersiz tanımı runtime'da reddedilir; round-trip sözleşme | Kısmi: protocol/binding/round-trip testli; session/katalog ve tuning frekans tutarlılığı bekliyor |
 | REL-07 | Analiz/puan için evidence/provenance; içerik kalite kontrolü | Mock/gerçek ayrımı, session id, puanlama sürümü; mutable veri ve kopya sonuç kontrolleri | Kısmi: deep snapshot, pitch provenance/source cohort ve fixture loader testli; diğer analyzer/dedup/etiket QA bekliyor |
-| REL-08 | Tekrarlanabilir kalite komutları / CI taslağı | Format, test, analyze; secret olmadan yerel çalışma; CI etkinleştirme ayrı | Bekliyor |
+| REL-08 | Tekrarlanabilir kalite komutları / CI taslağı | Format, test, analyze; secret olmadan yerel çalışma; CI etkinleştirme ayrı | Yerel runner + test/sağlayıcı-bağımsız taslak kod-testli; hosted run açık |
 
 R0 kod doğrulaması ses motorunun doğru duyduğunu kanıtlamaz. Pitch toleransları değiştirilmedi. Ritim coverage × timing fidelity formülü ilk deterministik implementasyondur, resmî sınav rubriği değildir. Gelişimde persistence/dedup/tuning/hint cohort ayrıntıları R2/R3'te genişletilir.
 
@@ -207,6 +207,8 @@ Kullanıcının A–Q modül listesi mevcut ID'lerle eşlendi; eksik kalanlar i�
 | CORE-02a | P0 | Dinle → tekrar et ritim taklidi: pointer engine timestamp, ilk dokunuş çapası (zamanlaması ölçülmez/puanlanmaz), sentetik klik, dinleme kotası, vuruş zaman çizelgesi, tempo ipucu, `ExerciseResult` | REL-04 | 21 domain/controller/widget/click testi: aynı vuruş sayısı başarı değil; eksik/fazla/erken/geç; geri giden timestamp düşer; referans sırasında dokunuşlar değerlendirilmez | Eğitimci desen/tolerans onayı; fiziksel dokunma örnekleme ölçümü | Dokunma örnekleme gecikmesi | M | B | K |
 | CORE-02b | P1 | Eşzamanlı (count-in) ritim: referansla birlikte vuruş | CAL-03 | Ölçülmüş gecikme yoksa mod kapalı; otomatik kaydırma yok | Cihaz gecikmesi | Çıkış gecikmesi | M | Ü | P |
 | CORE-05 / HIST-01 | P1 | Yerel sonuç geçmişi, attempt dedup, silme, kaynak ayrımı, cohort içi gelişim | REL-01 | 19 test: katı round-trip (7 mock senaryo + ritim), aynı attempt duplicate/conflict, kapasite, seri yazma, bozuk dosya korunur, ekran boş/bilinmiyor/trend/silme | Export (DATA-03) | Migration | M | B | K |
+| INT-01a | P1 | Hareketli do derece duyma (tonik bağlamı, soru başına ton, hece + aralık adı, karışma çifti) | ADR-024, PERC-01 | 12 test: dengeli seçenek, ton değişimi, tam yarım ton, tohumlu, sonuç/round-trip, eksik tur, beceri durumu, etiketler, ton dizisi, seçenek dışı cevap, kalıcılık, seviye kilidi/iptal, ekran + geçmiş, planlayıcı rotası | Eğitimci terminoloji/içerik onayı | Terminoloji karışması | M | B | K |
+| LEARN-03c | P1 | Süreli günlük plan 5/12/15 dk: kontrol kuyruğu (1/3/7/14), zayıf tekrar, günlük yeni sınırı, gün içi sabit plan + ilerleme; plan ekranı/home | LEARN-03b | 13 domain + 6 widget testi; bütçe aşılmaz, boş süre açık, kontrol yalnız retention turuyla tamamlanır | Eğitimci süre/aralık onayı, öğrenme pilotu | Yanlış yük/aralık | S | B | K |
 | LEARN-03b | P1 | Beceri grafiği tabanlı günlük öneri (rota + tüm ölçülen egzersizler), algı kalıcılık kontrolü | LEARN-01a, PERC-01 | 6 planlayıcı + 1 controller testi; home kartı egzersiz türüne göre doğru ekranı açar | Eğitimci rota/ölçüt onayı | Yanlış sıralama | S | B | K |
 | PERC-01 | P1 | Tiz/pes algı turu (8 dengeli sentetik çift, dokunma cevabı, öğrenme geri bildirimi, şans düzeyi), geçmiş + beceri grafiği bağlantısı | LEARN-01a, CORE-05 | 12 test: dengeli/tohumlu/tam cent, sabit cevap = şans, sonuç sözleşmesi/round-trip, eksik tur geçersiz, beceri merdiveni, ton çifti sessizliği, dinlemeden cevap yok, tekrar sayımı, tur ortasında seviye kilidi, iptal kaydetmez, ekran + geçmiş metni | Eğitimci seviye/ölçüt onayı | Algı ≠ üretim karışması | S | B | K |
 | LEARN-01a | P1 | Taslak beceri grafiği (önkoşul/rota/ölçüm desteği), kanıta dayalı durum merdiveni, hedefe göre beceri haritası | CORE-05, LEARN-03a | 14 test: tekrar/bilinmeyen/rota-arası önkoşul ve döngü reddi, ölçülen düğüm ↔ egzersiz bağı, sıra, rota filtresi, merdiven geçişleri, kötü sonraki deneme geri düşürür, denenmemiş egzersiz tavanı, farklı sürüm dışlanır, ekran durumları ve kılavuzlar | Eğitimci grafik/ölçüt onayı | Yanlış önkoşul | M | B | K |
@@ -221,3 +223,141 @@ Kullanıcının A–Q modül listesi mevcut ID'lerle eşlendi; eksik kalanlar i�
 Mevcut ID'ler bu tabloya taşınmadan geçerlidir: UX-01/02/03, CORE-03/04, EDU-01/02, LEARN-01–04, DATA-01–03, AI-01–03, HUM-01–07, CONS-01–05, CHOIR-01–05, PAY-01–03, OPS-01, LAUNCH-01/02, TEACH-01, SOC-01. Kapsamları §5–§8'de.
 
 **Uygulama sırası (kullanıcı talimatı):** güvenilir ses/kalibrasyon → gerçek tek ses/oturum → kullanılabilir tasarım → ritim/kısa ezgi → offline/geçmiş → müfredat/günlük rota → kapılarıyla bulut/AI → piyano/ileri hazırlık → Plus/koro → abonelik ve yayın. Bağımsız işler paralel ilerleyebilir; kapılar atlanmaz.
+
+## 2026-10-12 — CORE-03a sıralı pitch alignment alt paketi
+
+Bağımlılığı hazır bağımsız kod işi: bilinen reference ve önceden segmentlenmiş
+response olayları (frequency/onset/duration) arasında bounded monotonic
+alignment. 1:1 Levenshtein edit maliyeti; tie önce daha çok correct, sonra daha
+az mutlak cents. Exact sıra; missing/extra/wrongPitch/wrongOctave kaybolmaz.
+50 cent varsayılanı mevcut tek ses sınırını değiştirmez; öğrenci skoru üretilmez.
+
+**Kod-test:** 480 test (+14), analyze temiz, format 143/0. 64 event/60 sn
+bütçe; finite Hz, süre ve overlap kontrolü; invalid response null karar.
+Timing, memory, anyOrder chord eşleştirme veya PCM segmentleme yok. Mock melody
+adapter açılmadı; gerçek motor/başarı bağlantısı yapılmadı.
+
+**Sonraki CORE-03b:** recording frame evidence→monofonik segmentleme adapter'ı
+(sentetik trace regresyonları); voice/VAD/gerçek etiketli ezgi benchmark kapısı
+korunur. CORE-04 dinle→hatırla→söyle oturumu/ekranı ayrıca gerekir. Piyano
+placeholder kullanıcı dosyaları gelmeden değişmez. Cihaz/öğretim kabulü değil.
+
+## 2026-10-12 07:51 TRT — CORE-03b diagnostic frame→segment alt paketi
+
+`PitchSegmenter.fromRecording` immutable frame evidence'ı hedef bağımsız run
+adaylarına dönüştürür. Bütçe 8–48 kHz/10 sn/512 frame, hipotetik 35 cent
+anchor sapması, en az 3 frame ve 200 ms merkez-tabanlı span. Ham octave fold
+yok; uncertain/silence/gap hard boundary. Kısa run'lar discarded frame
+indeksleriyle korunur; başarıya sessizce dönüştürülmez. Skor/voice/memory yok.
+
+Bu CORE-03'ün kod alt paketidir, gerçek segmentation kabulü değil. Sonraki
+CORE-04 puansız dinle→hatırla→cevap session ve fake lifecycle/epoch; VAD/etiketli
+ezgi benchmark/cihaz kapısı geçmeden öğrenci başarısı açılmaz. Timing ve anyOrder
+chord matcher ayrı kapsam; kullanıcı piyano dosyaları gelmeden placeholder aynı.
+
+## 2026-10-12 13:13 TRT — CORE-04a puansız ezgi session alt paketi
+
+`MelodySessionController` SESSION-01 kalibrasyon/kayıt/kalite/epoch hattını
+kompozisyonla kullanır; tek ses representative deviation dışarı verilmez.
+`MelodyReferenceBackend` 3–5 nota immutable reference kimliği/sürümüne bağlanır;
+standart C4 backend yanlışlıkla ezgi olarak takılamaz. Gerçek dosya/etiket/hak
+doğrulaması bu declaration'dan çıkarılmaz. Player completed callback sayısı
+yalnız bu denemenin dinleme kaydıdır; fiziksel duyma veya hafıza ölçümü değil.
+
+Native mutation/read komutları serialized; playback completion ve DSP queue
+dışında. Cancel pending-start bitişinden sonra discard eder; başarısız komut
+cleanup kuyruğunu zehirlemez. Pending permission/read/worker bitmeden restart
+yok, hard cancel yok. Diagnostic segment sonucu var; sequence başarı kararı,
+memory/timing skoru, history/AI/upload yok. 10 fake/sentetik test; tüm suite 503.
+
+**Sonraki CORE-04b:** Bu reference sözleşmesine bağlı yerel sentetik 3–5 nota
+player adapter + puansız ekran/home bağlantısı, hata/izin/iptal/büyük yazı testleri.
+Yanlış bölüm loop'u ancak güvenilir karar/içerik protokolüyle açılır. VAD/insan
+benchmark ve cihaz kapıları geçmeden skor/başarı yok; 2/3/4 piano placeholder aynı.
+
+## 2026-10-12 18:20 TRT — CORE-04b1 bağlı sentetik reference adapter
+
+`SyntheticMelodyBackend` typed reference'i deterministik mono PCM16 sinüs WAV'a
+çevirir: 3–5 sıralı ton, 600 ms ton/200 ms ara/sonda 400 ms sessizlik; 8–48 kHz.
+`playReference` ayrı clip player'dadır, capture backend'in varsayılan C4 yoluna
+düşmez. Capture/reader/route/interruptions orijinal kaynağı korur; stop ve close
+bir kaynak hata verse de ikisini kapatmayı dener. Close idempotent; yeniden
+play/capture reddedilir. Mobile factory mevcut plugin adapter'larını birleştirir,
+tek başına kayıt/izin başlatmaz. Sentetik reference gerçek piyano değildir.
+
+Bu CORE-04b'nin yalnız infrastructure alt paketidir. Sonraki CORE-04b2 puansız
+ezgi ekranı/home: açık başlat/kalibrasyon, permission/noise/error/cancel/close,
+320 px ve büyük yazı; source/segment/onset sınırları açık. Gerçek VAD/benchmark/
+cihaz/öğretim ve bölüm döngüsü kabul kapıları açık; skor veya mastery açılmaz.
+
+## 2026-10-12 23:20 TRT — CORE-04b2 puansız ezgi ekranı/home
+
+MelodySessionScreen: açık kalibrasyon/başlat/bitir/iptal, üç sentetik ton,
+native worker. Girişte izin/kayıt yok; piyano olmadığı, doğru/yanlış/sıra/hafıza
+puanının kapalı olduğu açık. Nötr retry, completed reference sayısı, isteğe
+bağlı source/raw Hz aday ayrıntıları. Background iptal, permission inactive
+istisna, dispose close. Home Deneysel kart; chord placeholder aynı.
+8 fake widget testi: giriş, izin reddi, 320px/1.8× akış/source, sessizlik,
+playback cancel/background, pending permission dispose, home route, a11y.
+CORE-04 tümü tamamlanmadı: güvenilir bölüm döngüsü/recall ve gerçek voice/device/
+eğitimci kapıları açık. Bağımsız sıradaki iş REL-08 local QA runner/CI taslağı;
+dış CI etkinleştirme/push yetkisi değil. LEARN-02 mikroders şeması da hazır iş.
+
+## 2026-10-13 04:20 TRT — REL-08 yerel kalite runner
+
+Standalone `dart tool/quality_check.dart`: script konumuna bağlı Harmonia root
+guard, read-only lib/test/tool format → no-pub analyze → no-pub full tests.
+İlk hata exit code korunur, spawn error 127; otomatik SDK kurulumu yok.
+`--plan` komut envanteri, `--fetch` explicit pub get --enforce-lockfile.
+Default fetch/deploy/build/ücretli API/upload yok; `dart run` yerine standalone
+giriş implicit pub/build-hook başlangıcını önler. CI docs/ci/README.md taslak,
+aktif workflow yok. Hard subprocess timeout yok; hosted job timeout onayla
+belirlenir. CI/başka OS/cihaz kabulü değil. Sonraki LEARN-02 mikroders şeması,
+taslak ile eğitimci onaylı içeriği ayırarak; gerçek benchmark kapıları açık.
+
+## 2026-10-13 09:15 TRT — LEARN-02a draft mikroders sözleşmesi
+
+MicroLesson/LessonStep/Catalog immutable, bounded; tam sıralı beş faz:
+açıklama → karşılaştırma → destekli pratik → yeni örnek kontrolü → gecikmeli
+kontrol. Tek skillId/route/dimension graph'a doğrulanır. Training/independent/
+delayed example ID partition sızıntısı ve unknown skill reddi; örnek ID bağlamak
+hak/etiket/acoustic novelty veya çalıştırılabilir egzersiz doğrulaması değildir.
+
+İki developer text draft: tiz/pes algı ve puls üretim. Örnek slotları boş/pending;
+educatorApproved ve assessmentEnabled her zaman false. Okuma/completion→mastery
+veya ExerciseResult bridge yok. Bu 12 onaylı ünite/120 kayıt teslimi değil;
+JSON/asset/importer/onay akışı ve UI henüz yok. Sonraki LEARN-02b draft lesson
+okuma ekranı + skill-map/home erişimi, görünen onay/örnek bekleme etiketi ve
+yanlış beceri kazanımı yaratmayan widget testleri. EDU-01/pilot ayrı kapılar.
+
+## 2026-10-13 14:17 TRT — LEARN-02b taslak mikroders okuma ekranı
+
+MicroLessonScreen salt metin, beş faz, algı/üretim ve içerik sürümü, görünür
+eğitimci onayı/örnek bekleme; çalıştırma kontrolü kapalı. Beceri haritasında
+ilgili düğümden iki taslağa erişim; custom graph default ders almaz, injectable
+lesson catalog skill route/dimension filtrelenir. Ses/mic/API/history/mastery
+ve tamamlandı marker yok. 6 widget test: etiket/disabled, history/status unchanged,
+puls route, custom graph, 320px/1.8×, tap/label/contrast kılavuzları.
+Bu gerçek eğitimci onayı, ses bankası veya pedagojik sonuç değil. Sonraki
+LEARN-02c strict versioned JSON draft katalog round-trip/import kapısı; alanları
+onaylanmış ses veya öğrenci mastery'sine sessizce çevirmeme. EDU-01 açık.
+
+## 2026-10-13 19:17 TRT — LEARN-02c draft katalog JSON codec
+
+MicroLessonCodec schemaVersion=1/kind=draft_micro_lessons; exact keys/types/
+enums, yalnız draft review. Graph binding, phase order ve training/control
+partition tekrar uygulanır; invalid tail tüm catalog'u reddeder. 1MiB UTF8,
+128 lesson/5 step/24 ids ve bounded text; parser errors source metni taşımaz.
+Deterministic round-trip/immutable restore; pure domain, otomatik file/asset/
+network import yok. Standard JSON duplicate-key semantics, signed/canonical
+belge doğrulaması veya waveform novelty/hak/onay kabulü değil. Sonraki LEARN-03
+süreli günlük 5/12/15dk plan (taslak süreler); EDU-01/pilot ayrı açık.
+
+## 2026-10-13 20:45 TRT — LEARN-03c süreli günlük plan
+
+DailyPlanner + DailyPlanScreen: 5/12/15 dk bütçe, kontrol → tekrar → yeni
+sırası, 1/3/7/14 gün kuyruğu, beceri başına tek yeni seviye, günde ≤1/2 yeni.
+Plan gece yarısı sabitlenir; bugünkü turlar ilerleme. Taslak süreler ve
+aralıklar pilot hipotezi; mastery eşikleri aynı. 19 yeni test, 574 suite.
+Sonraki kod işleri: LEARN-04 beceri raporu → tek hedef, SHELL-04 ortak durum
+bileşenleri, DATA-03 yerel export; dış kapılar (cihaz, BENCH, EDU-01, piyano) açık.

@@ -252,3 +252,125 @@ Faz 3 küçük yönetilen pilot; Faz 4 hizmet kapılarından sonra ücretli Plus
 4. AI kapalı ölçüm beta’sı.
 5. AI açık beta.
 6. Abonelikli public release.
+
+## CORE-03a — Exact-order symbolic pitch alignment (2026-10-12)
+
+Domain `SequencePitchEvent` already-segmented immutable Hz/onset/duration;
+`PitchSequenceAligner` bounded monotonic DP ve `PitchSequenceEvidence` source
+ile adım kanıtı. Reference invalid throw; response invalid/no-response nullable
+karar. Existing PitchDeviation raw cents/octave kullanılır, hedefe pitch fold
+yok. No IO/plugin/AI, no MelodyAnalyzer/scorer bridge. Onset/duration sadece
+chronology/budget için; timing/memory skoru üretmez. CORE-03b segmentation ve
+gerçek VAD/benchmark sonrasında ürün adapter'ı ayrıca gerekir.
+
+## CORE-03b — Diagnostic recording frame→segment (2026-10-12)
+
+Domain `SegmentationPitchFrame` validasyon sınırı, `PitchSegmenter.fromRecording`
+mevcut immutable DSP evidence adapter'ı. Target-independent run anchor, raw
+observed lower median; window-center midpoint sınırları sadece diagnostic.
+Örtüşen frame süreleri toplanmaz, unknown gap sustain varsayılmaz. Discarded
+ve nonPitched indeksleri ayrı audit; source/analyzer version korunur. No IO,
+VAD/MelodyAnalyzer/scorer bridge. PCM→DSP→segment→symbolic alignment yalnız
+sentetik regresyonda explicit bağlandı; ürün UI başarı akışı değil.
+
+## CORE-04a — Puansız ezgi application session (2026-10-12)
+
+`MelodySessionController` bir private `SingleToneSessionController` sahiplenir:
+noise-floor/route/quality gate, cevap penceresi, owned PCM silme ve epoch sonuç
+reddi aynı kalır. Tek ses target deviation hesaplaması içeride kullanılmayan
+diagnostic'tir; dış sonuç yalnız `PitchSegmenter` adayları, quality/retry ve
+reference binding taşır. PitchSequenceAligner/ExerciseResult/history bağlantısı yok.
+
+`MelodyReferenceBackend` explicit reference id/contentVersion/3–5 finite Hz
+declaration sağlar; oynatıcı bu referansı çalmalıdır. Source/hak/etiket kabulü
+değildir, gerçek adapter henüz yok. Private backend wrapper tüm native command/
+read/route çağrılarını seri işler ve error sonrası queue'yu kurtarır. Playback
+handle completion ve worker bitişi native kuyruğu tutmaz. Facade old operation
+settle olana kadar restart'ı engeller; hard cancel/izin diyaloğu kapatma yok.
+Close/deletion pending native işlem bitişini bekleyebilir. Callback sayımı
+device-unverified; tek attempt tek reference, ipucu veya recalled memory iddiası yok.
+
+## CORE-04b1 — Bağlı sentetik ezgi audio adapter (2026-10-12)
+
+Infrastructure `SyntheticMelodyBackend` capture (AudioLabBackend + reader) ile
+ReferenceClipPlayer'ı birlikte sahiplenir. DiagnosticMelodyReference frequencies
+tek kaynak; `renderDiagnosticMelody` bounded 8–48 kHz/fixed 600 ms tones/gaps,
+immutable encoded bytes. Reference source açık `synthetic`, capture origin
+reader'dan aynen taşınır; iki kaynak birbirine dönüştürülmez. Mobile factory
+PluginAudioLabBackend + JustAudioClipPlayer yaratır (lazy native init).
+
+Reference çalma capture.playReference'e delege edilmez; varsayılan C4 fallback
+yok. Route capability yoksa unknown/unverified; headphone uydurulmaz. Capture
+interruptions forwarded, fiziksel player/focus/route matrisi henüz yapılmadı.
+Session controller native serialization/epoch sahibi olmaya devam eder.
+Stop finally iki player'ı dener; close ilk hatayı korur, diğer kaynağı yine
+kapatır ve tekrar çağrıda aynı future döner. UI/home bağlantısı yok; score/
+sequence/AI/history entegrasyonu yok. Reference WAV sonlanması cihazın duyulma
+zamanı veya yanıt onset doğrulaması değildir.
+
+## CORE-04b2 — Ezgi UI (2026-10-12)
+
+MelodySessionScreen private controller sahiplenir; default synthetic-1 üç ton
+(C4/E4/G4), SyntheticMelodyBackend.mobile + native worker. Girişte native init/
+izin/kayıt yok. ListenableBuilder phase/outcome okur; source/Hz candidates
+isteğe bağlı detail. Kesin nota/sıra/hafıza/başarı veya VAD/onset iddiası yok;
+history/skill graph/AI binding yok. Home Deneysel route. Background cancel,
+inactive permission istisnası; dispose resource close başlatır. Native cleanup
+callback bekleyebilir; hard cancel veya bellek erase garantisi yok. Existing
+spacing/typography token'ları kullanılır; fake başarı rengi/animasyonu yok.
+
+## REL-08 — Runtime dışı QA runner (2026-10-13)
+
+tool/quality_check.dart standalone Dart IO; mobil runtime'a import edilmez.
+QualityStep/qualityPlan immutable executable+argv; shell string evaluation yok.
+executeQualityPlan injected executor test seam, sequential fail-fast; process
+stdio miras alınır, root script konumu ve Harmonia pubspec guard ile sabit.
+Default no-pub/no fetch; explicit --fetch locked pub resolution. Hard timeout,
+SDK kurma/upgrade, build/deploy/upload veya hosted CI activation yok. Plan ve
+QA code acceptance cihaz/voice/eğitim acceptance'dan ayrıdır.
+
+## LEARN-02a — Domain draft mikroders (2026-10-13)
+
+micro_lesson.dart typed immutable LessonStep/MicroLesson/Catalog; skor veya
+Flutter UI bağı yok. LessonPhase tam sıra ve bound text/reference sayıları;
+catalog graph skillId→route/dimension tutarlılığını denetler. Identifier
+partition training vs independent vs delayed disjoint; aynı waveform farklı
+ID ile gizlenirse bu şema bunu bilemez, ileride içerik hash/review gerekir.
+awaitsExamples boş slotları görünür tutar. Draft-only educatorApproved=false,
+assessmentEnabled=false, gerçek onay pipeline yok; JSON/IO/upload da yok.
+draft_micro_lessons.dart iki text draft, no audio/exercise/result bridge.
+Lesson reading hiç SkillStatusEvaluator'a aktarılmaz; skor kuralları değişmez.
+
+## LEARN-02b — Salt metin draft reader (2026-10-13)
+
+MicroLessonScreen stateless, yalnız MicroLesson okur. Mic/player/repository/
+completion servis dependency yok; beş faz ve pending content/onay etiketi,
+disabled practice actions. Identifier bağlı olsa bile bu build practice açmaz.
+SkillMapScreen injectable lesson catalog; custom graph için default empty,
+standart graph için draftMicroLessons. Route/dimension eşleşen skill dersleri
+button ile reader'a gider. History Future ve SkillStatusEvaluator unchanged;
+navigation dönüşünde completion result yazılmaz. Mevcut spacing/typography,
+scrollable cards/semantic headers; cihaz reader/visual QA ayrı bekliyor.
+
+## LEARN-02c — Draft catalog interchange (2026-10-13)
+
+MicroLessonCodec dart:convert, IO yok. Exact root/lesson/step keys, int schema1,
+draft kind/review ve type/enum/budget validation; existing constructor+graph
+guard tekrar uygulanır. Catalog tümü kurulmadan prefix verilmez. Text 1MiB
+UTF8; decoded list budget pre-traversal. Fresh export maps, immutable restore;
+parser error source temizlenir. Standard jsonDecode duplicate keys çözümler;
+cryptographic/canonical/hak/etiket/waveform verifier değildir. UI hâlâ typed
+draft catalog kullanır; codec kendiliğinden replace/onay/mastery açmaz.
+
+## LEARN-03c — Süreli günlük plan (2026-10-13)
+
+`domain/learning/daily_plan.dart` saf ve deterministik `DailyPlanner`:
+5/12/15 dk `DailyBudget`, blok türleri kalıcılık kontrolü → zayıf tekrar →
+yeni. Plan yerel gece yarısından önceki sonuçlardan kurulur; bugünkü geçerli
+turlar yalnız ilerleme işaretler (kontrolde yalnız retentionCheck turu).
+Tekrar kuyruğu 1/3/7/14 gün (geçilmiş later-day kontrol sayısıyla), en çok
+gecikmiş önce; bir beceride zayıf seviye varken sonraki seviye yeni sayılmaz;
+günde en fazla 1/2 yeni. `MeasuredExercise.draftMinutes` (ritim/tiz-pes 2,
+derece 3) geliştirici tahmini. Boş süre doldurulmaz, açıkça gösterilir.
+Mastery merdiveni/eşikleri değişmedi; `exercise_launcher.dart` home önerisi
+ve plan ekranının ortak egzersiz açıcısı. Bütçe seçimi kalıcı değil (ekran state).

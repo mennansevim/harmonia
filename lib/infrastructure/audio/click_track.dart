@@ -61,3 +61,32 @@ Pcm16Wav renderTonePair(
     ],
   );
 }
+
+/// Synthetic tones played one after another: (Hz, seconds) with silence gaps
+/// (seconds) after each tone. Local only.
+Pcm16Wav renderToneSequence(
+  List<(double, double)> tones, {
+  List<double>? gapsAfter,
+  int sampleRateHz = 48000,
+}) {
+  if (tones.isEmpty || tones.length > 16) {
+    throw ArgumentError('Need 1–16 tones');
+  }
+  final gaps = gapsAfter ?? List.filled(tones.length, 0.1);
+  if (gaps.length != tones.length || gaps.any((g) => g < 0 || g > 2)) {
+    throw ArgumentError('Gaps must match tones (0–2 s)');
+  }
+  final samples = <double>[];
+  for (var i = 0; i < tones.length; i++) {
+    final (hz, seconds) = tones[i];
+    samples.addAll(
+      Pcm16Wav.tone(
+        frequencyHz: hz,
+        sampleRateHz: sampleRateHz,
+        durationSeconds: seconds,
+      ).samples,
+    );
+    samples.addAll(List.filled((gaps[i] * sampleRateHz).round(), 0.0));
+  }
+  return Pcm16Wav(sampleRateHz: sampleRateHz, samples: samples);
+}

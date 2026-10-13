@@ -6,6 +6,7 @@ import 'package:harmonia/application/result_history.dart';
 import 'package:harmonia/domain/models/learner_profile.dart';
 import 'package:harmonia/features/audio_lab/audio_lab_screen.dart';
 import 'package:harmonia/features/history/history_screen.dart';
+import 'package:harmonia/features/interval/interval_screen.dart';
 import 'package:harmonia/features/pitch_comparison/pitch_comparison_screen.dart';
 import 'package:harmonia/features/rhythm_imitation/rhythm_imitation_screen.dart';
 import 'package:harmonia/features/single_tone_session/single_tone_session_screen.dart';
@@ -75,6 +76,7 @@ void main() {
       ),
       HistoryScreen(history: InMemoryResultHistory()),
       PitchComparisonScreen(player: FakeClipPlayer()),
+      IntervalScreen(player: FakeClipPlayer()),
     ]) {
       await tester.pumpWidget(MaterialApp(home: screen));
       await tester.pumpAndSettle();

@@ -8,6 +8,7 @@ import 'package:harmonia/domain/learning/skill_graph.dart';
 import 'package:harmonia/domain/learning/today_planner.dart';
 import 'package:harmonia/domain/models/exercise_result.dart';
 import 'package:harmonia/domain/models/learner_profile.dart';
+import 'package:harmonia/domain/perception/interval_identification.dart';
 import 'package:harmonia/domain/perception/pitch_comparison.dart';
 
 final _day = DateTime(2026, 10, 11, 10);
@@ -112,8 +113,38 @@ void main() {
         await _rhythm(p, 10 + p * 2),
         await _rhythm(p, 11 + p * 2),
       ],
+      for (var l = 0; l < 2; l++)
+        for (var k = 0; k < 2; k++) _interval(l, 30 + l * 2 + k),
     ];
     final s = _rec(all);
     expect(s.kind, NextStepKind.allDone);
   });
+
+  test(
+    'after tone pairs and pulse, the route reaches movable-do degrees',
+    () async {
+      final s = _rec([
+        _perc(0, 1),
+        _perc(0, 2),
+        _perc(1, 3),
+        _perc(1, 4),
+        await _rhythm(0, 5),
+        await _rhythm(0, 6),
+      ]);
+      expect(s.node!.id, 'tonic-degree');
+      expect(s.exercise!.exerciseId, 'draft-int-do-re-mi-sol');
+    },
+  );
+}
+
+ExerciseResult _interval(int level, int minute) {
+  final r = IntervalRound.generate(draftIntervalLevels[level], Random(minute));
+  return IntervalOutcome(
+    round: r,
+    answers: [for (final i in r.items) i.degree],
+    plays: List.filled(8, 1),
+  ).toResult(
+    sessionId: 's',
+    createdAt: _day.add(Duration(minutes: minute)),
+  );
 }

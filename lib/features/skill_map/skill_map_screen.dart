@@ -2,10 +2,13 @@ import 'package:flutter/material.dart';
 
 import '../../app/theme/harmonia_theme.dart';
 import '../../application/result_history.dart';
+import '../../domain/content/draft_micro_lessons.dart';
+import '../../domain/learning/micro_lesson.dart';
 import '../../domain/learning/measured_exercise.dart';
 import '../../domain/learning/skill_graph.dart';
 import '../../domain/models/exercise_result.dart';
 import '../../domain/models/learner_profile.dart';
+import '../learning/micro_lesson_screen.dart';
 
 /// LEARN-01 view: recommended order for the learner's goal and an
 /// evidence-backed state per skill. Nothing is locked; unknown is shown.
@@ -16,17 +19,24 @@ class SkillMapScreen extends StatefulWidget {
     this.history,
     this.graph,
     this.catalog,
+    this.lessons,
   });
   final PracticeGoal goal;
   final ResultHistoryRepository? history;
   final SkillGraph? graph;
   final List<MeasuredExercise>? catalog;
+  final MicroLessonCatalog? lessons;
   @override
   State<SkillMapScreen> createState() => _SkillMapScreenState();
 }
 
 class _SkillMapScreenState extends State<SkillMapScreen> {
   late final SkillGraph graph = widget.graph ?? draftSkillGraph;
+  late final MicroLessonCatalog lessons =
+      widget.lessons ??
+      (widget.graph == null
+          ? draftMicroLessons
+          : MicroLessonCatalog(graph: graph, lessons: const []));
   late final Future<List<ExerciseResult>> _results = _load();
 
   Future<List<ExerciseResult>> _load() async {
@@ -70,6 +80,14 @@ class _SkillMapScreenState extends State<SkillMapScreen> {
                 _SkillCard(
                   node: node,
                   graph: graph,
+                  lessons: lessons
+                      .forSkill(node.id)
+                      .where(
+                        (lesson) =>
+                            lesson.route == node.route &&
+                            lesson.dimension == node.dimension,
+                      )
+                      .toList(),
                   state: historyError
                       ? MasteryState.notMeasured
                       : SkillStatusEvaluator.stateOf(
@@ -91,10 +109,12 @@ class _SkillCard extends StatelessWidget {
     required this.node,
     required this.graph,
     required this.state,
+    required this.lessons,
   });
   final SkillNode node;
   final SkillGraph graph;
   final MasteryState state;
+  final List<MicroLesson> lessons;
 
   @override
   Widget build(BuildContext context) {
@@ -131,6 +151,16 @@ class _SkillCard extends StatelessWidget {
             Text(supportLabel(node.support), style: text.bodySmall),
             if (pre.isNotEmpty)
               Text('Önce: ${pre.join(', ')}', style: text.bodySmall),
+            for (final lesson in lessons)
+              OutlinedButton(
+                key: Key('open_lesson_${lesson.id}'),
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => MicroLessonScreen(lesson: lesson),
+                  ),
+                ),
+                child: Text('Metin taslağını oku: ${lesson.title}'),
+              ),
           ],
         ),
       ),

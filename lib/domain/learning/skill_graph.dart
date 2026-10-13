@@ -226,7 +226,8 @@ SkillNode _n(
 );
 
 /// Draft graph (developer proposal from LEARNING_MODEL; educator review
-/// pending). Measured links: rhythm imitation and tone-pair perception.
+/// pending). Measured links: rhythm imitation, tone-pair perception and
+/// movable-do degree hearing.
 final SkillGraph draftSkillGraph = SkillGraph([
   _n(
     'pitch-high-low',
@@ -269,7 +270,8 @@ final SkillGraph draftSkillGraph = SkillGraph([
     'Tonal merkezi duyup bir sesin derecesini bulmak.',
     SkillStage.directionAndTonic,
     SkillDimension.perception,
-    MeasurementSupport.awaitingContent,
+    MeasurementSupport.measuredInApp,
+    exercises: ['draft-int-do-re-mi-sol', 'draft-int-do-to-la'],
     pre: ['interval-direction'],
   ),
   _n(

@@ -1,11 +1,11 @@
 # Harmonia — Current Roadmap
 
-**Tarih:** 2026-10-11 (son güncelleme: modül envanteri + kalibrasyon/kabuk paketleri)
+**Tarih:** 2026-10-13 (son güncelleme: LEARN-03c süreli günlük plan)
 **Durum:** Faz 1 — güvenilirlik sözleşmeleri, yerel kayıt laboratuvarı, deneysel DSP/worker, kalibrasyon/kalite kapısı ve misafir uygulama kabuğu kod-test seviyesinde. Tek ses skor ekranı hâlâ simülasyon; fiziksel cihaz, insan sesi benchmark'ı, eğitimci içerik onayı ve öğretim pilotu kapıları açık. **Hiçbir modül cihazda/pilotta doğrulanmış veya yayında değil.**
 **Sahip:** Mennan Sevim  
 **Platform:** Flutter mobil uygulama; ileride web ve öğretmen paneli
 
-**Son kod doğrulaması (2026-10-11, 21:40 TRT devam paketi):** 422 test geçti (+21), analyze temiz, format 122 dosya/0 değişiklik; CAL-03a bounded gecikme diagnostic tahmincisi eklendi. Önceki 401-test paketinde iOS simulator build/elle gezinti başarılıydı; bu tur mobil build veya cihaz testi yapılmadı. Fiziksel mikrofon, gerçek kullanıcı ve Android kapıları açık.
+**Son kod doğrulaması (2026-10-13, 20:45 TRT):** `dart tool/quality_check.dart` exit 0: 574 test geçti (+19), analyze temiz, format 165 dosya/0 değişiklik. LEARN-03c süreli günlük plan. CI etkin değil; build/cihaz testi yapılmadı. iOS Xcode/Flutter lipo, gerçek voice/cihaz ve eğitimci kapıları açık.
 
 **CAL-03a:** Ortak gözlenen saat, route/rate bağlamı ve 8–64 trial doğrulanır; medyan/MAD/ham P90–P10, aykırı trial indeksleri ve çekimser durumlar raporlanır. Planlanan playback timestamp'i duyulmuş klik değildir; mixed clock ve inferred route reddedilir. Tap hizalama motor yanlılığını içerir; loopback toplam gecikmesi dokunma pipeline'ına taşınamaz. Bu diagnostic **LatencyCalibration üretmez, ritim düzeltmez ve count-in açmaz**. Gerçek ölçüm adapter'ı/protokolü CAL-03b ve cihaz kapısı açık.
 
@@ -17,7 +17,75 @@
 
 **iOS simulator build engeli (ortam):** Xcode 26.6 `lipo`, Flutter 3.44.4'ün `lipo <bin> -verify_arch arm64 x86_64` çağrısını reddediyor (“requires exactly one input file”); mimariler tek tek doğrulanınca geçiyor. Önceki başarılı derlemeler bu adımı önbellekten atlamıştı; motor önbelleği yenilenince ortaya çıktı. Kod kaynaklı değil. Çözüm kullanıcı ortamında: Flutter'ı bu Xcode'u destekleyen sürüme güncellemek veya uyumlu Xcode/Command Line Tools seçmek.
 
+**INT-01a (23:30 TRT, ADR-024 hareketli do):** “Dereceyi bul” dinleme çalışması — her soruda tonik bağlamı (do–mi–sol), sonra do → hedef derece; ton soru başına değişir; cevap hece + aralık adı; seçenekler dengeli; şans düzeyi ve en çok karışan derece çifti gösterilir; 3 taslak seviye. Sonuç `Skill.interval`, `solfege: movable_do`, algı boyutu. Beceri grafiğinde “Tonik ve dereceler” ölçülüyor (ilk iki seviye, ≥7/8 × 2); günlük öneri rotada buraya ulaşır. 466 test, analyze/format temiz. Eğitimci terminoloji/içerik onayı yok; iOS simulator build engeli (Xcode lipo) sürüyor.
+
 ## Modül envanteri (A–Q) — kanıt durumu
+
+**2026-10-13 20:45 TRT — LEARN-03c:** Home'da Deneysel "Günlük çalışma
+rotası": 5/12/15 dk plan; kalıcılık kontrolü (1/3/7/14 gün kuyruğu) → zayıf
+tekrar → yeni; gün içi sabit plan ve tur ilerlemesi; boş süre açıkça yazılır.
+19 yeni test, 574 suite. Süreler/aralıklar taslak; eğitimci ve öğrenme pilotu
+kapısı açık. Mastery eşikleri değişmedi.
+
+**2026-10-13 19:17 TRT — LEARN-02c:** Sürümlü draft-only JSON codec;
+strict fields/types/enums/budgets, graph/phase/held-out ID yeniden doğrulama,
+no accepted prefix ve sanitized parser error. 11 yeni test, son full 555.
+Automatic file/asset/import UI veya gerçek onay yok. Sonraki LEARN-03 süreli
+5/12/15dk günlük plan, taslak süreler/öğretim kapısı ayrı.
+
+**2026-10-13 14:17 TRT — LEARN-02b:** Beceri haritasından iki taslak mikroders
+okunuyor; görünür onay/örnek bekleme, beş faz ve algı/üretim. Practice disabled,
+audio/mic/history/mastery/completion yok. 6 widget testi, 544 full suite;
+okuma pedagojik kazanım değil. Sonraki LEARN-02c versioned strict JSON draft
+katalog/import kapısı; EDU-01 gerçek onay ve örnek bankası hâlâ açık.
+
+**2026-10-13 09:15 TRT — LEARN-02a:** Mikroders beş faz ve skill/route/algı-
+üretim bağlama sözleşmesi; immutable/bounded, training/control ID leak reddi.
+İki yalnız metin taslağı (tiz/pes, puls); boş örnek bankası ve onay/assessment
+kapalı. Okuma/mastery bridge yok. 9 yeni test; sonraki LEARN-02b taslak okuma
+ekranı/skill-map erişimi. 12 onaylı mikroünite veya öğretim kabulü değil.
+
+**2026-10-13 04:20 TRT — REL-08:** Script-root Harmonia guard, read-only
+format→analyze→full suite, fail-fast exit, explicit locked --fetch ve --plan.
+10 runner/CLI testi, 529 full suite. Hosted CI/docs taslağı etkin değil;
+code checks ses/cihaz/pilot kabulü değil. Sıradaki hazır LEARN-02 mikroders
+şeması; gerçek içerik için eğitimci onayı açık tutulur.
+
+**2026-10-12 23:20 TRT — CORE-04b2:** Ana menüde Deneysel kısa ezgi kartı;
+üç sentetik ton→bekle→söyle→quality→puansız detail ekranı. Girişte izin/kayıt
+yok, kaynak/Hz adayları açık; history/mastery/AI/scorer bağı yok. 8 fake widget
+testi (320px/1.8×, lifecycle, izin, kalite, a11y) ve 519 suite. CORE-04 gerçek
+voice/device/pedagoji, recall ve hata bölüm loop kapıları açık. Sıradaki güvenli
+bağımsız paket REL-08 local QA runner/CI taslağı, sonra LEARN-02 mikroders.
+
+**2026-10-12 18:20 TRT — CORE-04b1:** Typed ezgi reference'inden 3–5 sıralı
+sentetik ton WAV'ı ve capture+clip player adapter'ı; varsayılan tek C4 fallback
+yok. Stop/close hata halinde iki kaynağı da kapatmayı dener; mock source korunur.
+8 yeni regresyon, 511 full test. Gerçek piyano/cihaz/eğitimci kanıtı değil;
+CORE-04b2 puansız ekran ve home bağlantısı sırada. Skor/başarı kapalı.
+
+**2026-10-12 13:13 TRT — CORE-04a:** Puansız ezgi application koordinatörü;
+3–5 nota reference bağlama sözleşmesi, kalibrasyon/kalite kapısı, tamamlanan
+player callback sayımı ve diagnostic segment raporu. Native komutlar sıralı;
+iptal, geç worker ve pending-start temizliği testli. Ürün adapter/ekranı henüz
+yok (CORE-04b); callback sayısı duyma/hafıza kanıtı değil. Başarı/skor kapalı.
+
+**2026-10-12 07:51 TRT — CORE-03b diagnostic segmentleme:** Recording frame
+kanıtından hedef bağımsız periodic pitch adayları çıkaran `PitchSegmenter`
+eklendi. Sessizlik/clip/unreliable ve kapsanmayan zaman boşluğu üzerinden
+birleştirme yok; kısa run/spike indeksleri açıkça discarded evidence'da.
+Ham oktav korunur; sınırlar window-center tahmini, gerçek onset veya VAD değil.
+Ürün başarı/memory/timing/skor bağlantısı kapalı; CORE-04 oturum/UI ve gerçek
+VAD/ezgi benchmark/cihaz kapıları açık. Son doğrulama IMPLEMENTATION_LOG'da.
+
+**2026-10-12 02:47 TRT heartbeat — CORE-03a:** Mevcut beceri grafiği/günlük
+plan/aralık geliştirmeleri korundu; sıradaki bağımsız ezgi altyapısı uygulandı.
+Önceden segmentlenmiş monofonik olayları exact-order karşılaştıran bounded
+`PitchSequenceAligner`: doğru/yanlış pitch/yanlış oktav/eksik/fazla adımları ve
+immutable kaynaklı kanıt. Aynı nota sayısı, ters sıra veya tekrarlanan cevap
+başarı sayılmaz. Boş/bozuk cevapta sıra kararı null; timing/memory/skor yok.
+**480 test (+14), analyze temiz, format 143/0.** Mobil build/gerçek cihaz testi
+yapılmadı. PCM segmentleme, VAD/insan benchmark'ı ve ezgi ekranı açık.
 
 Durum sözlüğü: **Planlandı → Geliştiriliyor → Kod-test tamamlandı → Cihazda doğrulandı → Eğitim pilotunda doğrulandı → Yayında.** Bir modül, alt paketlerinden biri kod-test olduğunda değil, kendi kabul kapılarının hepsi geçtiğinde ilerler. Tamamlanma yüzdesi verilmez. İş ID'leri: [IMPLEMENTATION_ROADMAP.md §11](./IMPLEMENTATION_ROADMAP.md#11-modül-envanteri-iş-idleri-2026-10-11).
 
@@ -27,11 +95,11 @@ Durum sözlüğü: **Planlandı → Geliştiriliyor → Kod-test tamamlandı →
 | B. Ses motoru ve oturum | Geliştiriliyor | Kayıt/çalma lab, bounded WAV, YIN frame, kayıt diagnostics, native isolate, epoch iptal; **noise-floor kalibrasyonu, kalite kapısı, route politikası, latency sözleşmesi (CAL-01)**; **tek ses ürün oturum koordinatörü (SESSION-01)**; **canlı giriş seviyesi göstergesi (UX-03a; eklenti genliği, yalnız görüntü)**; just_audio tekrar oynatma düzeltmesi; **açılışta yetim geçici ses temizliği + ayarlarda hata uyarısı (SESSION-02)** | Gerçek VAD (VAD-01), latency ölçüm prosedürü (CAL-03), worker hard cancel | Fiziksel iOS/Android route matrisi (CAL-02), etiketli insan benchmark'ı (BENCH-01) |
 | C. Tek ses | Geliştiriliyor | Scorer v2, oktav kuralı, nötr geçersiz sonuç; mock senaryo ekranı (Simülasyon); **gerçek kayıtlı “dinle ve söyle” oturum ekranı — puansız, doğru/yanlış kapalı** | Gerçek karar (CORE-01) yalnız VAD/benchmark sonrası | BENCH-01, cihaz QA |
 | D. Ses aralığı | Planlandı | — | AUD-DEV-06 | BENCH-01; SATB/sağlık iddiası yok |
-| E. Aralık / fonksiyonel duyma | Geliştiriliyor | `Skill.interval` enum'u; **ön basamak: tiz/pes algı çalışması (PERC-01)** | INT-01 içerik+algı/üretim ayrımı | Eğitimci (fixed/movable-do kararı) |
+| E. Aralık / fonksiyonel duyma | Geliştiriliyor | Tiz/pes algı (PERC-01); **hareketli do derece duyma (INT-01a)**; algı ve üretim ayrı | INT-01 içerik+algı/üretim ayrımı | Eğitimci (fixed/movable-do kararı) |
 | F. Ritim | Geliştiriliyor | Event alignment + vuruş bazlı hizalama; **dinle→tekrar et taklit modu (CORE-02a): pointer engine timestamp, ilk dokunuş çapası (zamanlaması ölçülmez), sentetik klik referansı, dinleme kotası, zaman çizelgesi, tempo ipucu**; 3 taslak desen | Eşzamanlı/count-in mod CAL-03'e bağlı (CORE-02b); ritim okuma/dikte | Eğitimci desen onayı ve tolerans kalibrasyonu; fiziksel dokunma örnekleme ölçümü |
-| G. Ezgi | Planlandı | Fail-closed placeholder analyzer | Segmentleme/sequence alignment (CORE-03/04) | Ezgi fixture'ları |
+| G. Ezgi | Geliştiriliyor | Fail-closed placeholder analyzer; CORE-03a symbolic alignment; CORE-03b diagnostic segmentleme; CORE-04a puansız session; CORE-04b1 sentetik reference; CORE-04b2 puansız ekran/home (8 widget testi) | Güvenilir bölüm döngüsü, gerçek segmentleme kabulü ve timing/hafıza/recall protokolü | İzinli ezgi fixture'ları, VAD/benchmark, cihaz ve eğitimci QA |
 | H. 2/3/4 piyano | Geliştiriliyor (içerik bekliyor) | Kapalı placeholder katalog/ekran, renderer alternatifi | Reviewed manifest/player/session (CONS-01/02) | **Kullanıcının piyano kayıtları** + birlikte QA |
-| I. Dersler / rotalar | Geliştiriliyor | LEARNING_MODEL tasarımı; **taslak beceri grafiği + durum merdiveni + beceri haritası (LEARN-01a)**; **kural tabanlı tek sonraki adım (LEARN-03a): hedefli tekrar (baskın hata) → yeni desen → ertesi gün tek dinlemeli kalıcılık kontrolü; home “Bugünkü öneri” ve sonuç ekranı kartı; taslak ölçüt görünür** | Beceri grafiği/mikroders (LEARN-01/02), günlük plan süreleri (LEARN-03), EDU-01 | Eğitimci ölçüt ve içerik onayı; öğrenme etkisi pilotu |
+| I. Dersler / rotalar | Geliştiriliyor | Taslak graph/merdiven/harita (LEARN-01a), rota önerisi (LEARN-03a/b), süreli günlük plan (LEARN-03c); LEARN-02a/b mikroders sözleşmesi + iki metin/reader; LEARN-02c strict draft JSON codec | Reviewed örnek bankası/ders akışı ve IO adapter, beceri raporu → tek hedef (LEARN-04), EDU-01 | Eğitimci ölçüt/içerik onayı ve öğrenme etkisi pilotu; okuma mastery değildir |
 | J. Sonuçlar / gelişim | Geliştiriliyor | Sonuç v2 + katı `fromJson`; **yerel geçmiş (CORE-05): attempt ID tekilleştirme, çakışmada üzerine yazmama, açık kapasite, seri atomik yazma, bozuk dosyayı koruma; geçmiş ekranı (aynı cohort'ta ≥3 geçerli deneme yoksa “bilinmiyor”), tek/toplu silme**; ritim sonuçları `touch` kaynağıyla kaydediliyor | Export (DATA-03) | — |
 | K. Offline / hesap / backend | Geliştiriliyor | Atomik yerel JSON store + misafir profil + yerel sonuç geçmişi (tamamen offline) | Backend ADR (DATA-01), sync/outbox (DATA-02), consent (DATA-03) | Backend hesabı/maliyet onayı |
 | L. AI koç | Geliştiriliyor | **Girdi/çıktı sözleşmesi, katı doğrulayıcı, zaman aşımı + yedek, 12 yerel eval (AI-02a); canlı çağrı yok** | AI-01 sunucu gateway, AI-03 gerçek model eval, UI bağlantısı | Ücretli API onayı, gateway |
@@ -279,6 +347,7 @@ Faz 0/1 kapsamında kod tabanı ilk kez oluşturuldu (`agoravoiceweb`'e dokunulm
 - [x] AUD-DEV-04 diagnostic bağlantı alt paketi: owned file bütçesi/header, explicit PCM kaynak, isteğe bağlı worker, stale load/result/error ve lifecycle testleri. Tam exercise session/VAD/cihaz ve hard cancel kapıları açık.
 - [x] CAL-01 (AUD-DEV-05 kod alt paketi): noise-floor kalibrasyonu, kalite kapısı, route politikası, latency sözleşmesi ve lab bağlantısı. Cihaz eşik doğrulaması (CAL-02) açık.
 - [x] SESSION-01: tek ses ürün oturum koordinatörü + ekran; puansız, hoparlörde referans bitmeden kayıt yok, cevap analizden önce silinir. Cihaz QA açık.
+- [x] INT-01a: hareketli do derece duyma (tonik bağlamı, ton değişimi, karışma analizi). Aralık söyleme (üretim), harmonik/inen aralıklar ve eğitimci onayı açık.
 - [x] LEARN-03b: rota genelinde (algı + ritim) tek günlük öneri; algıda tek dinlemeli kalıcılık kontrolü.
 - [x] PERC-01: tiz/pes algı çalışması (dokunma cevaplı, şans düzeyi gösterilir); beceri grafiğine bağlı. Eğitimci içerik onayı ve simülatör/cihaz denemesi açık.
 - [x] LEARN-01a: taslak beceri grafiği, kanıta dayalı durum merdiveni, beceri haritası ekranı. Eğitimci onayı, mikroders içeriği (LEARN-02) açık.
@@ -341,3 +410,4 @@ Kod yazmaya başlamadan önce `PRODUCT_SPEC.md`, `ARCHITECTURE.md` ve `DECISIONS
 | 2026-10-11 — beceri grafiği | LEARN-01a taslak beceri grafiği, durum merdiveni ve beceri haritası. 436 test (CAL-03a dahil), analyze/format temiz. |
 | 2026-10-11 — algı | PERC-01 tiz/pes algı çalışması, ortak ölçülen egzersiz arayüzü. 448 test; iOS simulator build araç hatası (ortam). |
 | 2026-10-11 — günlük öneri | LEARN-03b beceri grafiği tabanlı günlük öneri. 454 test. iOS simulator build Xcode lipo uyumsuzluğuyla engelli (ortam). |
+| 2026-10-11 — aralık | INT-01a hareketli do derece duyma, ADR-024. 466 test. |
