@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../app/app_channel.dart';
 import '../../app/app_services.dart';
 import '../../app/theme/harmonia_theme.dart';
 import '../../application/result_history.dart';
@@ -37,9 +38,13 @@ class HomeScreen extends StatelessWidget {
     super.key,
     required this.profile,
     required this.onOpenSettings,
+    this.channel = AppChannel.dev,
   });
 
   final LearnerProfile profile;
+
+  /// Beta hides developer diagnostics, simulations and placeholders.
+  final AppChannel channel;
   final VoidCallback onOpenSettings;
 
   void _push(BuildContext context, Widget screen) => Navigator.of(
@@ -97,10 +102,12 @@ class HomeScreen extends StatelessWidget {
               _TodayCard(history: history, goal: profile.goal),
               const SizedBox(height: HarmoniaSpacing.md),
             ],
-            _PrimaryCard(
-              onPressed: () => _push(context, const AudioLabScreen()),
-            ),
-            const SizedBox(height: HarmoniaSpacing.sm),
+            if (channel.showsDeveloperTools) ...[
+              _PrimaryCard(
+                onPressed: () => _push(context, const AudioLabScreen()),
+              ),
+              const SizedBox(height: HarmoniaSpacing.sm),
+            ],
             _ModuleTile(
               key: const Key('open_single_tone_session'),
               icon: Icons.hearing,
@@ -176,26 +183,28 @@ class HomeScreen extends StatelessWidget {
               availability: ModuleAvailability.experimental,
               onTap: () => _push(context, const MelodySessionScreen()),
             ),
-            const SizedBox(height: HarmoniaSpacing.lg),
-            Text('Önizlemeler', style: text.titleMedium),
-            const SizedBox(height: HarmoniaSpacing.sm),
-            _ModuleTile(
-              key: const Key('open_single_tone'),
-              icon: Icons.music_note_outlined,
-              title: 'Tek ses sonuç örnekleri',
-              subtitle:
-                  'Sonuç ekranlarını hazır senaryolarla gör. Sesin ölçülmez.',
-              availability: ModuleAvailability.demo,
-              onTap: () => _push(context, SingleToneExerciseScreen()),
-            ),
-            _ModuleTile(
-              key: const Key('open_chord_placeholders'),
-              icon: Icons.library_music_outlined,
-              title: '2 / 3 / 4 sesli piyano',
-              subtitle: 'Gerçek piyano kayıtları eklenince açılacak.',
-              availability: ModuleAvailability.awaitingContent,
-              onTap: () => _push(context, const ChordPlaceholderScreen()),
-            ),
+            if (channel.showsDeveloperTools) ...[
+              const SizedBox(height: HarmoniaSpacing.lg),
+              Text('Önizlemeler', style: text.titleMedium),
+              const SizedBox(height: HarmoniaSpacing.sm),
+              _ModuleTile(
+                key: const Key('open_single_tone'),
+                icon: Icons.music_note_outlined,
+                title: 'Tek ses sonuç örnekleri',
+                subtitle:
+                    'Sonuç ekranlarını hazır senaryolarla gör. Sesin ölçülmez.',
+                availability: ModuleAvailability.demo,
+                onTap: () => _push(context, SingleToneExerciseScreen()),
+              ),
+              _ModuleTile(
+                key: const Key('open_chord_placeholders'),
+                icon: Icons.library_music_outlined,
+                title: '2 / 3 / 4 sesli piyano',
+                subtitle: 'Gerçek piyano kayıtları eklenince açılacak.',
+                availability: ModuleAvailability.awaitingContent,
+                onTap: () => _push(context, const ChordPlaceholderScreen()),
+              ),
+            ],
           ],
         ),
       ),

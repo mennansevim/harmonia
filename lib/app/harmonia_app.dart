@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../application/app_shell_controller.dart';
+import '../application/error_log.dart';
 import '../application/profile_repository.dart';
 import '../application/practice_preferences.dart';
 import '../application/result_history.dart';
@@ -13,6 +14,7 @@ import '../infrastructure/audio/orphan_audio_cleaner.dart';
 import '../infrastructure/storage/file_profile_repository.dart';
 import '../infrastructure/storage/file_practice_preferences.dart';
 import '../infrastructure/storage/file_result_history.dart';
+import 'app_channel.dart';
 import 'app_services.dart';
 import 'theme/harmonia_theme.dart';
 
@@ -24,6 +26,8 @@ class HarmoniaApp extends StatefulWidget {
     this.history,
     this.startupCleanup,
     this.preferences,
+    this.channel,
+    this.errorLog,
   });
 
   /// Defaults to the on-device JSON profile; tests inject in-memory storage.
@@ -37,6 +41,12 @@ class HarmoniaApp extends StatefulWidget {
 
   /// Defaults to on-device practice preferences (daily plan budget).
   final PracticePreferencesRepository? preferences;
+
+  /// Defaults to the build-time channel (HARMONIA_CHANNEL).
+  final AppChannel? channel;
+
+  /// This run's unexpected errors (main installs the handlers).
+  final LocalErrorLog? errorLog;
 
   @override
   State<HarmoniaApp> createState() => _HarmoniaAppState();
@@ -78,7 +88,12 @@ class _HarmoniaAppState extends State<HarmoniaApp> {
 
   void _openSettings() => _navigator.currentState?.push(
     MaterialPageRoute<void>(
-      builder: (_) => SettingsScreen(controller: _shell, history: _history),
+      builder: (_) => SettingsScreen(
+        controller: _shell,
+        history: _history,
+        channel: widget.channel ?? AppChannel.current,
+        errorLog: widget.errorLog,
+      ),
     ),
   );
 
@@ -118,6 +133,7 @@ class _HarmoniaAppState extends State<HarmoniaApp> {
         AppShellPhase.ready => HomeScreen(
           profile: _shell.profile!,
           onOpenSettings: _openSettings,
+          channel: widget.channel ?? AppChannel.current,
         ),
       },
     ),

@@ -717,3 +717,28 @@ tamamlanmadı. Roadmap/testing/mimari/ADR/devir güncellendi. Build/mic/cihaz/
 insan/eğitimci pilot/API/upload/ödeme/commit/push/deploy yok. Agora read-only
 kontrolü temiz, kaynakları değiştirilmedi. Piano placeholders/success gate aynı;
 önceki simulator/SDK kaydı korunur. Otomatik takip tamamlandı sayılmadı.
+
+## 2026-10-14 11:55 TRT — REL-09 yayın hijyeni + OPS-01a yerel hata günlüğü
+
+Kullanıcı "canlıya çıkış için geliştirme açıkları" sordu; dış kapısız işler
+uygulandı ve RELEASE_READINESS.md yazıldı (iç beta / Core / ücretli yayın
+açıkları, tür: kod/karar/dış). Bu oturum yeniden başlarken otomatik ajanın
+SHELL-04b/c/d ve REL-06a işleri ağaçta bulundu, korundu.
+- **REL-09:** `lib/app/app_channel.dart` (`--dart-define=HARMONIA_CHANNEL=dev|beta`,
+  bilinmeyen değer hata); beta'da ses laboratuvarı, simülasyon ve piyano
+  placeholder gizli; Ayarlar → Hakkında kanal. Android label/iOS CFBundleName
+  "Harmonia"; release imzalama `android/key.properties` (yoksa uyarı + debug,
+  mağazaya yüklenemez); keystore dosyaları gitignore. iOS
+  `PrivacyInfo.xcprivacy` (tracking yok, toplanan veri yok, FileTimestamp
+  C617.1) Xcode projesine eklendi ve paket içinde doğrulandı. pubspec açıklaması.
+- **OPS-01a:** `LocalErrorLog` (bellekte ≤50, mesaj metni tutulmaz; tür + ilk
+  `package:harmonia` konumu, dakika hassasiyeti) + `installGlobalErrorHandlers`
+  (FlutterError/PlatformDispatcher; release'te sakin placeholder). Ayarlar →
+  "Uygulama hataları" yalnız hata varsa; rapor panoya kopyalanır, gönderim yok.
+
+**Doğrulama:** ortak runner exit 0: **626 test**, analyze temiz, 185/0 format
+(otomatik ajanın paketleri dahil; bu paket 7 test ekledi: kanal 3, hata 4).
+`flutter build ios --simulator --debug --dart-define=HARMONIA_CHANNEL=beta`
+başarılı, PrivacyInfo paket içinde, CFBundleName Harmonia. `flutter build apk
+--debug` başarılı (Gradle CMake 3.22.1 kurdu). Gerçek cihaz/emülatör çalıştırma,
+release imzalı build, mağaza yüklemesi yapılmadı. Commit yok.

@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
+import '../../app/app_channel.dart';
 import '../../app/app_services.dart';
 import '../../app/theme/harmonia_theme.dart';
 import '../../application/app_shell_controller.dart';
+import '../../application/error_log.dart';
 import '../../application/result_history.dart';
 import '../history/history_screen.dart';
 import '../onboarding/goal_selection_screen.dart';
@@ -11,10 +14,18 @@ import 'data_transfer_screen.dart';
 /// Settings, help, privacy, subscription and account — all describing only
 /// what exists today. No purchase, account or upload flow is implemented.
 class SettingsScreen extends StatelessWidget {
-  const SettingsScreen({super.key, required this.controller, this.history});
+  const SettingsScreen({
+    super.key,
+    required this.controller,
+    this.history,
+    this.channel = AppChannel.dev,
+    this.errorLog,
+  });
 
   final AppShellController controller;
   final ResultHistoryRepository? history;
+  final AppChannel channel;
+  final LocalErrorLog? errorLog;
 
   Future<void> _changeGoal(BuildContext context) => Navigator.of(context).push(
     MaterialPageRoute<void>(
@@ -172,9 +183,44 @@ class SettingsScreen extends StatelessWidget {
                   label: const Text('Bu cihazdaki profili sil'),
                 ),
               ]),
-              section('Hakkında', const [
+              if (errorLog case final log?)
+                ListenableBuilder(
+                  listenable: log,
+                  builder: (context, _) => log.records.isEmpty
+                      ? const SizedBox.shrink()
+                      : section('Uygulama hataları', [
+                          Text(
+                            'Bu oturumda ${log.records.length + log.dropped} beklenmeyen hata yakalandı. '
+                            'Rapor yalnız hata türü ve kod konumunu içerir; ses, sonuç veya yazdığın metin yoktur. '
+                            'Cihazdan çıkmaz; istersen kopyalayıp destekle paylaşabilirsin.',
+                            key: const Key('error_summary'),
+                          ),
+                          TextButton(
+                            key: const Key('copy_error_report'),
+                            onPressed: () async {
+                              await Clipboard.setData(
+                                ClipboardData(
+                                  text: log.report(channel: channel.name),
+                                ),
+                              );
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      'Hata raporu panoya kopyalandı.',
+                                    ),
+                                  ),
+                                );
+                              }
+                            },
+                            child: const Text('Hata raporunu kopyala'),
+                          ),
+                        ]),
+                ),
+              section('Hakkında', [
                 Text(
-                  'Harmonia geliştirme sürümüdür. Ses değerlendirmesi deterministik ölçümle yapılır; yapay zekâ puan vermez. Sınav kazanma garantisi verilmez.',
+                  'Harmonia ${channel.label.toLowerCase()}dür. Ses değerlendirmesi deterministik ölçümle yapılır; yapay zekâ puan vermez. Sınav kazanma garantisi verilmez.',
+                  key: const Key('about_channel'),
                 ),
               ]),
             ],

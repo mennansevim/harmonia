@@ -19,6 +19,11 @@
 
 **INT-01a (23:30 TRT, ADR-024 hareketli do):** “Dereceyi bul” dinleme çalışması — her soruda tonik bağlamı (do–mi–sol), sonra do → hedef derece; ton soru başına değişir; cevap hece + aralık adı; seçenekler dengeli; şans düzeyi ve en çok karışan derece çifti gösterilir; 3 taslak seviye. Sonuç `Skill.interval`, `solfege: movable_do`, algı boyutu. Beceri grafiğinde “Tonik ve dereceler” ölçülüyor (ilk iki seviye, ≥7/8 × 2); günlük öneri rotada buraya ulaşır. 466 test, analyze/format temiz. Eğitimci terminoloji/içerik onayı yok; iOS simulator build engeli (Xcode lipo) sürüyor.
 
+**2026-10-14 11:55 TRT — REL-09 / OPS-01a:** Beta kanalı, uygulama adı, release
+imzalama yapılandırması, iOS gizlilik manifesti, yerel hata günlüğü. iOS simulator
+ve Android debug APK build başarılı; gerçek cihazda çalıştırılmadı. Yayın açıkları:
+[RELEASE_READINESS.md](./RELEASE_READINESS.md).
+
 ## Modül envanteri (A–Q) — kanıt durumu
 
 **2026-10-14 10:36 TRT — REL-06a:** Hedef scientific nota/MIDI/frekans/A4

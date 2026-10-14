@@ -325,3 +325,10 @@ scientific note/MIDI0–127, 12TET/A4 expected Hz; ≤0.005000001Hz sadece round
 10 new tests, final runner log'da. ADR-025. Gerçek recording/tuning/rights/voice
 QA değil. Tuning tutarlılığı açık maddesi artık code guard testli; REL-06 tüm
 session/hint/metadata cohort kapısı değil. Release/user dirty korunur, push yok.
+
+**2026-10-14 11:55 TRT — en güncel (kullanıcı oturumu):** REL-09 kanal bayrağı
+(`HARMONIA_CHANNEL=beta` geliştirici araçlarını gizler), Android imzalama/ad,
+iOS PrivacyInfo.xcprivacy; OPS-01a yerel hata günlüğü. RELEASE_READINESS.md
+yayın açıklarını listeler. iOS simulator ve Android debug APK build başarılı.
+626 test. Commit edilmedi. Otomatik ajanla aynı dosyalarda (home/settings/
+harmonia_app) çalışırken mevcut dirty değişiklikleri koru.
