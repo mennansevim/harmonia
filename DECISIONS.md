@@ -193,6 +193,21 @@ sonuçlara bakılarak gevşetilmez. Kaynak korunur; correctionEnabled her zaman 
 
 Derece/aralık çalışmalarında **hareketli do** kullanılır: “do” her zaman o anki tonun ilk sesidir; ton soru başına değişir, böylece mutlak nota adı ezberi yardım etmez. Cevaplar hece (re, mi, fa, sol, la, ti, do') ile, aralık adı (büyük 2'li … tam 8'li) ikincil etiket olarak verilir; iki terminoloji karıştırılmaz. Mutlak nota adları (C4, Do4) yalnız tek ses/oktav gibi mutlak yükseklik görevlerinde kalır. İleride sabit do kullanan kurum şablonu gerekirse ayrı içerik sürümü ve açık etiketle eklenir; mevcut sonuçlarla aynı cohort'ta karşılaştırılmaz.
 
+## ADR-025 — 12TET hedef metadatasının tutarlılığı
+
+**Tarih:** 2026-10-14. **Durum:** REL-06a kod/test; gerçek sample QA değil.
+
+ExerciseProtocol'un 12TET beyanında her absolute target scientific C4/C#4/Db4
+biçiminde olmalı (MIDI0–127). A4×2^((MIDI−69)/12) ile suppliedHz kontrol edilir;
+absolute ≤0.005000001Hz yalnız iki ondalık yuvarlanmış metadata'yı korur.
+Bu pay student/acoustic başarı rubriği değildir; 50cent/25cent/voiced gate aynı.
+Enharmonic boundary octave carry uygulanır, wrong-octave folding yok. JSON v1
+alanları değişmez, yeniden kuruluş aynı stricter guard'ı uygular. Legacy const
+Exercise/mocked demo korunur; mevcut prototype metadata fallback üretilmez.
+Movable-do cevap heceleri absolute target label yerine geçmez. Bu doğrulama
+real sample tuning/clock/frequency, lisans, voice/device veya educator approval
+kanıtı vermez; bu kapılar ayrı. Yeni reader'lar malformed hedefi sessiz düzeltmez.
+
 ## Mevcut kararları değiştirme sınırı
 
 Şu kararlar benchmark veya kullanıcı görüşmesi olmadan değiştirilmemeli:

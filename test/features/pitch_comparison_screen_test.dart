@@ -55,6 +55,10 @@ void main() {
 
     await tester.pumpWidget(MaterialApp(home: HistoryScreen(history: history)));
     await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.textContaining('/8 doğru (dinleme)'),
+      100,
+    );
     expect(find.textContaining('4/8 doğru (dinleme)'), findsOneWidget);
   });
 }

@@ -293,3 +293,35 @@ dışladı, pubspec.lock'ta yalnız SDK'ya bağlı test paketleri değişti. Qua
 check yeni SDK'da exit 0: 596 test, analyze temiz, 174/0 format. Simulator'da
 elle gezinti/gerçek cihaz/mikrofon testi yapılmadı. Android cmdline-tools/lisans
 hâlâ eksik.
+
+**2026-10-13 devam — SHELL-04b:** common/content_status_panel.dart + history/
+chord consumer, history LocalOnlyNotice scoped veri politikası. Loading/empty/
+error explicit retry, auto reset/score/network yok; 6 yeni widget test. Son
+runner 609 test, analyze temiz, 181/0. Günlük plan/export/report/SDK güncellemesi
+zaten devralınmıştı; tekrar yapılmadı. Yayın/channel/privacy/error-log dirty
+işleri korunuyor. Kalan SHELL-04 session resume/tüm consumer matrix ve gerçek
+cihaz/voice/eğitimci kapıları ayrı. Bu tur commit/push/yayın yapılmadı.
+
+**2026-10-14 00:13 TRT — güncel:** SHELL-04c DailyPlanScreen shared state
+consumer + manual retry, selected budget retained, pending no stale plan;
+mounted guard. _loadForView observes immediate errors before frame subscription
+but returns original FutureBuilder future, so failure stays visible. 3 widget
+regressions, final runner IMPLEMENTATION_LOG. No planner/mastery/score changes,
+no data clearing or auto audio resume. Dirty release/channel/privacy/error-log
+work preserved. SHELL-04 all-consumer/session resume and external gates open.
+
+**2026-10-14 05:35 TRT — güncel:** SHELL-04d skill-map shared loading/error
+retry; history unavailable => nullable view state / Durum alınamadı, NOT domain
+notMeasured. Report/focus hidden on failure, text lesson navigation allowed;
+no completion/mastery/history write. Immediate error observer + mounted reload;
+4 new recovery/pending/dispose widgets. Final runner IMPLEMENTATION_LOG.
+Scorer/mastery/learning routes unchanged. Release/platform/user dirty work
+preserved; SHELL-04 resume/all consumers and actual voice/device/EDU gates open.
+
+**2026-10-14 10:36 TRT — güncel:** REL-06a TargetNoteTuning metadata guard
+ExerciseProtocol constructor'a bağlandı, JSON reconstruction da geçer. Strict
+scientific note/MIDI0–127, 12TET/A4 expected Hz; ≤0.005000001Hz sadece rounded
+2-decimal metadata payı. Student tolerances/scorer/legacy Exercise unchanged.
+10 new tests, final runner log'da. ADR-025. Gerçek recording/tuning/rights/voice
+QA değil. Tuning tutarlılığı açık maddesi artık code guard testli; REL-06 tüm
+session/hint/metadata cohort kapısı değil. Release/user dirty korunur, push yok.

@@ -1,4 +1,5 @@
 import 'exercise.dart';
+import '../audio/target_note_tuning.dart';
 
 enum ReferencePresentation { sequential, simultaneous }
 
@@ -72,6 +73,7 @@ class ExerciseProtocol {
       previous = onset;
     }
     for (var i = 0; i < notes.length; i++) {
+      TargetNoteTuning.validate(notes[i].note, a4Hz: a4Hz);
       if (presentation == ReferencePresentation.simultaneous &&
           notes[i].onsetBeats != 0) {
         throw ArgumentError('Simultaneous notes must share onset zero');

@@ -14,6 +14,7 @@ import '../../domain/models/learner_profile.dart';
 import '../learning/exercise_launcher.dart';
 import '../learning/micro_lesson_screen.dart';
 import '../learning/next_step_text.dart';
+import '../common/content_status_panel.dart';
 
 /// LEARN-01 view: recommended order for the learner's goal and an
 /// evidence-backed state per skill. Nothing is locked; unknown is shown.
@@ -49,7 +50,22 @@ class _SkillMapScreenState extends State<SkillMapScreen> {
       (widget.graph == null
           ? draftMicroLessons
           : MicroLessonCatalog(graph: graph, lessons: const []));
-  late Future<List<ExerciseResult>> _results = _load();
+  late Future<List<ExerciseResult>> _results = _loadForView();
+
+  Future<List<ExerciseResult>> _loadForView() {
+    final pending = _load();
+    // Observe early errors until the next frame subscribes; the original
+    // future still delivers its failure to FutureBuilder.
+    pending.ignore();
+    return pending;
+  }
+
+  void _reload() {
+    if (!mounted) return;
+    setState(() {
+      _results = _loadForView();
+    });
+  }
 
   Future<void> _openFocus(TodayStep step) async {
     final e = step.exercise;
@@ -65,11 +81,7 @@ class _SkillMapScreenState extends State<SkillMapScreen> {
     await Navigator.of(
       context,
     ).push(MaterialPageRoute<void>(builder: (_) => screen));
-    if (mounted) {
-      setState(() {
-        _results = _load();
-      });
-    }
+    _reload();
   }
 
   Future<List<ExerciseResult>> _load() async {
@@ -86,8 +98,12 @@ class _SkillMapScreenState extends State<SkillMapScreen> {
         future: _results,
         builder: (context, snapshot) {
           if (snapshot.connectionState != ConnectionState.done) {
-            return const Center(
-              child: CircularProgressIndicator(semanticsLabel: 'Yükleniyor'),
+            return const SingleChildScrollView(
+              child: ContentStatusPanel(
+                key: Key('skill_map_loading'),
+                kind: ContentStatusKind.loading,
+                message: 'Yerel geçmişten beceri durumları okunuyor…',
+              ),
             );
           }
           final historyError = snapshot.hasError;
@@ -101,12 +117,12 @@ class _SkillMapScreenState extends State<SkillMapScreen> {
                 key: Key('skill_map_intro'),
               ),
               if (historyError)
-                const Padding(
-                  padding: EdgeInsets.only(top: HarmoniaSpacing.sm),
-                  child: Text(
-                    'Geçmiş okunamadı; durumlar gösterilemiyor.',
-                    key: Key('skill_map_history_error'),
-                  ),
+                ContentStatusPanel(
+                  key: const Key('skill_map_history_error'),
+                  kind: ContentStatusKind.error,
+                  message:
+                      'Geçmiş okunamadı; durumlar gösterilemiyor. Veri silinmedi. Ders taslaklarını okuyabilir veya yeniden deneyebilirsin.',
+                  onRetry: _reload,
                 ),
               if (!historyError) ...[
                 const SizedBox(height: HarmoniaSpacing.md),
@@ -135,7 +151,7 @@ class _SkillMapScreenState extends State<SkillMapScreen> {
                       )
                       .toList(),
                   state: historyError
-                      ? MasteryState.notMeasured
+                      ? null
                       : SkillStatusEvaluator.stateOf(
                           node,
                           results,
@@ -159,7 +175,9 @@ class _SkillCard extends StatelessWidget {
   });
   final SkillNode node;
   final SkillGraph graph;
-  final MasteryState state;
+
+  /// null means history unavailable, not an unattempted skill.
+  final MasteryState? state;
   final List<MicroLesson> lessons;
 
   @override
@@ -183,7 +201,11 @@ class _SkillCard extends StatelessWidget {
               children: [
                 Chip(
                   key: Key('skill_state_${node.id}'),
-                  label: Text(stateLabel(state, node.support)),
+                  label: Text(
+                    state == null
+                        ? 'Durum alınamadı'
+                        : stateLabel(state!, node.support),
+                  ),
                 ),
                 Chip(
                   label: Text(

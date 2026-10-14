@@ -364,3 +364,43 @@ bütçesi, hata metni yankılamaz, import dedup/conflict/kapasite) + 4 widget
 320px/1.8× + a11y). Rapor: 5 birim + 2 widget (sayılar, bilinmeyen ≠ zayıf,
 tekrar dinleme bağımsız saymaz, % yok, odak eylemi). Tercih: 3 birim + 1 widget.
 Gerçek pano/cihaz arası taşıma ve dosya sistemi hataları cihazda denenmedi.
+
+## SHELL-04b — Ortak durum testleri (2026-10-13 devam)
+
+6 widget: loading/no retry, empty/no fake result, explicit error retry,
+corrupt history→retry→empty, pending/no stale result, 320px/1.8× tap/label/
+contrast. İki eski algı/aralık history testi notice sonrası scroll yapar,
+result assertions korunur. Son runner 609 test; gerçek reader/cihaz/audio QA
+değil. İlk koşudaki layout test failure ve onarım IMPLEMENTATION_LOG'da.
+
+## SHELL-04c — Daily plan retry (2026-10-14 00:13 TRT)
+
+3 new widgets: unavailable history/budget5/manual retry retains selection;
+pending retry loading hides prior/error actions; dispose then late load no UI
+update. Existing daily-plan duration/retention/budget persistence/narrow/a11y
+tests also run. First regression exposed immediate failed future before next
+FutureBuilder attaches after budget switch; eager error observer added, original
+future retained for visible error. Not a timeout/tolerance relaxation. Final
+runner evidence IMPLEMENTATION_LOG; code QA not physical audio/device/pilot.
+
+## SHELL-04d — Skill-map availability/retry (2026-10-14 05:35 TRT)
+
+4 widgets: history unavailable distinct from notMeasured/no report/focus;
+explicit retry restores report + empty-history semantics; draft reading/back
+no history reload/mastery; pending no stale state/dispose no late UI update.
+Existing skill-map/report/microlesson/narrow guidelines also run. First new
+reload lambda returned assigned Future to setState; changed to synchronous
+block, no threshold or assertion relaxation. Final runner IMPLEMENTATION_LOG.
+Fake code QA, not real microphone/evaluator/reader/device teaching evidence.
+
+## REL-06a — Target label/frequency/A4 (2026-10-14 10:36 TRT)
+
+10 new tests: tüm canonical MIDI0–127 formula, enharmonic octave carry,
+iki ondalık rounding, wrong-note/octave rejection, A4 mismatch/retuned accept,
+invalid scientific/solfege/whitespace/range labels, nonfinite/numeric bounds,
+JSON reconstruction guard, invalid tail entire protocol, mevcut 400–480Hz piano
+targets ve rhythm-only compatibility. Static metadata test, human benchmark değil.
+0.005000001Hz rounding allowance student50cent/stability25cent toleransını
+değiştirmez. Protocol guard her note; waveform/hak/clock/voice QA ayrı.
+Legacy const Exercise/scorer ve fixtures aynı; schema1 stricter validation,
+approval/real engine success yok. Final suite IMPLEMENTATION_LOG'da.

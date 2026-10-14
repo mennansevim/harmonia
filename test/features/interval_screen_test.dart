@@ -55,6 +55,10 @@ void main() {
     expect(tester.takeException(), isNull);
     await tester.pumpWidget(MaterialApp(home: HistoryScreen(history: history)));
     await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.textContaining('/8 doğru (dinleme)'),
+      100,
+    );
     expect(find.textContaining('/8 doğru (dinleme)'), findsOneWidget);
   });
 }

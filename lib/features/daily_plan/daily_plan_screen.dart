@@ -9,6 +9,7 @@ import '../../domain/learning/skill_graph.dart';
 import '../../domain/models/learner_profile.dart';
 import '../learning/exercise_launcher.dart';
 import '../learning/next_step_text.dart';
+import '../common/content_status_panel.dart';
 
 /// LEARN-03 view: today's timed plan. Rule-based; durations, review
 /// intervals and criteria are drafts awaiting educator review.
@@ -42,9 +43,18 @@ class DailyPlanScreen extends StatefulWidget {
 
 class _DailyPlanScreenState extends State<DailyPlanScreen> {
   var _budget = DailyBudget.twelve;
-  late Future<DailyPlan> _plan = _load();
+  late Future<DailyPlan> _plan = _loadForView();
 
   var _budgetRestored = false;
+
+  Future<DailyPlan> _loadForView() {
+    final pending = _load();
+    // A rapid error may arrive between setState and FutureBuilder's next
+    // subscription. Observe it now; return the original future so the UI
+    // still receives the error, never an invented successful plan.
+    pending.ignore();
+    return pending;
+  }
 
   Future<DailyPlan> _load() async {
     if (!_budgetRestored) {
@@ -63,9 +73,12 @@ class _DailyPlanScreenState extends State<DailyPlanScreen> {
     );
   }
 
-  void _reload() => setState(() {
-    _plan = _load();
-  });
+  void _reload() {
+    if (!mounted) return;
+    setState(() {
+      _plan = _loadForView();
+    });
+  }
 
   Future<void> _open(PlanBlock b) async {
     final screen =
@@ -121,15 +134,19 @@ class _DailyPlanScreenState extends State<DailyPlanScreen> {
               future: _plan,
               builder: (context, snapshot) {
                 if (snapshot.connectionState != ConnectionState.done) {
-                  return const SizedBox(
-                    height: 4,
-                    child: LinearProgressIndicator(),
+                  return const ContentStatusPanel(
+                    key: Key('plan_loading'),
+                    kind: ContentStatusKind.loading,
+                    message: 'Yerel geçmişten günlük plan hazırlanıyor…',
                   );
                 }
                 if (snapshot.hasError) {
-                  return const Text(
-                    'Geçmiş okunamadığı için plan kurulamadı. Ayrıntı için Geçmiş ekranına bak.',
-                    key: Key('plan_error'),
+                  return ContentStatusPanel(
+                    key: const Key('plan_error'),
+                    kind: ContentStatusKind.error,
+                    message:
+                        'Geçmiş okunamadığı için plan kurulamadı. Veri silinmedi. Yeniden deneyebilir veya Geçmiş ekranına bakabilirsin.',
+                    onRetry: _reload,
                   );
                 }
                 return _PlanBody(plan: snapshot.data!, onOpen: _open);
@@ -158,15 +175,19 @@ class _PlanBody extends StatelessWidget {
     final next = plan.nextReviewDay;
     switch (plan.status) {
       case DailyPlanStatus.noMeasuredContent:
-        return const Text(
-          'Bu rotada uygulamanın ölçebildiği çalışma henüz yok. İçerikler eğitimci onayından sonra eklenecek.',
+        return const ContentStatusPanel(
           key: Key('plan_no_content'),
+          kind: ContentStatusKind.empty,
+          message:
+              'Bu rotada uygulamanın ölçebildiği çalışma henüz yok. İçerikler eğitimci onayından sonra eklenecek.',
         );
       case DailyPlanStatus.nothingDue:
-        return Text(
-          'Bugün vadesi gelen kontrol yok; ölçülebilen çalışmaların hepsi taslak ölçüte göre tamam.'
-          '${next == null ? '' : ' Sıradaki kontrol: ${_date(next)}.'}',
+        return ContentStatusPanel(
           key: const Key('plan_nothing_due'),
+          kind: ContentStatusKind.empty,
+          message:
+              'Bugün vadesi gelen kontrol yok; ölçülebilen çalışmaların hepsi taslak ölçüte göre tamam.'
+              '${next == null ? '' : ' Sıradaki kontrol: ${_date(next)}.'}',
         );
       case DailyPlanStatus.planned:
         break;

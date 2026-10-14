@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../domain/audio/chord_recording_catalog.dart';
 import '../../infrastructure/audio/asset_chord_recording_catalog.dart';
+import '../common/content_status_panel.dart';
 
 /// Prerecorded chord placeholders only: no permission, player or scorer.
 class ChordPlaceholderScreen extends StatefulWidget {
@@ -50,27 +51,23 @@ class _ChordPlaceholderScreenState extends State<ChordPlaceholderScreen> {
               future: _catalog,
               builder: (context, snapshot) {
                 if (snapshot.hasError) {
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      const Text(
+                  return ContentStatusPanel(
+                    kind: ContentStatusKind.error,
+                    message:
                         'Örnek listesi yüklenemedi. Ses testi başlatılmadı.',
-                      ),
-                      const SizedBox(height: 8),
-                      OutlinedButton(
-                        onPressed: () {
-                          final pending = _repository.load();
-                          setState(() {
-                            _catalog = pending;
-                          });
-                        },
-                        child: const Text('Yeniden dene'),
-                      ),
-                    ],
+                    onRetry: () {
+                      final pending = _repository.load();
+                      setState(() {
+                        _catalog = pending;
+                      });
+                    },
                   );
                 }
                 if (!snapshot.hasData) {
-                  return const Center(child: CircularProgressIndicator());
+                  return const ContentStatusPanel(
+                    kind: ContentStatusKind.loading,
+                    message: 'Örnek listesi yükleniyor…',
+                  );
                 }
                 return Column(
                   children: [

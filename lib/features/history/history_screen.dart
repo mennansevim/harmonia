@@ -5,6 +5,7 @@ import '../../application/result_history.dart';
 import '../../domain/models/exercise.dart';
 import '../../domain/models/exercise_result.dart';
 import '../../domain/models/measurement_provenance.dart';
+import '../common/content_status_panel.dart';
 
 /// Local attempt history. Comparisons only inside one cohort (exercise,
 /// difficulty, mode, content, scoring and analyzer version); fewer than
@@ -83,61 +84,66 @@ class _HistoryScreenState extends State<HistoryScreen> {
       ],
     ),
     body: SafeArea(
-      child: FutureBuilder<List<ResultHistoryEntry>>(
-        future: _entries,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState != ConnectionState.done) {
-            return const Center(
-              child: CircularProgressIndicator(semanticsLabel: 'Yükleniyor'),
-            );
-          }
-          if (snapshot.hasError) {
-            final corrupt =
-                snapshot.error is HistoryStorageException &&
-                (snapshot.error as HistoryStorageException).failure ==
-                    HistoryStorageFailure.corrupt;
-            return _Message(
-              key: const Key('history_error'),
-              text: corrupt
-                  ? 'Geçmiş dosyası okunamadı. Dosya silinmedi; “Tüm geçmişi sil” ile sıfırlayabilirsin.'
-                  : 'Geçmişe şu an erişilemedi.',
-              action: TextButton(
-                onPressed: _reload,
-                child: const Text('Yeniden dene'),
-              ),
-            );
-          }
-          final entries = snapshot.data!.reversed.toList();
-          if (entries.isEmpty) {
-            return const _Message(
-              key: Key('history_empty'),
-              text:
-                  'Henüz kayıtlı sonuç yok. Ritim tekrarı gibi ölçülen çalışmalar burada görünür.',
-            );
-          }
-          return ListView(
-            padding: const EdgeInsets.all(HarmoniaSpacing.lg),
-            children: [
-              _CohortSummary(entries: snapshot.data!),
-              const SizedBox(height: HarmoniaSpacing.md),
-              for (final e in entries)
-                _EntryTile(entry: e, onDelete: () => _delete(e.attemptId)),
-            ],
-          );
-        },
+      child: Column(
+        children: [
+          const LocalOnlyNotice(key: Key('history_local_notice')),
+          Expanded(
+            child: FutureBuilder<List<ResultHistoryEntry>>(
+              future: _entries,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState != ConnectionState.done) {
+                  return const SingleChildScrollView(
+                    child: ContentStatusPanel(
+                      kind: ContentStatusKind.loading,
+                      message: 'Geçmiş yükleniyor…',
+                    ),
+                  );
+                }
+                if (snapshot.hasError) {
+                  final corrupt =
+                      snapshot.error is HistoryStorageException &&
+                      (snapshot.error as HistoryStorageException).failure ==
+                          HistoryStorageFailure.corrupt;
+                  return SingleChildScrollView(
+                    child: ContentStatusPanel(
+                      key: const Key('history_error'),
+                      kind: ContentStatusKind.error,
+                      message: corrupt
+                          ? 'Geçmiş dosyası okunamadı. Dosya silinmedi; “Tüm geçmişi sil” ile sıfırlayabilirsin.'
+                          : 'Geçmişe şu an erişilemedi.',
+                      onRetry: _reload,
+                    ),
+                  );
+                }
+                final entries = snapshot.data!.reversed.toList();
+                if (entries.isEmpty) {
+                  return const SingleChildScrollView(
+                    child: ContentStatusPanel(
+                      key: Key('history_empty'),
+                      kind: ContentStatusKind.empty,
+                      message:
+                          'Henüz kayıtlı sonuç yok. Ritim tekrarı gibi ölçülen çalışmalar burada görünür.',
+                    ),
+                  );
+                }
+                return ListView(
+                  padding: const EdgeInsets.all(HarmoniaSpacing.lg),
+                  children: [
+                    _CohortSummary(entries: snapshot.data!),
+                    const SizedBox(height: HarmoniaSpacing.md),
+                    for (final e in entries)
+                      _EntryTile(
+                        entry: e,
+                        onDelete: () => _delete(e.attemptId),
+                      ),
+                  ],
+                );
+              },
+            ),
+          ),
+        ],
       ),
     ),
-  );
-}
-
-class _Message extends StatelessWidget {
-  const _Message({super.key, required this.text, this.action});
-  final String text;
-  final Widget? action;
-  @override
-  Widget build(BuildContext context) => ListView(
-    padding: const EdgeInsets.all(HarmoniaSpacing.lg),
-    children: [Text(text), ?action],
   );
 }
 

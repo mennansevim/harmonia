@@ -613,3 +613,107 @@ dışladı, pubspec.lock'ta yalnız SDK'ya bağlı test paketleri değişti. Qua
 check yeni SDK'da exit 0: 596 test, analyze temiz, 174/0 format. Simulator'da
 elle gezinti/gerçek cihaz/mikrofon testi yapılmadı. Android cmdline-tools/lisans
 hâlâ eksik.
+
+## 2026-10-13 devam — SHELL-04b ortak içerik durumları
+
+Güncel git/docs/kod okundu: günlük plan/export/rapor zaten diğer oturumda
+uygulanmıştı; tekrar edilmedi. Devralınan dirty release/channel/privacy/error-
+log/manifest/SDK işleri korunarak bağımsız common state işi seçildi.
+Yeni ContentStatusPanel loading/empty/error, explicit retry/no auto reset;
+History/chord consumer ve history LocalOnlyNotice (connectivity/sync değil).
+Corrupt dosya açıklaması ve store davranışı aynı, skor/data mutation yok.
+
+**Doğrulama:** Son ortak runner exit 0 **609 test geçti**, analyze temiz
+(3.1 sn), **181 dosya/0 format değişikliği**. Bizim paket 6 yeni widget test,
+toplam ayrıca devralınan app-channel/error-log testlerini içeriyor. Loading/
+empty/manual retry/corrupt-recovery/pending/narrow-a11y matrix. İlk analyze
+test brace lint düzeltildi. İlk full+targeted aralık ve algı history UI testleri
+yeni local notice nedeniyle sonuç kartı viewport altına kaydığı için başarısızdı;
+iki testi scrollUntilVisible ile gerçek akışa uydurduk, sonuç assertions korunur.
+Son full suite geçti. Bu testlerde skor/ölçüm veya tolerans değiştirilmedi.
+
+Roadmap/mimari/testing/handoff güncellendi. Bu tur build/gerçek mic/cihaz/insan/
+eğitimci pilotu/API/ödeme/upload/commit/push/deploy yok. Önceki başarılı simulator
+build ve kullanıcı onaylı SDK update kaydı korunur; bu tur tekrar yapılmadı.
+SHELL-04 tam resume/tüm ekran migration değil; dış BENCH/VAD/CAL/EDU/mağaza/
+backend kapıları açık. Agora read-only kontrolü temiz, kaynakları değiştirilmedi.
+
+## 2026-10-14 00:13 TRT — SHELL-04c günlük plan hata kurtarma
+
+Git/roadmap/log/testing/devir/mimari/kararlar ve DailyPlanScreen/tests okundu.
+Dirty yayın/channel/privacy/error-log/platform işleri korundu. Günlük plan
+loading/error/no-content/nothing-due ortak ContentStatusPanel'a taşındı;
+explicit retry, bütçe korunur, pending stale plan görünmez, mounted reload guard.
+Planner selection/mastery/retention/scorer davranışı değiştirilmedi.
+
+3 yeni widget test: unavailable history→budget5→manual retry, pending/no
+duplicate action/stale plan, dispose→late response. İlk full+targeted testte
+budget switch esnasında immediate failed Future, yeni FutureBuilder frame'i
+subscribe olmadan hata verdi. _loadForView immediate error observer (ignore)
+ile aralık kapandı; original Future UI'ya verilerek gerçek hata görünür kaldı.
+Empty/fake successful plan ile hata gizlenmedi, data reset veya tolerance
+gevşetme yok. Observer teknik amaçlıdır, UI hata açıklaması korunur.
+
+**Doğrulama:** Son ortak runner exit 0: **612 test geçti (+3)**, analyze
+temiz (3.1 sn), **182 dosya/0 format değişikliği**. Eski günlük budget/retention/
+persistence/narrow/a11y testleri de geçti. İlk failed test logu korunur; sorun
+üretim UI async ownership düzeltmesiyle kapandı. Widget tests gerçek reader/
+device/network/audio/pedagoji kabulü değildir.
+
+Roadmap/testing/mimari/devir güncellendi. Agora read-only git kontrolü temiz,
+kaynakları değiştirilmedi. Build/mic/insan/cihaz/eğitimci pilotu/API/upload/ödeme/
+commit/push/deploy yok; önceki simulator/SDK onay kaydı korunur. SHELL-04 tam
+session resume/tüm consumer kabulü değil; BENCH/VAD/CAL/EDU/mağaza/backend
+gibi dış kapılar ve piano kayıtları açık. Otomatik takip tamamlandı sayılmadı.
+
+## 2026-10-14 05:35 TRT — SHELL-04d beceri haritası hata kurtarma
+
+Git/docs/kararlar ve mevcut skill-map/report/tests okundu. Dirty kullanıcı/
+ajan release/channel/privacy/error-log/platform değişiklikleri korundu.
+Skill-map shared loading/error panel + manual retry; history unavailable
+null view state/Durum alınamadı, NOT domain MasteryState.notMeasured. Report/
+focus hata sırasında gösterilmez; metin dersleri açık, history/mastery write
+yok. Immediate Future error observer, original future UI failure korur;
+mounted reload ve exercise dönüşünde güvenli refresh. Score/rubric aynı.
+
+4 yeni widget: unavailable vs unattempted, explicit retry→report/empty,
+draft/back no invented progress, pending/dispose no stale/late UI. İlk full/
+targeted iki yeni testte assignment arrow closure setState'a Future döndürdü;
+synchronous block closure ile düzeltildi, assertion/eşik gevşetilmedi.
+**Son ortak runner exit 0: 616 full test geçti (+4), analyze temiz (5.2 sn),
+183 dosya/0 format değişikliği.** Eski skill map/report/microlesson/narrow/a11y
+testleri de geçti. Widget tests gerçek reader/device/voice/eğitim kabulü değil.
+
+Roadmap/testing/mimari/devir güncellendi. Agora read-only git temiz, kaynakları
+değiştirilmedi. Build/gerçek mic/cihaz/insan/eğitimci pilot/API/upload/ödeme/
+commit/push/deploy yok; önceki simulator SDK kaydı korundu. SHELL-04 tüm
+consumer/session resume değil; gerçek BENCH/VAD/CAL/EDU/piyano ve hesap/mağaza
+kapıları açık. Otomatik takip tamamlandı sayılmadı.
+
+## 2026-10-14 10:36 TRT — REL-06a hedef tuning metadatası
+
+Git/docs/kararlar ve HUMAN_REVIEW/REL-06 açıkları ile mevcut protocol/piano
+kodları okundu. Dış kapı gerektirmeyen daha öncelikli metadata tutarlılığı
+seçildi; dirty kullanıcı/ajan yayın/platform/channel/privacy/error-log işi
+korundu. Pure TargetNoteTuning scientific note→MIDI0–127/frequencyFor(A4)
+ve validate, ExerciseProtocol constructor'da her note için uygulanır; JSON
+reconstruction aynı invariant'e tabi. Wrong label/octave/A4 fail-closed;
+enharmonic octave carry ve finite positive numeric checks. 0.005000001Hz
+yalnız 2-decimal metadata rounding; öğrenci50cent/stability25cent/voice gate
+değişmedi. Const legacy TargetNote/Exercise/scorer ve waveform pipeline aynı.
+Schema1 alanları aynı, stricter validation ADR-025'e yazıldı.
+
+**Doğrulama:** Son ortak runner exit 0: **626 full test geçti (+10)**,
+analyze temiz (3.1 sn), **185 dosya/0 format değişikliği**. Canonical MIDI
+range formula/aliases/octave carry/rounding, mismatch+retuned target, malformed
+label/range/whitespace/nonfinite/overflow, JSON reconstruction, invalid tail,
+400–480Hz piano target generator ve rhythm-only compatibility testli. İlk
+analyze'daki iki braces info düzeltildi; strict match-end guard trailing newline
+reddini explicit yaptı. Eşikler test sonuçlarıyla gevşetilmedi.
+
+Bu target metadata QA, gerçek recording/audio/etiket/hak/clock/voice/device
+kanıtı değil. REL-06 session/hint/tuning cohort ve gerçek ses benchmark kapıları
+tamamlanmadı. Roadmap/testing/mimari/ADR/devir güncellendi. Build/mic/cihaz/
+insan/eğitimci pilot/API/upload/ödeme/commit/push/deploy yok. Agora read-only
+kontrolü temiz, kaynakları değiştirilmedi. Piano placeholders/success gate aynı;
+önceki simulator/SDK kaydı korunur. Otomatik takip tamamlandı sayılmadı.

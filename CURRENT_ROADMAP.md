@@ -1,11 +1,11 @@
 # Harmonia — Current Roadmap
 
-**Tarih:** 2026-10-13 (son güncelleme: DATA-03a yerel taşıma, LEARN-04a rapor, SHELL-04a tercih)
+**Tarih:** 2026-10-14 (son güncelleme: REL-06a hedef tuning metadata guard)
 **Durum:** Faz 1 — güvenilirlik sözleşmeleri, yerel kayıt laboratuvarı, deneysel DSP/worker, kalibrasyon/kalite kapısı ve misafir uygulama kabuğu kod-test seviyesinde. Tek ses skor ekranı hâlâ simülasyon; fiziksel cihaz, insan sesi benchmark'ı, eğitimci içerik onayı ve öğretim pilotu kapıları açık. **Hiçbir modül cihazda/pilotta doğrulanmış veya yayında değil.**
 **Sahip:** Mennan Sevim  
 **Platform:** Flutter mobil uygulama; ileride web ve öğretmen paneli
 
-**Son kod doğrulaması (2026-10-13, 21:30 TRT):** `dart tool/quality_check.dart` exit 0: 596 test geçti, analyze temiz, format 174 dosya/0 değişiklik. CI etkin değil; cihaz testi yapılmadı. Flutter 3.47.7/Xcode 27.0 ile iOS simulator build başarılı; Android cmdline-tools/lisans eksik. Gerçek voice/cihaz ve eğitimci kapıları açık.
+**Son kod doğrulaması (2026-10-14, 10:36 TRT paketi):** `dart tool/quality_check.dart` exit 0: 626 test geçti (+10), analyze temiz, format 185 dosya/0 değişiklik. REL-06a scientific target label/frequency/A4 12TET guard; öğrenci toleransları aynı. Bu tur build/cihaz testi yapılmadı. Önceki Flutter 3.47.7/Xcode 27.0 simulator kaydı korunuyor; gerçek voice/cihaz/eğitimci, Android araç/lisans ve hosted CI kapıları açık.
 
 **CAL-03a:** Ortak gözlenen saat, route/rate bağlamı ve 8–64 trial doğrulanır; medyan/MAD/ham P90–P10, aykırı trial indeksleri ve çekimser durumlar raporlanır. Planlanan playback timestamp'i duyulmuş klik değildir; mixed clock ve inferred route reddedilir. Tap hizalama motor yanlılığını içerir; loopback toplam gecikmesi dokunma pipeline'ına taşınamaz. Bu diagnostic **LatencyCalibration üretmez, ritim düzeltmez ve count-in açmaz**. Gerçek ölçüm adapter'ı/protokolü CAL-03b ve cihaz kapısı açık.
 
@@ -20,6 +20,22 @@
 **INT-01a (23:30 TRT, ADR-024 hareketli do):** “Dereceyi bul” dinleme çalışması — her soruda tonik bağlamı (do–mi–sol), sonra do → hedef derece; ton soru başına değişir; cevap hece + aralık adı; seçenekler dengeli; şans düzeyi ve en çok karışan derece çifti gösterilir; 3 taslak seviye. Sonuç `Skill.interval`, `solfege: movable_do`, algı boyutu. Beceri grafiğinde “Tonik ve dereceler” ölçülüyor (ilk iki seviye, ≥7/8 × 2); günlük öneri rotada buraya ulaşır. 466 test, analyze/format temiz. Eğitimci terminoloji/içerik onayı yok; iOS simulator build engeli (Xcode lipo) sürüyor.
 
 ## Modül envanteri (A–Q) — kanıt durumu
+
+**2026-10-14 10:36 TRT — REL-06a:** Hedef scientific nota/MIDI/frekans/A4
+tutarlılığı ExerciseProtocol constructor + JSON reconstruction'da doğrulanır.
+İki ondalık metadata rounding payı, öğrenci pitch toleransı değil. 10 yeni
+test, 626 full suite. Gerçek sample/audio/tuning/hak/device QA ve REL-06 tüm
+session/hint/cohort kabulü hâlâ açık; legacy demo/scorer değiştirilmedi.
+
+**2026-10-14 05:35 TRT — SHELL-04d:** Beceri haritası geçmiş hatasında
+“Durum alınamadı” gösterir; notMeasured/boş geçmişe dönüştürmez. Rapor/focus
+kapalı, manual retry; draft okuma erişilebilir ve mastery yazmaz. 4 yeni
+widget test, 616 full suite. SHELL-04 tüm consumer/resume ve dış kabulü değil.
+
+**2026-10-14 00:13 TRT — SHELL-04c:** Günlük plan ortak loading/error/empty,
+manual retry ve korunmuş bütçe. Immediate future failure next-frame gap
+giderildi; error UI görünür, fake success plan yok. 3 yeni widget test, 612 full.
+Session resume/tüm consumer migration ve gerçek device/pilot kapıları ayrı.
 
 **2026-10-13 21:30 TRT — DATA-03a / LEARN-04a / SHELL-04a:** Ayarlar →
 "Verilerini taşı" (ses-siz JSON panoya; strict import, çakışma korunur);

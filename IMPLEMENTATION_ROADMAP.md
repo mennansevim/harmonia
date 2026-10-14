@@ -37,7 +37,7 @@ Durum sözlüğü: **bekliyor / geliştiriliyor / kod tamamlandı / doğrulandı
 | REL-03 | Metrik örnek sayısı ve karşılaştırılabilir cohort | Invalid/eksik sonuç ortalamaya girmez; farklı zorluk/mod/sürüm reddedilir | Kod/test doğrulandı |
 | REL-04 | Monoton ritim event alignment, extra/missed, latency ve mutlak sapma | Greedy tuzak testi; ekstra tap 100 olmaz; karşıt sapmalar gizlenmez; boş referans reddedilir | Kod/test doğrulandı; eğitimci kalibrasyonu bekliyor |
 | REL-05 | Ezgi placeholder fail-closed | Aynı nota sayısı sıra/timing/memory başarısı üretmez; ölçüm yoksa null/status | Kod/test doğrulandı; gerçek analyzer değil |
-| REL-06 | Egzersiz v2: nota/vuruş dizisi, tuning, hint, gecikme, order/set | Geçersiz egzersiz tanımı runtime'da reddedilir; round-trip sözleşme | Kısmi: protocol/binding/round-trip testli; session/katalog ve tuning frekans tutarlılığı bekliyor |
+| REL-06 | Egzersiz v2: nota/vuruş dizisi, tuning, hint, gecikme, order/set | Geçersiz egzersiz tanımı runtime'da reddedilir; round-trip sözleşme | Kısmi: protocol/binding/round-trip + REL-06a 12TET label/frequency/A4 metadata guard testli; session/katalog ve gerçek audio QA bekliyor |
 | REL-07 | Analiz/puan için evidence/provenance; içerik kalite kontrolü | Mock/gerçek ayrımı, session id, puanlama sürümü; mutable veri ve kopya sonuç kontrolleri | Kısmi: deep snapshot, pitch provenance/source cohort ve fixture loader testli; diğer analyzer/dedup/etiket QA bekliyor |
 | REL-08 | Tekrarlanabilir kalite komutları / CI taslağı | Format, test, analyze; secret olmadan yerel çalışma; CI etkinleştirme ayrı | Yerel runner + test/sağlayıcı-bağımsız taslak kod-testli; hosted run açık |
 
@@ -364,3 +364,41 @@ Plan gece yarısı sabitlenir; bugünkü turlar ilerleme. Taslak süreler ve
 aralıklar pilot hipotezi; mastery eşikleri aynı. 19 yeni test, 574 suite.
 Sonraki kod işleri: LEARN-04 beceri raporu → tek hedef, SHELL-04 ortak durum
 bileşenleri, DATA-03 yerel export; dış kapılar (cihaz, BENCH, EDU-01, piyano) açık.
+
+## 2026-10-13 devam — SHELL-04b ortak durum görünümü
+
+ContentStatusPanel loading/empty/error, explicit retry; history/chord consumer.
+LocalOnlyNotice history veri politikasıdır, connectivity/sync değil. 6 widget
+test; son runner 609 test, 181/0 format, analyze temiz. Büyük-yazı aralık/algı
+history testleri yeni notice sonrası kartı scroll ile bulur; assertions aynı.
+SHELL-04 session resume/tüm ekran migration hâlâ ayrı; dış kapılar açık.
+
+## 2026-10-14 00:13 TRT — SHELL-04c günlük plan recovery
+
+DailyPlanScreen shared loading/error/empty panel; manual retry retains budget,
+no stale plan while waiting, no auto data reset. Rapid load failure observer
+immediately attaches before next FutureBuilder frame, returning original future
+so error still renders (no fake plan). Mounted reload guard. 3 new widget
+tests: failure/budget/retry, pending retry/no duplicate action, dispose/late
+response. Planner timing/mastery/score thresholds unchanged. Full SHELL-04
+session resume and all-consumer migration/device acceptance remain open.
+
+## 2026-10-14 05:35 TRT — SHELL-04d skill-map recovery
+
+Shared loading/error + manual retry. History unavailable now has a separate
+view state (Durum alınamadı), not MasteryState.notMeasured; no report/focus
+recommendation until load succeeds. Text drafts remain accessible without
+completion/history write. Immediate Future failure observed before next frame;
+mounted reload. 4 regressions: unavailable vs empty, explicit retry recovery,
+draft navigation, pending/dispose. Mastery/scorer criteria unchanged; full
+SHELL-04 session resume/consumer matrix and external acceptance remain open.
+
+## 2026-10-14 10:36 TRT — REL-06a hedef tuning tutarlılığı
+
+TargetNoteTuning strict scientific notation/MIDI0–127 + 12TET frequency; note
+label/frequency/A4 guard ExerciseProtocol constructor'ında, JSON reconstruction
+da aynı kapıdan geçer. 0.005000001Hz yalnız iki ondalık metadata yuvarlama payı;
+öğrenci/acoustic skor toleransı değil. Enharmonic octave carry korunur, yanlış
+oktav hedefi kabul edilmez. Legacy Exercise/scorer/fixtures/player değişmedi;
+gerçek waveform/etiket/hak/device QA hâlâ açık. REL-06 tüm session/hint/cohort
+kapsamı tamamlanmadı. Ayrıntı ADR-025/testing/log'da.

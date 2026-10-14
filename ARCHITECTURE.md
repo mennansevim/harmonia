@@ -390,3 +390,39 @@ uygulama hiçbir yere göndermez.
 `application/practice_preferences.dart` + `infrastructure/storage/
 file_practice_preferences.dart`: günlük bütçe schema 1; bozuk/eksik → varsayılan,
 bozuk dosya kullanıcı yeni seçim yapana dek korunur. AppServices.preferences.
+
+## SHELL-04b — Common status presentation (2026-10-13)
+
+ContentStatusPanel stateless loading/empty/error + caller safe text/onRetry.
+History/chord placeholder kullanır; repository/reset/delete/score/network bağı
+yok, auto retry yok. History LocalOnlyNotice scoped policy, OS connectivity
+probe veya sync değil. Consumer scroll wrapper/narrow layout sahibi; corrupt
+dosya ve mevcut Future/store davranışı korunur. Session resume kabulü değil.
+
+## SHELL-04c — Daily plan error ownership (2026-10-14)
+
+DailyPlanScreen shared ContentStatusPanel loading/error/empty; own Future and
+budget state preserved, onRetry _reload only. _loadForView immediately observes
+future errors with ignore(), returning original future to FutureBuilder; this
+closes setState→next frame unhandled-error gap, NOT hiding error from user or
+substituting empty plan. Pending view hides stale plan, disposed reload blocked.
+No repository clearing/network/score/mastery changes or audio resume.
+
+## SHELL-04d — Skill-map data availability (2026-10-14)
+
+_SkillCard nullable view state means history unavailable, separate from domain
+MasteryState.notMeasured. Error shows unavailable chip, no SkillReport/focus;
+text draft navigation remains independent of measurement. Shared status panel
+manual reload; original Future with eager error observer prevents next-frame
+failure gap; mounted guard and late load disposal tests. No state recorded to
+history or mastery; no empty result injected to hide repository failure.
+
+## REL-06a — 12TET target metadata guard (2026-10-14)
+
+Pure TargetNoteTuning scientific label→MIDI/frequencyFor(a4) + validate;
+ExerciseProtocol her note için çağırır. Decode constructor aynı invariant'i
+uygular; legacy const TargetNote/Exercise ve response DSP/scorer aynı kalır.
+Absolute0.005000001Hz metadata rounding, no pitch-class/octave fold/student
+rubric change. Unicode/solfege/whitespace/unsupported labels explicit reject;
+movable-do ayrı algı yanıtı, absolute target label yerine geçmez. Schema1 fields
+aynı, validation stricter (ADR-025). Metadata hedefi waveform doğrulamaz.
