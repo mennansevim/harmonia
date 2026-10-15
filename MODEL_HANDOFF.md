@@ -403,3 +403,8 @@ REL/SHELL işleri ve 2/3/4 placeholder yönü korundu. Kod QA sonucu log/roadmap
 
 CORE-04c1 final: hedefli16/full672 (+8), runner exit0, analyze temiz,
 format193/0, diff check temiz. Gerçek cihaz/pilot veya yayın kabulü değil.
+
+**2026-10-15 — birleştirme sonrası:** A+C arayüzü main'de (0875983); ayrı dal
+ve worktree silindi. Sıradaki işlerin tek listesi CURRENT_ROADMAP › "Kalan
+işler — 2026-10-15". İlk kod işi: eski düzendeki ekranları LessonScaffold/
+ChunkyButton/kısa metin kurallarına taşımak; dış kapıları geçmiş sayma.

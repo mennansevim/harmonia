@@ -894,3 +894,11 @@ Piyano dosyası/lisans taşınmadı; 2/3/4 placeholder aynı. Önceki dirty işl
 korundu, Agora read-only status/diff temiz; kaynakları değişmedi. Build/device/
 API/upload/ödeme/commit/push/deploy yok. CORE-04 ve dış acceptance bitmedi;
 otomatik takip tamamlandı sayılmadı.
+
+## 2026-10-15 — Birleştirme ve kalan işler listesi
+
+Otomatik ajanın commit'siz paketleri 83cf533, A+C/UX-02 9bbf15b olarak
+commit'lendi; 0875983 ile birleştirildi (home_screen'de SHELL-04e hata
+kurtarma yeni Bugün sekmesine taşındı, sekmeler ilk ziyarette kuruluyor).
+685 test, analyze/format temiz. Kalan işler CURRENT_ROADMAP'e tek liste
+olarak eklendi. Push/deploy yok.

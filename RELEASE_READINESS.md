@@ -36,6 +36,12 @@ uygulama adı "Harmonia", iOS PrivacyInfo.xcprivacy (izleme yok, veri toplama
 yok, dosya zaman damgası C617.1), release imzalama yapılandırması, yerel hata
 günlüğü + kopyalanabilir rapor, release'te kırmızı hata ekranı yerine sakin mesaj.
 
+**Arayüz (2026-10-15 A+C sonrası):** Bugün/Pratik/Gelişim/Profil ve tiz/pes,
+derece, ritim ekranları yeni tasarımda. Ayarlar, geçmiş, günlük plan, tek ses
+ve ezgi oturumları, ses laboratuvarı ve veri taşıma henüz eski düzende (tema
+uygulanmış). Gerçek cihaz, ekran okuyucu ve kullanıcı testi yapılmadı.
+Ayrıntılı liste: CURRENT_ROADMAP › "Kalan işler — 2026-10-15".
+
 ## 3. Kapalı beta Core için açıklar
 
 | Açık | Tür | Gereken |

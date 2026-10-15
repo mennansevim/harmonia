@@ -29,6 +29,45 @@ kabuk, beceri yolu, yeni egzersiz ve rapor ekranları, gerçek veriye bağlı se
 görselleri, ikon ve açılış ekranı. Simulator'da açık/koyu kontrol edildi;
 gerçek cihaz ve kullanıcı testi yapılmadı.
 
+## Kalan işler — 2026-10-15 (A+C arayüz birleştirmesi sonrası)
+
+Tür: **K** kodla yapılabilir · **Ka** kullanıcı kararı · **D** dış kaynak/insan/cihaz.
+Ayrıntılı yayın açıkları: [RELEASE_READINESS.md](./RELEASE_READINESS.md).
+
+**Arayüz (UI/UX)**
+- [ ] K — Henüz yeni tasarıma geçmeyen ekranlar: Ayarlar, Çalışma geçmişi,
+  Günlük plan, Mikroders okuma, Tek ses oturumu, Kısa ezgi oturumu, Ses
+  laboratuvarı, Veri taşıma, Piyano yer tutucusu, Tek ses sonuç örnekleri.
+  Tema ile çalışıyorlar ama LessonScaffold/ChunkyButton/kısa metin
+  kurallarına göre yeniden düzenlenmeli.
+- [ ] K/Ka — Onboarding'e "günde kaç dakika?" (5/12/15) adımı; şu an süre
+  yalnız ana sayfadaki dakika halkasından seçiliyor.
+- [ ] K — Tur sonu ekranı: "ne duydun / ne seçtin / doğrusu" yan yana ve
+  karşılaştırmalı tekrar dinleme (rakip araştırmasındaki en güçlü fark).
+- [ ] K — Ana sayfa yüklenirken iskelet görünümü (şu an ince yükleme çubuğu).
+- [ ] K — Hatırlatma bildirimi (izinli, saat seçimli) ve titreşim ayarı.
+- [ ] K/D — iOS 26 koyu ve renklendirilmiş (tinted) ikon varyantları; mağaza
+  için profesyonel ikon tasarımı ve ekran görüntüleri önerilir.
+- [ ] D — Kullanıcı testi (UXR-01: ≥5 öğrenci + 1 eğitimci); "rakiplerden
+  daha kullanışlı" iddiası ancak bununla kanıtlanır.
+- [ ] D — VoiceOver/TalkBack ile elle erişilebilirlik testi; gerçek iPhone
+  ve Android cihazda gezinti (şimdiye kadar yalnız simulator ve otomatik
+  kılavuz testleri).
+
+**Ürün ve ölçüm (değişmedi, dış kapı bekliyor)**
+- [ ] D — Gerçek tek ses/ezgi sonucu: etiketli izinli kayıtlar (BENCH-01),
+  ses etkinliği doğrulaması (VAD-01), cihaz route matrisi (CAL-02).
+- [ ] D — Sayaçlı ritim için fiziksel gecikme ölçümü (CAL-03b).
+- [ ] D — Eğitimci içerik/ölçüt onayı (EDU-01); 2/3/4 sesli piyano kayıtları.
+- [ ] Ka — Mikrofon izni kalıcı reddi için ayarlara yönlendirme eklentisi
+  (SHELL-02), uygulama kimliği, sunucu/hesap (DATA-01), hata izleme servisi
+  (OPS-01), ücretli API (AI-01), mağaza ve ödeme (PAY).
+
+**Süreç**
+- [ ] Ka — Otomatik ajan ana dalda commit'siz çalışmaya devam ediyor; büyük
+  arayüz değişikliklerinden önce durdurulmalı veya ayrı dalda çalışmalı
+  (2026-10-15 birleştirmesinde home_screen ve belge çakışması çıktı).
+
 ## Modül envanteri (A–Q) — kanıt durumu
 
 **2026-10-14 15:39 TRT — REL-06b:** Protokol JSON exact fields/types/enums;
