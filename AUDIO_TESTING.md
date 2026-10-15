@@ -417,3 +417,55 @@ düğüm açıklaması ve odak düğümünün egzersizi açması. Mevcut ekran t
 yeni gezinmeye uyarlandı (assert ve eşikler gevşetilmedi). Simulator'da elle
 gezinti yapıldı; ses görseli kareleri test görüntüsüyle incelendi.
 Gerçek cihaz, ekran okuyucu ve kullanıcı testi yapılmadı.
+
+## REL-06b — Protocol JSON decoder tests (2026-10-14 15:39 TRT)
+
+10 tests: valid round-trip/aids; no schema double/string/bool coercion; exact
+keys all depths; bool/int policy fields; unknown enums/mode; nonfinite/types;
+both counts before malformed prefix; invalid tail/semantic tuning+recall;
+snapshot immutability; no private value echo. Last full runner 636 tests,
+186/0 format, analyze clean. Shape FormatException, existing semantic
+ArgumentError unchanged. No actual audio/device/educator QA, text IO/import
+UI/canonical duplicate-key guard or publication activated.
+
+## REL-06c — Rhythm clock numerical preflight (2026-10-14)
+
+10 new tests: tiny tempo/huge beat overflow, rounded-ms collisions, inclusive
+30 s reference boundary, single reference, negative timestamps including one
+tap, safe large epoch/unsafe integer rejection, backward vs duplicate taps,
+replay quota, empty-answer neutrality, controller rejects before rendering.
+Stimulus time budget comes from existing click renderer, not timing tolerance.
+No response duration limit added. First-tap anchor and scoring unchanged;
+tests are fake/touch numeric evidence, not microphone, latency or device QA.
+
+## REL-06d — Learning comparison isolation (2026-10-15)
+
+12 added tests: current rhythm (difficulty2), high/low and interval outcome
+codec compatibility; each of eight cohort fields independently excludes
+mismatches from learning and rhythm recommendations; invalid same-cohort
+retry; sorted mixed history/current mastery; exam cannot advance today route
+or fill a learning daily-plan block. Generated synthetic references/touch
+answers only; no actual student/device/voice evidence. Existing rhythm policy
+fixture now takes bound difficulty/mode (senkop is difficulty2, not default1).
+No student score/tolerance change. Protocol fingerprints/hint authenticity and
+real audio/educator acceptance are not established by these tests.
+
+## SHELL-04e — Home recovery widgets (2026-10-15)
+
+6 fake-repository widgets: explicit retry/no automatic reload/no writes or
+private error text; pending reload removes stale action; late failure after
+dispose; repository replacement rejects old completion; immediate failure on
+exercise return; retry on 320px at 1.8× text. No mic/playback started, no learner
+performance measured. Existing shell/accessibility/learning tests also rerun;
+this is code QA, not physical-device/VoiceOver/TalkBack or teaching acceptance.
+
+## CORE-04c1 — Selected melody reference rehearsal (2026-10-15)
+
+8 new tests: original identity/range/order snapshot; invalid ranges not clamped;
+repeat count1..3; single/last note; byte-equivalent full-range reference via
+independently constructed original samples; repeat order/octave/frequency and
+exact silence at8/16/48kHz; max13.8s/662400 samples at48kHz + determinism;
+unsupported rate fails without resampling. Pitch checks use generated tones
+and diagnostic YIN, NOT human voice holdout accuracy or real device timing.
+16 targeted tests include unchanged synthetic backend/session lifecycle tests.
+No piano recording added; no score, hint attribution, mic, UI or player started.

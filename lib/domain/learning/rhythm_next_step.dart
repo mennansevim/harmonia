@@ -2,6 +2,7 @@ import '../audio/rhythm_imitation.dart';
 import '../content/rhythm_patterns.dart';
 import '../models/exercise_result.dart';
 import '../models/measurement_provenance.dart';
+import '../models/result_cohort.dart';
 
 enum NextStepKind {
   /// No comparable history yet: start with the first pattern.
@@ -83,14 +84,17 @@ class RhythmNextStepPolicy {
   static List<ExerciseResult> _comparable(
     List<ExerciseResult> results,
     RhythmPattern p,
-  ) => [
-    for (final r in results)
-      if (r.exerciseId == p.exercise.exercise.id &&
-          r.contentVersion == p.exercise.exercise.contentVersion &&
-          r.provenance.source == MeasurementSource.touch &&
-          r.provenance.analyzerVersion == RhythmImitationOutcome.version)
-        r,
-  ]..sort((a, b) => a.createdAt.compareTo(b.createdAt));
+  ) {
+    final cohort = ResultCohort.forExercise(
+      p.exercise.exercise,
+      source: MeasurementSource.touch,
+      analyzerVersion: RhythmImitationOutcome.version,
+    );
+    return [
+      for (final r in results)
+        if (cohort.matches(r)) r,
+    ]..sort((a, b) => a.createdAt.compareTo(b.createdAt));
+  }
 
   /// Priority: a due retention check, then [current] if it is not mastered
   /// (the result screen's "next step" must relate to what was just done),

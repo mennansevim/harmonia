@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import '../../domain/audio/rhythm_reference_clock.dart';
 import 'pcm16_wav.dart';
 
 /// Synthetic reference clicks (1 kHz, 30 ms exponential decay) placed on the
@@ -17,7 +18,9 @@ Pcm16Wav renderClickTrack(
       throw ArgumentError('Onsets must be non-negative and increasing');
     }
   }
-  if (onsetsMs.last > 30000) throw ArgumentError('Click track over 30 s');
+  if (onsetsMs.last > RhythmReferenceClock.maxOnsetMs) {
+    throw ArgumentError('Click track over 30 s');
+  }
   final clickSamples = (0.03 * sampleRateHz).round();
   final length = ((onsetsMs.last + tailMs) * sampleRateHz / 1000).ceil();
   final samples = List<double>.filled(length, 0);

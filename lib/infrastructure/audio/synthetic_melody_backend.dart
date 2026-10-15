@@ -1,4 +1,5 @@
 import '../../application/melody_session.dart';
+import '../../application/melody_practice.dart';
 import '../../domain/audio/audio_capture.dart';
 import '../../domain/audio/capture_quality.dart';
 import '../../domain/models/measurement_provenance.dart';
@@ -12,20 +13,47 @@ Pcm16Wav renderDiagnosticMelody(
   DiagnosticMelodyReference reference, {
   int sampleRateHz = 48000,
 }) {
+  return renderDiagnosticMelodyPractice(
+    DiagnosticMelodyPractice(
+      reference: reference,
+      startIndex: 0,
+      endIndexExclusive: reference.frequenciesHz.length,
+    ),
+    sampleRateHz: sampleRateHz,
+  );
+}
+
+/// Bounded local rehearsal WAV; caller must explicitly own playback/cancel.
+/// No playback, file I/O, permission request or microphone use occurs here.
+/// Original frequency/octave/order/tempo are preserved; no scoring or hints
+/// are attributed to an assessment attempt by preparing this audio.
+Pcm16Wav renderDiagnosticMelodyPractice(
+  DiagnosticMelodyPractice practice, {
+  int sampleRateHz = 48000,
+}) {
   if (sampleRateHz < 8000 || sampleRateHz > 48000) {
     throw ArgumentError('Diagnostic melody supports 8–48 kHz');
   }
+  final frequencies = practice.frequenciesHz;
   final samples = <double>[];
-  for (var i = 0; i < reference.frequenciesHz.length; i++) {
-    samples.addAll(
-      Pcm16Wav.tone(
-        frequencyHz: reference.frequenciesHz[i],
-        sampleRateHz: sampleRateHz,
-        durationSeconds: 0.6,
-      ).samples,
-    );
-    final gapMs = i == reference.frequenciesHz.length - 1 ? 400 : 200;
-    samples.addAll(List.filled(sampleRateHz * gapMs ~/ 1000, 0.0));
+  for (var repeat = 0; repeat < practice.repetitions; repeat++) {
+    for (var i = 0; i < frequencies.length; i++) {
+      samples.addAll(
+        Pcm16Wav.tone(
+          frequencyHz: frequencies[i],
+          sampleRateHz: sampleRateHz,
+          durationSeconds: DiagnosticMelodyPractice.toneMs / 1000,
+        ).samples,
+      );
+      final lastNote = i == frequencies.length - 1;
+      final lastRepeat = repeat == practice.repetitions - 1;
+      final gapMs = !lastNote
+          ? DiagnosticMelodyPractice.noteGapMs
+          : lastRepeat
+          ? DiagnosticMelodyPractice.tailMs
+          : DiagnosticMelodyPractice.repeatGapMs;
+      samples.addAll(List.filled(sampleRateHz * gapMs ~/ 1000, 0.0));
+    }
   }
   return Pcm16Wav(sampleRateHz: sampleRateHz, samples: samples);
 }

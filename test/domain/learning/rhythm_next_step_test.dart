@@ -25,6 +25,8 @@ ExerciseResult _r(
   sessionId: 's',
   exerciseId: p.exercise.exercise.id,
   skill: Skill.rhythm,
+  difficulty: p.exercise.exercise.difficulty,
+  exerciseMode: p.exercise.exercise.mode,
   target: const {},
   measurements: valid
       ? {

@@ -1,11 +1,11 @@
 # Harmonia — Current Roadmap
 
-**Tarih:** 2026-10-14 (son güncelleme: REL-06a hedef tuning metadata guard)
+**Tarih:** 2026-10-15 (son güncelleme: CORE-04c1 seçili ezgi tekrar altyapısı)
 **Durum:** Faz 1 — güvenilirlik sözleşmeleri, yerel kayıt laboratuvarı, deneysel DSP/worker, kalibrasyon/kalite kapısı ve misafir uygulama kabuğu kod-test seviyesinde. Tek ses skor ekranı hâlâ simülasyon; fiziksel cihaz, insan sesi benchmark'ı, eğitimci içerik onayı ve öğretim pilotu kapıları açık. **Hiçbir modül cihazda/pilotta doğrulanmış veya yayında değil.**
 **Sahip:** Mennan Sevim  
 **Platform:** Flutter mobil uygulama; ileride web ve öğretmen paneli
 
-**Son kod doğrulaması (2026-10-14, 10:36 TRT paketi):** `dart tool/quality_check.dart` exit 0: 626 test geçti (+10), analyze temiz, format 185 dosya/0 değişiklik. REL-06a scientific target label/frequency/A4 12TET guard; öğrenci toleransları aynı. Bu tur build/cihaz testi yapılmadı. Önceki Flutter 3.47.7/Xcode 27.0 simulator kaydı korunuyor; gerçek voice/cihaz/eğitimci, Android araç/lisans ve hosted CI kapıları açık.
+**Son kod doğrulaması (2026-10-15, 13:47 TRT paketi):** `dart tool/quality_check.dart` exit 0: 672 test geçti (+8), analyze temiz, format 193 dosya/0 değişiklik. CORE-04c1 orijinal sentetik ezgiden seçili 1–5 ardışık ses/1–3 tekrar için bounded yerel WAV hazırlama; nota/oktav/sıra ve tam referans sesi korunur, max13.8s. Henüz player/UI/mic bağlantısı yok; otomatik hatalı bölüm tespiti veya öğrenci puanı değildir. **Sıradaki hazır CORE-04c2:** exclusive rehearsal player coordinator + manuel seçim/dinleme UI, iptal/background testleri. Skor/planner/eşik/schema değişmedi. Gerçek voice/cihaz/eğitimci, protocol/hint binding ve yayın kapıları açık; bu tur build/cihaz testi yapılmadı.
 
 **CAL-03a:** Ortak gözlenen saat, route/rate bağlamı ve 8–64 trial doğrulanır; medyan/MAD/ham P90–P10, aykırı trial indeksleri ve çekimser durumlar raporlanır. Planlanan playback timestamp'i duyulmuş klik değildir; mixed clock ve inferred route reddedilir. Tap hizalama motor yanlılığını içerir; loopback toplam gecikmesi dokunma pipeline'ına taşınamaz. Bu diagnostic **LatencyCalibration üretmez, ritim düzeltmez ve count-in açmaz**. Gerçek ölçüm adapter'ı/protokolü CAL-03b ve cihaz kapısı açık.
 
@@ -30,6 +30,11 @@ görselleri, ikon ve açılış ekranı. Simulator'da açık/koyu kontrol edildi
 gerçek cihaz ve kullanıcı testi yapılmadı.
 
 ## Modül envanteri (A–Q) — kanıt durumu
+
+**2026-10-14 15:39 TRT — REL-06b:** Protokol JSON exact fields/types/enums;
+integer schema1, both≤256 event preflight, safe format errors/no partial prefix.
+10 new tests, 636 suite. Valid round-trip/scorer aynı; REL-06 tüm session/hint/
+cohort veya actual audio/etiket/rights/device acceptance değil.
 
 **2026-10-14 10:36 TRT — REL-06a:** Hedef scientific nota/MIDI/frekans/A4
 tutarlılığı ExerciseProtocol constructor + JSON reconstruction'da doğrulanır.

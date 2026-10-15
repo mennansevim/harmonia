@@ -443,3 +443,70 @@ zarf çubukları + çalma başı + 8 ms osiloskop çizer, kare saatiyle klip sü
 kadar çalışır. `input_level_meter.dart` kayıt şeridi yalnız gerçek seviye
 olayı geldiğinde hareket eder. İkon seti `tool/brand/render_icons_test.dart`
 ile koddan üretilir (iOS alfasız, Android uyarlanabilir + tek renk).
+
+## REL-06b — Decoded protocol JSON preflight (2026-10-14)
+
+fromJson strict object keys/types at root/tuning/event/target; integer version,
+finite number, bool-only aids, enum-safe lookup. Notes and rhythm lengths≤256
+before mapping, no accepted-prefix result. Constructor semantic rules/tuning
+remain separate (ArgumentError); shape/type error FormatException with no user
+value/source echo. No raw-text parser/IO/auth/approval/acoustic verification.
+Wire schema1 valid round-trip unchanged; not a signed/canonical decoder.
+
+## REL-06c — Shared rhythm reference clock (2026-10-14)
+
+RhythmReferenceClock is the shared playback/evaluation preflight: 2–256
+onsets, finite beat conversion, 0–30000 ms before rounding, strictly increasing
+rounded milliseconds. The existing click renderer uses the same 30 s constant.
+This is a technical stimulus budget, not a new student timing rubric. No beat
+merging, truncation, tempo scaling or latency correction. Invalid reference
+returns neutral invalidInput in evaluation; controller catches it before WAV
+rendering/player access. Timestamp microseconds must be nonnegative, ordered
+and within the exact JavaScript integer range; equal taps remain scored extras.
+Absolute epoch is irrelevant after the unchanged first-tap anchor. Replay quota
+is checked. No additional response-duration cap, no device calibration claim.
+
+## REL-06d — Catalog evidence cohorts (2026-10-15)
+
+ResultCohort matches exerciseId, skill, mode, difficulty, contentVersion,
+scoringVersion, source and analyzerVersion. MeasuredExercise declares its
+expected cohort; comparableResults drives skill state, reports, today and
+daily plans. RhythmNextStepPolicy uses the same matcher. Rhythm metadata comes
+from its bound Exercise; perception catalogs explicitly match current learning/
+difficulty1/scoring2 touch output (level remains in ID/content). Validity is a
+separate gate: same-cohort invalid attempts remain for retry, not mastery.
+No persisted-result rewrite or schema change; older incompatible evidence is
+preserved in history but excluded from current learning comparisons. Thresholds
+and supported/independent/retained rules unchanged. This does NOT fingerprint
+target/tuning/protocol or independently verify hint/replay claims; full session
+context binding and real content/device/educator acceptance remain open.
+
+## SHELL-04e — Home recommendation recovery (2026-10-15)
+
+Home TodayCard uses shared ContentStatusPanel loading/error, explicit retry,
+and the original Future with an immediate error observer. Errors remain visible;
+no empty-history fallback, store reset or automatic retry. Pending reload hides
+old recommendation/action. Returning from an exercise uses the same mounted
+reload path; replacing goal/repository replaces the observed Future and late
+old completion cannot overwrite current UI. Read-only consumer: no record,
+delete, clear, scoring or planner-policy change. Full resume/offline session
+acceptance and real-device usability are still separate SHELL-04 gates.
+
+## CORE-04c1 — Explicit excerpt rehearsal audio (2026-10-15)
+
+DiagnosticMelodyPractice binds the original immutable DiagnosticMelodyReference
+to a zero-based half-open contiguous range (1–5 notes) and 1–3 repetitions.
+The choice is explicit learner practice, not an analyzer-selected error region.
+renderDiagnosticMelodyPractice prepares local mono PCM/WAV, with original Hz/
+octave/order unchanged: 600 ms notes, 200 ms internal gaps, 1000 ms between
+repeats, 400 ms final tail. Maximum 5×3 is nominal 13.8 s; 8–48 kHz only,
+no resampling, tempo scaling, autoplay, file I/O or capture. Existing full
+renderDiagnosticMelody delegates to full-range single-repeat with identical
+samples; mobile session behavior is unchanged. Timings are synthetic scheduling,
+not observed device clocks or a validated teaching prescription.
+
+This package has no player/controller/UI connection or assessment/hint counter.
+CORE-04c2 must own playback and stop/close/background races exclusively, avoid
+capture overlap, label manual synthetic practice and keep it out of recall,
+scoring/history/mastery. Wrong-region inference still needs reliable voice/
+sequence acceptance. 2/3/4 prerecorded piano path is unaffected.

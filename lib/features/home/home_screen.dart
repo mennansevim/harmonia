@@ -12,6 +12,7 @@ import '../../domain/learning/skill_graph.dart';
 import '../../domain/models/learner_profile.dart';
 import '../audio_lab/audio_lab_screen.dart';
 import '../chord_exercise/chord_placeholder_screen.dart';
+import '../common/content_status_panel.dart';
 import '../common/ui/harmonia_ui.dart';
 import '../daily_plan/daily_plan_screen.dart';
 import '../history/history_screen.dart';
@@ -62,9 +63,14 @@ class _HomeScreenState extends State<HomeScreen> {
   int _tab = 0;
   int _refresh = 0;
 
+  /// Tabs are built on first visit only, so opening the app reads local
+  /// history once instead of once per tab.
+  final Set<int> _visited = {0};
+
   void _select(int i) => setState(() {
     if (i == 0 || i == 2) _refresh++;
     _tab = i;
+    _visited.add(i);
   });
 
   @override
@@ -97,7 +103,13 @@ class _HomeScreenState extends State<HomeScreen> {
             systemNavigationBarColor: Colors.transparent,
           ),
       child: Scaffold(
-        body: IndexedStack(index: _tab, children: tabs),
+        body: IndexedStack(
+          index: _tab,
+          children: [
+            for (final (i, t) in tabs.indexed)
+              _visited.contains(i) ? t : const SizedBox.shrink(),
+          ],
+        ),
         bottomNavigationBar: NavigationBar(
           selectedIndex: _tab,
           onDestinationSelected: _select,
@@ -159,7 +171,32 @@ class _TodayView {
 }
 
 class _TodayTabState extends State<_TodayTab> {
-  late Future<_TodayView> _data = _load();
+  late Future<_TodayView> _data = _loadForView();
+
+  Future<_TodayView> _loadForView() {
+    final future = _load();
+    // Own fast failures before FutureBuilder subscribes on the next frame;
+    // the original future still delivers the error to the visible UI.
+    future.ignore();
+    return future;
+  }
+
+  void _reload() {
+    if (!mounted) return;
+    setState(() {
+      _data = _loadForView();
+    });
+  }
+
+  @override
+  void didUpdateWidget(covariant _TodayTab oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.history != widget.history ||
+        oldWidget.profile.goal != widget.profile.goal) {
+      _data = _loadForView();
+    }
+  }
+
   DailyBudget _budget = DailyBudget.twelve;
   bool _budgetAsked = false;
 
@@ -176,7 +213,7 @@ class _TodayTabState extends State<_TodayTab> {
           if (!mounted || saved == null || saved == _budget) return;
           setState(() {
             _budget = saved;
-            _data = _load();
+            _data = _loadForView();
           });
         })
         .catchError((Object _) {});
@@ -207,10 +244,7 @@ class _TodayTabState extends State<_TodayTab> {
 
   Future<void> _afterPush(Future<void> push) async {
     await push;
-    if (!mounted) return;
-    setState(() {
-      _data = _load();
-    });
+    _reload();
   }
 
   void _openStep(HomeData d) {
@@ -319,11 +353,18 @@ class _TodayTabState extends State<_TodayTab> {
                   children: [
                     if (widget.history != null) ...[
                       if (snap.connectionState != ConnectionState.done)
-                        const LinearProgressIndicator(key: Key('today_loading'))
+                        const ContentStatusPanel(
+                          key: Key('today_loading'),
+                          kind: ContentStatusKind.loading,
+                          message: 'Bugünkü öneri için yerel geçmiş okunuyor.',
+                        )
                       else if (snap.hasError)
-                        const Text(
-                          'Geçmiş okunamadığı için öneri gösterilemiyor. Profil › Çalışma geçmişi bölümüne bak.',
-                          key: Key('today_error'),
+                        ContentStatusPanel(
+                          key: const Key('today_error'),
+                          kind: ContentStatusKind.error,
+                          message:
+                              'Geçmiş okunamadığı için öneri gösterilemiyor. Veri silinmedi. Yeniden dene veya Profil › Çalışma geçmişi bölümünü kontrol et.',
+                          onRetry: _reload,
                         )
                       else
                         _NextCard(

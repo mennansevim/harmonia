@@ -404,3 +404,52 @@ da aynı kapıdan geçer. 0.005000001Hz yalnız iki ondalık metadata yuvarlama 
 oktav hedefi kabul edilmez. Legacy Exercise/scorer/fixtures/player değişmedi;
 gerçek waveform/etiket/hak/device QA hâlâ açık. REL-06 tüm session/hint/cohort
 kapsamı tamamlanmadı. Ayrıntı ADR-025/testing/log'da.
+
+## 2026-10-14 15:39 TRT — REL-06b protokol JSON sınırı
+
+ExerciseProtocol.fromJson exact required root/tuning/event/note fields, schema
+integer1, strict enums/numbers/integers/bools. Both event budgets≤256 before
+walking first note; unknown/missing/malformed fields safe FormatException.
+Semantic constructor failures (tuning/recall aids) existing ArgumentError kalır.
+10 new regressions, 636 full suite; schema1 valid output unchanged. Raw text
+JSON parsing/duplicate-key canonicalization/IO veya actual content review değil.
+Session hint/tuning cohort, reviewed audio ve dış acceptance kapıları açık.
+
+### 2026-10-14 20:42 TRT — REL-06c ritim saat preflight
+
+Playback ve değerlendirme ortak RhythmReferenceClock kullanır. Uç tempo/
+overflow, ms çakışması ve mevcut 30 s click-renderer bütçesi dışındaki referans
+çekimser reddedilir; negatif/unsafe/backwards dokunma ve dinleme kota ihlali
+puan üretmez. İlk tap anchor, eşit tap extra ve rubrik aynı. 10 yeni regresyon;
+gerçek ritim cihaz/latency ve eğitimci doğrulaması açık, modül tamamlandı değil.
+
+### 2026-10-15 02:06 TRT — REL-06d öğrenme evidence cohort
+
+ResultCohort sekiz alanı eşler: ID, skill, mode, difficulty, content/scoring
+version, source/analyzer. Shared measured catalog + rhythm next-step bağlandı;
+skill map/rapor/today/daily planner farklı koşullardaki denemeyi ilerleme saymaz.
+Aynı cohort invalid deneme retry için korunur. Sonuç JSON/puan/eşik değişmedi,
+geçmiş yeniden yazılmaz. 12 yeni regresyon; protocol/tuning fingerprint, hint
+kanıtı ve session binding tamamlanmış değil. Cihaz/EDU/pilot kapıları ayrı.
+
+### 2026-10-15 08:44 TRT — SHELL-04e ana ekran önerisi recovery
+
+Home TodayCard ortak loading/error panel + manual retry. Hızlı Future hatası
+sonraki frame öncesi gözlenir ama UI'dan gizlenmez. Pending stale action yok;
+exercise dönüşü/dispose ve repository değişimi güvenli. Hata boş geçmişe veya
+fake öneriye dönüştürülmez; read-only. 6 widget regresyonu (320px/1.8× dahil).
+Session resume ve tüm SHELL-04/device/UXR kabulü tamamlanmış değil.
+
+### 2026-10-15 13:47 TRT — CORE-04c1 seçili ezgi bölümünü hazırlama
+
+DiagnosticMelodyPractice + renderDiagnosticMelodyPractice: orijinal referansta
+1–5 ardışık ses, explicit range, 1–3 tekrar; Hz/oktav/sıra korunur. İç sesler
+arası200ms, tekrarlar arası1000ms, son tail400ms; bounded max13.8s. Tam ezgi
+renderer aynı örnekleri üretir. 8 yeni test; player/capture/UI/score bağlantısı
+yok. “Hatalı bölüm” otomatik seçilmez; öğrenci başarısı/öğretim etkisi değil.
+
+**Sıradaki hazır CORE-04c2:** yalnız dinlemeye yönelik seçili bölüm ekranı ve
+exclusive player coordinator; play/stop/close/pending-start/background race
+fake testleri, büyük yazı ve sentetik/manual açıklaması. Mevcut mikrofon
+oturumuyla eşzamanlı kaynak paylaşımı yok; recall/history/mastery bağı yok.
+CORE-04 bütünü ve gerçek voice/device/EDU kapıları hâlâ açık.

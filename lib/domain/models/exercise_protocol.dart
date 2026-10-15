@@ -106,45 +106,66 @@ class ExerciseProtocol {
   final bool allowPitchHint, allowTransposition, allowAccompaniment;
   bool get targetVisibleDuringResponse => mode != ExerciseMode.recallExam;
   factory ExerciseProtocol.fromJson(Map<String, Object?> json) {
-    if (json['schemaVersion'] != 1) {
+    final root = _protocolObject(json, {
+      'schemaVersion',
+      'mode',
+      'notes',
+      'rhythmOnsetsBeats',
+      'presentation',
+      'responseOrder',
+      'tuning',
+      'tempoBpm',
+      'meterNumerator',
+      'meterDenominator',
+      'recallDelayMs',
+      'maxReferencePlays',
+      'allowPitchHint',
+      'allowTransposition',
+      'allowAccompaniment',
+    });
+    if (root['schemaVersion'] is! int || root['schemaVersion'] != 1) {
       throw const FormatException('Unsupported protocol version');
     }
-    final tuning = json['tuning'] as Map<String, dynamic>;
+    final tuning = _protocolObject(root['tuning'], {'system', 'a4Hz'});
     if (tuning['system'] != '12tet') {
       throw const FormatException('Unsupported tuning');
     }
+    // Preflight both counts before walking even the first event.
+    final notes = _protocolList(root['notes']);
+    final rhythms = _protocolList(root['rhythmOnsetsBeats']);
     return ExerciseProtocol(
-      mode: ExerciseMode.values.singleWhere((m) => m.wireValue == json['mode']),
-      notes: (json['notes'] as List).map((raw) {
-        final event = raw as Map;
-        final note = event['note'] as Map;
+      mode: _protocolMode(root['mode']),
+      notes: notes.map((raw) {
+        final event = _protocolObject(raw, {
+          'note',
+          'onsetBeats',
+          'durationBeats',
+        });
+        final note = _protocolObject(event['note'], {'note', 'frequency'});
         return NoteEvent(
           note: TargetNote(
-            note: note['note'] as String,
-            frequencyHz: (note['frequency'] as num).toDouble(),
+            note: _protocolString(note['note']),
+            frequencyHz: _protocolNumber(note['frequency']),
           ),
-          onsetBeats: (event['onsetBeats'] as num).toDouble(),
-          durationBeats: (event['durationBeats'] as num).toDouble(),
+          onsetBeats: _protocolNumber(event['onsetBeats']),
+          durationBeats: _protocolNumber(event['durationBeats']),
         );
       }).toList(),
-      rhythmOnsetsBeats: (json['rhythmOnsetsBeats'] as List)
-          .map((n) => (n as num).toDouble())
-          .toList(),
-      presentation: ReferencePresentation.values.byName(
-        json['presentation'] as String,
+      rhythmOnsetsBeats: rhythms.map(_protocolNumber).toList(),
+      presentation: _protocolEnum(
+        root['presentation'],
+        ReferencePresentation.values,
       ),
-      responseOrder: ResponseOrder.values.byName(
-        json['responseOrder'] as String,
-      ),
-      a4Hz: (tuning['a4Hz'] as num).toDouble(),
-      tempoBpm: (json['tempoBpm'] as num).toDouble(),
-      meterNumerator: json['meterNumerator'] as int,
-      meterDenominator: json['meterDenominator'] as int,
-      recallDelayMs: json['recallDelayMs'] as int,
-      maxReferencePlays: json['maxReferencePlays'] as int,
-      allowPitchHint: json['allowPitchHint'] as bool,
-      allowTransposition: json['allowTransposition'] as bool,
-      allowAccompaniment: json['allowAccompaniment'] as bool,
+      responseOrder: _protocolEnum(root['responseOrder'], ResponseOrder.values),
+      a4Hz: _protocolNumber(tuning['a4Hz']),
+      tempoBpm: _protocolNumber(root['tempoBpm']),
+      meterNumerator: _protocolInt(root['meterNumerator']),
+      meterDenominator: _protocolInt(root['meterDenominator']),
+      recallDelayMs: _protocolInt(root['recallDelayMs']),
+      maxReferencePlays: _protocolInt(root['maxReferencePlays']),
+      allowPitchHint: _protocolBool(root['allowPitchHint']),
+      allowTransposition: _protocolBool(root['allowTransposition']),
+      allowAccompaniment: _protocolBool(root['allowAccompaniment']),
     );
   }
   Map<String, Object?> toJson() => {
@@ -164,6 +185,58 @@ class ExerciseProtocol {
     'allowTransposition': allowTransposition,
     'allowAccompaniment': allowAccompaniment,
   };
+}
+
+Map<String, Object?> _protocolObject(Object? value, Set<String> keys) {
+  if (value is! Map ||
+      value.length != keys.length ||
+      !value.keys.every((key) => key is String && keys.contains(key))) {
+    throw const FormatException('Invalid protocol fields');
+  }
+  return Map<String, Object?>.from(value);
+}
+
+List<dynamic> _protocolList(Object? value) {
+  if (value is! List || value.length > 256) {
+    throw const FormatException('Invalid protocol event budget');
+  }
+  return value;
+}
+
+String _protocolString(Object? value) {
+  if (value is! String || value.isEmpty || value.length > 8) {
+    throw const FormatException('Invalid protocol note label');
+  }
+  return value;
+}
+
+double _protocolNumber(Object? value) {
+  if (value is! num || !value.isFinite || !value.toDouble().isFinite) {
+    throw const FormatException('Invalid protocol number');
+  }
+  return value.toDouble();
+}
+
+int _protocolInt(Object? value) {
+  if (value is! int) throw const FormatException('Invalid protocol integer');
+  return value;
+}
+
+bool _protocolBool(Object? value) {
+  if (value is! bool) throw const FormatException('Invalid protocol flag');
+  return value;
+}
+
+T _protocolEnum<T extends Enum>(Object? value, List<T> values) {
+  final found = values.where((entry) => entry.name == value);
+  if (found.length != 1) throw const FormatException('Unknown protocol enum');
+  return found.single;
+}
+
+ExerciseMode _protocolMode(Object? value) {
+  final found = ExerciseMode.values.where((mode) => mode.wireValue == value);
+  if (found.length != 1) throw const FormatException('Unknown protocol mode');
+  return found.single;
 }
 
 /// New catalog entries bind the validated protocol to a legacy exercise.

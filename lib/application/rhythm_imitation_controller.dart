@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 
 import '../domain/audio/audio_capture.dart';
 import '../domain/audio/rhythm_imitation.dart';
+import '../domain/audio/rhythm_reference_clock.dart';
 import '../domain/content/rhythm_patterns.dart';
 import '../domain/learning/rhythm_next_step.dart';
 import 'result_history.dart';
@@ -136,11 +137,9 @@ class RhythmImitationController extends ChangeNotifier {
   }
 
   List<int> get _referenceMs {
-    final beatMs = 60000 / _pattern.exercise.protocol.tempoBpm;
-    return [
-      for (final b in _pattern.exercise.protocol.rhythmOnsetsBeats)
-        (b * beatMs).round(),
-    ];
+    final onsets = RhythmReferenceClock.onsetsMs(_pattern.exercise.protocol);
+    if (onsets == null) throw ArgumentError('Invalid rhythm reference clock');
+    return onsets;
   }
 
   Future<void> listen() async {

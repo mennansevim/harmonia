@@ -326,6 +326,14 @@ scientific note/MIDI0–127, 12TET/A4 expected Hz; ≤0.005000001Hz sadece round
 QA değil. Tuning tutarlılığı açık maddesi artık code guard testli; REL-06 tüm
 session/hint/metadata cohort kapısı değil. Release/user dirty korunur, push yok.
 
+**2026-10-14 15:39 TRT — güncel:** REL-06b ExerciseProtocol.fromJson now
+strict root/tuning/event/target fields/types/enums/schema integer; both≤256
+lists preflight. Safe shape errors FormatException, constructor semantic
+ArgumentError/tuning/recall rules unchanged. 10 regressions; 636 full runner,
+186/0, analyze clean. Valid schema1 round-trip same; no IO/text duplicate-key
+canonicalization/approval or acoustic correctness claim. Session hint/tuning
+cohort and true content/device/EDU gates remain open; no commit/push/deploy.
+
 **2026-10-14 11:55 TRT — en güncel (kullanıcı oturumu):** REL-09 kanal bayrağı
 (`HARMONIA_CHANNEL=beta` geliştirici araçlarını gizler), Android imzalama/ad,
 iOS PrivacyInfo.xcprivacy; OPS-01a yerel hata günlüğü. RELEASE_READINESS.md
@@ -346,3 +354,52 @@ sonra alfasız yapılmalı (sips). Ana dala birleştirme kullanıcı onayı bekl
 (top/bottom), seviye `LevelPicker`, ızgaralar `EqualHeightGrid` kullanır;
 LayoutBuilder'ı ders gövdesine koyma (intrinsic ölçüm). Taslak uyarılarını
 kartlara geri ekleme; tek yer "Beta" sayfası. Ana dal birleştirmesi onay bekliyor.
+
+**2026-10-14 20:42 TRT — son heartbeat REL-06c:** Ortak
+RhythmReferenceClock controller/evaluator'da overflow/ms collision/30 s
+render-budget kontrolünü round öncesinde yapar; renderer aynı sabit. Negatif,
+unsafe integer veya backwards timestamp/replay quota invalidInput puansız;
+eşit tap extra ve first-tap anchor/rubrik değişmedi. Invalid reference renderer
+öncesinde controller playbackFailed/idle; gerçek latency ölçümü değildir.
+10 yeni test, hedefli32/full646; format188/0, analyze temiz. REL-06b dahil dirty
+değişiklikler korundu, commit yok. Gerçek cihaz/voice/EDU ve release kapıları
+hâlâ açık; güncel roadmap bağımlılıklarına göre bağımsız güvenli işe devam et.
+
+**2026-10-15 02:06 TRT — son heartbeat REL-06d:** ResultCohort sekiz alanla
+measured catalog + rhythm next-step karşılaştırmasını birleştirir. Farklı skill/
+mode/difficulty/scoring sürümü artık mastery/today/daily plan'a sızmaz. Same
+cohort invalid retry için kalır; JSON schema/puan/eşik değişmez, geçmiş yazılmaz.
+Rhythm metadata bound Exercise'ten, perception explicit current learning/1/2
+touch contract'tan gelir. Yeni12, learning76/full658; format190/0, analyze temiz.
+Önceki dirty işler korunur, commit yok. Tuning/protocol fingerprint ve replay/
+hint claim authenticity henüz çözülmedi; REL-06/dış voice/device/EDU/yayın
+kapıları tamamlandı sayılmasın. Sıradaki güvenli paket güncel bağımlılığa göre;
+2/3/4 kayıt gelmeden kapalı, gerçek ölçüm kabul edilmeden skor açılmaz.
+
+**2026-10-15 08:44 TRT — SHELL-04e:** Home TodayCard artık shared
+ContentStatusPanel loading/error + manual retry kullanır. Future eager error
+observer orijinal future'ı UI'ya döndürür; next-frame hızlı hata kapanır,
+boş geçmiş/fake öneri üretilmez. Exercise dönüşü mounted reload, goal/repository
+değişiminde fresh Future; eski pending completion FutureBuilder ile dışlanır.
+6 fake widget: retry/no-write, pending, dispose, repository switch, fast return
+failure,320px/1.8×. Narrow test scroll/reflow sonrası header'a döner; offscreen
+lazy child assertion yok, retry hitTestable doğrulanır. Skor/planner/dep değişmez.
+Tam session resume/SHELL-04 ve dış voice/device/EDU/yayın kapıları hâlâ açık.
+
+SHELL-04e son doğrulama: targeted6/full664, runner exit0, analyze temiz,
+format191/0, diff check temiz. Commit/build/device yok; önceki dirty işler korundu.
+
+**2026-10-15 13:47 TRT — CORE-04c1:** `application/melody_practice.dart`
+DiagnosticMelodyPractice orijinal DiagnosticMelodyReference'e bağlı explicit
+half-open range1..5notes/repeats1..3. Infrastructure
+renderDiagnosticMelodyPractice yerel synthetic WAV hazırlar; note600ms/gap200ms,
+repeatGap1000ms/final400ms, max13.8s. Tam referans renderer aynı samples üretir.
+Bu paket player/UI/mic/permission/history/score başlatmaz, hata bölümü çıkarmaz.
+Sonraki hazır **CORE-04c2** seçili bölüm dinleme UI + exclusive player coordinator:
+cancel/close/background/pending-start testleri, session capture ile overlap yok;
+manual synthetic practice ayrı, recall/hint/assessment gibi kaydetme. Yanlış
+bölüm otomatik önerisi hâlâ gerçek güvenilir karar kapısına bağlı. Mevcut dirty
+REL/SHELL işleri ve 2/3/4 placeholder yönü korundu. Kod QA sonucu log/roadmap'te.
+
+CORE-04c1 final: hedefli16/full672 (+8), runner exit0, analyze temiz,
+format193/0, diff check temiz. Gerçek cihaz/pilot veya yayın kabulü değil.
