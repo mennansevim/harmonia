@@ -15,6 +15,7 @@ import '../learning/exercise_launcher.dart';
 import '../learning/micro_lesson_screen.dart';
 import '../learning/next_step_text.dart';
 import '../common/content_status_panel.dart';
+import '../common/ui/harmonia_ui.dart';
 
 /// LEARN-01 view: recommended order for the learner's goal and an
 /// evidence-backed state per skill. Nothing is locked; unknown is shown.
@@ -112,9 +113,12 @@ class _SkillMapScreenState extends State<SkillMapScreen> {
           return ListView(
             padding: const EdgeInsets.all(HarmoniaSpacing.lg),
             children: [
-              const Text(
-                'Önerilen sıra; kilit yok, eğitimcin sırayı değiştirebilir. Bu harita bir taslaktır ve eğitimci onayı bekliyor. Uygulamada henüz ölçülemeyen beceriler “henüz ölçülmedi” olarak kalır; bu bir eksiklik notu değildir.',
-                key: Key('skill_map_intro'),
+              Text(
+                'Önerilen sıra, kilit yok. Harita taslaktır; ölçülemeyen beceriler eksik sayılmaz.',
+                key: const Key('skill_map_intro'),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(color: context.palette.muted),
               ),
               if (historyError)
                 ContentStatusPanel(
@@ -183,7 +187,13 @@ class _SkillCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
+    final palette = context.palette;
     final pre = [for (final id in node.prerequisites) graph[id].title];
+    final measured = node.support == MeasurementSupport.measuredInApp;
+    final meta = [
+      node.dimension == SkillDimension.perception ? 'Algı' : 'Üretim',
+      if (pre.isNotEmpty) 'Önce: ${pre.join(', ')}',
+    ].join(' · ');
     return Card(
       key: Key('skill_${node.id}'),
       margin: const EdgeInsets.only(bottom: HarmoniaSpacing.sm),
@@ -192,42 +202,46 @@ class _SkillCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(node.title, style: text.titleMedium),
-            Text(node.goal),
-            const SizedBox(height: HarmoniaSpacing.xs),
-            Wrap(
-              spacing: HarmoniaSpacing.xs,
-              runSpacing: HarmoniaSpacing.xs,
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Expanded(child: Text(node.title, style: text.titleMedium)),
+                const SizedBox(width: HarmoniaSpacing.sm),
                 Chip(
                   key: Key('skill_state_${node.id}'),
+                  visualDensity: VisualDensity.compact,
                   label: Text(
                     state == null
                         ? 'Durum alınamadı'
                         : stateLabel(state!, node.support),
                   ),
                 ),
-                Chip(
-                  label: Text(
-                    node.dimension == SkillDimension.perception
-                        ? 'Algı'
-                        : 'Üretim',
-                  ),
-                ),
               ],
             ),
-            Text(supportLabel(node.support), style: text.bodySmall),
-            if (pre.isNotEmpty)
-              Text('Önce: ${pre.join(', ')}', style: text.bodySmall),
+            Text(node.goal, style: text.bodyMedium),
+            const SizedBox(height: HarmoniaSpacing.xs),
+            Text(meta, style: text.bodySmall?.copyWith(color: palette.muted)),
+            if (!measured)
+              Text(
+                supportLabel(node.support),
+                style: text.bodySmall?.copyWith(color: palette.muted),
+              ),
             for (final lesson in lessons)
-              OutlinedButton(
-                key: Key('open_lesson_${lesson.id}'),
-                onPressed: () => Navigator.of(context).push(
-                  MaterialPageRoute<void>(
-                    builder: (_) => MicroLessonScreen(lesson: lesson),
+              Align(
+                alignment: AlignmentDirectional.centerStart,
+                child: TextButton.icon(
+                  key: Key('open_lesson_${lesson.id}'),
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
                   ),
+                  onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => MicroLessonScreen(lesson: lesson),
+                    ),
+                  ),
+                  icon: const Icon(Icons.menu_book_outlined, size: 20),
+                  label: Text('Taslak ders: ${lesson.title}'),
                 ),
-                child: Text('Metin taslağını oku: ${lesson.title}'),
               ),
           ],
         ),
@@ -265,47 +279,112 @@ class _ReportCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
+    final palette = context.palette;
+    final scheme = Theme.of(context).colorScheme;
     final r = report;
     final (title, reason, action) = todayStepText(r.focus);
     final strong =
         r.count(MasteryState.independent) + r.count(MasteryState.retained);
+    final working =
+        r.count(MasteryState.practicing) + r.count(MasteryState.supported);
+    final untried = r.count(MasteryState.notMeasured);
+    final total = r.measurableCount + r.unknownCount;
+    // Distribution bar: evidence states, then unknown (grey, never "weak").
+    final segments = [
+      (strong, palette.sun),
+      (working, scheme.primary),
+      (untried, scheme.primary.withValues(alpha: .25)),
+      (r.unknownCount, palette.line),
+    ];
     return Card(
       key: const Key('skill_report'),
       child: Padding(
-        padding: const EdgeInsets.all(HarmoniaSpacing.md),
+        padding: const EdgeInsets.all(HarmoniaSpacing.md + 2),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text('Beceri raporu', style: text.labelLarge),
+            Text('Beceri raporu', style: text.titleLarge),
+            const SizedBox(height: HarmoniaSpacing.sm),
+            Row(
+              children: [
+                Expanded(
+                  child: StatTile(
+                    label: 'Bağımsız',
+                    value: '$strong',
+                    valueColor: strong > 0 ? palette.onSun : null,
+                  ),
+                ),
+                const SizedBox(width: HarmoniaSpacing.sm),
+                Expanded(
+                  child: StatTile(label: 'Çalışılıyor', value: '$working'),
+                ),
+                const SizedBox(width: HarmoniaSpacing.sm),
+                Expanded(
+                  child: StatTile(label: 'Denenmedi', value: '$untried'),
+                ),
+              ],
+            ),
+            const SizedBox(height: HarmoniaSpacing.md),
+            Semantics(
+              label:
+                  '$total becerinin $strong tanesi bağımsız, $working tanesi çalışılıyor, $untried tanesi denenmedi, ${r.unknownCount} tanesi bilinmiyor',
+              excludeSemantics: true,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(6),
+                child: SizedBox(
+                  height: 10,
+                  child: Row(
+                    children: [
+                      for (final (n, c) in segments)
+                        if (n > 0)
+                          Expanded(
+                            flex: n,
+                            child: Container(
+                              margin: const EdgeInsets.only(right: 2),
+                              color: c,
+                            ),
+                          ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: HarmoniaSpacing.sm),
             Text(
-              'Rotandaki ${r.measurableCount + r.unknownCount} becerinin ${r.measurableCount} tanesi uygulamada ölçülebiliyor.',
+              'Rotandaki $total becerinin ${r.measurableCount} tanesi uygulamada ölçülebiliyor.',
               key: const Key('report_scope'),
+              style: text.bodyMedium,
             ),
             Text(
               'Bağımsız ya da korundu: $strong · Destekle: ${r.count(MasteryState.supported)} · '
-              'Çalışılıyor: ${r.count(MasteryState.practicing)} · Henüz denenmedi: ${r.count(MasteryState.notMeasured)}',
+              'Çalışılıyor: ${r.count(MasteryState.practicing)} · Henüz denenmedi: $untried',
               key: const Key('report_counts'),
+              style: text.bodySmall?.copyWith(color: palette.muted),
             ),
             Text(
               '${r.unknownCount} beceri için uygulamada kanıt yok; durumları bilinmiyor (zayıf sayılmaz).',
               key: const Key('report_unknown'),
-              style: text.bodySmall,
+              style: text.bodySmall?.copyWith(color: palette.muted),
             ),
-            const SizedBox(height: HarmoniaSpacing.sm),
-            Text('Tek hedef: $title', style: text.titleMedium),
-            Text(reason),
+            const Divider(height: HarmoniaSpacing.lg + 8),
+            const DataLabel('Tek hedef'),
+            const SizedBox(height: HarmoniaSpacing.xs),
+            Text(title, style: text.titleMedium),
+            const SizedBox(height: 2),
+            Text(reason, style: text.bodyMedium),
             if (action.isNotEmpty && onFocus != null) ...[
-              const SizedBox(height: HarmoniaSpacing.sm),
-              FilledButton(
+              const SizedBox(height: HarmoniaSpacing.md),
+              ChunkyButton(
                 key: const Key('report_focus_action'),
+                label: action,
+                icon: Icons.play_arrow_rounded,
                 onPressed: () => onFocus!(r.focus),
-                child: Text(action),
               ),
             ],
-            const SizedBox(height: HarmoniaSpacing.xs),
+            const SizedBox(height: HarmoniaSpacing.sm),
             Text(
               'Genel hazırlık yüzdesi gösterilmez; ölçütler taslak ve eğitimci onayı bekliyor.',
-              style: text.bodySmall,
+              style: text.bodySmall?.copyWith(color: palette.muted),
             ),
           ],
         ),

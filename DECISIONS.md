@@ -217,3 +217,18 @@ kanıtı vermez; bu kapılar ayrı. Yeni reader'lar malformed hedefi sessiz düz
 - İlk hedef kullanıcı.
 - Aboneliğin ücretsiz sınırı.
 - Öğretmen ürününün MVP’ye girip girmemesi.
+
+## ADR-026 — Arayüz yönü A+C (Yol + Atölye) ve gerçek veriye bağlı ses görselleri
+
+**Tarih:** 2026-10-14 · **Karar veren:** kullanıcı (taslak seçimi)
+
+Rakip kalıplarına dayanan üç taslaktan A (Duolingo Music / Simply Piano tipi
+beceri yolu, kalın düğmeler, alttan açıklama paneli) ile C (EarMaster /
+ToneGym tipi ince kartlar, veri etiketleri, kanıt odaklı sonuç ve rapor)
+birleştirildi. Platform yazı tipleri (SF Pro / Roboto) kullanılır: Dynamic
+Type, yerel işleme ve indirmesiz çevrimdışı çalışma için. Ses görselleri
+yalnız gerçek veriye bağlanır: dinlemede çalınan WAV'ın kendi zarfı ve
+örnekleri, kayıtta mikrofonun gerçek dBFS düzeyi. Görsel hiçbir zaman nota
+doğruluğu veya puan ima etmez; hareket azaltma ayarında durağan gösterilir.
+Sınırlı süreli animasyonlar (kare saatiyle), sonsuz döngü yok. Ölçüt,
+tolerans ve skor kuralları değişmedi.

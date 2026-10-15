@@ -11,6 +11,9 @@ import '../../domain/learning/measured_exercise.dart';
 import '../../domain/perception/interval_identification.dart';
 import '../../infrastructure/audio/click_track.dart';
 import '../../infrastructure/audio/just_audio_clip_player.dart';
+import '../common/sound/playback_visual.dart';
+import '../common/sound/waveform_playback_view.dart';
+import '../common/ui/harmonia_ui.dart';
 
 /// Context arpeggio do–mi–sol, pause, then do → target degree (ascending).
 List<int> renderIntervalItem(IntervalItem item) => renderToneSequence(
@@ -46,12 +49,15 @@ class _IntervalScreenState extends State<IntervalScreen>
     with WidgetsBindingObserver {
   late final List<IntervalLevel> levels = widget.levels ?? draftIntervalLevels;
   late final IntervalController c;
+  late final VisualizingClipPlayer _visual;
 
   @override
   void initState() {
     super.initState();
     c = IntervalController(
-      player: widget.player ?? JustAudioClipPlayer(),
+      player: _visual = VisualizingClipPlayer(
+        widget.player ?? JustAudioClipPlayer(),
+      ),
       renderItem: renderIntervalItem,
       initialLevel: levels.firstWhere(
         (l) => l.exerciseId == widget.initialLevelId,
@@ -80,111 +86,137 @@ class _IntervalScreenState extends State<IntervalScreen>
   @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
-    final colors = context.resultColors;
-    return Scaffold(
-      appBar: AppBar(title: const Text('Dereceyi bul (hareketli do)')),
-      body: SafeArea(
-        child: ListenableBuilder(
-          listenable: c,
-          builder: (context, _) {
-            final o = c.outcome;
-            final item = c.round.items[c.index];
-            return ListView(
-              padding: const EdgeInsets.all(HarmoniaSpacing.lg),
+    return ListenableBuilder(
+      listenable: c,
+      builder: (context, _) {
+        final o = c.outcome;
+        final item = c.round.items[c.index];
+        final feedback = c.phase == IntervalPhase.feedback;
+        final total = c.round.items.length;
+        OptionState stateOf(SolfegeDegree d) {
+          if (!feedback) return OptionState.idle;
+          if (d == item.degree) return OptionState.correct;
+          if (d == c.answers[c.index]) return OptionState.wrong;
+          return OptionState.dimmed;
+        }
+
+        return LessonScaffold(
+          progress: o != null ? 1 : (c.index + (feedback ? 1 : 0)) / total,
+          counter: o == null ? '${c.index + 1}/$total' : null,
+          top: [
+            Row(
               children: [
-                const Text(
-                  'Önce tonu tanıtan do–mi–sol duyulur, sonra do ve bir ses daha. İkinci ses do\'ya göre hangi derece? Ton her soruda değişir; hareketli do kullanıyoruz, yani “do” her zaman o anki tonun ilk sesidir. Mikrofon kullanılmaz.',
-                ),
-                const SizedBox(height: HarmoniaSpacing.md),
-                Wrap(
-                  spacing: HarmoniaSpacing.sm,
-                  runSpacing: HarmoniaSpacing.sm,
-                  children: [
-                    for (final l in levels)
-                      ChoiceChip(
-                        key: Key('int_level_${l.exerciseId}'),
-                        label: Text(l.title),
-                        selected: l == c.level,
-                        onSelected: c.canChangeLevel
-                            ? (_) => c.selectLevel(l)
-                            : null,
-                      ),
-                  ],
-                ),
-                if (c.level.review != ContentReviewStatus.educatorApproved)
-                  Text(
-                    'Taslak içerik — eğitimci onayı bekliyor. Sesler sentetik tondur.',
-                    style: text.bodySmall,
+                Flexible(
+                  child: LevelPicker(
+                    keyPrefix: 'int',
+                    choices: [
+                      for (final l in levels)
+                        LevelChoice(id: l.exerciseId, title: l.title),
+                    ],
+                    selectedId: c.level.exerciseId,
+                    onSelected: c.canChangeLevel
+                        ? (id) => c.selectLevel(
+                            levels.firstWhere((l) => l.exerciseId == id),
+                          )
+                        : null,
                   ),
+                ),
+                const SizedBox(width: HarmoniaSpacing.sm),
                 if (c.retentionCheck)
-                  const Text(
-                    'Kalıcılık kontrolü: her soruyu bir kez dinleyebilirsin.',
+                  const StatusPill(
+                    'Tek dinleme',
                     key: Key('int_retention_label'),
-                  ),
-                const SizedBox(height: HarmoniaSpacing.md),
-                if (o == null) ...[
-                  Text(
-                    'Soru ${c.index + 1} / ${c.round.items.length}',
-                    key: const Key('int_progress'),
-                    style: text.titleMedium,
-                  ),
-                  const SizedBox(height: HarmoniaSpacing.sm),
-                  OutlinedButton.icon(
-                    key: const Key('int_play'),
-                    onPressed: c.canPlay ? c.playCurrent : null,
-                    icon: const Icon(Icons.volume_up_outlined),
-                    label: Text(
-                      c.plays[c.index] == 0 ? 'Dinle' : 'Tekrar dinle',
-                    ),
-                  ),
-                  if (c.playbackFailed)
-                    const Text('Ses çalınamadı. Yeniden dene.'),
-                  const SizedBox(height: HarmoniaSpacing.sm),
-                  Wrap(
-                    spacing: HarmoniaSpacing.sm,
-                    runSpacing: HarmoniaSpacing.sm,
+                    tone: PillTone.warning,
+                  )
+                else if (c.level.review != ContentReviewStatus.educatorApproved)
+                  const StatusPill('Taslak'),
+              ],
+            ),
+            const SizedBox(height: HarmoniaSpacing.md),
+            if (o == null) ...[
+              Text(
+                'Do\'dan sonra hangi derece?',
+                key: const Key('int_progress'),
+                style: text.headlineSmall,
+              ),
+              const SizedBox(height: HarmoniaSpacing.xs),
+              Text(
+                'Önce tonu duy (do–mi–sol), sonra do ve hedef ses.',
+                style: text.bodyMedium?.copyWith(color: context.palette.muted),
+              ),
+              const SizedBox(height: HarmoniaSpacing.md),
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(HarmoniaSpacing.md),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      for (final d in c.level.options)
-                        FilledButton(
-                          key: Key('int_answer_${d.name}'),
-                          onPressed: c.canAnswer ? () => c.answer(d) : null,
-                          child: Text('${d.syllable}  (${d.intervalName})'),
+                      WaveformPlaybackView(
+                        playback: _visual.current,
+                        idleLabel: 'Tonik, ardından do ve hedef derece',
+                      ),
+                      const SizedBox(height: HarmoniaSpacing.md),
+                      ChunkyButton(
+                        key: const Key('int_play'),
+                        onPressed: c.canPlay ? c.playCurrent : null,
+                        icon: Icons.volume_up_rounded,
+                        tone: c.plays[c.index] == 0
+                            ? ChunkyTone.primary
+                            : ChunkyTone.neutral,
+                        label: c.phase == IntervalPhase.playing
+                            ? 'Çalıyor…'
+                            : c.plays[c.index] == 0
+                            ? 'Dinle'
+                            : 'Tekrar dinle',
+                      ),
+                      if (c.playbackFailed)
+                        const Padding(
+                          padding: EdgeInsets.only(top: HarmoniaSpacing.sm),
+                          child: Text('Ses çalınamadı. Yeniden dene.'),
                         ),
                     ],
                   ),
-                  if (c.phase == IntervalPhase.feedback) ...[
-                    const SizedBox(height: HarmoniaSpacing.sm),
-                    Semantics(
-                      liveRegion: true,
-                      child: Text(
-                        c.lastAnswerCorrect
-                            ? 'Doğru: ${item.degree.syllable} (${item.degree.intervalName}).'
-                            : 'Bu sefer değil: ${item.degree.syllable} idi (${item.degree.intervalName}). Tekrar dinleyip do\'dan uzaklığı karşılaştır.',
-                        key: const Key('int_feedback'),
-                        style: TextStyle(
-                          color: c.lastAnswerCorrect
-                              ? colors.correct
-                              : colors.incorrect,
-                        ),
-                      ),
+                ),
+              ),
+            ] else
+              _Summary(controller: c, outcome: o),
+          ],
+          bottom: [
+            if (o == null) ...[
+              EqualHeightGrid(
+                children: [
+                  for (final d in c.level.options)
+                    AnswerOption(
+                      key: Key('int_answer_${d.name}'),
+                      title: d.syllable,
+                      subtitle: d.intervalName,
+                      state: stateOf(d),
+                      onTap: c.canAnswer ? () => c.answer(d) : null,
                     ),
-                    FilledButton(
-                      key: const Key('int_next'),
-                      onPressed: c.next,
-                      child: Text(
-                        c.index < c.round.items.length - 1
-                            ? 'Sonraki soru'
-                            : 'Turu bitir',
-                      ),
-                    ),
-                  ],
-                ] else
-                  _Summary(controller: c, outcome: o),
+                ],
+              ),
+              if (feedback) ...[
+                const SizedBox(height: HarmoniaSpacing.md),
+                FeedbackPanel(
+                  correct: c.lastAnswerCorrect,
+                  textKey: const Key('int_feedback'),
+                  actionKey: const Key('int_next'),
+                  title: c.lastAnswerCorrect
+                      ? 'Doğru: ${item.degree.syllable} (${item.degree.intervalName}).'
+                      : 'Bu sefer değil: ${item.degree.syllable} idi (${item.degree.intervalName}).',
+                  detail: c.lastAnswerCorrect
+                      ? null
+                      : 'Tekrar dinleyip do\'dan uzaklığı karşılaştır.',
+                  actionLabel: c.index < total - 1
+                      ? 'Sonraki soru'
+                      : 'Turu bitir',
+                  onAction: c.next,
+                ),
               ],
-            );
-          },
-        ),
-      ),
+            ],
+          ],
+        );
+      },
     );
   }
 }
@@ -195,42 +227,104 @@ class _Summary extends StatelessWidget {
   final IntervalOutcome outcome;
   @override
   Widget build(BuildContext context) {
+    final text = Theme.of(context).textTheme;
     final total = outcome.round.items.length;
+    final clean = outcome.correctCount >= PerceptionCriterion.minCorrect;
     final confusions = outcome.confusions.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));
-    return Card(
+    return Column(
       key: const Key('int_summary'),
-      child: Padding(
-        padding: const EdgeInsets.all(HarmoniaSpacing.md),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(clean ? 'Tur tamam' : 'Tur bitti', style: text.headlineSmall),
+        const SizedBox(height: HarmoniaSpacing.md),
+        Row(
           children: [
-            Text(
-              '$total sorudan ${outcome.correctCount} doğru.',
-              key: const Key('int_summary_text'),
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            Text(
-              'Şans düzeyi yaklaşık %${outcome.chancePercent.round()} (${outcome.round.level.options.length} seçenek). Taslak ölçüt: art arda iki turda en az ${PerceptionCriterion.minCorrect}/$total.',
-            ),
-            if (confusions.isNotEmpty)
-              Text(
-                'En çok karışan: ${confusions.first.key.replaceAll('→', ' yerine ')} (${confusions.first.value} kez). Bu iki dereceyi do\'dan başlayarak tekrar dinle.',
-                key: const Key('int_confusion'),
+            Expanded(
+              child: StatTile(
+                label: 'Doğru',
+                value: '${outcome.correctCount}/$total',
+                valueColor: clean ? context.resultColors.correct : null,
               ),
-            if (controller.recordOutcome != null)
-              const Text('Sonuç bu cihazdaki geçmişine kaydedildi.'),
-            if (controller.historyFailed)
-              const Text('Sonuç geçmişe kaydedilemedi.'),
-            const SizedBox(height: HarmoniaSpacing.sm),
-            FilledButton(
-              key: const Key('int_new_round'),
-              onPressed: controller.newRound,
-              child: const Text('Yeni tur'),
+            ),
+            const SizedBox(width: HarmoniaSpacing.sm),
+            Expanded(
+              child: StatTile(
+                label: 'Şans',
+                value: '%${outcome.chancePercent.round()}',
+              ),
+            ),
+            const SizedBox(width: HarmoniaSpacing.sm),
+            Expanded(
+              child: StatTile(
+                label: 'Seçenek',
+                value: '${outcome.round.level.options.length}',
+              ),
             ),
           ],
         ),
-      ),
+        const SizedBox(height: HarmoniaSpacing.md),
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(HarmoniaSpacing.md),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const DataLabel('Ne oldu'),
+                const SizedBox(height: HarmoniaSpacing.xs),
+                Text(
+                  '$total sorudan ${outcome.correctCount} doğru.',
+                  key: const Key('int_summary_text'),
+                  style: text.titleMedium,
+                ),
+                const SizedBox(height: HarmoniaSpacing.xs),
+                Text(
+                  'Şans düzeyi yaklaşık %${outcome.chancePercent.round()} (${outcome.round.level.options.length} seçenek). Taslak ölçüt: art arda iki turda en az ${PerceptionCriterion.minCorrect}/$total.',
+                ),
+                if (controller.recordOutcome != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: HarmoniaSpacing.xs),
+                    child: Text(
+                      'Sonuç bu cihazdaki geçmişine kaydedildi.',
+                      style: text.bodySmall?.copyWith(
+                        color: context.palette.muted,
+                      ),
+                    ),
+                  ),
+                if (controller.historyFailed)
+                  const Text('Sonuç geçmişe kaydedilemedi.'),
+              ],
+            ),
+          ),
+        ),
+        if (confusions.isNotEmpty) ...[
+          const SizedBox(height: HarmoniaSpacing.sm),
+          Card(
+            color: context.palette.sun.withValues(alpha: .16),
+            child: Padding(
+              padding: const EdgeInsets.all(HarmoniaSpacing.md),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const DataLabel('En çok karışan'),
+                  const SizedBox(height: HarmoniaSpacing.xs),
+                  Text(
+                    'En çok karışan: ${confusions.first.key.replaceAll('→', ' yerine ')} (${confusions.first.value} kez). Bu iki dereceyi do\'dan başlayarak tekrar dinle.',
+                    key: const Key('int_confusion'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+        const SizedBox(height: HarmoniaSpacing.md),
+        ChunkyButton(
+          key: const Key('int_new_round'),
+          label: 'Yeni tur',
+          icon: Icons.replay_rounded,
+          onPressed: controller.newRound,
+        ),
+      ],
     );
   }
 }

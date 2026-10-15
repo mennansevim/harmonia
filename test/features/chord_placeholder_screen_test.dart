@@ -48,6 +48,8 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('tab_practice')));
+      await tester.pumpAndSettle();
       await tester.scrollUntilVisible(find.text('2 / 3 / 4 sesli piyano'), 200);
       await tester.pumpAndSettle();
       await tester.tap(find.text('2 / 3 / 4 sesli piyano'));

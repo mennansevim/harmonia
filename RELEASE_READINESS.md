@@ -23,7 +23,7 @@ Tür: **K** = kodla kapatılabilir, **Ka** = kullanıcı kararı, **D** = dış 
 | Android derleme ortamı | D | Debug APK derlendi (2026-10-14; Gradle CMake 3.22.1'i kendisi kurdu). cmdline-tools eksik, `flutter doctor --android-licenses` onaylanmadı; gerçek Android cihaz/emülatörde çalıştırılmadı |
 | Release imzalama | Ka/D | Kod hazır (`android/key.properties`, gitignore). Keystore üretimi ve saklanması kullanıcıda; iOS için Apple Developer hesabı + signing team |
 | Uygulama kimliği | Ka | `com.harmonia.harmonia` geçici. Mağazaya ilk yüklemeden sonra değişmez; kendi alan adınızla seçilmeli |
-| Uygulama ikonu / açılış ekranı | D | Varsayılan Flutter ikonları; Aurora marka görseli gerekiyor |
+| Uygulama ikonu / açılış ekranı | K/D | Koddan üretilen marka ikonu (iOS alfasız 1024, Android uyarlanabilir + tek renk) ve tema renginde açılış ekranı eklendi. Profesyonel ikon tasarımı ve mağaza ekran görüntüleri hâlâ önerilir |
 | Sürüm numarası | K | `1.0.0+1`; her yüklemede build numarası artırılmalı (CI yok) |
 | Gerçek cihazda gezinti | D | Simulator build başarılı, elle gezinti/gerçek iPhone/Android testi yok |
 | Mikrofon izni kalıcı ret → Ayarlar | Ka | SHELL-02: yeni plugin (ör. permission_handler/app_settings) kararı |

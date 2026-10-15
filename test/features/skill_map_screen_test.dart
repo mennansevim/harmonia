@@ -108,6 +108,8 @@ void main() {
     expect(t('report_counts').data, contains('Henüz denenmedi: 4'));
     expect(t('report_unknown').data, startsWith('5 beceri'));
     expect(find.textContaining('%'), findsNothing);
+    await tester.ensureVisible(find.byKey(const Key('report_focus_action')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('report_focus_action')));
     await tester.pumpAndSettle();
     expect(opened, ['draft-perc-highlow-200']);

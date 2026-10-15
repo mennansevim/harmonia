@@ -2,6 +2,12 @@
 
 **Tarih:** 2026-10-10 · **Durum:** etkileşimli konsept; üretim Flutter arayüzü henüz değiştirilmedi.
 
+## Uygulanan yön — 2026-10-14
+
+Kullanıcı rakip kalıplarına dayanan üç taslaktan **A (Yol) + C (Atölye)** yönünü
+seçti ve uygulandı (ADR-026). Aşağıdaki 2026-10-11 Aurora+Konservatuvar notu
+tarihsel kayıttır; güncel görsel dil A+C'dir.
+
 ## Tercih edilen birleşim — 2026-10-11
 
 Kullanıcının yönü: **Aurora'nın marka deneyimi + Konservatuvar'ın açıklayıcı sonuç yaklaşımı**. Öncelikli yön olarak alınır; nihai kullanılabilirlik/marka onayı değildir. Beş alternatif ve mevcut önizleme korunuyor; bu oturum Flutter veya önizleme arayüzünü değiştirmedi.

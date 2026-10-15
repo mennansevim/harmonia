@@ -24,8 +24,14 @@ void _narrow(WidgetTester tester) {
 
 Future<void> _tapVisible(WidgetTester tester, Finder finder) async {
   await tester.scrollUntilVisible(finder, 200);
+  await tester.ensureVisible(finder);
   await tester.pumpAndSettle();
   await tester.tap(finder);
+  await tester.pumpAndSettle();
+}
+
+Future<void> _tab(WidgetTester tester, String key) async {
+  await tester.tap(find.byKey(Key(key)));
   await tester.pumpAndSettle();
 }
 
@@ -49,15 +55,17 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Konservatuvar hazırlığı'), findsOneWidget);
     expect(find.text('Bugünkü öneri'), findsOneWidget);
-    expect(find.textContaining('Başla: Tiz / pes ayırt etme'), findsOneWidget);
-    expect(find.textContaining('Taslak ölçüt'), findsOneWidget);
-    await tester.scrollUntilVisible(find.text('Tek ses: dinle ve söyle'), 200);
-    expect(find.text('Ses ve ortam kontrolü'), findsOneWidget);
+    expect(find.text('Tiz / pes ayırt etme'), findsWidgets);
+    expect(find.text('Tam ses farkı · ~2 dk'), findsOneWidget);
+    expect(find.byKey(const Key('beta_info')), findsOneWidget);
+    await _tab(tester, 'tab_practice');
+    await tester.scrollUntilVisible(find.text('Tek ses'), 200);
+    await tester.scrollUntilVisible(find.text('Ses ve ortam kontrolü'), 200);
     await tester.scrollUntilVisible(find.text('Kayıt bekleniyor'), 200);
     expect(find.text('Simülasyon'), findsOneWidget);
     expect(find.text('Kayıt bekleniyor'), findsOneWidget);
-    await tester.scrollUntilVisible(find.text('Günlük çalışma rotası'), -200);
     expect(find.text('Henüz yok'), findsNothing);
+    await _tab(tester, 'tab_today');
     expect(find.text('Doğru!'), findsNothing);
     await tester.tap(find.byKey(const Key('open_daily_plan')));
     await tester.pumpAndSettle();
@@ -107,16 +115,17 @@ void main() {
     await tester.pumpAndSettle();
     // Pulse is mastered; the route's first unmastered measured skill is
     // tone-pair perception, so the card opens that screen.
-    expect(
-      find.textContaining('Sıradaki: Tiz / pes ayırt etme — Tam ses farkı'),
-      findsOneWidget,
-    );
+    expect(find.text('Tam ses farkı · ~2 dk'), findsOneWidget);
+    expect(find.textContaining('rotadaki sıradaki'), findsOneWidget);
     await tester.tap(find.byKey(const Key('today_action')));
     await tester.pumpAndSettle();
-    final chip = tester.widget<ChoiceChip>(
-      find.byKey(const Key('perc_level_draft-perc-highlow-200')),
+    expect(
+      find.descendant(
+        of: find.byKey(const Key('perc_level_picker')),
+        matching: find.text('Tam ses farkı'),
+      ),
+      findsOneWidget,
     );
-    expect(chip.selected, isTrue);
   });
 
   testWidgets('home opens the goal-filtered skill map', (tester) async {
@@ -133,8 +142,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('open_skill_map')));
-    await tester.pumpAndSettle();
+    await _tab(tester, 'tab_progress');
     expect(find.text('Beceri haritası'), findsOneWidget);
     await tester.scrollUntilVisible(
       find.byKey(const Key('skill_part-independence')),
@@ -156,6 +164,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
+    await _tab(tester, 'tab_profile');
     await tester.tap(find.byKey(const Key('open_history')));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('history_empty')), findsOneWidget);
@@ -186,6 +195,7 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(swept, 1);
+      await _tab(tester, 'tab_profile');
       await tester.tap(find.byKey(const Key('open_settings')));
       await tester.pumpAndSettle();
       await tester.scrollUntilVisible(
@@ -216,6 +226,7 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(find.text('Temel duyma ve ses'), findsOneWidget);
+    await _tab(tester, 'tab_practice');
     await _tapVisible(tester, find.text('Tek ses sonuç örnekleri'));
     expect(find.text('Mikrofon girişi henüz simüle ediliyor'), findsOneWidget);
   });
@@ -237,6 +248,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
+    await _tab(tester, 'tab_profile');
     await tester.tap(find.byKey(const Key('open_settings')));
     await tester.pumpAndSettle();
     await tester.scrollUntilVisible(
@@ -302,10 +314,13 @@ void main() {
     expect(tester.takeException(), isNull);
     await _tapVisible(tester, find.byKey(const Key('goal_choir')));
     expect(tester.takeException(), isNull);
-    await tester.scrollUntilVisible(find.text('Günlük çalışma rotası'), 200);
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('open_daily_plan')),
+      200,
+    );
     expect(tester.takeException(), isNull);
-    await tester.tap(find.byKey(const Key('open_settings')));
-    await tester.pumpAndSettle();
+    await _tab(tester, 'tab_profile');
+    await _tapVisible(tester, find.byKey(const Key('open_settings')));
     await tester.scrollUntilVisible(find.text('Hakkında'), 200);
     expect(tester.takeException(), isNull);
   });

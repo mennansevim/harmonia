@@ -404,3 +404,16 @@ targets ve rhythm-only compatibility. Static metadata test, human benchmark değ
 değiştirmez. Protocol guard her note; waveform/hak/clock/voice QA ayrı.
 Legacy const Exercise/scorer ve fixtures aynı; schema1 stricter validation,
 approval/real engine success yok. Final suite IMPLEMENTATION_LOG'da.
+
+## UI-01 — A+C arayüz ve ses görselleri testleri (2026-10-14)
+
+13 yeni test: seri hesabı (dün/boşluk/bugün), yol verisi (sonraki seviye,
+ölçülemeyen beceri), WAV'dan görsel (zarfta tonlar arası sessizlik), oynatıcı
+sarmalayıcı yayınla/temizle/durdur, dalganın klip süresinden sonra durması,
+hareket azaltmada durağan çizim, kayıt şeridinin yalnız seviye gelince
+hareket etmesi; açık/koyu Bugün/Pratik/Profil için Android/iOS dokunma,
+etiket ve kontrast kılavuzları; 320 px/1,8× yol ve sekmeler; ölçülemeyen
+düğüm açıklaması ve odak düğümünün egzersizi açması. Mevcut ekran testleri
+yeni gezinmeye uyarlandı (assert ve eşikler gevşetilmedi). Simulator'da elle
+gezinti yapıldı; ses görseli kareleri test görüntüsüyle incelendi.
+Gerçek cihaz, ekran okuyucu ve kullanıcı testi yapılmadı.

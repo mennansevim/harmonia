@@ -332,3 +332,17 @@ iOS PrivacyInfo.xcprivacy; OPS-01a yerel hata günlüğü. RELEASE_READINESS.md
 yayın açıklarını listeler. iOS simulator ve Android debug APK build başarılı.
 626 test. Commit edilmedi. Otomatik ajanla aynı dosyalarda (home/settings/
 harmonia_app) çalışırken mevcut dirty değişiklikleri koru.
+
+**2026-10-14 — UI-01 A+C (design/a-c dalı):** Yeni tasarım sistemi ve alt
+sekmeli kabuk; gerçek veriye bağlı ses görselleri (ADR-026). Bileşenler
+`features/common/ui/`, sesler `features/common/sound/`, kabuk `features/home/`.
+Yeni ekran yazarken ChunkyButton/AnswerOption/FeedbackPanel/StatTile kullan;
+etiketleri toUpperCase ile büyütme (Türkçe i/İ). Sonsuz animasyon ekleme
+(testlerde pumpAndSettle takılır, pil tüketir). İkonlar
+`flutter test tool/brand/render_icons_test.dart` ile üretilir; iOS ikonları
+sonra alfasız yapılmalı (sips). Ana dala birleştirme kullanıcı onayı bekliyor.
+
+**2026-10-15 — UX-02 (design/a-c dalı):** Ders ekranları `LessonScaffold`
+(top/bottom), seviye `LevelPicker`, ızgaralar `EqualHeightGrid` kullanır;
+LayoutBuilder'ı ders gövdesine koyma (intrinsic ölçüm). Taslak uyarılarını
+kartlara geri ekleme; tek yer "Beta" sayfası. Ana dal birleştirmesi onay bekliyor.

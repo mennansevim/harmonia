@@ -82,12 +82,13 @@ void main() {
         ),
       ),
     );
-    final chip = tester.widget<ChoiceChip>(
-      find.byKey(
-        Key('rhythm_pattern_${draftRhythmPatterns[1].exercise.exercise.id}'),
+    expect(
+      find.descendant(
+        of: find.byKey(const Key('rhythm_level_picker')),
+        matching: find.text(draftRhythmPatterns[1].title),
       ),
+      findsOneWidget,
     );
-    expect(chip.selected, isTrue);
     await tester.scrollUntilVisible(
       find.byKey(const Key('rhythm_listen')),
       100,

@@ -24,6 +24,11 @@ imzalama yapılandırması, iOS gizlilik manifesti, yerel hata günlüğü. iOS 
 ve Android debug APK build başarılı; gerçek cihazda çalıştırılmadı. Yayın açıkları:
 [RELEASE_READINESS.md](./RELEASE_READINESS.md).
 
+**2026-10-14 — UI-01 A+C:** Seçilen tasarım uygulandı (ayrı dal): alt sekmeli
+kabuk, beceri yolu, yeni egzersiz ve rapor ekranları, gerçek veriye bağlı ses
+görselleri, ikon ve açılış ekranı. Simulator'da açık/koyu kontrol edildi;
+gerçek cihaz ve kullanıcı testi yapılmadı.
+
 ## Modül envanteri (A–Q) — kanıt durumu
 
 **2026-10-14 10:36 TRT — REL-06a:** Hedef scientific nota/MIDI/frekans/A4

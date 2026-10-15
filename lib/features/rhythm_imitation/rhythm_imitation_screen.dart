@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../app/theme/harmonia_theme.dart';
 import '../../application/result_history.dart';
@@ -10,6 +11,9 @@ import '../../domain/audio/rhythm_imitation.dart';
 import '../../domain/content/rhythm_patterns.dart';
 import '../../infrastructure/audio/click_track.dart';
 import '../../infrastructure/audio/just_audio_clip_player.dart';
+import '../common/sound/playback_visual.dart';
+import '../common/sound/waveform_playback_view.dart';
+import '../common/ui/harmonia_ui.dart';
 import '../learning/next_step_text.dart';
 
 class RhythmImitationScreen extends StatefulWidget {
@@ -35,13 +39,16 @@ class _RhythmImitationScreenState extends State<RhythmImitationScreen>
   late final List<RhythmPattern> patterns =
       widget.patterns ?? draftRhythmPatterns;
   late final RhythmImitationController controller;
+  late final VisualizingClipPlayer _visual;
   bool _details = false;
 
   @override
   void initState() {
     super.initState();
     controller = RhythmImitationController(
-      player: widget.player ?? JustAudioClipPlayer(),
+      player: _visual = VisualizingClipPlayer(
+        widget.player ?? JustAudioClipPlayer(),
+      ),
       renderReference: (ms) => renderClickTrack(ms).encode(),
       initialPattern: patterns.firstWhere(
         (p) => p.exercise.exercise.id == widget.initialPatternId,
@@ -71,112 +78,146 @@ class _RhythmImitationScreenState extends State<RhythmImitationScreen>
   @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
-    return Scaffold(
-      appBar: AppBar(title: const Text('Ritim tekrarı')),
-      body: SafeArea(
-        child: ListenableBuilder(
-          listenable: controller,
-          builder: (context, _) {
-            final c = controller;
-            final selectable =
-                c.phase == RhythmImitationPhase.idle ||
-                c.phase == RhythmImitationPhase.awaitingTaps ||
-                c.phase == RhythmImitationPhase.finished;
-            return ListView(
-              padding: const EdgeInsets.all(HarmoniaSpacing.lg),
+    return ListenableBuilder(
+      listenable: controller,
+      builder: (context, _) {
+        final c = controller;
+        final selectable =
+            c.phase == RhythmImitationPhase.idle ||
+            c.phase == RhythmImitationPhase.awaitingTaps ||
+            c.phase == RhythmImitationPhase.finished;
+        final progress = switch (c.phase) {
+          RhythmImitationPhase.idle => c.referencePlays > 0 ? .34 : 0.0,
+          RhythmImitationPhase.listening => .2,
+          RhythmImitationPhase.awaitingTaps => .4,
+          RhythmImitationPhase.tapping => .7,
+          RhythmImitationPhase.evaluating => .9,
+          RhythmImitationPhase.finished || RhythmImitationPhase.closed => 1.0,
+        };
+        return LessonScaffold(
+          progress: progress,
+          top: [
+            Row(
               children: [
-                const Text(
-                  'Dinle, sonra aynı ritmi alana dokunarak tekrar et. İlk dokunuşun başlangıç kabul edilir; onun zamanlaması ölçülmez, sonraki vuruşlar referans tempoda karşılaştırılır.',
+                Flexible(
+                  child: LevelPicker(
+                    keyPrefix: 'rhythm',
+                    choices: [
+                      for (final p in patterns)
+                        LevelChoice(
+                          id: p.exercise.exercise.id,
+                          title: p.title,
+                          subtitle: p.description,
+                        ),
+                    ],
+                    selectedId: c.pattern.exercise.exercise.id,
+                    onSelected: selectable
+                        ? (id) => c.selectPattern(
+                            patterns.firstWhere(
+                              (p) => p.exercise.exercise.id == id,
+                            ),
+                          )
+                        : null,
+                  ),
                 ),
-                const SizedBox(height: HarmoniaSpacing.md),
-                Wrap(
-                  spacing: HarmoniaSpacing.sm,
-                  runSpacing: HarmoniaSpacing.sm,
-                  children: [
-                    for (final p in patterns)
-                      ChoiceChip(
-                        key: Key('rhythm_pattern_${p.exercise.exercise.id}'),
-                        label: Text(p.title),
-                        selected: p == c.pattern,
-                        onSelected: selectable
-                            ? (_) => c.selectPattern(p)
-                            : null,
-                      ),
-                  ],
-                ),
+                const SizedBox(width: HarmoniaSpacing.sm),
                 if (c.retentionCheck)
-                  const Padding(
-                    padding: EdgeInsets.only(top: HarmoniaSpacing.xs),
-                    child: Text(
-                      'Kalıcılık kontrolü: tek dinleme hakkın var.',
-                      key: Key('rhythm_retention_label'),
-                    ),
-                  ),
-                if (c.pattern.review != ContentReviewStatus.educatorApproved)
-                  Padding(
-                    padding: const EdgeInsets.only(top: HarmoniaSpacing.xs),
-                    child: Text(
-                      'Taslak içerik — eğitimci onayı bekliyor. ${c.pattern.description}',
-                      key: const Key('rhythm_draft_label'),
-                      style: text.bodySmall,
-                    ),
-                  ),
-                const SizedBox(height: HarmoniaSpacing.md),
-                OutlinedButton.icon(
-                  key: const Key('rhythm_listen'),
-                  onPressed: c.canListen ? c.listen : null,
-                  icon: const Icon(Icons.volume_up_outlined),
-                  label: Text(
-                    'Dinle (${c.referencePlays}/${c.maxReferencePlays})',
-                  ),
-                ),
-                const SizedBox(height: HarmoniaSpacing.sm),
-                Semantics(
-                  liveRegion: true,
-                  child: Text(
-                    _status(c),
-                    key: const Key('rhythm_status'),
-                    style: text.titleMedium,
-                  ),
-                ),
-                if (c.outcome case final o?) ...[
-                  const SizedBox(height: HarmoniaSpacing.md),
-                  _Result(outcome: o),
-                  if (_saveText(c) case final saved?)
-                    Text(saved, key: const Key('rhythm_saved')),
-                  if (c.nextStep != null) _NextStepCard(controller: c),
-                  if (o.isMeasured)
-                    TextButton(
-                      key: const Key('rhythm_details'),
-                      onPressed: () => setState(() => _details = !_details),
-                      child: Text(
-                        _details ? 'Ayrıntıyı gizle' : 'Ölçüm ayrıntısı',
-                      ),
-                    ),
-                  if (_details && o.isMeasured) _Details(outcome: o),
-                ],
-                const SizedBox(height: HarmoniaSpacing.sm),
-                _TapPad(controller: c),
-                if (c.phase == RhythmImitationPhase.tapping)
-                  FilledButton(
-                    key: const Key('rhythm_finish'),
-                    onPressed: c.finish,
-                    child: const Text('Bitirdim'),
-                  ),
-                if (c.tapsDuringReference > 0)
-                  Text(
-                    'Referans çalarken ${c.tapsDuringReference} dokunuş oldu; bunlar değerlendirilmedi.',
-                  ),
-                if (c.playbackFailed)
-                  const Text(
-                    'Referans çalınamadı. Yeniden deneyebilirsin.',
-                    key: Key('rhythm_playback_error'),
+                  const StatusPill(
+                    'Tek dinleme',
+                    key: Key('rhythm_retention_label'),
+                    tone: PillTone.warning,
                   ),
               ],
-            );
-          },
-        ),
-      ),
+            ),
+            const SizedBox(height: HarmoniaSpacing.md),
+            Text('Dinle, sonra aynı ritme dokun', style: text.headlineSmall),
+            const SizedBox(height: HarmoniaSpacing.xs),
+            Text(
+              'İlk dokunuşun başlangıç sayılır; sonrakiler tempoyla karşılaştırılır.',
+              style: text.bodyMedium?.copyWith(color: context.palette.muted),
+            ),
+            if (c.pattern.review != ContentReviewStatus.educatorApproved)
+              Padding(
+                padding: const EdgeInsets.only(top: HarmoniaSpacing.xs),
+                child: Text(
+                  'Taslak içerik — eğitimci onayı bekliyor. ${c.pattern.description}',
+                  key: const Key('rhythm_draft_label'),
+                  style: text.bodySmall?.copyWith(color: context.palette.muted),
+                ),
+              ),
+            const SizedBox(height: HarmoniaSpacing.md),
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(HarmoniaSpacing.md),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    WaveformPlaybackView(
+                      playback: _visual.current,
+                      height: 96,
+                      idleLabel: 'Ritim burada çalacak',
+                    ),
+                    const SizedBox(height: HarmoniaSpacing.md),
+                    ChunkyButton(
+                      key: const Key('rhythm_listen'),
+                      onPressed: c.canListen ? c.listen : null,
+                      icon: Icons.volume_up_rounded,
+                      tone: c.referencePlays == 0
+                          ? ChunkyTone.primary
+                          : ChunkyTone.neutral,
+                      label:
+                          'Dinle (${c.referencePlays}/${c.maxReferencePlays})',
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: HarmoniaSpacing.sm),
+            Semantics(
+              liveRegion: true,
+              child: Text(
+                _status(c),
+                key: const Key('rhythm_status'),
+                style: text.titleMedium,
+              ),
+            ),
+            if (c.outcome case final o?) ...[
+              const SizedBox(height: HarmoniaSpacing.md),
+              _Result(outcome: o),
+              if (_saveText(c) case final saved?)
+                Text(saved, key: const Key('rhythm_saved')),
+              if (c.nextStep != null) _NextStepCard(controller: c),
+              if (o.isMeasured)
+                TextButton(
+                  key: const Key('rhythm_details'),
+                  onPressed: () => setState(() => _details = !_details),
+                  child: Text(_details ? 'Ayrıntıyı gizle' : 'Ölçüm ayrıntısı'),
+                ),
+              if (_details && o.isMeasured) _Details(outcome: o),
+            ],
+          ],
+          bottom: [
+            _TapPad(controller: c),
+            if (c.phase == RhythmImitationPhase.tapping)
+              ChunkyButton(
+                key: const Key('rhythm_finish'),
+                onPressed: c.finish,
+                tone: ChunkyTone.success,
+                icon: Icons.check_rounded,
+                label: 'Bitirdim',
+              ),
+            if (c.tapsDuringReference > 0)
+              Text(
+                'Referans çalarken ${c.tapsDuringReference} dokunuş oldu; bunlar değerlendirilmedi.',
+              ),
+            if (c.playbackFailed)
+              const Text(
+                'Referans çalınamadı. Yeniden deneyebilirsin.',
+                key: Key('rhythm_playback_error'),
+              ),
+          ],
+        );
+      },
     );
   }
 }
@@ -206,13 +247,34 @@ String _status(RhythmImitationController c) => switch (c.phase) {
   RhythmImitationPhase.closed => 'Kapandı.',
 };
 
-class _TapPad extends StatelessWidget {
+class _TapPad extends StatefulWidget {
   const _TapPad({required this.controller});
   final RhythmImitationController controller;
   @override
+  State<_TapPad> createState() => _TapPadState();
+}
+
+/// Big thumb target. Timing comes from the pointer-down engine timestamp;
+/// the ring and haptic are feedback only and never delay the measurement.
+class _TapPadState extends State<_TapPad> with SingleTickerProviderStateMixin {
+  late final AnimationController _pulse = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 320),
+  );
+
+  @override
+  void dispose() {
+    _pulse.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final active = controller.acceptsTaps;
+    final palette = context.palette;
+    final c = widget.controller;
+    final active = c.acceptsTaps;
+    final text = Theme.of(context).textTheme;
     return Semantics(
       button: true,
       enabled: active,
@@ -222,25 +284,75 @@ class _TapPad extends StatelessWidget {
         key: const Key('rhythm_tap_pad'),
         behavior: HitTestBehavior.opaque,
         // Engine timestamp of the pointer-down: monotonic, frame-independent.
-        onPointerDown: (event) => controller.registerTap(event.timeStamp),
+        onPointerDown: (event) {
+          c.registerTap(event.timeStamp);
+          if (!active) return;
+          HapticFeedback.lightImpact();
+          if (!HarmoniaMotion.reduced(context)) _pulse.forward(from: 0);
+        },
         child: Container(
-          height: 180,
+          constraints: const BoxConstraints(minHeight: 200),
+          padding: const EdgeInsets.all(HarmoniaSpacing.md),
           margin: const EdgeInsets.symmetric(vertical: HarmoniaSpacing.sm),
           decoration: BoxDecoration(
-            color: active
-                ? scheme.primaryContainer
-                : scheme.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(HarmoniaRadius.card),
+            color: active ? palette.coral : scheme.surfaceContainerHigh,
+            borderRadius: BorderRadius.circular(28),
+            boxShadow: active
+                ? [
+                    BoxShadow(
+                      color: Color.lerp(palette.coral, Colors.black, .28)!,
+                      offset: const Offset(0, 5),
+                    ),
+                  ]
+                : null,
           ),
-          alignment: Alignment.center,
-          child: Text(
-            active ? 'Buraya dokun' : 'Dinledikten sonra açılır',
-            style: TextStyle(
-              color: active
-                  ? scheme.onPrimaryContainer
-                  : scheme.onSurfaceVariant,
-              fontSize: 20,
-            ),
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              AnimatedBuilder(
+                animation: _pulse,
+                builder: (context, _) {
+                  final t = Curves.easeOutCubic.transform(_pulse.value);
+                  return Opacity(
+                    opacity: (1 - t) * (_pulse.isAnimating ? 0.5 : 0),
+                    child: Container(
+                      width: 80 + 160 * t,
+                      height: 80 + 160 * t,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 4),
+                      ),
+                    ),
+                  );
+                },
+              ),
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.touch_app_rounded,
+                    size: 40,
+                    color: active ? Colors.white : palette.muted,
+                  ),
+                  const SizedBox(height: HarmoniaSpacing.xs),
+                  Text(
+                    active ? 'Buraya dokun' : 'Dinledikten sonra açılır',
+                    textAlign: TextAlign.center,
+                    style: text.titleLarge?.copyWith(
+                      color: active ? Colors.white : palette.muted,
+                    ),
+                  ),
+                  if (c.phase == RhythmImitationPhase.tapping)
+                    Text(
+                      '${c.tapCount}',
+                      style: text.displaySmall?.copyWith(
+                        color: Colors.white,
+                        fontFeatures: const [FontFeature.tabularFigures()],
+                      ),
+                    ),
+                ],
+              ),
+            ],
           ),
         ),
       ),

@@ -211,6 +211,9 @@ void main() {
         ),
       ),
     );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('tab_practice')));
+    await tester.pumpAndSettle();
     await _tap(tester, 'open_melody_session');
     await tester.pumpAndSettle();
     expect(find.byType(MelodySessionScreen), findsOneWidget);

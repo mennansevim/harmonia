@@ -426,3 +426,20 @@ Absolute0.005000001Hz metadata rounding, no pitch-class/octave fold/student
 rubric change. Unicode/solfege/whitespace/unsupported labels explicit reject;
 movable-do ayrı algı yanıtı, absolute target label yerine geçmez. Schema1 fields
 aynı, validation stricter (ADR-025). Metadata hedefi waveform doğrulamaz.
+
+## UI-01 — A+C tasarım sistemi (2026-10-14)
+
+`app/theme/harmonia_theme.dart`: indigo birincil, `HarmoniaPalette` (derin
+gölge, güneş, mercan, nane, çizgi, soluk metin, dalga renkleri), sonuç
+renkleri, `HarmoniaMotion` (hareket azaltma), iOS'ta Cupertino geçişleri,
+Android'de predictive back. `features/common/ui/harmonia_ui.dart`:
+ChunkyButton, AnswerOption, FeedbackPanel, DataLabel, StatusPill,
+LessonProgressBar, StatTile. Ana kabuk `HomeScreen` alt sekmeli: Bugün (öneri,
+günlük plan, beceri yolu `home/skill_path.dart` + `home/home_data.dart`),
+Pratik, Gelişim (beceri haritası + rapor), Profil.
+Ses görselleri: `common/sound/playback_visual.dart` `VisualizingClipPlayer`
+oynatıcıyı sarar ve çalınan WAV'ı çözüp yayınlar; `waveform_playback_view.dart`
+zarf çubukları + çalma başı + 8 ms osiloskop çizer, kare saatiyle klip süresi
+kadar çalışır. `input_level_meter.dart` kayıt şeridi yalnız gerçek seviye
+olayı geldiğinde hareket eder. İkon seti `tool/brand/render_icons_test.dart`
+ile koddan üretilir (iOS alfasız, Android uyarlanabilir + tek renk).

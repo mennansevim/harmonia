@@ -742,3 +742,51 @@ SHELL-04b/c/d ve REL-06a işleri ağaçta bulundu, korundu.
 başarılı, PrivacyInfo paket içinde, CFBundleName Harmonia. `flutter build apk
 --debug` başarılı (Gradle CMake 3.22.1 kurdu). Gerçek cihaz/emülatör çalıştırma,
 release imzalı build, mağaza yüklemesi yapılmadı. Commit yok.
+
+## 2026-10-14 — UI-01 A+C tasarımının uygulanması
+
+Kullanıcı A+C yönünü seçti ve gerçekçi ses animasyonları istedi. Çalışma
+`design/a-c` dalında ayrı worktree'de yapıldı (otomatik ajanla çakışmamak için).
+- Tema ve bileşenler (ADR-026), alt sekmeli kabuk: Bugün (öneri kartı, günlük
+  plan kartı, beceri yolu, seri rozeti), Pratik (modül kartları; geliştirici
+  araçları yalnız dev kanalında), Gelişim (beceri haritası + C tarzı rapor),
+  Profil (geçmiş, beceri haritası, ayarlar).
+- Tiz/pes, derece ve ritim ekranları: ilerleme çubuğu, büyük cevap kartları,
+  alttan açıklama paneli, C tarzı özet kutuları; seviye çipleri dinleme
+  sırasında pasif kalır (sayfa zıplamaz).
+- Ses görselleri gerçek veriye bağlı: dinlemede çalınan WAV'ın zarfı, çalma
+  başı ve osiloskobu; kayıtta mikrofon seviyesine bağlı ses şeridi. Ritim
+  dokunma alanında dokunuş halkası ve dokunsal geri bildirim (zaman ölçümü
+  pointer-down zaman damgasından, değişmedi).
+- Hedef seçimi yenilendi; Türkçe büyük harf hatasını önlemek için etiketler
+  programla büyütülmüyor. iOS/Android ikon seti ve açılış ekranı renkleri.
+- Simulator'da bulunan ve düzeltilen hatalar: kart gölgesinin içi gri
+  doldurması, yol bağlantı noktalarının metnin üstünden geçmesi, BAŞLA
+  balonunun bölüm başlığına binmesi, setState'e Future döndürülmesi.
+
+**Doğrulama:** `dart tool/quality_check.dart` exit 0 (worktree): 639+ test,
+analyze temiz, format 0 değişiklik. iOS simulator build ve elle gezinti
+(açık/koyu). Gerçek cihaz, Android çalıştırma, ekran okuyucu ve kullanıcı
+testi yapılmadı. Ölçüt/skor/tolerans değişmedi.
+
+## 2026-10-15 — UX-02 sadeleştirme (rakip sistem incelemesi sonrası)
+
+Kullanıcı ekranları karmaşık buldu. Duolingo Music, Simply Piano/Sing,
+Yousician, EarMaster, ToneGym, Perfect Ear, Complete/Functional Ear Trainer,
+Tenuto, MyEarTraining, Singing Carrots ve Apple HIG / Material 3 / NN/g
+rehberleri üç araştırma ajanıyla incelendi (kaynaklar ikincil ağırlıklı;
+uygulamalar elle denenmedi). Uygulanan ilkeler: ekran başına tek birincil
+eylem, tek satırlık yönerge, ayarlar bir kademe derinde, uyarılar tek yerde.
+- Bugün: üç başlatma noktası teke indi (Sıradaki kartı + dakika halkası +
+  yol). Günlük plan kartı kaldırıldı; halka planı açar. Tüm taslak/ölçüm
+  notları başlıktaki "Beta" sayfasında. Yol balonu kartın fiiliyle aynı.
+- Ders modu (`LessonScaffold`): başlık çubuğu yok; kapat + ilerleme + sayaç.
+  Seviye çipleri `LevelPicker` sayfasına taşındı; cevaplar ve geri bildirim
+  ekranın altında (başparmak bölgesi), kısa ekranda kaydırılır.
+- Pratik: iki sütunlu eşit yükseklikte kutucuklar, kısa başlıklar; kart başı
+  rozetler kaldırıldı, "Söyle" grubunda tek "Puan yok" rozeti.
+- Gelişim: kısa giriş, kart başına başlık+durum, meta tek satır.
+- Ana sayfa yüklemesi tercih dosyasını beklemez (yavaş IO'da takılma
+  giderildi); dakika halkası büyük yazıda taşmaz.
+Doğrulama: 639 test, analyze/format temiz; simulator'da elle gezinti.
+Gerçek kullanıcı testi yapılmadı; kanıt yok sayılmalı, UXR-01 açık.

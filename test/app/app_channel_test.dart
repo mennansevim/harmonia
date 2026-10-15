@@ -43,6 +43,9 @@ void main() {
 
   testWidgets('beta hides lab, simulations and placeholders', (tester) async {
     await _pump(tester, AppChannel.beta);
+    await tester.tap(find.byKey(const Key('tab_practice')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('open_pitch_comparison')), findsOneWidget);
     for (final k in [
       'open_audio_lab',
       'open_single_tone',
@@ -55,6 +58,8 @@ void main() {
       find.byKey(const Key('open_daily_plan'), skipOffstage: false),
       findsOneWidget,
     );
+    await tester.tap(find.byKey(const Key('tab_profile')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('open_settings')));
     await tester.pumpAndSettle();
     await tester.scrollUntilVisible(
@@ -66,6 +71,8 @@ void main() {
 
   testWidgets('dev keeps developer tools', (tester) async {
     await _pump(tester, AppChannel.dev);
+    await tester.tap(find.byKey(const Key('tab_practice')));
+    await tester.pumpAndSettle();
     expect(find.byKey(const Key('open_audio_lab')), findsOneWidget);
     expect(
       find.byKey(const Key('open_single_tone'), skipOffstage: false),
