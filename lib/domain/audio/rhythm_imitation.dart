@@ -5,6 +5,7 @@ import '../models/measurement_provenance.dart';
 import '../models/score_metric.dart';
 import 'event_rhythm_analyzer.dart';
 import 'rhythm_analyzer.dart';
+import 'rhythm_reference_clock.dart';
 
 enum RhythmImitationStatus { measured, tooFewTaps, invalidInput }
 
@@ -120,26 +121,31 @@ class RhythmImitationEvaluator {
   const RhythmImitationEvaluator._();
 
   static const maxTaps = 256;
+  // Exact integer microseconds on native and JavaScript runtimes.
+  static const maxTimestampUs = 9007199254740991;
 
   static Future<RhythmImitationOutcome> evaluate({
     required ExerciseProtocol protocol,
     required List<Duration> tapTimestamps,
     int referencePlays = 1,
   }) async {
-    final beatMs = 60000 / protocol.tempoBpm;
-    final reference = [
-      for (final beat in protocol.rhythmOnsetsBeats) (beat * beatMs).round(),
-    ];
+    final reference = RhythmReferenceClock.onsetsMs(protocol);
     RhythmImitationOutcome invalid(RhythmImitationStatus status) =>
         RhythmImitationOutcome._(
           status: status,
           referencePlays: referencePlays,
         );
-    if (reference.length < 2 || tapTimestamps.length > maxTaps) {
+    if (reference == null ||
+        referencePlays < 1 ||
+        referencePlays > protocol.maxReferencePlays ||
+        tapTimestamps.length > maxTaps) {
       return invalid(RhythmImitationStatus.invalidInput);
     }
-    for (var i = 1; i < tapTimestamps.length; i++) {
-      if (tapTimestamps[i] < tapTimestamps[i - 1]) {
+    for (var i = 0; i < tapTimestamps.length; i++) {
+      final micros = tapTimestamps[i].inMicroseconds;
+      if (micros < 0 ||
+          micros > maxTimestampUs ||
+          (i > 0 && tapTimestamps[i] < tapTimestamps[i - 1])) {
         return invalid(RhythmImitationStatus.invalidInput);
       }
     }

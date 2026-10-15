@@ -1,6 +1,8 @@
 import '../audio/rhythm_imitation.dart';
 import '../content/rhythm_patterns.dart';
 import '../models/exercise_result.dart';
+import '../models/exercise.dart';
+import '../models/result_cohort.dart';
 import '../models/measurement_provenance.dart';
 import '../perception/interval_identification.dart';
 import '../perception/pitch_comparison.dart';
@@ -12,6 +14,7 @@ abstract interface class MeasuredExercise {
   String get title;
   String get contentVersion;
   String get analyzerVersion;
+  ResultCohort get cohort;
 
   /// Draft time estimate for one round incl. listening (LEARN-03 daily
   /// plan budget). Developer hypothesis; not measured on learners.
@@ -32,6 +35,12 @@ class RhythmMeasuredExercise implements MeasuredExercise {
   String get contentVersion => pattern.exercise.exercise.contentVersion;
   @override
   String get analyzerVersion => RhythmImitationOutcome.version;
+  @override
+  ResultCohort get cohort => ResultCohort.forExercise(
+    pattern.exercise.exercise,
+    source: MeasurementSource.touch,
+    analyzerVersion: analyzerVersion,
+  );
   @override
   int get draftMinutes => 2;
   @override
@@ -59,6 +68,17 @@ class PitchComparisonMeasuredExercise implements MeasuredExercise {
   @override
   String get analyzerVersion => PitchComparisonOutcome.version;
   @override
+  ResultCohort get cohort => ResultCohort(
+    exerciseId: exerciseId,
+    skill: Skill.pitch,
+    mode: ExerciseMode.learning,
+    difficulty: 1,
+    contentVersion: contentVersion,
+    scoringVersion: '2',
+    source: MeasurementSource.touch,
+    analyzerVersion: analyzerVersion,
+  );
+  @override
   int get draftMinutes => 2;
   @override
   bool isClean(ExerciseResult r) =>
@@ -78,6 +98,17 @@ class IntervalMeasuredExercise implements MeasuredExercise {
   @override
   String get analyzerVersion => IntervalOutcome.version;
   @override
+  ResultCohort get cohort => ResultCohort(
+    exerciseId: exerciseId,
+    skill: Skill.interval,
+    mode: ExerciseMode.learning,
+    difficulty: 1,
+    contentVersion: contentVersion,
+    scoringVersion: '2',
+    source: MeasurementSource.touch,
+    analyzerVersion: analyzerVersion,
+  );
+  @override
   int get draftMinutes => 3;
   @override
   bool isClean(ExerciseResult r) =>
@@ -86,18 +117,17 @@ class IntervalMeasuredExercise implements MeasuredExercise {
           PerceptionCriterion.minCorrect;
 }
 
-/// Comparable results: same id, content and analyzer version, touch source.
+/// Full catalog cohort; unknown modes/versions cannot promote mastery.
 List<ExerciseResult> comparableResults(
   List<ExerciseResult> results,
   MeasuredExercise e,
-) => [
-  for (final r in results)
-    if (r.exerciseId == e.exerciseId &&
-        r.contentVersion == e.contentVersion &&
-        r.provenance.source == MeasurementSource.touch &&
-        r.provenance.analyzerVersion == e.analyzerVersion)
-      r,
-]..sort((a, b) => a.createdAt.compareTo(b.createdAt));
+) {
+  final cohort = e.cohort;
+  return [
+    for (final r in results)
+      if (cohort.matches(r)) r,
+  ]..sort((a, b) => a.createdAt.compareTo(b.createdAt));
+}
 
 List<MeasuredExercise> defaultMeasuredCatalog() => [
   for (final p in draftRhythmPatterns) RhythmMeasuredExercise(p),

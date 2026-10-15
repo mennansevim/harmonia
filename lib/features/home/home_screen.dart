@@ -13,6 +13,7 @@ import '../learning/exercise_launcher.dart';
 import '../learning/next_step_text.dart';
 import '../audio_lab/audio_lab_screen.dart';
 import '../chord_exercise/chord_placeholder_screen.dart';
+import '../common/content_status_panel.dart';
 import '../history/history_screen.dart';
 import '../interval/interval_screen.dart';
 import '../melody/melody_session_screen.dart';
@@ -321,7 +322,30 @@ class _TodayCard extends StatefulWidget {
 }
 
 class _TodayCardState extends State<_TodayCard> {
-  late Future<TodayStep> _step = _load();
+  late Future<TodayStep> _step = _loadForView();
+
+  Future<TodayStep> _loadForView() {
+    final future = _load();
+    // Own fast failures before FutureBuilder subscribes on the next frame.
+    // Return the original future so the error still reaches the visible UI.
+    future.ignore();
+    return future;
+  }
+
+  void _reload() {
+    if (!mounted) return;
+    setState(() {
+      _step = _loadForView();
+    });
+  }
+
+  @override
+  void didUpdateWidget(covariant _TodayCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.history != widget.history || oldWidget.goal != widget.goal) {
+      _step = _loadForView();
+    }
+  }
 
   Future<TodayStep> _load() async {
     final entries = await widget.history.load();
@@ -343,10 +367,7 @@ class _TodayCardState extends State<_TodayCard> {
     await Navigator.of(
       context,
     ).push(MaterialPageRoute<void>(builder: (_) => screen));
-    if (!mounted) return;
-    setState(() {
-      _step = _load();
-    });
+    _reload();
   }
 
   @override
@@ -354,12 +375,19 @@ class _TodayCardState extends State<_TodayCard> {
     future: _step,
     builder: (context, snapshot) {
       if (snapshot.connectionState != ConnectionState.done) {
-        return const SizedBox(height: 4, child: LinearProgressIndicator());
+        return const ContentStatusPanel(
+          key: Key('today_loading'),
+          kind: ContentStatusKind.loading,
+          message: 'Bugünkü öneri için yerel geçmiş okunuyor.',
+        );
       }
       if (snapshot.hasError) {
-        return const Text(
-          'Geçmiş okunamadığı için öneri gösterilemiyor. Ayrıntı için Geçmiş ekranına bak.',
-          key: Key('today_error'),
+        return ContentStatusPanel(
+          key: const Key('today_error'),
+          kind: ContentStatusKind.error,
+          message:
+              'Geçmiş okunamadığı için öneri gösterilemiyor. Veri silinmedi. Yeniden dene veya Geçmiş ekranını kontrol et.',
+          onRetry: _reload,
         );
       }
       final step = snapshot.data!;

@@ -742,3 +742,107 @@ SHELL-04b/c/d ve REL-06a işleri ağaçta bulundu, korundu.
 başarılı, PrivacyInfo paket içinde, CFBundleName Harmonia. `flutter build apk
 --debug` başarılı (Gradle CMake 3.22.1 kurdu). Gerçek cihaz/emülatör çalıştırma,
 release imzalı build, mağaza yüklemesi yapılmadı. Commit yok.
+
+## 2026-10-14 15:39 TRT — REL-06b protokol JSON preflight
+
+Git/docs/kararlar ve protocol kodu okundu; girişte ağaç temizdi (önceki kullanıcı/
+ajan paketleri commit edilmişti). ExerciseProtocol.fromJson strict exact root/
+tuning/event/target fields; integer schema1, enum-safe mode/presentation/order,
+finite numeric, integer policy/bool flags. Both event counts≤256 before note
+traversal; malformed shape FormatException safe fixed text, no value/source
+echo. Existing constructor semantic ArgumentError/tuning/recall constraints
+unchanged; valid JSON output same. No partial catalog/protocol delivered.
+
+**Doğrulama:** İlk ortak runner exit 0, **636 full test geçti (+10)**;
+analyze temiz (3.8 sn), **186 dosya/0 format değişikliği**. Round-trip/aids,
+schema coercion, keys all depths, flags/int, enums/mode, numeric/type, budgets/
+malformed prefix, late invalid+semantic rules, snapshot/no text echo tests.
+Üretim öğrenci/rubrik eşikleri değişmedi; fixture/scorer compatibility geçti.
+
+Roadmap/testing/mimari/devir güncellendi. JSON decoded-map boundary only:
+raw text size/duplicate-key canonicalization, authenticity/rights/waveform
+etiket veya actual voice/device/teaching doğrulaması değildir. REL-06 session
+hint/metadata cohort ve dış acceptance kapıları açık. Build/mic/cihaz/insan/
+pilot/API/upload/ödeme/commit/push/deploy yok. Agora git read-only temiz,
+kaynakları değiştirilmedi. Önceki kullanıcı build kayıtları korunur; otomatik
+takip tamamlandı sayılmadı.
+
+## 2026-10-14 20:42 TRT — REL-06c ritim referans saatini güvenli bağla
+
+RhythmImitationEvaluator daha önce finite pozitif ama çok küçük tempo veya
+büyük beat değerinde round() hatası, çok büyük tempoda ms çakışması sonrası
+analyzer hatası üretebiliyordu. Negatif ilk tap hizalamayla gizlenebiliyordu.
+RhythmReferenceClock artık controller/evaluator ortak preflight; renderClickTrack
+aynı 30000 ms sabitini kullanır. Referans taşması/çakışması puansız invalidInput;
+controller renderer/player öncesinde playbackFailed ile idle'a döner.
+Timestamps 0..9007199254740991 microseconds, kronolojik; replay kota kontrolü.
+Eşit tap extra, ilk tap anchor, toleranslar/skor formülü değişmedi. Yeni cevap
+süresi sınırı veya latency düzeltmesi yok. Mevcut dirty REL-06b işleri korundu.
+
+Doğrulama: hedefli 32 test geçti; ortak runner exit 0, 646 full test (+10),
+188 dosya/0 format değişikliği, analyze temiz. Fake/numeric tests only; build,
+cihaz/mic, insan sesi, eğitimci/pilot, API, upload, ödeme, commit/push/deploy yok.
+Agora read-only git status temiz; kaynakları değiştirilmedi. Dış kabul kapıları
+açık; otomatik takip tamamlandı sayılmadı.
+
+## 2026-10-15 02:06 TRT — REL-06d öğrenmede karşılaştırılabilir kanıt
+
+Measured catalog ve RhythmNextStepPolicy filtreleri önceden yalnız ID/content/
+source/analyzer eşliyordu; farklı mode/difficulty/scoring/skill sonuçları aynı
+ilerleme zincirine girebiliyordu. Yeni immutable ResultCohort sekiz alanı eşler.
+Üç measured adapter beklenen cohort'u bildirir; skill-map/report/today/daily
+plan ortak filtre üzerinden korunur. Invalid aynı-cohort deneme retry içindir,
+mastery sayılmaz; eski/farklı koşuldaki geçmiş dosyadan silinmez/yazılmaz.
+Senkop policy test fixture'ı bound difficulty2/mode'u kullanacak şekilde düzeldi;
+üretim tanımını veya skor rubriğini gevşetmedim. Önceki dirty paketler korundu.
+
+12 yeni regresyon: üç gerçek outcome-codec yolu (sentetik referans + touch,
+gerçek öğrenci kaydı değil), sekiz alanın tek tek izolasyonu, invalid/retry,
+chronological mixed history ve exam→today/daily learning leakage. Hedefli
+öğrenme katmanı 76 test geçti; ortak runner exit0, full658 (+12), analyze temiz,
+format190/0. git diff --check temiz. Bu paket protocol fingerprint/tuning/hint
+doğrulaması değildir; tam REL-06 session context ve dış acceptance kapıları açık.
+Build/mic/cihaz/pilot/API/upload/ödeme/commit/push/deploy yapılmadı. Agora
+kaynakları değiştirilmedi; otomatik takip tamamlandı sayılmadı.
+
+## 2026-10-15 08:44 TRT — SHELL-04e ana ekran önerisi recovery
+
+Home TodayCard geçmiş hatasında yalnız başka ekrana yönlendiriyordu; shared
+ContentStatusPanel loading/error + manual retry eklendi. _loadForView eager
+error observer orijinal Future'ı FutureBuilder'a verir: setState→next-frame
+hata aralığı kapanır, UI hata durumunu göstermeye devam eder. _reload mounted;
+exercise dönüşü aynı yol; goal/history değişiminde fresh Future. Pending yükte
+eski öneri/aksiyon gizli. Boş geçmişe çevirme, auto retry, veri yazma/silme yok.
+
+6 yeni fake-repository widget: retry/no writes/private error text, pending,
+disposal late failure, repository swap, immediate failure on exercise return,
+320px/1.8×. İlk full koşuda yeni narrow test offscreen retry nedeniyle düştü;
+scroll layout pump/hitTestable eklendi. İkinci full test eski sürümü yürütürken
+sonuç kartı lazy list viewport dışında kaldı; test header'a geri kaydırarak
+sonucu assert eder. Assertion/eşik gevşetilmedi. Son hedefli6 geçti; son ortak
+runner exit0: full664 (+6), analyze temiz (2.9sn), format191/0; diff check temiz.
+Önceki dirty REL-06b/c/d korundu. Build/cihaz/mic/voice/pilot/API/upload/ödeme/
+commit/push/deploy yok. Agora read-only status temiz, kaynakları değişmedi.
+SHELL-04 tüm consumer/session resume ve dış acceptance kapıları açık;
+otomatik takip tamamlandı sayılmadı.
+
+## 2026-10-15 13:47 TRT — CORE-04c1 seçili ezgi tekrarı ses hazırlama
+
+Yeni DiagnosticMelodyPractice orijinal immutable reference'e bağlı 1–5 ardışık
+nota seçimi ve1–3 tekrar taşır; invalid range clamp/reorder edilmez. Renderer
+600ms ton,200ms iç gap,1000ms tekrar sessizliği,400ms final tail ile yerel
+mono PCM/WAV üretir; max5×3=13.8s/662400 samples48kHz. Raw Hz/oktav/sıra
+aynı, tempo/transpozisyon/mix yok. renderDiagnosticMelody full-range single
+repeat üzerinden aynı eski samples üretir. Hazırlama yalnız bellekte, player/
+file/izin/mic/history/scorer bağlantısı yok; kullanıcı otomatik hata bölümü veya
+başarı görmez. Sonraki c2 ayrı owned playback/stop/close/background ve UI işi.
+
+İlk hedefli koşuda yeni testte inferred List<int>→List<double> compile hatası
+vardı; typed literal düzeltildi. Hedefli16 geçti (8yeni+8backend). İlk runner
+yalnız son test düzenlemesinin formatını işaretledi; format sonrası son runner
+exit0: full672 (+8), analyze temiz3.0sn, format193/0. Generated tone/pitch/
+rest/PCM codec testleri fiziksel ses, insan holdout veya öğretim pilotu değil.
+Piyano dosyası/lisans taşınmadı; 2/3/4 placeholder aynı. Önceki dirty işler
+korundu, Agora read-only status/diff temiz; kaynakları değişmedi. Build/device/
+API/upload/ödeme/commit/push/deploy yok. CORE-04 ve dış acceptance bitmedi;
+otomatik takip tamamlandı sayılmadı.
