@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import '../domain/audio/audio_capture.dart';
 import '../domain/perception/interval_identification.dart';
 import 'result_history.dart';
+import 'review_playback.dart';
 
 enum IntervalPhase { idle, playing, awaitingAnswer, feedback, finished, closed }
 
@@ -24,6 +25,10 @@ class IntervalController extends ChangeNotifier {
        _random = random ?? Random(),
        _now = clock ?? DateTime.now,
        _newAttemptId = newAttemptId ?? _randomId {
+    review = ReviewPlaybackCoordinator(
+      player: player,
+      onChanged: notifyListeners,
+    );
     _newRound();
   }
 
@@ -37,6 +42,7 @@ class IntervalController extends ChangeNotifier {
   final Random _random;
   final DateTime Function() _now;
   final String Function() _newAttemptId;
+  late final ReviewPlaybackCoordinator review;
 
   IntervalLevel _level;
   IntervalLevel get level => _level;
@@ -50,6 +56,7 @@ class IntervalController extends ChangeNotifier {
   bool historyFailed = false;
   bool playbackFailed = false;
   bool retentionCheck = false;
+  bool guidedRetry = false;
   bool _heard = false;
   Completer<void>? _wake;
   int _epoch = 0;
@@ -79,12 +86,54 @@ class IntervalController extends ChangeNotifier {
     recordOutcome = null;
     historyFailed = false;
     playbackFailed = false;
+    guidedRetry = false;
     _heard = false;
+  }
+
+  int get mistakeCount {
+    final result = outcome;
+    if (result == null) return 0;
+    return [
+      for (var i = 0; i < result.answers.length; i++)
+        if (result.answers[i] != result.round.items[i].degree) i,
+    ].length;
+  }
+
+  /// Starts a short practice-only round with the exact missed degrees.
+  /// It is deliberately excluded from history/mastery evidence.
+  Future<bool> startGuidedRetry() async {
+    final result = outcome;
+    if (_closed || phase != IntervalPhase.finished || result == null) {
+      return false;
+    }
+    final missed = [
+      for (var i = 0; i < result.answers.length; i++)
+        if (result.answers[i] != result.round.items[i].degree)
+          result.round.items[i],
+    ];
+    if (missed.isEmpty) return false;
+    ++_epoch;
+    await review.cancel();
+    if (_closed) return false;
+    round = IntervalRound.guided(_level, missed);
+    answers = List.filled(round.items.length, null);
+    plays = List.filled(round.items.length, 0);
+    index = 0;
+    outcome = null;
+    recordOutcome = null;
+    historyFailed = false;
+    playbackFailed = false;
+    retentionCheck = false;
+    guidedRetry = true;
+    _heard = false;
+    _set(IntervalPhase.idle);
+    return true;
   }
 
   void selectLevel(IntervalLevel next) {
     if (!canChangeLevel) return;
     ++_epoch;
+    unawaited(review.cancel());
     _level = next;
     retentionCheck = false;
     _newRound();
@@ -92,6 +141,41 @@ class IntervalController extends ChangeNotifier {
   }
 
   void newRound() => selectLevel(_level);
+
+  Future<void> reviewReference(int itemIndex) {
+    final result = outcome;
+    if (phase != IntervalPhase.finished ||
+        result == null ||
+        itemIndex < 0 ||
+        itemIndex >= result.round.items.length) {
+      return Future<void>.value();
+    }
+    return review.play(
+      itemIndex: itemIndex,
+      clipId: 'reference',
+      wavBytes: renderItem(result.round.items[itemIndex]),
+    );
+  }
+
+  Future<void> reviewSelected(int itemIndex) {
+    final result = outcome;
+    if (phase != IntervalPhase.finished ||
+        result == null ||
+        itemIndex < 0 ||
+        itemIndex >= result.round.items.length) {
+      return Future<void>.value();
+    }
+    final answer = result.answers[itemIndex];
+    if (answer == null) return Future<void>.value();
+    final original = result.round.items[itemIndex];
+    return review.play(
+      itemIndex: itemIndex,
+      clipId: 'selected',
+      wavBytes: renderItem(
+        IntervalItem(tonicHz: original.tonicHz, degree: answer),
+      ),
+    );
+  }
 
   Future<void> playCurrent() async {
     if (!canPlay) return;
@@ -135,6 +219,7 @@ class IntervalController extends ChangeNotifier {
     );
     outcome = result;
     _set(IntervalPhase.finished);
+    if (guidedRetry) return;
     final store = history;
     if (store == null) return;
     try {
@@ -161,6 +246,7 @@ class IntervalController extends ChangeNotifier {
   Future<void> cancel() async {
     if (_closed) return;
     ++_epoch;
+    await review.cancel();
     final wake = _wake;
     if (wake != null && !wake.isCompleted) wake.complete();
     _newRound();
@@ -170,17 +256,30 @@ class IntervalController extends ChangeNotifier {
     } catch (_) {}
   }
 
+  /// Stops audio when the app is backgrounded without discarding a completed
+  /// result that the learner is reviewing.
+  Future<void> pause() async {
+    if (_closed) return;
+    if (phase == IntervalPhase.finished) {
+      await review.cancel();
+      return;
+    }
+    await cancel();
+  }
+
   Future<void> close() async {
     if (_closed) return;
     ++_epoch;
     final wake = _wake;
     if (wake != null && !wake.isCompleted) wake.complete();
     phase = IntervalPhase.closed;
+    await review.close();
     await player.close();
   }
 
   @override
   void dispose() {
+    review.detach();
     unawaited(close().catchError((Object _) {}));
     super.dispose();
   }

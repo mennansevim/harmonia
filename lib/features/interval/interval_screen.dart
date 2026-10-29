@@ -4,8 +4,10 @@ import 'package:flutter/material.dart';
 
 import '../../app/theme/harmonia_theme.dart';
 import '../../application/interval_controller.dart';
+import '../../application/review_playback.dart';
 import '../../application/result_history.dart';
 import '../../domain/audio/audio_capture.dart';
+import '../../domain/content/draft_micro_lessons.dart';
 import '../../domain/content/rhythm_patterns.dart';
 import '../../domain/learning/measured_exercise.dart';
 import '../../domain/perception/interval_identification.dart';
@@ -14,6 +16,8 @@ import '../../infrastructure/audio/just_audio_clip_player.dart';
 import '../common/sound/playback_visual.dart';
 import '../common/sound/waveform_playback_view.dart';
 import '../common/ui/harmonia_ui.dart';
+import '../common/ui/answer_comparison_card.dart';
+import '../learning/micro_lesson_screen.dart';
 
 /// Context arpeggio do–mi–sol, pause, then do → target degree (ascending).
 List<int> renderIntervalItem(IntervalItem item) => renderToneSequence(
@@ -50,6 +54,9 @@ class _IntervalScreenState extends State<IntervalScreen>
   late final List<IntervalLevel> levels = widget.levels ?? draftIntervalLevels;
   late final IntervalController c;
   late final VisualizingClipPlayer _visual;
+  bool _canLeave = false;
+  bool _exiting = false;
+  String? _exitError;
 
   @override
   void initState() {
@@ -72,7 +79,29 @@ class _IntervalScreenState extends State<IntervalScreen>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.hidden) {
-      unawaited(c.cancel());
+      unawaited(c.pause());
+    }
+  }
+
+  Future<void> _exit() async {
+    if (_exiting) return;
+    setState(() {
+      _exiting = true;
+      _exitError = null;
+    });
+    try {
+      await c.close();
+      if (!mounted) return;
+      setState(() => _canLeave = true);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) Navigator.of(context).pop();
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(
+        () => _exitError =
+            'Ses kaynağının kapandığı doğrulanamadı. Uygulamayı kapatıp yeniden aç.',
+      );
     }
   }
 
@@ -86,137 +115,160 @@ class _IntervalScreenState extends State<IntervalScreen>
   @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
-    return ListenableBuilder(
-      listenable: c,
-      builder: (context, _) {
-        final o = c.outcome;
-        final item = c.round.items[c.index];
-        final feedback = c.phase == IntervalPhase.feedback;
-        final total = c.round.items.length;
-        OptionState stateOf(SolfegeDegree d) {
-          if (!feedback) return OptionState.idle;
-          if (d == item.degree) return OptionState.correct;
-          if (d == c.answers[c.index]) return OptionState.wrong;
-          return OptionState.dimmed;
-        }
+    return PopScope<void>(
+      canPop: _canLeave,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) unawaited(_exit());
+      },
+      child: ListenableBuilder(
+        listenable: c,
+        builder: (context, _) {
+          final o = c.outcome;
+          final item = c.round.items[c.index];
+          final feedback = c.phase == IntervalPhase.feedback;
+          final total = c.round.items.length;
+          OptionState stateOf(SolfegeDegree d) {
+            if (!feedback) return OptionState.idle;
+            if (d == item.degree) return OptionState.correct;
+            if (d == c.answers[c.index]) return OptionState.wrong;
+            return OptionState.dimmed;
+          }
 
-        return LessonScaffold(
-          progress: o != null ? 1 : (c.index + (feedback ? 1 : 0)) / total,
-          counter: o == null ? '${c.index + 1}/$total' : null,
-          top: [
-            Row(
-              children: [
-                Flexible(
-                  child: LevelPicker(
-                    keyPrefix: 'int',
-                    choices: [
-                      for (final l in levels)
-                        LevelChoice(id: l.exerciseId, title: l.title),
-                    ],
-                    selectedId: c.level.exerciseId,
-                    onSelected: c.canChangeLevel
-                        ? (id) => c.selectLevel(
-                            levels.firstWhere((l) => l.exerciseId == id),
-                          )
-                        : null,
+          return LessonScaffold(
+            progress: o != null ? 1 : (c.index + (feedback ? 1 : 0)) / total,
+            counter: o == null ? '${c.index + 1}/$total' : null,
+            top: [
+              if (_exiting || _exitError != null)
+                Semantics(
+                  liveRegion: true,
+                  child: Text(
+                    _exitError ?? 'Ses kapatılıyor…',
+                    key: const Key('int_exit_status'),
                   ),
                 ),
-                const SizedBox(width: HarmoniaSpacing.sm),
-                if (c.retentionCheck)
-                  const StatusPill(
-                    'Tek dinleme',
-                    key: Key('int_retention_label'),
-                    tone: PillTone.warning,
-                  )
-                else if (c.level.review != ContentReviewStatus.educatorApproved)
-                  const StatusPill('Taslak'),
-              ],
-            ),
-            const SizedBox(height: HarmoniaSpacing.md),
-            if (o == null) ...[
-              Text(
-                'Do\'dan sonra hangi derece?',
-                key: const Key('int_progress'),
-                style: text.headlineSmall,
-              ),
-              const SizedBox(height: HarmoniaSpacing.xs),
-              Text(
-                'Önce tonu duy (do–mi–sol), sonra do ve hedef ses.',
-                style: text.bodyMedium?.copyWith(color: context.palette.muted),
-              ),
-              const SizedBox(height: HarmoniaSpacing.md),
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(HarmoniaSpacing.md),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      WaveformPlaybackView(
-                        playback: _visual.current,
-                        idleLabel: 'Tonik, ardından do ve hedef derece',
-                      ),
-                      const SizedBox(height: HarmoniaSpacing.md),
-                      ChunkyButton(
-                        key: const Key('int_play'),
-                        onPressed: c.canPlay ? c.playCurrent : null,
-                        icon: Icons.volume_up_rounded,
-                        tone: c.plays[c.index] == 0
-                            ? ChunkyTone.primary
-                            : ChunkyTone.neutral,
-                        label: c.phase == IntervalPhase.playing
-                            ? 'Çalıyor…'
-                            : c.plays[c.index] == 0
-                            ? 'Dinle'
-                            : 'Tekrar dinle',
-                      ),
-                      if (c.playbackFailed)
-                        const Padding(
-                          padding: EdgeInsets.only(top: HarmoniaSpacing.sm),
-                          child: Text('Ses çalınamadı. Yeniden dene.'),
-                        ),
-                    ],
-                  ),
-                ),
-              ),
-            ] else
-              _Summary(controller: c, outcome: o),
-          ],
-          bottom: [
-            if (o == null) ...[
-              EqualHeightGrid(
+              Row(
                 children: [
-                  for (final d in c.level.options)
-                    AnswerOption(
-                      key: Key('int_answer_${d.name}'),
-                      title: d.syllable,
-                      subtitle: d.intervalName,
-                      state: stateOf(d),
-                      onTap: c.canAnswer ? () => c.answer(d) : null,
+                  Flexible(
+                    child: LevelPicker(
+                      keyPrefix: 'int',
+                      choices: [
+                        for (final l in levels)
+                          LevelChoice(id: l.exerciseId, title: l.title),
+                      ],
+                      selectedId: c.level.exerciseId,
+                      onSelected: c.canChangeLevel
+                          ? (id) => c.selectLevel(
+                              levels.firstWhere((l) => l.exerciseId == id),
+                            )
+                          : null,
                     ),
+                  ),
+                  const SizedBox(width: HarmoniaSpacing.sm),
+                  if (c.guidedRetry)
+                    const StatusPill(
+                      'Tekrar',
+                      key: Key('int_guided_label'),
+                      tone: PillTone.warning,
+                    )
+                  else if (c.retentionCheck)
+                    const StatusPill(
+                      'Tek dinleme',
+                      key: Key('int_retention_label'),
+                      tone: PillTone.warning,
+                    )
+                  else if (c.level.review !=
+                      ContentReviewStatus.educatorApproved)
+                    const StatusPill('Taslak'),
                 ],
               ),
-              if (feedback) ...[
-                const SizedBox(height: HarmoniaSpacing.md),
-                FeedbackPanel(
-                  correct: c.lastAnswerCorrect,
-                  textKey: const Key('int_feedback'),
-                  actionKey: const Key('int_next'),
-                  title: c.lastAnswerCorrect
-                      ? 'Doğru: ${item.degree.syllable} (${item.degree.intervalName}).'
-                      : 'Bu sefer değil: ${item.degree.syllable} idi (${item.degree.intervalName}).',
-                  detail: c.lastAnswerCorrect
-                      ? null
-                      : 'Tekrar dinleyip do\'dan uzaklığı karşılaştır.',
-                  actionLabel: c.index < total - 1
-                      ? 'Sonraki soru'
-                      : 'Turu bitir',
-                  onAction: c.next,
+              const SizedBox(height: HarmoniaSpacing.md),
+              if (o == null) ...[
+                Text(
+                  'Do\'dan sonra hangi derece?',
+                  key: const Key('int_progress'),
+                  style: text.headlineSmall,
                 ),
+                const SizedBox(height: HarmoniaSpacing.xs),
+                Text(
+                  'Önce tonu duy (do–mi–sol), sonra do ve hedef ses.',
+                  style: text.bodyMedium?.copyWith(
+                    color: context.palette.muted,
+                  ),
+                ),
+                const SizedBox(height: HarmoniaSpacing.md),
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(HarmoniaSpacing.md),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        WaveformPlaybackView(
+                          playback: _visual.current,
+                          idleLabel: 'Tonik, ardından do ve hedef derece',
+                        ),
+                        const SizedBox(height: HarmoniaSpacing.md),
+                        ChunkyButton(
+                          key: const Key('int_play'),
+                          onPressed: c.canPlay ? c.playCurrent : null,
+                          icon: Icons.volume_up_rounded,
+                          tone: c.plays[c.index] == 0
+                              ? ChunkyTone.primary
+                              : ChunkyTone.neutral,
+                          label: c.phase == IntervalPhase.playing
+                              ? 'Çalıyor…'
+                              : c.plays[c.index] == 0
+                              ? 'Dinle'
+                              : 'Tekrar dinle',
+                        ),
+                        if (c.playbackFailed)
+                          const Padding(
+                            padding: EdgeInsets.only(top: HarmoniaSpacing.sm),
+                            child: Text('Ses çalınamadı. Yeniden dene.'),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+              ] else
+                _Summary(controller: c, outcome: o),
+            ],
+            bottom: [
+              if (o == null) ...[
+                EqualHeightGrid(
+                  children: [
+                    for (final d in c.level.options)
+                      AnswerOption(
+                        key: Key('int_answer_${d.name}'),
+                        title: d.syllable,
+                        subtitle: d.intervalName,
+                        state: stateOf(d),
+                        onTap: c.canAnswer ? () => c.answer(d) : null,
+                      ),
+                  ],
+                ),
+                if (feedback) ...[
+                  const SizedBox(height: HarmoniaSpacing.md),
+                  FeedbackPanel(
+                    correct: c.lastAnswerCorrect,
+                    textKey: const Key('int_feedback'),
+                    actionKey: const Key('int_next'),
+                    title: c.lastAnswerCorrect
+                        ? 'Doğru: ${item.degree.syllable} (${item.degree.intervalName}).'
+                        : 'Bu sefer değil: ${item.degree.syllable} idi (${item.degree.intervalName}).',
+                    detail: c.lastAnswerCorrect
+                        ? null
+                        : 'Tekrar dinleyip do\'dan uzaklığı karşılaştır.',
+                    actionLabel: c.index < total - 1
+                        ? 'Sonraki soru'
+                        : 'Turu bitir',
+                    onAction: c.next,
+                  ),
+                ],
               ],
             ],
-          ],
-        );
-      },
+          );
+        },
+      ),
     );
   }
 }
@@ -229,14 +281,23 @@ class _Summary extends StatelessWidget {
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
     final total = outcome.round.items.length;
-    final clean = outcome.correctCount >= PerceptionCriterion.minCorrect;
+    final clean =
+        !controller.guidedRetry &&
+        outcome.correctCount >= PerceptionCriterion.minCorrect;
     final confusions = outcome.confusions.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));
     return Column(
       key: const Key('int_summary'),
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(clean ? 'Tur tamam' : 'Tur bitti', style: text.headlineSmall),
+        Text(
+          controller.guidedRetry
+              ? 'Hata tekrarı tamam'
+              : clean
+              ? 'Tur tamam'
+              : 'Tur bitti',
+          style: text.headlineSmall,
+        ),
         const SizedBox(height: HarmoniaSpacing.md),
         Row(
           children: [
@@ -279,7 +340,9 @@ class _Summary extends StatelessWidget {
                 ),
                 const SizedBox(height: HarmoniaSpacing.xs),
                 Text(
-                  'Şans düzeyi yaklaşık %${outcome.chancePercent.round()} (${outcome.round.level.options.length} seçenek). Taslak ölçüt: art arda iki turda en az ${PerceptionCriterion.minCorrect}/$total.',
+                  controller.guidedRetry
+                      ? 'Yalnız önceki turda kaçırdığın $total derece tekrarlandı. Bu rehberli tur ölçüt veya ustalık kanıtı üretmez.'
+                      : 'Şans düzeyi yaklaşık %${outcome.chancePercent.round()} (${outcome.round.level.options.length} seçenek). Taslak ölçüt: art arda iki turda en az ${PerceptionCriterion.minCorrect}/$total.',
                 ),
                 if (controller.recordOutcome != null)
                   Padding(
@@ -293,6 +356,14 @@ class _Summary extends StatelessWidget {
                   ),
                 if (controller.historyFailed)
                   const Text('Sonuç geçmişe kaydedilemedi.'),
+                if (controller.guidedRetry)
+                  const Padding(
+                    padding: EdgeInsets.only(top: HarmoniaSpacing.xs),
+                    child: Text(
+                      'Bu kısa hata tekrarı çalışma içindir; geçmişe, beceri durumuna veya sınav sonucuna eklenmedi.',
+                      key: Key('int_guided_notice'),
+                    ),
+                  ),
               ],
             ),
           ),
@@ -318,12 +389,94 @@ class _Summary extends StatelessWidget {
           ),
         ],
         const SizedBox(height: HarmoniaSpacing.md),
+        if (controller.mistakeCount > 0) ...[
+          ChunkyButton(
+            key: const Key('int_guided_retry'),
+            label: 'Hataları hedefli çalış (${controller.mistakeCount})',
+            icon: Icons.my_location_rounded,
+            onPressed: () => unawaited(controller.startGuidedRetry()),
+          ),
+          const SizedBox(height: HarmoniaSpacing.sm),
+          if (!controller.guidedRetry) ...[
+            OutlinedButton.icon(
+              key: const Key('int_concept_review'),
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => MicroLessonScreen(
+                    lesson: draftMicroLessons.forSkill('tonic-degree').single,
+                  ),
+                ),
+              ),
+              icon: const Icon(Icons.menu_book_outlined),
+              label: const Text('Tonik ve dereceyi gözden geçir'),
+            ),
+            const Text(
+              'İsteğe bağlı metin taslağıdır; tur sonucunu ve beceri durumunu değiştirmez.',
+            ),
+            const SizedBox(height: HarmoniaSpacing.sm),
+          ],
+        ],
         ChunkyButton(
           key: const Key('int_new_round'),
           label: 'Yeni tur',
           icon: Icons.replay_rounded,
           onPressed: controller.newRound,
         ),
+        const SizedBox(height: HarmoniaSpacing.lg),
+        Text('Cevaplarını karşılaştır', style: text.titleLarge),
+        const Text(
+          'Çalınan sentetik örnek ile dokunarak verdiğin cevap gösterilir; '
+          'bu bir ses kaydı veya söyleme değerlendirmesi değildir. '
+          'Ayrıntı ve isteğe bağlı karşılaştırmalı dinleme için soruyu aç. '
+          'Bu dinlemeler tur sonucunu değiştirmez.',
+        ),
+        for (var i = 0; i < total; i++)
+          AnswerComparisonCard(
+            key: Key('int_review_$i'),
+            questionNumber: i + 1,
+            keyPrefix: 'int_review_$i',
+            reference:
+                'Do–mi–sol bağlamı, ardından do → '
+                '${outcome.round.items[i].degree.syllable}.',
+            selected: outcome.answers[i] == null
+                ? null
+                : '${outcome.answers[i]!.syllable} · ${outcome.answers[i]!.intervalName}',
+            correct:
+                '${outcome.round.items[i].degree.syllable} · '
+                '${outcome.round.items[i].degree.intervalName}',
+            onPlayReference:
+                controller.review.itemIndex == i &&
+                    controller.review.clipId == 'reference' &&
+                    controller.review.busy
+                ? controller.review.cancel
+                : () => controller.reviewReference(i),
+            onPlaySelected: outcome.answers[i] == null
+                ? null
+                : controller.review.itemIndex == i &&
+                      controller.review.clipId == 'selected' &&
+                      controller.review.busy
+                ? controller.review.cancel
+                : () => controller.reviewSelected(i),
+            referenceLoading:
+                controller.review.itemIndex == i &&
+                controller.review.clipId == 'reference' &&
+                controller.review.state == ReviewPlaybackState.loading,
+            referencePlaying:
+                controller.review.itemIndex == i &&
+                controller.review.clipId == 'reference' &&
+                controller.review.state == ReviewPlaybackState.playing,
+            selectedLoading:
+                controller.review.itemIndex == i &&
+                controller.review.clipId == 'selected' &&
+                controller.review.state == ReviewPlaybackState.loading,
+            selectedPlaying:
+                controller.review.itemIndex == i &&
+                controller.review.clipId == 'selected' &&
+                controller.review.state == ReviewPlaybackState.playing,
+            playbackFailed:
+                controller.review.itemIndex == i &&
+                controller.review.state == ReviewPlaybackState.failed,
+          ),
       ],
     );
   }

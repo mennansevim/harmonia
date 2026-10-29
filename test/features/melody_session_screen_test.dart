@@ -4,9 +4,14 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:harmonia/application/melody_session.dart';
+import 'package:harmonia/application/melody_practice.dart';
+import 'package:harmonia/domain/audio/audio_capture.dart';
 import 'package:harmonia/domain/models/learner_profile.dart';
 import 'package:harmonia/features/home/home_screen.dart';
 import 'package:harmonia/features/melody/melody_session_screen.dart';
+import 'package:harmonia/features/melody/melody_practice_screen.dart';
+import 'package:harmonia/features/common/ui/harmonia_ui.dart';
+import 'package:harmonia/app/theme/harmonia_theme.dart';
 
 import '../support/fake_audio_lab_backend.dart';
 import '../support/fake_recording_pitch_worker.dart';
@@ -19,6 +24,22 @@ class _Backend extends FakeRoutedAudioLabBackend
     contentVersion: 'test-1',
     frequenciesHz: [440, 550, 660],
   );
+}
+
+class _PracticePlayer implements DiagnosticMelodyPracticePlayer {
+  final calls = <String>[];
+
+  @override
+  Future<PlaybackHandle> play(DiagnosticMelodyPractice practice) async {
+    calls.add('play');
+    return PlaybackHandle(Future<void>.value());
+  }
+
+  @override
+  Future<void> stop() async => calls.add('stop');
+
+  @override
+  Future<void> close() async => calls.add('close');
 }
 
 Future<void> _tap(WidgetTester tester, String key) async {
@@ -49,6 +70,140 @@ Future<void> _answerPhase(WidgetTester tester, _Backend backend) async {
 }
 
 void main() {
+  testWidgets('diagnostic lesson has no percentage and contextual actions', (
+    tester,
+  ) async {
+    final backend = _Backend();
+    await tester.pumpWidget(
+      MaterialApp(
+        home: MelodySessionScreen(
+          backend: backend,
+          worker: FakeRecordingPitchWorker(),
+        ),
+      ),
+    );
+    expect(find.byType(LessonScaffold), findsOneWidget);
+    expect(find.byType(LessonProgressBar), findsNothing);
+    expect(find.text('Puansız'), findsOneWidget);
+    expect(
+      tester
+          .widget<ChunkyButton>(find.byKey(const Key('melody_calibrate')))
+          .tone,
+      ChunkyTone.primary,
+    );
+    expect(
+      tester.widget<ChunkyButton>(find.byKey(const Key('melody_start'))).tone,
+      ChunkyTone.neutral,
+    );
+    expect(backend.calls, isEmpty);
+    await _calibrate(tester, backend);
+    expect(
+      tester.widget<ChunkyButton>(find.byKey(const Key('melody_start'))).tone,
+      ChunkyTone.primary,
+    );
+    await _answerPhase(tester, backend);
+    expect(find.byKey(const Key('melody_start')), findsNothing);
+    expect(
+      tester.widget<ChunkyButton>(find.byKey(const Key('melody_finish'))).tone,
+      ChunkyTone.record,
+    );
+    expect(find.byKey(const Key('melody_cancel')), findsOneWidget);
+    expect(find.byType(LessonProgressBar), findsNothing);
+    await _remove(tester);
+  });
+
+  testWidgets('help exposes recording policy without starting resources', (
+    tester,
+  ) async {
+    final backend = _Backend();
+    await tester.pumpWidget(
+      MaterialApp(
+        home: MelodySessionScreen(
+          backend: backend,
+          worker: FakeRecordingPitchWorker(),
+        ),
+      ),
+    );
+    expect(find.textContaining('cihazdan gönderilmez'), findsNothing);
+    await _tap(tester, 'melody_help');
+    await tester.pumpAndSettle();
+    expect(find.textContaining('cihazdan gönderilmez'), findsOneWidget);
+    expect(find.textContaining('8 saniye'), findsOneWidget);
+    expect(backend.calls, isEmpty);
+    await _remove(tester);
+  });
+
+  testWidgets('lesson close returns to source and releases the session', (
+    tester,
+  ) async {
+    final backend = _Backend();
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Builder(
+          builder: (context) => Scaffold(
+            body: TextButton(
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => MelodySessionScreen(
+                    backend: backend,
+                    worker: FakeRecordingPitchWorker(),
+                  ),
+                ),
+              ),
+              child: const Text('Ezgi aç'),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('Ezgi aç'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('lesson_close')));
+    await tester.pumpAndSettle();
+    // Route disposal detaches immediately; stream/native cleanup settles
+    // asynchronously outside the widget's fake frame clock.
+    await tester.runAsync(() => Future<void>.delayed(Duration.zero));
+    await tester.pumpAndSettle();
+    expect(find.text('Ezgi aç'), findsOneWidget);
+    expect(backend.calls, contains('close'));
+    expect(backend.calls, isNot(contains('permission')));
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('dark large-text help remains usable with reduced motion', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(320, 700);
+    tester.view.devicePixelRatio = 1;
+    tester.platformDispatcher.textScaleFactorTestValue = 1.8;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+    final backend = _Backend();
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: HarmoniaTheme.dark(),
+        builder: (context, child) => MediaQuery(
+          data: MediaQuery.of(context).copyWith(disableAnimations: true),
+          child: child!,
+        ),
+        home: MelodySessionScreen(
+          backend: backend,
+          worker: FakeRecordingPitchWorker(),
+        ),
+      ),
+    );
+    await _tap(tester, 'melody_help');
+    await tester.pumpAndSettle();
+    await _tap(tester, 'melody_start');
+    await tester.pumpAndSettle();
+    expect(find.text('Ölçüm alınamadı — puanlanmadı'), findsOneWidget);
+    expect(find.byType(LessonProgressBar), findsNothing);
+    expect(backend.calls, isNot(contains('permission')));
+    expect(tester.takeException(), isNull);
+    await _remove(tester);
+  });
+
   testWidgets('entry never asks permission; uncalibrated start is neutral', (
     tester,
   ) async {
@@ -84,6 +239,7 @@ void main() {
     await _tap(tester, 'melody_calibrate');
     await tester.pumpAndSettle();
     expect(find.textContaining('Telefon ayarlarından'), findsOneWidget);
+    expect(find.byKey(const Key('microphone_open_settings')), findsOneWidget);
     expect(backend.calls, isNot(contains('reference')));
     await _remove(tester);
   });
@@ -146,6 +302,47 @@ void main() {
     expect(find.byKey(const Key('melody_details')), findsNothing);
     await _remove(tester);
   });
+  testWidgets(
+    'candidate mismatch offers explicit unscored review and no autoplay',
+    (tester) async {
+      final backend = _Backend();
+      final player = _PracticePlayer();
+      await tester.pumpWidget(
+        MaterialApp(
+          home: MelodySessionScreen(
+            backend: backend,
+            worker: FakeRecordingPitchWorker(),
+            practicePlayerFactory: () => player,
+          ),
+        ),
+      );
+      await _calibrate(tester, backend);
+      backend.nextClip([
+        ...List.filled(4000, 0.0),
+        ...List.generate(
+          12000,
+          (i) => 0.2 * math.sin(2 * math.pi * 440 * i / 16000),
+        ),
+      ]);
+      await _answerPhase(tester, backend);
+      await _tap(tester, 'melody_finish');
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const Key('melody_candidate_practice')),
+        findsOneWidget,
+      );
+      expect(find.textContaining('doğrulanmış hata'), findsOneWidget);
+      expect(find.textContaining('puan değildir'), findsOneWidget);
+      await _tap(tester, 'melody_open_candidate_practice');
+      await tester.runAsync(() => Future<void>.delayed(Duration.zero));
+      await tester.pumpAndSettle();
+      expect(find.byType(MelodyPracticeScreen), findsOneWidget);
+      expect(find.text('Seçim: 1–2. ses • 2 tekrar'), findsOneWidget);
+      expect(player.calls, isEmpty);
+      expect(find.byType(LessonProgressBar), findsNothing);
+      await _remove(tester);
+    },
+  );
   testWidgets('cancel stuck playback and background do not resume capture', (
     tester,
   ) async {

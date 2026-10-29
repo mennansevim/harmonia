@@ -4,6 +4,12 @@ import '../../domain/learning/today_planner.dart';
 import '../../domain/models/exercise_result.dart';
 import '../../domain/models/learner_profile.dart';
 
+class PracticeDay {
+  const PracticeDay({required this.date, required this.practiced});
+  final DateTime date;
+  final bool practiced;
+}
+
 /// One node on the home path, derived only from local evidence.
 class PathNode {
   const PathNode({
@@ -30,6 +36,7 @@ class HomeData {
     required this.path,
     required this.streakDays,
     required this.practicedToday,
+    required this.recentPractice,
   });
   final TodayStep step;
   final List<PathNode> path;
@@ -37,6 +44,7 @@ class HomeData {
   /// Consecutive local days ending today (or yesterday) with ≥1 valid result.
   final int streakDays;
   final bool practicedToday;
+  final List<PracticeDay> recentPractice;
 
   static HomeData build({
     required SkillGraph graph,
@@ -83,12 +91,41 @@ class HomeData {
       path: path,
       streakDays: streak,
       practicedToday: today,
+      recentPractice: recentPracticeOf(results, now, catalog: catalog),
     );
   }
 
   static DateTime _day(DateTime t) {
     final l = t.toLocal();
     return DateTime(l.year, l.month, l.day);
+  }
+
+  /// Rolling seven local calendar days, not a score or a completion target.
+  /// Only valid results from currently supported cohorts count, even if wrong.
+  /// Duplicate attempts on one day never inflate the number of active days.
+  static List<PracticeDay> recentPracticeOf(
+    List<ExerciseResult> results,
+    DateTime now, {
+    List<MeasuredExercise>? catalog,
+  }) {
+    final cohorts = [
+      for (final e in catalog ?? defaultMeasuredCatalog()) e.cohort,
+    ];
+    final days = {
+      for (final r in results)
+        if (r.isValid &&
+            !r.createdAt.isAfter(now) &&
+            cohorts.any((cohort) => cohort.matches(r)))
+          _day(r.createdAt),
+    };
+    final today = _day(now);
+    return List.unmodifiable([
+      for (var back = 6; back >= 0; back--)
+        () {
+          final date = DateTime(today.year, today.month, today.day - back);
+          return PracticeDay(date: date, practiced: days.contains(date));
+        }(),
+    ]);
   }
 
   /// (streak, practicedToday). A streak survives until the end of the day

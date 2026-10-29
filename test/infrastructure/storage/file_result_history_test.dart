@@ -73,6 +73,29 @@ void main() {
         ]);
       });
 
+      test('batch uses the same dedup conflict and capacity rules', () async {
+        final h = make.value(3);
+        await h.record(entry('attempt-0001'));
+        await h.record(entry('attempt-0002', score: 10));
+        final report = await h.recordAll([
+          entry('attempt-0001'),
+          entry('attempt-0002', score: 99),
+          entry('attempt-0003'),
+          entry('attempt-0004'),
+        ]);
+        expect(report.count(RecordOutcome.duplicate), 1);
+        expect(report.count(RecordOutcome.conflict), 1);
+        expect(report.count(RecordOutcome.recorded), 1);
+        expect(report.count(RecordOutcome.storageFull), 1);
+        final stored = await h.load();
+        expect(stored.map((item) => item.attemptId), [
+          'attempt-0001',
+          'attempt-0002',
+          'attempt-0003',
+        ]);
+        expect(stored[1].result.scores.overall.value, 10);
+      });
+
       test('delete one and clear all', () async {
         final h = make.value(10);
         await h.record(entry('attempt-0001'));
@@ -125,6 +148,24 @@ void main() {
     expect(file.readAsStringSync(), contains('"attemptId":"x"'));
     await h.clear();
     expect(await h.load(), isEmpty);
+  });
+
+  test('failed file batch exposes no imported prefix', () async {
+    var available = true;
+    final h = FileResultHistory(
+      directory: () async {
+        if (!available) throw StateError('storage unavailable');
+        return dir;
+      },
+    );
+    await h.record(entry('attempt-0001'));
+    available = false;
+    await expectLater(
+      h.recordAll([entry('attempt-0002'), entry('attempt-0003')]),
+      throwsA(isA<HistoryStorageException>()),
+    );
+    available = true;
+    expect((await h.load()).map((item) => item.attemptId), ['attempt-0001']);
   });
 
   test('attempt ids are validated', () {

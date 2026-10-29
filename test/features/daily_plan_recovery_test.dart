@@ -88,4 +88,55 @@ void main() {
     expect(tester.takeException(), isNull);
     expect(history.loads, 2);
   });
+  testWidgets('foreground return hides the stale plan until reload completes', (
+    tester,
+  ) async {
+    final history = _History()..unavailable = false;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: DailyPlanScreen(goal: PracticeGoal.foundations, history: history),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('plan_minutes')), findsOneWidget);
+    history.pending = Completer();
+
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+    await tester.pump();
+
+    expect(history.loads, 2);
+    expect(find.byKey(const Key('plan_loading')), findsOneWidget);
+    expect(find.byKey(const Key('plan_minutes')), findsNothing);
+    history.pending!.complete([]);
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('plan_minutes')), findsOneWidget);
+  });
+  testWidgets('replacement repository cannot leave the old plan visible', (
+    tester,
+  ) async {
+    final old = _History()..unavailable = false;
+    final next = _History()..pending = Completer();
+    await tester.pumpWidget(
+      MaterialApp(
+        home: DailyPlanScreen(goal: PracticeGoal.foundations, history: old),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('plan_minutes')), findsOneWidget);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: DailyPlanScreen(goal: PracticeGoal.foundations, history: next),
+      ),
+    );
+    await tester.pump();
+
+    expect(next.loads, 1);
+    expect(find.byKey(const Key('plan_loading')), findsOneWidget);
+    expect(find.byKey(const Key('plan_minutes')), findsNothing);
+    next.pending!.complete([]);
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('plan_minutes')), findsOneWidget);
+  });
 }

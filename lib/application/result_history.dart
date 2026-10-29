@@ -50,8 +50,30 @@ class HistoryStorageException implements Exception {
 abstract interface class ResultHistoryRepository {
   Future<List<ResultHistoryEntry>> load();
   Future<RecordOutcome> record(ResultHistoryEntry entry);
+
+  /// Applies a bounded group with the same dedup/conflict rules in one local
+  /// storage commit. A storage failure must not leave a partial batch.
+  Future<BatchRecordReport> recordAll(Iterable<ResultHistoryEntry> entries);
   Future<bool> delete(String attemptId);
   Future<void> clear();
+}
+
+class BatchRecordReport {
+  BatchRecordReport._(Map<RecordOutcome, int> counts)
+    : counts = Map.unmodifiable(counts);
+
+  final Map<RecordOutcome, int> counts;
+  int count(RecordOutcome outcome) => counts[outcome] ?? 0;
+}
+
+class BatchRecordPlan {
+  BatchRecordPlan._({
+    required List<ResultHistoryEntry> entries,
+    required this.report,
+  }) : entries = List.unmodifiable(entries);
+
+  final List<ResultHistoryEntry> entries;
+  final BatchRecordReport report;
 }
 
 /// Shared rule set for every implementation.
@@ -72,6 +94,29 @@ RecordOutcome classifyRecord(
       : RecordOutcome.recorded;
 }
 
+/// Pure planning shared by memory/file adapters. Input order is retained and
+/// capacity is explicit; duplicate/conflicting attempt ids never overwrite.
+BatchRecordPlan planBatchRecords({
+  required List<ResultHistoryEntry> existing,
+  required Iterable<ResultHistoryEntry> incoming,
+  required int capacity,
+}) {
+  if (capacity < 0 || existing.length > capacity) {
+    throw ArgumentError('Invalid history capacity');
+  }
+  final working = List<ResultHistoryEntry>.of(existing);
+  final counts = {for (final outcome in RecordOutcome.values) outcome: 0};
+  for (final entry in incoming) {
+    final outcome = classifyRecord(working, entry, capacity);
+    counts[outcome] = counts[outcome]! + 1;
+    if (outcome == RecordOutcome.recorded) working.add(entry);
+  }
+  return BatchRecordPlan._(
+    entries: working,
+    report: BatchRecordReport._(counts),
+  );
+}
+
 class InMemoryResultHistory implements ResultHistoryRepository {
   InMemoryResultHistory({this.capacity = 1000});
   final int capacity;
@@ -85,6 +130,21 @@ class InMemoryResultHistory implements ResultHistoryRepository {
     final outcome = classifyRecord(_entries, entry, capacity);
     if (outcome == RecordOutcome.recorded) _entries.add(entry);
     return outcome;
+  }
+
+  @override
+  Future<BatchRecordReport> recordAll(
+    Iterable<ResultHistoryEntry> entries,
+  ) async {
+    final plan = planBatchRecords(
+      existing: _entries,
+      incoming: entries,
+      capacity: capacity,
+    );
+    _entries
+      ..clear()
+      ..addAll(plan.entries);
+    return plan.report;
   }
 
   @override

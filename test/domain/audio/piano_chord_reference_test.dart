@@ -93,6 +93,11 @@ void main() {
       () => PianoChordReference(midiNotes: [60, 64], maxReferencePlays: 0),
       () => PianoChordReference(
         midiNotes: [60, 64],
+        mode: ExerciseMode.recallExam,
+        maxReferencePlays: 2,
+      ),
+      () => PianoChordReference(
+        midiNotes: [60, 64],
         mode: ExerciseMode.choirPractice,
       ),
     ]) {

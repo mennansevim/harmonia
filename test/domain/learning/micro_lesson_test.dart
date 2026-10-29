@@ -39,7 +39,7 @@ MicroLesson _lesson({
 
 void main() {
   test('drafts align with skill graph and do not enable assessment', () {
-    expect(draftMicroLessons.lessons.length, 2);
+    expect(draftMicroLessons.lessons.length, 3);
     for (final lesson in draftMicroLessons.lessons) {
       expect(lesson.educatorApproved, isFalse);
       expect(lesson.assessmentEnabled, isFalse);

@@ -9,12 +9,14 @@ import '../../domain/learning/rhythm_next_step.dart';
 import '../../domain/learning/skill_graph.dart';
 import '../../domain/learning/skill_report.dart';
 import '../../domain/learning/today_planner.dart';
+import '../../domain/learning/weekly_practice_report.dart';
 import '../../domain/models/exercise_result.dart';
 import '../../domain/models/learner_profile.dart';
 import '../learning/exercise_launcher.dart';
 import '../learning/micro_lesson_screen.dart';
 import '../learning/next_step_text.dart';
 import '../common/content_status_panel.dart';
+import '../common/foreground_refresh_state.dart';
 import '../common/ui/harmonia_ui.dart';
 
 /// LEARN-01 view: recommended order for the learner's goal and an
@@ -44,7 +46,7 @@ class SkillMapScreen extends StatefulWidget {
   State<SkillMapScreen> createState() => _SkillMapScreenState();
 }
 
-class _SkillMapScreenState extends State<SkillMapScreen> {
+class _SkillMapScreenState extends ForegroundRefreshState<SkillMapScreen> {
   late final SkillGraph graph = widget.graph ?? draftSkillGraph;
   late final MicroLessonCatalog lessons =
       widget.lessons ??
@@ -66,6 +68,17 @@ class _SkillMapScreenState extends State<SkillMapScreen> {
     setState(() {
       _results = _loadForView();
     });
+  }
+
+  @override
+  void refreshAfterForeground() => _reload();
+
+  @override
+  void didUpdateWidget(covariant SkillMapScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.history != widget.history || oldWidget.goal != widget.goal) {
+      _results = _loadForView();
+    }
   }
 
   Future<void> _openFocus(TodayStep step) async {
@@ -110,6 +123,7 @@ class _SkillMapScreenState extends State<SkillMapScreen> {
           final historyError = snapshot.hasError;
           final results = snapshot.data ?? const <ExerciseResult>[];
           final skills = graph.forGoal(widget.goal);
+          final now = (widget.clock ?? DateTime.now)();
           return ListView(
             padding: const EdgeInsets.all(HarmoniaSpacing.lg),
             children: [
@@ -135,10 +149,20 @@ class _SkillMapScreenState extends State<SkillMapScreen> {
                     graph: graph,
                     goal: widget.goal,
                     results: results,
-                    now: (widget.clock ?? DateTime.now)(),
+                    now: now,
                     catalog: widget.catalog,
                   ),
                   onFocus: widget.history == null ? null : _openFocus,
+                ),
+                const SizedBox(height: HarmoniaSpacing.md),
+                _WeeklyPracticeReportCard(
+                  report: WeeklyPracticeReport.build(
+                    graph: graph,
+                    goal: widget.goal,
+                    results: results,
+                    now: now,
+                    catalog: widget.catalog,
+                  ),
                 ),
               ],
               const SizedBox(height: HarmoniaSpacing.md),
@@ -243,6 +267,84 @@ class _SkillCard extends StatelessWidget {
                   label: Text('Taslak ders: ${lesson.title}'),
                 ),
               ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _WeeklyPracticeReportCard extends StatelessWidget {
+  const _WeeklyPracticeReportCard({required this.report});
+
+  final WeeklyPracticeReport report;
+
+  @override
+  Widget build(BuildContext context) {
+    final text = Theme.of(context).textTheme;
+    final palette = context.palette;
+    final comparison = switch (report.comparison) {
+      PracticeVolumeComparison.noBaseline =>
+        report.validRounds == 0
+            ? 'Karşılaştırılacak geçerli tur yok.'
+            : 'Önceki 7 günde karşılaştırılabilir geçerli tur yok.',
+      PracticeVolumeComparison.increased =>
+        'Önceki 7 güne göre daha fazla geçerli tur yaptın (${report.previousValidRounds} → ${report.validRounds}).',
+      PracticeVolumeComparison.unchanged =>
+        'Geçerli tur sayısı önceki 7 günle aynı (${report.validRounds}).',
+      PracticeVolumeComparison.decreased =>
+        'Önceki 7 güne göre daha az geçerli tur var (${report.previousValidRounds} → ${report.validRounds}).',
+    };
+    return Card(
+      key: const Key('weekly_practice_report'),
+      child: Padding(
+        padding: const EdgeInsets.all(HarmoniaSpacing.md + 2),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text('Haftalık çalışma özeti', style: text.titleLarge),
+            const SizedBox(height: HarmoniaSpacing.sm),
+            Row(
+              children: [
+                Expanded(
+                  child: StatTile(
+                    label: 'Çalışılan gün',
+                    value: '${report.activeDays}/7',
+                  ),
+                ),
+                const SizedBox(width: HarmoniaSpacing.sm),
+                Expanded(
+                  child: StatTile(
+                    label: 'Geçerli tur',
+                    value: '${report.validRounds}',
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: HarmoniaSpacing.sm),
+            Text(comparison, key: const Key('weekly_report_comparison')),
+            if (report.activities.isEmpty)
+              const Text(
+                'Son 7 günde desteklenen güncel çalışmalardan geçerli kayıt yok.',
+                key: Key('weekly_report_empty'),
+              )
+            else ...[
+              const SizedBox(height: HarmoniaSpacing.sm),
+              const DataLabel('Çalışılan alanlar'),
+              for (final activity in report.activities)
+                Text('${activity.title}: ${activity.validRounds} tur'),
+            ],
+            if (report.incompleteMeasurements > 0)
+              Text(
+                '${report.incompleteMeasurements} ölçüm tamamlanamadı; geçerli turlara eklenmedi.',
+                key: const Key('weekly_report_incomplete'),
+              ),
+            const SizedBox(height: HarmoniaSpacing.sm),
+            Text(
+              'Bu özet çalışma sıklığını gösterir; beceri artışı, sınav başarısı veya hazır oluş puanı değildir.',
+              key: const Key('weekly_report_scope'),
+              style: text.bodySmall?.copyWith(color: palette.muted),
+            ),
           ],
         ),
       ),

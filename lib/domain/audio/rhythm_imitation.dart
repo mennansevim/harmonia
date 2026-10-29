@@ -32,6 +32,7 @@ class RhythmImitationOutcome {
     this.timeline = const [],
     this.spanRatio,
     required this.referencePlays,
+    this.guided = false,
   });
 
   static const version = 'rhythm-imitation-1/first-tap-anchor';
@@ -46,6 +47,7 @@ class RhythmImitationOutcome {
   /// Diagnostic tempo hint only; not a tempo score.
   final double? spanRatio;
   final int referencePlays;
+  final bool guided;
 
   bool get isMeasured => status == RhythmImitationStatus.measured;
 
@@ -60,6 +62,9 @@ class RhythmImitationOutcome {
     required DateTime createdAt,
     bool retentionCheck = false,
   }) {
+    if (guided) {
+      throw StateError('Guided rhythm repetitions are not scored or stored');
+    }
     final a = analysis;
     final measured = isMeasured && a != null;
     return ExerciseResult(
@@ -110,6 +115,73 @@ class RhythmImitationOutcome {
   }
 }
 
+/// A short, deterministic excerpt around the first visible rhythm error.
+/// It reuses the measured pattern and exists only for guided repetition.
+class RhythmGuidedSegment {
+  const RhythmGuidedSegment({
+    required this.referenceIndexes,
+    required this.onsetsMs,
+    required this.focusPosition,
+    required this.focusVerdict,
+  });
+
+  final List<int> referenceIndexes;
+  final List<int> onsetsMs;
+  final int focusPosition;
+  final BeatVerdict focusVerdict;
+
+  static RhythmGuidedSegment? fromOutcome({
+    required RhythmImitationOutcome outcome,
+    required ExerciseProtocol protocol,
+  }) {
+    if (!outcome.isMeasured || outcome.guided) return null;
+    final errorIndex = outcome.timeline.indexWhere(
+      (entry) =>
+          entry.verdict != BeatVerdict.anchor &&
+          entry.verdict != BeatVerdict.onTime,
+    );
+    if (errorIndex < 0) return null;
+    final error = outcome.timeline[errorIndex];
+    final reference = RhythmReferenceClock.onsetsMs(protocol);
+    if (reference == null || reference.length < 2) return null;
+
+    var focus = error.referenceIndex;
+    if (focus == null) {
+      // An extra tap has no reference index. Anchor the excerpt to the next
+      // expected beat after the latest preceding reference event.
+      var previous = 0;
+      for (var i = errorIndex - 1; i >= 0; i--) {
+        final candidate = outcome.timeline[i].referenceIndex;
+        if (candidate != null) {
+          previous = candidate;
+          break;
+        }
+      }
+      focus = (previous + 1).clamp(0, reference.length - 1);
+    }
+
+    var start = (focus - 1).clamp(0, reference.length - 1);
+    var end = (focus + 1).clamp(0, reference.length - 1);
+    if (end == start) {
+      if (end < reference.length - 1) {
+        end++;
+      } else {
+        start--;
+      }
+    }
+    final indexes = [for (var i = start; i <= end; i++) i];
+    final origin = reference[start];
+    return RhythmGuidedSegment(
+      referenceIndexes: List.unmodifiable(indexes),
+      onsetsMs: List.unmodifiable([
+        for (final i in indexes) reference[i] - origin,
+      ]),
+      focusPosition: focus - start,
+      focusVerdict: error.verdict,
+    );
+  }
+}
+
 /// Listen-then-repeat rhythm: there is no shared clock between the reference
 /// playback and the answer, so the first tap is DEFINED as the first
 /// reference onset. That anchor pair is shown but never timed or scored;
@@ -130,14 +202,57 @@ class RhythmImitationEvaluator {
     int referencePlays = 1,
   }) async {
     final reference = RhythmReferenceClock.onsetsMs(protocol);
+    if (reference == null) {
+      return RhythmImitationOutcome._(
+        status: RhythmImitationStatus.invalidInput,
+        referencePlays: referencePlays,
+      );
+    }
+    return _evaluateReference(
+      reference: reference,
+      tapTimestamps: tapTimestamps,
+      referencePlays: referencePlays,
+      maxReferencePlays: protocol.maxReferencePlays,
+      guided: false,
+    );
+  }
+
+  static Future<RhythmImitationOutcome> evaluateGuided({
+    required List<int> referenceOnsetsMs,
+    required List<Duration> tapTimestamps,
+    int referencePlays = 1,
+    int maxReferencePlays = 3,
+  }) => _evaluateReference(
+    reference: referenceOnsetsMs,
+    tapTimestamps: tapTimestamps,
+    referencePlays: referencePlays,
+    maxReferencePlays: maxReferencePlays,
+    guided: true,
+  );
+
+  static Future<RhythmImitationOutcome> _evaluateReference({
+    required List<int> reference,
+    required List<Duration> tapTimestamps,
+    required int referencePlays,
+    required int maxReferencePlays,
+    required bool guided,
+  }) async {
     RhythmImitationOutcome invalid(RhythmImitationStatus status) =>
         RhythmImitationOutcome._(
           status: status,
           referencePlays: referencePlays,
+          guided: guided,
         );
-    if (reference == null ||
+    if (reference.length < 2 ||
+        reference.length > maxTaps ||
+        reference.first != 0 ||
+        reference.any((onset) => onset < 0) ||
+        [
+          for (var i = 1; i < reference.length; i++)
+            reference[i] <= reference[i - 1],
+        ].contains(true) ||
         referencePlays < 1 ||
-        referencePlays > protocol.maxReferencePlays ||
+        referencePlays > maxReferencePlays ||
         tapTimestamps.length > maxTaps) {
       return invalid(RhythmImitationStatus.invalidInput);
     }
@@ -198,6 +313,7 @@ class RhythmImitationEvaluator {
       timeline: List.unmodifiable(timeline),
       spanRatio: userSpan / referenceSpan,
       referencePlays: referencePlays,
+      guided: guided,
     );
   }
 }

@@ -2,7 +2,9 @@ import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:harmonia/application/data_export.dart';
+import 'package:harmonia/application/practice_preferences.dart';
 import 'package:harmonia/application/result_history.dart';
+import 'package:harmonia/domain/learning/daily_plan.dart';
 import 'package:harmonia/domain/models/learner_profile.dart';
 
 import '../infrastructure/storage/file_result_history_test.dart' show entry;
@@ -22,6 +24,22 @@ String _export(List<ResultHistoryEntry> e, {LearnerProfile? profile}) =>
 Map<String, Object?> _doc(String s) => jsonDecode(s) as Map<String, Object?>;
 
 void main() {
+  test('non-string exportedAt is a safe format error, not a runtime cast', () {
+    for (final value in <Object?>[null, 42, true, [], {}]) {
+      final doc = _doc(_export([]));
+      doc['exportedAt'] = value;
+      expect(
+        () => LocalDataExport.decode(jsonEncode(doc)),
+        throwsA(
+          isA<LocalDataFormatException>().having(
+            (e) => e.reason,
+            'reason',
+            'date',
+          ),
+        ),
+      );
+    }
+  });
   test('round-trip: versioned, minute precision, no audio fields', () {
     final text = _export([entry('attempt-0001'), entry('attempt-0002')]);
     final raw = _doc(text);
@@ -40,6 +58,28 @@ void main() {
       jsonEncode(entry('attempt-0001').toJson()),
     );
     expect(() => doc.entries.clear(), throwsUnsupportedError);
+  });
+
+  test('v2 carries only portable preferences; v1 remains readable', () {
+    final text = LocalDataExport.encode(
+      profile: _profile,
+      entries: const [],
+      exportedAt: DateTime.utc(2026),
+      preferences: const PortablePracticePreferences(
+        dailyBudget: DailyBudget.fifteen,
+        weeklyGoal: WeeklyPracticeGoal.four,
+      ),
+    );
+    final decoded = LocalDataExport.decode(text);
+    expect(decoded.preferences!.dailyBudget, DailyBudget.fifteen);
+    expect(decoded.preferences!.weeklyGoal, WeeklyPracticeGoal.four);
+    expect(text, isNot(contains('reminder')));
+    expect(text, isNot(contains('haptics')));
+
+    final legacy = _doc(text)
+      ..['schemaVersion'] = 1
+      ..remove('preferences');
+    expect(LocalDataExport.decode(jsonEncode(legacy)).preferences, isNull);
   });
 
   test('profile may be absent', () {
@@ -66,7 +106,7 @@ void main() {
     expect(reason('not json'), 'not_json');
     expect(reason('[]'), 'not_object');
     expect(reason(with_({'format': 'other'})), 'version');
-    expect(reason(with_({'schemaVersion': 2})), 'version');
+    expect(reason(with_({'schemaVersion': 99})), 'version');
     expect(reason(with_({'extra': 1})), 'keys');
     expect(reason(jsonEncode({...good}..remove('results'))), 'keys');
     expect(reason(with_({'exportedAt': 'x'})), 'date');

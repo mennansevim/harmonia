@@ -8,6 +8,7 @@ import '../../application/result_history.dart';
 import '../../application/rhythm_imitation_controller.dart';
 import '../../domain/audio/audio_capture.dart';
 import '../../domain/audio/rhythm_imitation.dart';
+import '../../domain/content/draft_micro_lessons.dart';
 import '../../domain/content/rhythm_patterns.dart';
 import '../../infrastructure/audio/click_track.dart';
 import '../../infrastructure/audio/just_audio_clip_player.dart';
@@ -15,6 +16,7 @@ import '../common/sound/playback_visual.dart';
 import '../common/sound/waveform_playback_view.dart';
 import '../common/ui/harmonia_ui.dart';
 import '../learning/next_step_text.dart';
+import '../learning/micro_lesson_screen.dart';
 
 class RhythmImitationScreen extends StatefulWidget {
   const RhythmImitationScreen({
@@ -97,40 +99,59 @@ class _RhythmImitationScreenState extends State<RhythmImitationScreen>
         return LessonScaffold(
           progress: progress,
           top: [
-            Row(
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Flexible(
-                  child: LevelPicker(
-                    keyPrefix: 'rhythm',
-                    choices: [
-                      for (final p in patterns)
-                        LevelChoice(
-                          id: p.exercise.exercise.id,
-                          title: p.title,
-                          subtitle: p.description,
-                        ),
-                    ],
-                    selectedId: c.pattern.exercise.exercise.id,
-                    onSelected: selectable
-                        ? (id) => c.selectPattern(
-                            patterns.firstWhere(
-                              (p) => p.exercise.exercise.id == id,
-                            ),
-                          )
-                        : null,
-                  ),
+                LevelPicker(
+                  keyPrefix: 'rhythm',
+                  choices: [
+                    for (final p in patterns)
+                      LevelChoice(
+                        id: p.exercise.exercise.id,
+                        title: p.title,
+                        subtitle: p.description,
+                      ),
+                  ],
+                  selectedId: c.pattern.exercise.exercise.id,
+                  onSelected: selectable
+                      ? (id) => c.selectPattern(
+                          patterns.firstWhere(
+                            (p) => p.exercise.exercise.id == id,
+                          ),
+                        )
+                      : null,
                 ),
-                const SizedBox(width: HarmoniaSpacing.sm),
-                if (c.retentionCheck)
-                  const StatusPill(
-                    'Tek dinleme',
-                    key: Key('rhythm_retention_label'),
-                    tone: PillTone.warning,
+                if (c.retentionCheck || c.isGuided)
+                  Padding(
+                    padding: const EdgeInsets.only(top: HarmoniaSpacing.xs),
+                    child: Wrap(
+                      spacing: HarmoniaSpacing.xs,
+                      runSpacing: HarmoniaSpacing.xs,
+                      children: [
+                        if (c.retentionCheck)
+                          const StatusPill(
+                            'Tek dinleme',
+                            key: Key('rhythm_retention_label'),
+                            tone: PillTone.warning,
+                          ),
+                        if (c.isGuided)
+                          const StatusPill(
+                            'Hedefli tekrar',
+                            key: Key('rhythm_guided_label'),
+                            tone: PillTone.warning,
+                          ),
+                      ],
+                    ),
                   ),
               ],
             ),
             const SizedBox(height: HarmoniaSpacing.md),
-            Text('Dinle, sonra aynı ritme dokun', style: text.headlineSmall),
+            Text(
+              c.isGuided
+                  ? 'Zor bölümü dinle, sonra tekrar et'
+                  : 'Dinle, sonra aynı ritme dokun',
+              style: text.headlineSmall,
+            ),
             const SizedBox(height: HarmoniaSpacing.xs),
             Text(
               'İlk dokunuşun başlangıç sayılır; sonrakiler tempoyla karşılaştırılır.',
@@ -184,6 +205,48 @@ class _RhythmImitationScreenState extends State<RhythmImitationScreen>
             if (c.outcome case final o?) ...[
               const SizedBox(height: HarmoniaSpacing.md),
               _Result(outcome: o),
+              if (c.suggestedGuidedSegment != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: HarmoniaSpacing.sm),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      FilledButton.icon(
+                        key: const Key('rhythm_start_guided'),
+                        onPressed: c.startGuidedSegment,
+                        icon: const Icon(Icons.center_focus_strong_rounded),
+                        label: const Text('Zor bölümü çalış'),
+                      ),
+                      const SizedBox(height: HarmoniaSpacing.xs),
+                      OutlinedButton.icon(
+                        key: const Key('rhythm_concept_review'),
+                        onPressed: () => Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (_) => MicroLessonScreen(
+                              lesson: draftMicroLessons
+                                  .forSkill('pulse-tap')
+                                  .single,
+                            ),
+                          ),
+                        ),
+                        icon: const Icon(Icons.menu_book_outlined),
+                        label: const Text('Puls kavramını gözden geçir'),
+                      ),
+                      const Text(
+                        'İsteğe bağlı metin taslağıdır; denemeyi, puanı veya sonraki adımı değiştirmez.',
+                      ),
+                    ],
+                  ),
+                ),
+              if (c.isGuided)
+                Padding(
+                  padding: const EdgeInsets.only(top: HarmoniaSpacing.sm),
+                  child: OutlinedButton(
+                    key: const Key('rhythm_exit_guided'),
+                    onPressed: c.exitGuidedSegment,
+                    child: const Text('Tam desene dön'),
+                  ),
+                ),
               if (_saveText(c) case final saved?)
                 Text(saved, key: const Key('rhythm_saved')),
               if (c.nextStep != null) _NextStepCard(controller: c),
@@ -243,7 +306,8 @@ String _status(RhythmImitationController c) => switch (c.phase) {
   RhythmImitationPhase.awaitingTaps => 'Hazır olunca dokunmaya başla.',
   RhythmImitationPhase.tapping => '${c.tapCount} vuruş alındı.',
   RhythmImitationPhase.evaluating => 'Karşılaştırılıyor…',
-  RhythmImitationPhase.finished => 'Deneme bitti.',
+  RhythmImitationPhase.finished =>
+    c.isGuided ? 'Hedefli tekrar bitti — puanlanmadı.' : 'Deneme bitti.',
   RhythmImitationPhase.closed => 'Kapandı.',
 };
 
@@ -287,7 +351,9 @@ class _TapPadState extends State<_TapPad> with SingleTickerProviderStateMixin {
         onPointerDown: (event) {
           c.registerTap(event.timeStamp);
           if (!active) return;
-          HapticFeedback.lightImpact();
+          if (HarmoniaHapticsScope.enabled(context)) {
+            HapticFeedback.lightImpact();
+          }
           if (!HarmoniaMotion.reduced(context)) _pulse.forward(from: 0);
         },
         child: Container(
@@ -400,7 +466,9 @@ class _Result extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              summary.toString(),
+              outcome.guided
+                  ? 'Hedefli tekrar — puanlanmadı. ${summary.toString()}'
+                  : summary.toString(),
               key: const Key('rhythm_result_summary'),
               style: text.titleMedium,
             ),

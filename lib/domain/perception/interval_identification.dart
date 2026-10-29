@@ -102,7 +102,7 @@ class IntervalItem {
 }
 
 class IntervalRound {
-  IntervalRound._(this.level, this.items);
+  IntervalRound._(this.level, this.items, {this.guided = false});
   static const itemCount = 8;
 
   /// Options are spread as evenly as possible over 8 items, shuffled; the
@@ -119,8 +119,25 @@ class IntervalRound {
     ]);
   }
 
+  /// A short, unscored practice round built only from previously missed
+  /// items. Every target must remain an option of the selected level.
+  factory IntervalRound.guided(
+    IntervalLevel level,
+    Iterable<IntervalItem> source,
+  ) {
+    final items = List<IntervalItem>.unmodifiable(source);
+    if (items.isEmpty || items.length > itemCount) {
+      throw ArgumentError('Guided round needs 1–$itemCount items');
+    }
+    if (items.any((item) => !level.options.contains(item.degree))) {
+      throw ArgumentError('Item does not match guided level');
+    }
+    return IntervalRound._(level, items, guided: true);
+  }
+
   final IntervalLevel level;
   final List<IntervalItem> items;
+  final bool guided;
 }
 
 class IntervalOutcome {
@@ -169,6 +186,9 @@ class IntervalOutcome {
     required DateTime createdAt,
     bool retentionCheck = false,
   }) {
+    if (round.guided) {
+      throw StateError('Guided retry cannot become result evidence');
+    }
     final total = round.items.length;
     return ExerciseResult(
       sessionId: sessionId,

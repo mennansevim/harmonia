@@ -81,7 +81,7 @@ void main() {
     await tester.tap(lesson);
     await tester.pumpAndSettle();
     expect(find.byType(MicroLessonScreen), findsOneWidget);
-    await tester.pageBack();
+    await tester.tap(find.byKey(const Key('lesson_close')));
     await tester.pumpAndSettle();
     expect(history.loads, 1);
     expect(find.byKey(const Key('skill_report')), findsNothing);
@@ -104,4 +104,45 @@ void main() {
       expect(history.loads, 2);
     },
   );
+  testWidgets('foreground return replaces stale map with a guarded read', (
+    tester,
+  ) async {
+    final history = _History()..fails = false;
+    await _open(tester, history);
+    expect(find.byKey(const Key('skill_report')), findsOneWidget);
+    history.pending = Completer();
+
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+    await tester.pump();
+
+    expect(history.loads, 2);
+    expect(find.byKey(const Key('skill_map_loading')), findsOneWidget);
+    expect(find.byKey(const Key('skill_report')), findsNothing);
+    history.pending!.complete([]);
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('skill_report')), findsOneWidget);
+  });
+  testWidgets('replacement repository cannot leave the old report visible', (
+    tester,
+  ) async {
+    final old = _History()..fails = false;
+    final next = _History()..pending = Completer();
+    await _open(tester, old);
+    expect(find.byKey(const Key('skill_report')), findsOneWidget);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: SkillMapScreen(goal: PracticeGoal.foundations, history: next),
+      ),
+    );
+    await tester.pump();
+
+    expect(next.loads, 1);
+    expect(find.byKey(const Key('skill_map_loading')), findsOneWidget);
+    expect(find.byKey(const Key('skill_report')), findsNothing);
+    next.pending!.complete([]);
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('skill_report')), findsOneWidget);
+  });
 }

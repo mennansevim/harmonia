@@ -4,13 +4,15 @@ import '../application/app_shell_controller.dart';
 import '../application/error_log.dart';
 import '../application/profile_repository.dart';
 import '../application/practice_preferences.dart';
+import '../application/practice_reminder.dart';
 import '../application/result_history.dart';
 import '../features/home/home_screen.dart';
-import '../features/onboarding/goal_selection_screen.dart';
+import '../features/onboarding/guest_onboarding_screen.dart';
 import '../features/settings/settings_screen.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../infrastructure/audio/orphan_audio_cleaner.dart';
+import '../infrastructure/notifications/flutter_practice_reminder_platform.dart';
 import '../infrastructure/storage/file_profile_repository.dart';
 import '../infrastructure/storage/file_practice_preferences.dart';
 import '../infrastructure/storage/file_result_history.dart';
@@ -58,6 +60,13 @@ class _HarmoniaAppState extends State<HarmoniaApp> {
       widget.history ?? FileResultHistory();
   late final PracticePreferencesRepository _preferences =
       widget.preferences ?? FilePracticePreferences();
+  late final PracticeReminderCoordinator _reminders =
+      PracticeReminderCoordinator(
+        preferences: _preferences,
+        platform: FlutterPracticeReminderPlatform(),
+      );
+  final _hapticsEnabled = ValueNotifier<bool>(true);
+  final _preferencesRevision = ValueNotifier<int>(0);
   final _cleanup = ValueNotifier<OrphanCleanupReport?>(null);
   final _navigator = GlobalKey<NavigatorState>();
 
@@ -66,6 +75,9 @@ class _HarmoniaAppState extends State<HarmoniaApp> {
     super.initState();
     _shell = AppShellController(widget.profiles ?? FileProfileRepository())
       ..load();
+    _preferences.loadHapticsEnabled().then((enabled) {
+      if (mounted) _hapticsEnabled.value = enabled;
+    }, onError: (Object _) {});
     // Runs before any audio screen exists, so every match is an orphan.
     final sweep =
         widget.startupCleanup ?? OrphanAudioCleaner(getTemporaryDirectory).run;
@@ -83,8 +95,12 @@ class _HarmoniaAppState extends State<HarmoniaApp> {
   void dispose() {
     _shell.dispose();
     _cleanup.dispose();
+    _hapticsEnabled.dispose();
+    _preferencesRevision.dispose();
     super.dispose();
   }
+
+  void _preferencesImported() => _preferencesRevision.value++;
 
   void _openSettings() => _navigator.currentState?.push(
     MaterialPageRoute<void>(
@@ -93,16 +109,27 @@ class _HarmoniaAppState extends State<HarmoniaApp> {
         history: _history,
         channel: widget.channel ?? AppChannel.current,
         errorLog: widget.errorLog,
+        reminders: _reminders,
+        preferences: _preferences,
+        hapticsEnabled: _hapticsEnabled,
+        onPreferencesImported: _preferencesImported,
       ),
     ),
   );
 
   @override
-  Widget build(BuildContext context) => AppServices(
-    history: _history,
-    cleanup: _cleanup,
-    preferences: _preferences,
-    child: _app(),
+  Widget build(BuildContext context) => HarmoniaHapticsScope(
+    enabled: _hapticsEnabled,
+    child: ValueListenableBuilder<int>(
+      valueListenable: _preferencesRevision,
+      builder: (context, revision, _) => AppServices(
+        history: _history,
+        cleanup: _cleanup,
+        preferences: _preferences,
+        preferencesRevision: revision,
+        child: _app(),
+      ),
+    ),
   );
 
   Widget _app() => MaterialApp(
@@ -123,12 +150,9 @@ class _HarmoniaAppState extends State<HarmoniaApp> {
           onRetry: _shell.load,
           onStartOver: _shell.deleteLocalProfile,
         ),
-        AppShellPhase.onboarding => GoalSelectionScreen(
-          saving: _shell.saving,
-          errorText: _shell.failure == null
-              ? null
-              : 'Seçim kaydedilemedi. Yeniden dene.',
-          onSelected: _shell.chooseGoal,
+        AppShellPhase.onboarding => GuestOnboardingScreen(
+          preferences: _preferences,
+          onComplete: _shell.chooseGoal,
         ),
         AppShellPhase.ready => HomeScreen(
           profile: _shell.profile!,

@@ -77,4 +77,78 @@ void main() {
     c.selectLevel(draftIntervalLevels[1]);
     expect(c.level, draftIntervalLevels[1]);
   });
+
+  test(
+    'reference and selected review preserve result and retention evidence',
+    () async {
+      c.retentionCheck = true;
+      for (var i = 0; i < 8; i++) {
+        await play();
+        c.answer(i == 0 ? SolfegeDegree.sol : c.round.items[i].degree);
+        await c.next();
+      }
+      final result = c.outcome!;
+      final plays = List<int>.of(result.plays);
+      final saved = await history.load();
+      Future<void> finishReview(Future<void> Function() startReview) async {
+        player.end = Completer();
+        final start = startReview();
+        await _flush();
+        player.end.complete();
+        await start;
+      }
+
+      await finishReview(() => c.reviewReference(0));
+      await finishReview(() => c.reviewSelected(0));
+      player.end = Completer();
+      final interrupted = c.reviewReference(0);
+      await _flush();
+      await c.pause();
+      await interrupted;
+      expect(c.phase, IntervalPhase.finished);
+      expect(c.outcome, same(result));
+      expect(c.outcome!.plays, plays);
+      expect((await history.load()).single, same(saved.single));
+      expect(saved.single.result.measurements['retentionCheck'], isTrue);
+    },
+  );
+
+  test(
+    'guided retry keeps exact missed degrees and is not persisted',
+    () async {
+      final missed = <IntervalItem>[];
+      for (var i = 0; i < 8; i++) {
+        await play();
+        final correct = c.round.items[i].degree;
+        if (i < 2) {
+          missed.add(c.round.items[i]);
+          c.answer(c.level.options.firstWhere((option) => option != correct));
+        } else {
+          c.answer(correct);
+        }
+        await c.next();
+      }
+      expect((await history.load()), hasLength(1));
+      expect(c.mistakeCount, 2);
+
+      expect(await c.startGuidedRetry(), isTrue);
+      expect(c.guidedRetry, isTrue);
+      expect(c.round.items, orderedEquals(missed));
+      for (var i = 0; i < c.round.items.length; i++) {
+        await play();
+        c.answer(c.round.items[i].degree);
+        await c.next();
+      }
+      expect(c.outcome!.correctCount, 2);
+      expect(c.recordOutcome, isNull);
+      expect(
+        () => c.outcome!.toResult(
+          sessionId: 'forbidden',
+          createdAt: DateTime.utc(2026),
+        ),
+        throwsStateError,
+      );
+      expect((await history.load()), hasLength(1));
+    },
+  );
 }

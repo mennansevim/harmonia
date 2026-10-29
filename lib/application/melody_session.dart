@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import '../domain/audio/audio_capture.dart';
 import '../domain/audio/capture_quality.dart';
 import '../domain/audio/pitch_segmenter.dart';
+import '../domain/audio/pitch_sequence_alignment.dart';
 import '../domain/audio/recording_pitch_analyzer.dart';
 import 'single_tone_session.dart';
 
@@ -42,6 +43,7 @@ class MelodySessionOutcome {
     this.retryReason,
     this.quality,
     this.segments,
+    this.alignment,
   });
   static const scoringEnabled = false;
   final DiagnosticMelodyReference reference;
@@ -52,6 +54,10 @@ class MelodySessionOutcome {
   final SessionRetryReason? retryReason;
   final CaptureQualityReport? quality;
   final PitchSegmentationEvidence? segments;
+
+  /// Experimental frequency/order comparison only. It is not a score, voice
+  /// validation, memory result or learning evidence.
+  final PitchSequenceEvidence? alignment;
   bool get needsRetry => retryReason != null;
 }
 
@@ -106,6 +112,16 @@ class MelodySessionController extends ChangeNotifier {
       final segments = evidence == null
           ? null
           : PitchSegmenter.fromRecording(evidence);
+      final alignment =
+          segments?.status == PitchSegmentationStatus.candidatesObserved
+          ? PitchSequenceAligner.align(
+              reference: _sequenceEvents(reference.frequenciesHz),
+              response: _sequenceEvents([
+                for (final segment in segments!.segments) segment.frequencyHz,
+              ]),
+              source: segments.provenance.source,
+            )
+          : null;
       outcome = MelodySessionOutcome._(
         reference: reference,
         referencePlays: _referencePlays,
@@ -117,6 +133,7 @@ class MelodySessionController extends ChangeNotifier {
                 : null),
         quality: raw.quality,
         segments: segments,
+        alignment: alignment,
       );
     }
     notifyListeners();
@@ -178,6 +195,17 @@ class MelodySessionController extends ChangeNotifier {
     super.dispose();
   }
 }
+
+List<SequencePitchEvent> _sequenceEvents(List<double> frequenciesHz) => [
+  for (var i = 0; i < frequenciesHz.length; i++)
+    SequencePitchEvent(
+      frequencyHz: frequenciesHz[i],
+      // Nominal ordering only. Recorded segment boundaries are diagnostic and
+      // must not become timing evidence through this comparison.
+      onsetMs: i * 800,
+      durationMs: 600,
+    ),
+];
 
 /// Serializes native mutations/reads, not playback completion or DSP. Cancel
 /// can invalidate the epoch immediately but must discard *after* a pending

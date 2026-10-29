@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import '../domain/audio/audio_capture.dart';
 import '../domain/perception/pitch_comparison.dart';
 import 'result_history.dart';
+import 'review_playback.dart';
 
 enum PitchComparisonPhase {
   idle,
@@ -31,6 +32,10 @@ class PitchComparisonController extends ChangeNotifier {
        _random = random ?? Random(),
        _now = clock ?? DateTime.now,
        _newAttemptId = newAttemptId ?? _randomId {
+    review = ReviewPlaybackCoordinator(
+      player: player,
+      onChanged: notifyListeners,
+    );
     _newRound();
   }
 
@@ -44,6 +49,7 @@ class PitchComparisonController extends ChangeNotifier {
   final Random _random;
   final DateTime Function() _now;
   final String Function() _newAttemptId;
+  late final ReviewPlaybackCoordinator review;
 
   PitchComparisonLevel _level;
   PitchComparisonLevel get level => _level;
@@ -56,6 +62,7 @@ class PitchComparisonController extends ChangeNotifier {
   RecordOutcome? recordOutcome;
   bool historyFailed = false;
   bool playbackFailed = false;
+  bool guidedRetry = false;
   bool _heardCurrent = false;
   Completer<void>? _wake;
   int _epoch = 0;
@@ -87,7 +94,47 @@ class PitchComparisonController extends ChangeNotifier {
     recordOutcome = null;
     historyFailed = false;
     playbackFailed = false;
+    guidedRetry = false;
     _heardCurrent = false;
+  }
+
+  int get mistakeCount {
+    final result = outcome;
+    if (result == null) return 0;
+    return [
+      for (var i = 0; i < result.answers.length; i++)
+        if (!result.isCorrect(i)) i,
+    ].length;
+  }
+
+  /// Starts a short practice-only round with the exact missed pairs.
+  /// It is deliberately excluded from history/mastery evidence.
+  Future<bool> startGuidedRetry() async {
+    final result = outcome;
+    if (_closed || phase != PitchComparisonPhase.finished || result == null) {
+      return false;
+    }
+    final missed = [
+      for (var i = 0; i < result.answers.length; i++)
+        if (!result.isCorrect(i)) result.round.items[i],
+    ];
+    if (missed.isEmpty) return false;
+    ++_epoch;
+    await review.cancel();
+    if (_closed) return false;
+    round = PitchComparisonRound.guided(_level, missed);
+    answers = List.filled(round.items.length, null);
+    plays = List.filled(round.items.length, 0);
+    index = 0;
+    outcome = null;
+    recordOutcome = null;
+    historyFailed = false;
+    playbackFailed = false;
+    retentionCheck = false;
+    guidedRetry = true;
+    _heardCurrent = false;
+    _set(PitchComparisonPhase.idle);
+    return true;
   }
 
   /// Only before the first answer or after a finished round; switching
@@ -99,6 +146,7 @@ class PitchComparisonController extends ChangeNotifier {
   void selectLevel(PitchComparisonLevel next) {
     if (!canChangeLevel) return;
     ++_epoch;
+    unawaited(review.cancel());
     _level = next;
     retentionCheck = false;
     _newRound();
@@ -106,6 +154,22 @@ class PitchComparisonController extends ChangeNotifier {
   }
 
   void newRound() => selectLevel(_level);
+
+  Future<void> reviewReference(int itemIndex) {
+    final result = outcome;
+    if (phase != PitchComparisonPhase.finished ||
+        result == null ||
+        itemIndex < 0 ||
+        itemIndex >= result.round.items.length) {
+      return Future<void>.value();
+    }
+    final item = result.round.items[itemIndex];
+    return review.play(
+      itemIndex: itemIndex,
+      clipId: 'reference',
+      wavBytes: renderPair(item.firstHz, item.secondHz),
+    );
+  }
 
   Future<void> playCurrent() async {
     if (!canPlay) return;
@@ -158,6 +222,7 @@ class PitchComparisonController extends ChangeNotifier {
     );
     outcome = result;
     _set(PitchComparisonPhase.finished);
+    if (guidedRetry) return;
     final store = history;
     if (store == null) return;
     try {
@@ -185,6 +250,7 @@ class PitchComparisonController extends ChangeNotifier {
   Future<void> cancel() async {
     if (_closed) return;
     ++_epoch;
+    await review.cancel();
     final wake = _wake;
     if (wake != null && !wake.isCompleted) wake.complete();
     _newRound();
@@ -194,17 +260,30 @@ class PitchComparisonController extends ChangeNotifier {
     } catch (_) {}
   }
 
+  /// Stops audio when the app is backgrounded without discarding a completed
+  /// result that the learner is reviewing.
+  Future<void> pause() async {
+    if (_closed) return;
+    if (phase == PitchComparisonPhase.finished) {
+      await review.cancel();
+      return;
+    }
+    await cancel();
+  }
+
   Future<void> close() async {
     if (_closed) return;
     ++_epoch;
     final wake = _wake;
     if (wake != null && !wake.isCompleted) wake.complete();
     phase = PitchComparisonPhase.closed;
+    await review.close();
     await player.close();
   }
 
   @override
   void dispose() {
+    review.detach();
     unawaited(close().catchError((Object _) {}));
     super.dispose();
   }

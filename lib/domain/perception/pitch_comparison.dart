@@ -65,7 +65,7 @@ final List<PitchComparisonLevel> draftPitchLevels = List.unmodifiable([
 ]);
 
 class PitchComparisonRound {
-  PitchComparisonRound._(this.level, this.items);
+  PitchComparisonRound._(this.level, this.items, {this.guided = false});
 
   static const itemCount = 8;
 
@@ -91,8 +91,29 @@ class PitchComparisonRound {
     ]);
   }
 
+  /// A short, unscored practice round built only from previously missed
+  /// items. The interval must still match the selected level.
+  factory PitchComparisonRound.guided(
+    PitchComparisonLevel level,
+    Iterable<PitchComparisonItem> source,
+  ) {
+    final items = List<PitchComparisonItem>.unmodifiable(source);
+    if (items.isEmpty || items.length > itemCount) {
+      throw ArgumentError('Guided round needs 1–$itemCount items');
+    }
+    for (final item in items) {
+      final cents =
+          1200 * (math.log(item.secondHz / item.firstHz).abs() / math.ln2);
+      if ((cents - level.centsStep).abs() > .01) {
+        throw ArgumentError('Item does not match guided level');
+      }
+    }
+    return PitchComparisonRound._(level, items, guided: true);
+  }
+
   final PitchComparisonLevel level;
   final List<PitchComparisonItem> items;
+  final bool guided;
 }
 
 enum PitchComparisonStatus { measured, incomplete }
@@ -137,6 +158,9 @@ class PitchComparisonOutcome {
     required DateTime createdAt,
     bool retentionCheck = false,
   }) {
+    if (round.guided) {
+      throw StateError('Guided retry cannot become result evidence');
+    }
     final measured = status == PitchComparisonStatus.measured;
     final total = round.items.length;
     return ExerciseResult(

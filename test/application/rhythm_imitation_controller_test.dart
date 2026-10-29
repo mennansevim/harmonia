@@ -202,6 +202,60 @@ void main() {
   });
 
   test(
+    'error segment is replayed locally and never added to history',
+    () async {
+      final history = InMemoryResultHistory();
+      final guidedPlayer = FakeClipPlayer();
+      List<int>? renderedOnsets;
+      final h = RhythmImitationController(
+        player: guidedPlayer,
+        renderReference: (ms) {
+          renderedOnsets = List.of(ms);
+          return [1];
+        },
+        initialPattern: draftRhythmPatterns.first,
+        history: history,
+        newAttemptId: () => 'rhythm-guided-source',
+      );
+
+      var run = h.listen();
+      await _flush();
+      guidedPlayer.end.complete();
+      await run;
+      for (final ms in [0, 750, 2250]) {
+        h.registerTap(Duration(milliseconds: 10000 + ms));
+      }
+      await h.finish();
+      expect(await history.load(), hasLength(1));
+      expect(h.suggestedGuidedSegment!.onsetsMs, [0, 750, 1500]);
+
+      h.startGuidedSegment();
+      expect(h.isGuided, isTrue);
+      expect(h.phase, RhythmImitationPhase.idle);
+      guidedPlayer.end = Completer();
+      run = h.listen();
+      await _flush();
+      expect(renderedOnsets, [0, 750, 1500]);
+      guidedPlayer.end.complete();
+      await run;
+      for (final ms in [0, 750, 1500]) {
+        h.registerTap(Duration(milliseconds: 20000 + ms));
+      }
+      await h.finish();
+      expect(h.outcome!.guided, isTrue);
+      expect(h.recordOutcome, isNull);
+      expect(h.nextStep, isNull);
+      expect(await history.load(), hasLength(1));
+
+      h.exitGuidedSegment();
+      expect(h.isGuided, isFalse);
+      expect(h.phase, RhythmImitationPhase.idle);
+      await h.close();
+      h.dispose();
+    },
+  );
+
+  test(
     'next step after two clean attempts moves on; retention is strict',
     () async {
       final history = InMemoryResultHistory();

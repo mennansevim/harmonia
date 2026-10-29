@@ -24,8 +24,64 @@ void main() {
       {'schemaVersion': 1, 'dailyBudgetMinutes': 7},
       {'schemaVersion': 1, 'dailyBudgetMinutes': '5'},
       {'schemaVersion': 1, 'dailyBudgetMinutes': 5, 'x': 1},
+      {'schemaVersion': 2, 'dailyBudgetMinutes': 5, 'weeklyGoalDays': 7},
     ]) {
       expect(() => PracticePreferencesCodec.decode(bad), throwsFormatException);
+    }
+    final migrated = PracticePreferencesCodec.decodeSnapshot({
+      'schemaVersion': 1,
+      'dailyBudgetMinutes': 12,
+    });
+    expect(migrated.dailyBudget, DailyBudget.twelve);
+    expect(migrated.weeklyGoal, isNull);
+    expect(migrated.reminderTime, isNull);
+    final v2 = PracticePreferencesCodec.decodeSnapshot({
+      'schemaVersion': 2,
+      'dailyBudgetMinutes': 5,
+      'weeklyGoalDays': 3,
+    });
+    expect(v2.dailyBudget, DailyBudget.five);
+    expect(v2.weeklyGoal, WeeklyPracticeGoal.three);
+    expect(v2.reminderTime, isNull);
+    expect(v2.hapticsEnabled, isTrue);
+    final v3 = PracticePreferencesCodec.decodeSnapshot({
+      'schemaVersion': 3,
+      'dailyBudgetMinutes': 5,
+      'weeklyGoalDays': 3,
+      'reminderHour': 19,
+      'reminderMinute': 30,
+    });
+    expect(v3.hapticsEnabled, isTrue);
+    for (final bad in <Map<String, Object?>>[
+      {
+        'schemaVersion': 4,
+        'dailyBudgetMinutes': 5,
+        'weeklyGoalDays': 3,
+        'reminderHour': 9,
+        'reminderMinute': null,
+        'hapticsEnabled': true,
+      },
+      {
+        'schemaVersion': 4,
+        'dailyBudgetMinutes': 5,
+        'weeklyGoalDays': 3,
+        'reminderHour': 24,
+        'reminderMinute': 0,
+        'hapticsEnabled': true,
+      },
+      {
+        'schemaVersion': 4,
+        'dailyBudgetMinutes': 5,
+        'weeklyGoalDays': 3,
+        'reminderHour': null,
+        'reminderMinute': null,
+        'hapticsEnabled': 'yes',
+      },
+    ]) {
+      expect(
+        () => PracticePreferencesCodec.decodeSnapshot(bad),
+        throwsFormatException,
+      );
     }
   });
 
@@ -49,4 +105,84 @@ void main() {
       expect(await p.loadDailyBudget(), DailyBudget.twelve);
     },
   );
+
+  test(
+    'file keeps daily budget and weekly goal through independent saves',
+    () async {
+      final p = FilePracticePreferences(directory: () async => dir);
+      await p.saveDailyBudget(DailyBudget.five);
+      await p.saveWeeklyGoal(WeeklyPracticeGoal.four);
+      final restored = FilePracticePreferences(directory: () async => dir);
+      expect(await restored.loadDailyBudget(), DailyBudget.five);
+      expect(await restored.loadWeeklyGoal(), WeeklyPracticeGoal.four);
+
+      await restored.saveWeeklyGoal(null);
+      expect(await restored.loadWeeklyGoal(), isNull);
+      expect(await restored.loadDailyBudget(), DailyBudget.five);
+    },
+  );
+
+  test(
+    'concurrent preference writes are serialized without lost fields',
+    () async {
+      final p = FilePracticePreferences(directory: () async => dir);
+      await Future.wait([
+        p.saveDailyBudget(DailyBudget.fifteen),
+        p.saveWeeklyGoal(WeeklyPracticeGoal.three),
+        p.saveReminderTime(PracticeReminderTime(hour: 19, minute: 30)),
+        p.saveHapticsEnabled(false),
+      ]);
+      expect(await p.loadDailyBudget(), DailyBudget.fifteen);
+      expect(await p.loadWeeklyGoal(), WeeklyPracticeGoal.three);
+      expect(
+        await p.loadReminderTime(),
+        PracticeReminderTime(hour: 19, minute: 30),
+      );
+      expect(await p.loadHapticsEnabled(), isFalse);
+    },
+  );
+
+  test('file reminder can be replaced and disabled independently', () async {
+    final p = FilePracticePreferences(directory: () async => dir);
+    await p.saveDailyBudget(DailyBudget.twelve);
+    await p.saveReminderTime(PracticeReminderTime(hour: 8, minute: 5));
+    final restored = FilePracticePreferences(directory: () async => dir);
+    expect(
+      await restored.loadReminderTime(),
+      PracticeReminderTime(hour: 8, minute: 5),
+    );
+    await restored.saveReminderTime(null);
+    expect(await restored.loadReminderTime(), isNull);
+    expect(await restored.loadDailyBudget(), DailyBudget.twelve);
+  });
+
+  test('haptics defaults on and persists independently', () async {
+    final p = FilePracticePreferences(directory: () async => dir);
+    expect(await p.loadHapticsEnabled(), isTrue);
+    await p.saveWeeklyGoal(WeeklyPracticeGoal.two);
+    await p.saveHapticsEnabled(false);
+    final restored = FilePracticePreferences(directory: () async => dir);
+    expect(await restored.loadHapticsEnabled(), isFalse);
+    expect(await restored.loadWeeklyGoal(), WeeklyPracticeGoal.two);
+  });
+
+  test('portable save is atomic and preserves device-only settings', () async {
+    final p = FilePracticePreferences(directory: () async => dir);
+    await p.saveReminderTime(PracticeReminderTime(hour: 8, minute: 10));
+    await p.saveHapticsEnabled(false);
+    await p.savePortablePreferences(
+      const PortablePracticePreferences(
+        dailyBudget: DailyBudget.fifteen,
+        weeklyGoal: WeeklyPracticeGoal.five,
+      ),
+    );
+    final portable = await p.loadPortablePreferences();
+    expect(portable.dailyBudget, DailyBudget.fifteen);
+    expect(portable.weeklyGoal, WeeklyPracticeGoal.five);
+    expect(
+      await p.loadReminderTime(),
+      PracticeReminderTime(hour: 8, minute: 10),
+    );
+    expect(await p.loadHapticsEnabled(), isFalse);
+  });
 }

@@ -145,6 +145,7 @@ void main() {
       );
       expect(result.segments!.provenance.source, MeasurementSource.mock);
       expect(result.segments!.segments.length, 3);
+      expect(result.alignment!.wholeSequenceCorrect, isTrue);
       expect(session.canStart, isTrue);
     },
   );

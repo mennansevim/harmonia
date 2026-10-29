@@ -9,6 +9,8 @@ import 'package:harmonia/domain/models/exercise_result.dart';
 import 'package:harmonia/domain/models/learner_profile.dart';
 import 'package:harmonia/domain/perception/pitch_comparison.dart';
 import 'package:harmonia/features/daily_plan/daily_plan_screen.dart';
+import 'package:harmonia/features/common/ui/harmonia_ui.dart';
+import 'package:harmonia/app/theme/harmonia_theme.dart';
 
 final _now = DateTime(2026, 10, 11, 12);
 var _attempt = 0;
@@ -42,10 +44,19 @@ void main() {
     WidgetTester tester,
     ResultHistoryRepository history, {
     List<ExerciseResult> Function()? onExercise,
+    ThemeData? theme,
+    bool reducedMotion = false,
   }) async {
     opened.clear();
     await tester.pumpWidget(
       MaterialApp(
+        theme: theme,
+        builder: (context, child) => MediaQuery(
+          data: MediaQuery.of(
+            context,
+          ).copyWith(disableAnimations: reducedMotion),
+          child: child!,
+        ),
         home: DailyPlanScreen(
           goal: PracticeGoal.foundations,
           history: history,
@@ -72,6 +83,126 @@ void main() {
     );
     await tester.pumpAndSettle();
   }
+
+  testWidgets('draft plan shell explains schedule without skill percentages', (
+    tester,
+  ) async {
+    final h = InMemoryResultHistory();
+    await pump(tester, h);
+    expect(find.byType(LessonScaffold), findsOneWidget);
+    expect(find.byType(LessonProgressBar), findsNothing);
+    expect(find.text('Taslak plan'), findsOneWidget);
+    expect(find.text('Plan: 8 / 12 dk'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('plan_help')));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('1/3/7/14 gün'), findsOneWidget);
+    expect(find.textContaining('hazırlık yüzdesi değildir'), findsOneWidget);
+    expect(find.text('Plan: 8 / 12 dk'), findsOneWidget);
+    expect(await h.load(), isEmpty);
+    expect(opened, isEmpty);
+  });
+
+  testWidgets('completed retention card offers neutral optional practice', (
+    tester,
+  ) async {
+    final h = InMemoryResultHistory();
+    final yesterday = _now.subtract(const Duration(days: 1));
+    await _add(h, _perc(0, yesterday));
+    await _add(h, _perc(0, yesterday.add(const Duration(minutes: 1))));
+    await pump(
+      tester,
+      h,
+      onExercise: () => [
+        _perc(0, _now.subtract(const Duration(minutes: 1)), retention: true),
+      ],
+    );
+    expect(
+      tester.widget<ChunkyButton>(find.byKey(const Key('plan_start_0'))).tone,
+      ChunkyTone.primary,
+    );
+    await tester.tap(find.byKey(const Key('plan_start_0')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('fake_finish')));
+    await tester.pumpAndSettle();
+    final done = tester.widget<ChunkyButton>(
+      find.byKey(const Key('plan_start_0')),
+    );
+    expect(done.tone, ChunkyTone.neutral);
+    expect(done.label, 'Bir tur daha');
+    expect(find.byType(LessonProgressBar), findsNothing);
+    expect(opened.single.$2, isTrue);
+  });
+
+  testWidgets(
+    'dark reduced-motion plan keeps large-text budget and actions usable',
+    (tester) async {
+      tester.view.physicalSize = const Size(320, 800);
+      tester.view.devicePixelRatio = 1;
+      tester.platformDispatcher.textScaleFactorTestValue = 1.8;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+      await pump(
+        tester,
+        InMemoryResultHistory(),
+        theme: HarmoniaTheme.dark(),
+        reducedMotion: true,
+      );
+      await tester.tap(find.byKey(const Key('budget_15')));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('/ 15 dk'), findsOneWidget);
+      await tester.ensureVisible(find.byKey(const Key('plan_help')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('plan_help')));
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.byKey(const Key('plan_start_0')));
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const Key('plan_start_0')).hitTestable(),
+        findsOneWidget,
+      );
+      expect(tester.takeException(), isNull);
+      expect(opened, isEmpty);
+    },
+  );
+
+  testWidgets(
+    'lesson close preserves chosen budget without recording practice',
+    (tester) async {
+      final h = InMemoryResultHistory();
+      final prefs = InMemoryPracticePreferences();
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Builder(
+            builder: (context) => Scaffold(
+              body: TextButton(
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => DailyPlanScreen(
+                      goal: PracticeGoal.foundations,
+                      history: h,
+                      preferences: prefs,
+                      clock: () => _now,
+                    ),
+                  ),
+                ),
+                child: const Text('Planı aç'),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('Planı aç'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('budget_5')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('lesson_close')));
+      await tester.pumpAndSettle();
+      expect(find.text('Planı aç'), findsOneWidget);
+      expect(await prefs.loadDailyBudget(), DailyBudget.five);
+      expect(await h.load(), isEmpty);
+    },
+  );
 
   testWidgets('budget switch replans; free time is stated, not padded', (
     tester,

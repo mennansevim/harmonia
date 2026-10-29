@@ -66,10 +66,15 @@ Future<List<int>> _render(int px, void Function(Canvas, double) paint) async {
 }
 
 /// Full-bleed composition: glyph at 76 % size, optically centred.
-void _iconGlyph(Canvas c, double s) {
+void _iconGlyph(
+  Canvas c,
+  double s, {
+  Color ink = Colors.white,
+  Color accent = _sun,
+}) {
   c.save();
   c.translate(s * .095, s * .125);
-  paintGlyph(c, s * .76, accent: _sun);
+  paintGlyph(c, s * .76, ink: ink, accent: accent);
   c.restore();
 }
 
@@ -90,23 +95,7 @@ void main() {
     final root = Directory.current.path;
     // iOS: opaque, full-bleed square (the system applies the mask).
     final ios = '$root/ios/Runner/Assets.xcassets/AppIcon.appiconset';
-    const iosSizes = {
-      'Icon-App-20x20@1x.png': 20,
-      'Icon-App-20x20@2x.png': 40,
-      'Icon-App-20x20@3x.png': 60,
-      'Icon-App-29x29@1x.png': 29,
-      'Icon-App-29x29@2x.png': 58,
-      'Icon-App-29x29@3x.png': 87,
-      'Icon-App-40x40@1x.png': 40,
-      'Icon-App-40x40@2x.png': 80,
-      'Icon-App-40x40@3x.png': 120,
-      'Icon-App-60x60@2x.png': 120,
-      'Icon-App-60x60@3x.png': 180,
-      'Icon-App-76x76@1x.png': 76,
-      'Icon-App-76x76@2x.png': 152,
-      'Icon-App-83.5x83.5@2x.png': 167,
-      'Icon-App-1024x1024@1x.png': 1024,
-    };
+    const iosSizes = {'Icon-App-1024x1024@1x.png': 1024};
     for (final e in iosSizes.entries) {
       final bytes = await _render(e.value, (c, s) {
         _background(c, s);
@@ -114,6 +103,16 @@ void main() {
       });
       await File('$ios/${e.key}').writeAsBytes(bytes);
     }
+    // iOS appearance variants use the modern single-size asset slots. Apple
+    // supplies the dark background, so the dark artwork stays transparent.
+    // Tinted artwork must be grayscale; a single opaque glyph lets the system
+    // apply the user's selected tint without inventing a second brand color.
+    await File(
+      '$ios/Icon-App-1024x1024-dark.png',
+    ).writeAsBytes(await _render(1024, (c, s) => _iconGlyph(c, s)));
+    await File('$ios/Icon-App-1024x1024-tinted.png').writeAsBytes(
+      await _render(1024, (c, s) => _iconGlyph(c, s, accent: Colors.white)),
+    );
 
     // Android legacy launcher icons (pre-26) and adaptive layers.
     final res = '$root/android/app/src/main/res';

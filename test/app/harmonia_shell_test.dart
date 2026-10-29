@@ -53,6 +53,7 @@ void main() {
     expect(find.textContaining('Hesap açman gerekmez'), findsOneWidget);
     await tester.tap(find.byKey(const Key('goal_conservatory')));
     await tester.pumpAndSettle();
+    await _tapVisible(tester, find.byKey(const Key('onboarding_finish')));
     expect(find.text('Konservatuvar hazırlığı'), findsOneWidget);
     expect(find.text('Bugünkü öneri'), findsOneWidget);
     expect(find.text('Tiz / pes ayırt etme'), findsWidgets);
@@ -71,7 +72,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('plan_block_0')), findsOneWidget);
     expect(find.textContaining('Tiz / pes ayırt etme'), findsWidgets);
-    await tester.pageBack();
+    await tester.tap(find.byKey(const Key('lesson_close')));
     await tester.pumpAndSettle();
     expect((await repo.load())!.goal, PracticeGoal.conservatory);
   });
@@ -313,6 +314,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
     await _tapVisible(tester, find.byKey(const Key('goal_choir')));
+    await _tapVisible(tester, find.byKey(const Key('onboarding_skip_budget')));
     expect(tester.takeException(), isNull);
     await tester.scrollUntilVisible(
       find.byKey(const Key('open_daily_plan')),

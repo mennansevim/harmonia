@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../../app/theme/harmonia_theme.dart';
+import '../../application/microphone_permission_recovery.dart';
 import '../../application/single_tone_session.dart';
 import '../../domain/audio/audio_capture.dart';
 import '../../domain/audio/capture_quality.dart';
@@ -10,13 +11,21 @@ import '../../domain/audio/recording_pitch_analyzer.dart';
 import '../../infrastructure/audio/isolate_recording_pitch_worker.dart';
 import '../../infrastructure/audio/plugin_audio_lab_backend.dart';
 import '../common/input_level_meter.dart';
+import '../common/ui/harmonia_ui.dart';
+import '../common/ui/microphone_permission_recovery_card.dart';
 
 /// SESSION-01 UI: real capture flow, but no correct/incorrect decision until
 /// VAD-01 + BENCH-01 pass (SingleToneSessionOutcome.scoringEnabled).
 class SingleToneSessionScreen extends StatefulWidget {
-  const SingleToneSessionScreen({super.key, this.backend, this.worker});
+  const SingleToneSessionScreen({
+    super.key,
+    this.backend,
+    this.worker,
+    this.permissionRecovery,
+  });
   final AudioLabBackend? backend;
   final RecordingPitchWorker? worker;
+  final MicrophonePermissionRecovery? permissionRecovery;
   @override
   State<SingleToneSessionScreen> createState() =>
       _SingleToneSessionScreenState();
@@ -55,133 +64,121 @@ class _SingleToneSessionScreenState extends State<SingleToneSessionScreen>
   @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
-    return Scaffold(
-      appBar: AppBar(title: const Text('Tek ses: dinle ve söyle')),
-      body: SafeArea(
-        child: ListenableBuilder(
-          listenable: session,
-          builder: (context, _) {
-            final busy = !session.canStart;
-            return ListView(
-              padding: const EdgeInsets.all(HarmoniaSpacing.lg),
-              children: [
-                Text('Hedef: Do (C4)', style: text.headlineSmall),
-                const SizedBox(height: HarmoniaSpacing.xs),
-                const Text(
-                  'Deneysel • Referans sentetik bir tondur. Kaydın analiz edilir ama doğru/yanlış kararı ve puan henüz verilmez; ses tanıma doğrulaması tamamlanmadı.',
+    return ListenableBuilder(
+      listenable: session,
+      builder: (context, _) {
+        final busy = !session.canStart;
+        return LessonScaffold(
+          progress: null,
+          counter: 'Puansız',
+          closeLabel: 'Tek ses çalışmasını kapat',
+          top: [
+            const Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: StatusPill('Deneysel'),
+            ),
+            const SizedBox(height: HarmoniaSpacing.md),
+            Text('Tek ses: dinle ve söyle', style: text.headlineSmall),
+            Text('Hedef: Do (C4)', style: text.titleMedium),
+            const SizedBox(height: HarmoniaSpacing.xs),
+            const Text(
+              'Referans sentetik bir tondur. Doğru/yanlış kararı ve puan henüz verilmez.',
+            ),
+            const SizedBox(height: HarmoniaSpacing.lg),
+            Semantics(
+              liveRegion: true,
+              child: Text(
+                _phaseText(session.phase),
+                key: const Key('session_status'),
+                style: text.titleMedium,
+              ),
+            ),
+            Text(_calibrationText(session.calibration)),
+            ExpansionTile(
+              key: const Key('session_help'),
+              tilePadding: EdgeInsets.zero,
+              title: const Text('Nasıl çalışır?'),
+              children: const [
+                Text(
+                  'Önce 2 saniye sessiz kalıp ortamı ölç. Referans bitince kısa bir bekleme olur, sonra mikrofon açılır. En fazla 4 saniye söyle. Kayıt yerel analiz için okununca silinir; cihazdan gönderilmez. Gerçek ses ve cihaz doğrulaması bekleniyor.',
                 ),
-                const SizedBox(height: HarmoniaSpacing.lg),
-                _Step(
-                  number: 1,
-                  title: 'Ortamı ölç',
-                  body: _calibrationText(session.calibration),
-                  action: OutlinedButton(
-                    key: const Key('session_calibrate'),
-                    onPressed: busy ? null : session.calibrate,
-                    child: const Text('Ortamı ölç (2 sn sessizlik)'),
-                  ),
-                ),
-                _Step(
-                  number: 2,
-                  title: 'Dinle, bekle, söyle',
-                  body:
-                      'Referans bitince kısa bir bekleme olur, sonra mikrofon açılır. En fazla 4 saniye söyle; kayıt analizden hemen sonra silinir.',
-                  action: FilledButton.icon(
-                    key: const Key('session_start'),
-                    onPressed: busy ? null : session.startAttempt,
-                    icon: const Icon(Icons.hearing),
-                    label: const Text('Dinle ve söyle'),
-                  ),
-                ),
-                const SizedBox(height: HarmoniaSpacing.md),
-                Semantics(
-                  liveRegion: true,
-                  child: Text(
-                    _phaseText(session.phase),
-                    key: const Key('session_status'),
-                    style: text.titleMedium,
-                  ),
-                ),
-                if ((session.phase == SingleToneSessionPhase.responding ||
-                        session.phase == SingleToneSessionPhase.calibrating) &&
-                    session.backend is InputLevelSource)
-                  Padding(
-                    padding: const EdgeInsets.only(top: HarmoniaSpacing.sm),
-                    child: InputLevelMeter(
-                      levels:
-                          (session.backend as InputLevelSource).inputLevelDb,
-                    ),
-                  ),
-                if (session.canFinishResponse)
-                  Padding(
-                    padding: const EdgeInsets.only(top: HarmoniaSpacing.sm),
-                    child: FilledButton(
-                      key: const Key('session_finish'),
-                      onPressed: session.finishResponse,
-                      child: const Text('Bitirdim'),
-                    ),
-                  ),
-                if (busy && session.phase != SingleToneSessionPhase.closed)
-                  TextButton(
-                    key: const Key('session_cancel'),
-                    onPressed: session.cancel,
-                    child: const Text('İptal et'),
-                  ),
-                if (session.outcome case final outcome?) ...[
-                  const SizedBox(height: HarmoniaSpacing.md),
-                  _OutcomeCard(outcome: outcome),
-                  if (!outcome.needsRetry)
-                    TextButton(
-                      key: const Key('session_details'),
-                      onPressed: () =>
-                          setState(() => _showDetails = !_showDetails),
-                      child: Text(
-                        _showDetails ? 'Ayrıntıyı gizle' : 'Ölçüm ayrıntısı',
-                      ),
-                    ),
-                  if (_showDetails && !outcome.needsRetry)
-                    _Details(outcome: outcome),
-                ],
               ],
-            );
-          },
-        ),
-      ),
+            ),
+            if ((session.phase == SingleToneSessionPhase.responding ||
+                    session.phase == SingleToneSessionPhase.calibrating) &&
+                session.backend is InputLevelSource)
+              Padding(
+                padding: const EdgeInsets.only(top: HarmoniaSpacing.sm),
+                child: InputLevelMeter(
+                  levels: (session.backend as InputLevelSource).inputLevelDb,
+                ),
+              ),
+            if (session.outcome case final outcome?) ...[
+              const SizedBox(height: HarmoniaSpacing.md),
+              _OutcomeCard(outcome: outcome),
+              if (outcome.retryReason == SessionRetryReason.permissionDenied)
+                MicrophonePermissionRecoveryCard(
+                  recovery: widget.permissionRecovery,
+                ),
+              if (!outcome.needsRetry)
+                TextButton(
+                  key: const Key('session_details'),
+                  onPressed: () => setState(() => _showDetails = !_showDetails),
+                  child: Text(
+                    _showDetails ? 'Ayrıntıyı gizle' : 'Ölçüm ayrıntısı',
+                  ),
+                ),
+              if (_showDetails && !outcome.needsRetry)
+                _Details(outcome: outcome),
+            ],
+          ],
+          bottom: [
+            if (!busy) ...[
+              ChunkyButton(
+                key: const Key('session_calibrate'),
+                onPressed: session.calibrate,
+                tone: session.calibration?.isUsable == true
+                    ? ChunkyTone.neutral
+                    : ChunkyTone.primary,
+                icon: Icons.mic_none_rounded,
+                label: 'Ortamı ölç (2 sn sessizlik)',
+              ),
+              const SizedBox(height: HarmoniaSpacing.sm),
+              ChunkyButton(
+                key: const Key('session_start'),
+                onPressed: () {
+                  setState(() => _showDetails = false);
+                  unawaited(session.startAttempt());
+                },
+                tone: session.calibration?.isUsable == true
+                    ? ChunkyTone.primary
+                    : ChunkyTone.neutral,
+                icon: Icons.hearing,
+                label: 'Dinle ve söyle',
+              ),
+            ],
+            if (session.canFinishResponse) ...[
+              ChunkyButton(
+                key: const Key('session_finish'),
+                onPressed: session.finishResponse,
+                tone: ChunkyTone.record,
+                icon: Icons.stop_rounded,
+                label: 'Bitirdim',
+              ),
+              const SizedBox(height: HarmoniaSpacing.sm),
+            ],
+            if (busy && session.phase != SingleToneSessionPhase.closed)
+              ChunkyButton(
+                key: const Key('session_cancel'),
+                onPressed: session.cancel,
+                tone: ChunkyTone.neutral,
+                label: 'İptal et',
+              ),
+          ],
+        );
+      },
     );
   }
-}
-
-class _Step extends StatelessWidget {
-  const _Step({
-    required this.number,
-    required this.title,
-    required this.body,
-    required this.action,
-  });
-  final int number;
-  final String title;
-  final String body;
-  final Widget action;
-  @override
-  Widget build(BuildContext context) => Card(
-    margin: const EdgeInsets.only(bottom: HarmoniaSpacing.md),
-    child: Padding(
-      padding: const EdgeInsets.all(HarmoniaSpacing.md),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Text(
-            '$number. $title',
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-          const SizedBox(height: HarmoniaSpacing.xs),
-          Text(body),
-          const SizedBox(height: HarmoniaSpacing.sm),
-          action,
-        ],
-      ),
-    ),
-  );
 }
 
 String _calibrationText(NoiseFloorCalibration? c) => switch (c?.status) {

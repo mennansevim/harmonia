@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:harmonia/application/melody_session.dart';
+import 'package:harmonia/application/melody_practice.dart';
 import 'package:harmonia/application/single_tone_session.dart';
 import 'package:harmonia/domain/audio/audio_capture.dart';
 import 'package:harmonia/domain/audio/capture_quality.dart';
@@ -44,6 +45,52 @@ DiagnosticMelodyReference _reference(int count) => DiagnosticMelodyReference(
 );
 
 void main() {
+  test(
+    'dedicated practice adapter plays exact excerpt WAV without capture',
+    () async {
+      final player = _Player();
+      final adapter = SyntheticMelodyPracticePlayer(player);
+      final selection = DiagnosticMelodyPractice(
+        reference: _reference(5),
+        startIndex: 1,
+        endIndexExclusive: 4,
+        repetitions: 2,
+      );
+      expect(player.calls, isEmpty);
+      final handle = await adapter.play(selection);
+      expect(
+        player.bytes,
+        orderedEquals(renderDiagnosticMelodyPractice(selection).encode()),
+      );
+      expect(() => player.bytes![0] = 0, throwsUnsupportedError);
+      expect(player.calls, ['play']);
+      await adapter.stop();
+      player.end.complete();
+      await handle.completed;
+      await adapter.close();
+      await adapter.close();
+      expect(player.calls, ['play', 'stop', 'close']);
+      expect(() => adapter.play(selection), throwsStateError);
+    },
+  );
+
+  test(
+    'practice adapter forwards load failure and still releases its player',
+    () async {
+      final player = _Player()..playFailure = StateError('load');
+      final adapter = SyntheticMelodyPracticePlayer(player);
+      final selection = DiagnosticMelodyPractice(
+        reference: _reference(3),
+        startIndex: 0,
+        endIndexExclusive: 1,
+      );
+      await expectLater(adapter.play(selection), throwsStateError);
+      await adapter.stop();
+      await adapter.close();
+      expect(player.calls, ['play', 'stop', 'close']);
+    },
+  );
+
   test(
     'bound player completion opens session capture, cancel releases both',
     () async {

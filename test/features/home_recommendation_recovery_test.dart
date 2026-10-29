@@ -3,9 +3,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:harmonia/app/app_services.dart';
+import 'package:harmonia/app/theme/harmonia_theme.dart';
 import 'package:harmonia/application/result_history.dart';
 import 'package:harmonia/domain/models/learner_profile.dart';
 import 'package:harmonia/features/home/home_screen.dart';
+import 'package:harmonia/features/home/skill_path.dart';
 import 'package:harmonia/infrastructure/audio/orphan_audio_cleaner.dart';
 
 class _History extends InMemoryResultHistory {
@@ -41,25 +43,205 @@ class _History extends InMemoryResultHistory {
   }
 }
 
-Widget _app(_History history, ValueNotifier<OrphanCleanupReport?> cleanup) =>
-    AppServices(
-      history: history,
-      cleanup: cleanup,
-      child: MaterialApp(
-        home: HomeScreen(
-          profile: LearnerProfile(
-            goal: PracticeGoal.foundations,
-            createdAt: DateTime(2026, 10, 15),
-          ),
-          onOpenSettings: () {},
-        ),
+Widget _app(
+  _History history,
+  ValueNotifier<OrphanCleanupReport?> cleanup, {
+  bool dark = false,
+}) => AppServices(
+  history: history,
+  cleanup: cleanup,
+  child: MaterialApp(
+    theme: dark ? HarmoniaTheme.dark() : HarmoniaTheme.light(),
+    home: HomeScreen(
+      profile: LearnerProfile(
+        goal: PracticeGoal.foundations,
+        createdAt: DateTime(2026, 10, 15),
       ),
-    );
+      onOpenSettings: () {},
+    ),
+  ),
+);
 
 void main() {
   late ValueNotifier<OrphanCleanupReport?> cleanup;
   setUp(() => cleanup = ValueNotifier(null));
   tearDown(() => cleanup.dispose());
+
+  testWidgets(
+    'pending skeleton is static, announced once and contains no measured actions',
+    (tester) async {
+      final history = _History()..pending = Completer();
+      final semantics = tester.ensureSemantics();
+      try {
+        await tester.pumpWidget(_app(history, cleanup));
+        await tester.pumpAndSettle();
+        final loading = find.byKey(const Key('today_loading'));
+        expect(loading, findsOneWidget);
+        expect(
+          tester.getSemantics(loading).label,
+          contains('Öneri ve beceri yolu henüz hazır değil'),
+        );
+        for (final key in [
+          'today_card',
+          'today_action',
+          'open_daily_plan',
+          'recent_practice',
+        ]) {
+          expect(find.byKey(Key(key)), findsNothing);
+        }
+        expect(find.byType(SkillPath), findsNothing);
+        expect(
+          find.descendant(
+            of: loading,
+            matching: find.byType(LinearProgressIndicator),
+          ),
+          findsNothing,
+        );
+        expect(
+          find.descendant(
+            of: loading,
+            matching: find.byType(CircularProgressIndicator),
+          ),
+          findsNothing,
+        );
+        await tester.pump(const Duration(seconds: 10));
+        expect(history.loads, 1);
+        expect(history.writes, 0);
+        expect(tester.binding.hasScheduledFrame, isFalse);
+        history.pending!.complete([]);
+        await tester.pumpAndSettle();
+        expect(loading, findsNothing);
+        expect(find.byKey(const Key('today_card')), findsOneWidget);
+      } finally {
+        semantics.dispose();
+      }
+    },
+  );
+
+  testWidgets(
+    'refresh hides old path while pending and after failure; explicit retry recovers',
+    (tester) async {
+      final history = _History()..unavailable = false;
+      await tester.pumpWidget(_app(history, cleanup));
+      await tester.pumpAndSettle();
+      expect(find.byType(SkillPath), findsOneWidget);
+      await tester.tap(find.byKey(const Key('today_action')));
+      await tester.pumpAndSettle();
+      history.pending = Completer();
+      await tester.tap(find.byKey(const Key('lesson_close')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('today_loading')), findsOneWidget);
+      expect(find.byType(SkillPath), findsNothing);
+      expect(find.byKey(const Key('today_card')), findsNothing);
+      history.pending!.completeError(StateError('private refresh failure'));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('today_error')), findsOneWidget);
+      expect(find.byType(SkillPath), findsNothing);
+      expect(find.textContaining('private refresh'), findsNothing);
+      history.pending = null;
+      await tester.tap(find.text('Yeniden dene'));
+      await tester.pumpAndSettle();
+      expect(find.byType(SkillPath), findsOneWidget);
+      expect(find.byKey(const Key('today_card')), findsOneWidget);
+      expect(history.writes, 0);
+    },
+  );
+
+  testWidgets(
+    'replacement repository hides old loaded path until its own evidence arrives',
+    (tester) async {
+      final old = _History()..unavailable = false;
+      final next = _History()..pending = Completer();
+      await tester.pumpWidget(_app(old, cleanup));
+      await tester.pumpAndSettle();
+      await tester.pumpWidget(_app(next, cleanup));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('today_loading')), findsOneWidget);
+      expect(find.byType(SkillPath), findsNothing);
+      next.pending!.complete([]);
+      await tester.pumpAndSettle();
+      expect(find.byType(SkillPath), findsOneWidget);
+      expect(next.loads, 1);
+      expect(old.writes + next.writes, 0);
+    },
+  );
+
+  testWidgets(
+    'foreground return refreshes once but system interruption does not',
+    (tester) async {
+      final history = _History()..unavailable = false;
+      await tester.pumpWidget(_app(history, cleanup));
+      await tester.pumpAndSettle();
+      expect(history.loads, 1);
+
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      await tester.pumpAndSettle();
+      expect(history.loads, 1);
+
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      await tester.pumpAndSettle();
+      expect(history.loads, 2);
+      expect(find.byKey(const Key('today_card')), findsOneWidget);
+
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      await tester.pumpAndSettle();
+      expect(history.loads, 2);
+      expect(history.writes, 0);
+    },
+  );
+
+  testWidgets(
+    'foreground refresh hides stale recommendation until evidence arrives',
+    (tester) async {
+      final history = _History()..unavailable = false;
+      await tester.pumpWidget(_app(history, cleanup));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('today_card')), findsOneWidget);
+
+      history.pending = Completer();
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      await tester.pump();
+      expect(history.loads, 2);
+      expect(find.byKey(const Key('today_loading')), findsOneWidget);
+      expect(find.byKey(const Key('today_card')), findsNothing);
+      expect(find.byType(SkillPath), findsNothing);
+
+      history.pending!.complete([]);
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('today_loading')), findsNothing);
+      expect(find.byKey(const Key('today_card')), findsOneWidget);
+      expect(history.writes, 0);
+    },
+  );
+
+  testWidgets('static skeleton fits large text in both reduced-motion themes', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(320, 740);
+    tester.view.devicePixelRatio = 1;
+    tester.platformDispatcher.textScaleFactorTestValue = 1.8;
+    tester.platformDispatcher.accessibilityFeaturesTestValue =
+        const FakeAccessibilityFeatures(disableAnimations: true);
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+    addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
+    for (final dark in [false, true]) {
+      final history = _History()..pending = Completer();
+      await tester.pumpWidget(_app(history, cleanup, dark: dark));
+      await tester.pumpAndSettle();
+      expect(find.text('Bugün hazırlanıyor'), findsOneWidget);
+      expect(find.byType(SkillPath), findsNothing);
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox());
+      history.pending!.completeError(StateError('late disposal'));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+    }
+  });
 
   testWidgets(
     'home error retries explicitly without fake suggestion or writes',

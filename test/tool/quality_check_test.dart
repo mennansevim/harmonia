@@ -14,7 +14,7 @@ void main() {
     ], workingDirectory: Directory.systemTemp.path);
     expect(result.exitCode, 0);
     expect(result.stdout, contains('flutter pub get --enforce-lockfile'));
-    expect(result.stdout, contains('flutter test --no-pub'));
+    expect(result.stdout, contains('flutter test --no-pub --concurrency 4'));
     expect(result.stdout, isNot(contains('Code checks passed')));
   });
   test('unknown CLI option fails before launching a tool', () async {
@@ -34,7 +34,14 @@ void main() {
       containsAll(['--output=none', '--set-exit-if-changed', 'tool']),
     );
     expect(plan[1].arguments, ['analyze', '--no-pub']);
-    expect(plan.last.arguments, ['test', '--no-pub', '--reporter', 'expanded']);
+    expect(plan.last.arguments, [
+      'test',
+      '--no-pub',
+      '--concurrency',
+      '4',
+      '--reporter',
+      'expanded',
+    ]);
   });
   test('dependency fetch explicit and lock enforced', () {
     final plan = qualityPlan(fetchDependencies: true);

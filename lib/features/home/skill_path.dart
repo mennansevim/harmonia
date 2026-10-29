@@ -336,7 +336,9 @@ class _NodeState extends State<_Node> {
         onTapCancel: () => setState(() => _down = false),
         onTapUp: (_) => setState(() => _down = false),
         onTap: () {
-          HapticFeedback.lightImpact();
+          if (HarmoniaHapticsScope.enabled(context)) {
+            HapticFeedback.lightImpact();
+          }
           widget.onTap();
         },
         child: Column(

@@ -88,6 +88,48 @@ void main() {
     expect(extra.analysis!.extraCount, 1);
   });
 
+  test(
+    'guided segment surrounds first error and is never persistable',
+    () async {
+      final measured = await _eval(_taps([0, 750, 2250]));
+      final segment = RhythmGuidedSegment.fromOutcome(
+        outcome: measured,
+        protocol: _quarters.exercise.protocol,
+      );
+      expect(segment, isNotNull);
+      expect(segment!.referenceIndexes, [1, 2, 3]);
+      expect(segment.onsetsMs, [0, 750, 1500]);
+      expect(segment.focusPosition, 1);
+      expect(segment.focusVerdict, BeatVerdict.missed);
+
+      final guided = await RhythmImitationEvaluator.evaluateGuided(
+        referenceOnsetsMs: segment.onsetsMs,
+        tapTimestamps: _taps([0, 750, 1500]),
+      );
+      expect(guided.isMeasured, isTrue);
+      expect(guided.guided, isTrue);
+      expect(
+        () => guided.toResult(
+          exercise: _quarters.exercise,
+          sessionId: 'guided',
+          createdAt: DateTime.utc(2026, 10, 20),
+        ),
+        throwsStateError,
+      );
+    },
+  );
+
+  test('clean imitation does not suggest a guided segment', () async {
+    final measured = await _eval(_taps([0, 750, 1500, 2250]));
+    expect(
+      RhythmGuidedSegment.fromOutcome(
+        outcome: measured,
+        protocol: _quarters.exercise.protocol,
+      ),
+      isNull,
+    );
+  });
+
   test('one tap is too few; out-of-order taps are invalid', () async {
     expect((await _eval(_taps([0]))).status, RhythmImitationStatus.tooFewTaps);
     expect((await _eval(const [])).status, RhythmImitationStatus.tooFewTaps);

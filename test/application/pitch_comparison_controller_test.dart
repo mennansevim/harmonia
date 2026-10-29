@@ -109,4 +109,83 @@ void main() {
       expect(saved.single.result.measurements['retentionCheck'], isTrue);
     },
   );
+
+  test(
+    'finished review replays without changing evidence or history',
+    () async {
+      final callsBeforeResult = player.calls.length;
+      await c.reviewReference(0);
+      expect(player.calls.length, callsBeforeResult);
+      for (var i = 0; i < 8; i++) {
+        await play();
+        c.answer(c.round.items[i].correct);
+        await c.next();
+      }
+      final result = c.outcome!;
+      final plays = List<int>.of(result.plays);
+      final saved = await history.load();
+      player.end = Completer();
+      final review = c.reviewReference(0);
+      await _flush();
+      expect(c.phase, PitchComparisonPhase.finished);
+      player.end.complete();
+      await review;
+      player.end = Completer();
+      final interrupted = c.reviewReference(0);
+      await _flush();
+      await c.pause();
+      await interrupted;
+      expect(c.phase, PitchComparisonPhase.finished);
+      expect(c.outcome, same(result));
+      expect(c.outcome!.plays, plays);
+      expect((await history.load()).single, same(saved.single));
+    },
+  );
+
+  test(
+    'guided retry contains only misses and never records evidence',
+    () async {
+      final missed = <PitchComparisonItem>[];
+      for (var i = 0; i < 8; i++) {
+        await play();
+        final correct = c.round.items[i].correct;
+        if (i < 3) {
+          missed.add(c.round.items[i]);
+          c.answer(
+            correct == PitchAnswer.first
+                ? PitchAnswer.second
+                : PitchAnswer.first,
+          );
+        } else {
+          c.answer(correct);
+        }
+        await c.next();
+      }
+      expect((await history.load()), hasLength(1));
+      expect(c.mistakeCount, 3);
+
+      expect(await c.startGuidedRetry(), isTrue);
+      expect(c.guidedRetry, isTrue);
+      expect(c.retentionCheck, isFalse);
+      expect(c.round.items, orderedEquals(missed));
+      expect(c.phase, PitchComparisonPhase.idle);
+      for (var i = 0; i < c.round.items.length; i++) {
+        await play();
+        c.answer(c.round.items[i].correct);
+        await c.next();
+      }
+      expect(c.outcome!.correctCount, 3);
+      expect(c.mistakeCount, 0);
+      expect(c.recordOutcome, isNull);
+      expect(
+        () => c.outcome!.toResult(
+          sessionId: 'forbidden',
+          createdAt: DateTime.utc(2026),
+        ),
+        throwsStateError,
+      );
+      expect((await history.load()), hasLength(1));
+      expect(await c.startGuidedRetry(), isFalse);
+    },
+  );
 }

@@ -10,6 +10,8 @@ import '../../domain/models/learner_profile.dart';
 import '../learning/exercise_launcher.dart';
 import '../learning/next_step_text.dart';
 import '../common/content_status_panel.dart';
+import '../common/foreground_refresh_state.dart';
+import '../common/ui/harmonia_ui.dart';
 
 /// LEARN-03 view: today's timed plan. Rule-based; durations, review
 /// intervals and criteria are drafts awaiting educator review.
@@ -41,7 +43,7 @@ class DailyPlanScreen extends StatefulWidget {
   State<DailyPlanScreen> createState() => _DailyPlanScreenState();
 }
 
-class _DailyPlanScreenState extends State<DailyPlanScreen> {
+class _DailyPlanScreenState extends ForegroundRefreshState<DailyPlanScreen> {
   var _budget = DailyBudget.twelve;
   late Future<DailyPlan> _plan = _loadForView();
 
@@ -80,6 +82,24 @@ class _DailyPlanScreenState extends State<DailyPlanScreen> {
     });
   }
 
+  @override
+  void refreshAfterForeground() => _reload();
+
+  @override
+  void didUpdateWidget(covariant DailyPlanScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.history == widget.history &&
+        oldWidget.goal == widget.goal &&
+        oldWidget.preferences == widget.preferences) {
+      return;
+    }
+    if (oldWidget.preferences != widget.preferences) {
+      _budget = DailyBudget.twelve;
+      _budgetRestored = false;
+    }
+    _plan = _loadForView();
+  }
+
   Future<void> _open(PlanBlock b) async {
     final screen =
         widget.exerciseScreen?.call(b.exercise, b.retention) ??
@@ -97,69 +117,77 @@ class _DailyPlanScreenState extends State<DailyPlanScreen> {
   @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
-    return Scaffold(
-      appBar: AppBar(title: const Text('Günlük çalışma rotası')),
-      body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.all(HarmoniaSpacing.lg),
-          children: [
-            const Text(
-              'Bugün ne kadar vaktin var? Plan önce kalıcılık kontrolü, sonra tekrar, sonra yeni çalışma sırasıyla kurulur.',
-            ),
-            const SizedBox(height: HarmoniaSpacing.md),
-            SegmentedButton<DailyBudget>(
-              key: const Key('plan_budget'),
-              segments: [
-                for (final b in DailyBudget.values)
-                  ButtonSegment(
-                    value: b,
-                    label: Text(
-                      '${b.minutes} dk',
-                      key: Key('budget_${b.minutes}'),
-                    ),
-                  ),
-              ],
-              selected: {_budget},
-              onSelectionChanged: (s) {
-                _budget = s.single;
-                // Convenience only; a failed save keeps today's choice.
-                widget.preferences
-                    ?.saveDailyBudget(_budget)
-                    .catchError((Object _) {});
-                _reload();
-              },
-            ),
-            const SizedBox(height: HarmoniaSpacing.md),
-            FutureBuilder<DailyPlan>(
-              future: _plan,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState != ConnectionState.done) {
-                  return const ContentStatusPanel(
-                    key: Key('plan_loading'),
-                    kind: ContentStatusKind.loading,
-                    message: 'Yerel geçmişten günlük plan hazırlanıyor…',
-                  );
-                }
-                if (snapshot.hasError) {
-                  return ContentStatusPanel(
-                    key: const Key('plan_error'),
-                    kind: ContentStatusKind.error,
-                    message:
-                        'Geçmiş okunamadığı için plan kurulamadı. Veri silinmedi. Yeniden deneyebilir veya Geçmiş ekranına bakabilirsin.',
-                    onRetry: _reload,
-                  );
-                }
-                return _PlanBody(plan: snapshot.data!, onOpen: _open);
-              },
-            ),
-            const SizedBox(height: HarmoniaSpacing.lg),
+    return LessonScaffold(
+      progress: null,
+      counter: 'Plan',
+      closeLabel: 'Günlük planı kapat',
+      top: [
+        const Align(
+          alignment: AlignmentDirectional.centerStart,
+          child: StatusPill('Taslak plan'),
+        ),
+        const SizedBox(height: HarmoniaSpacing.md),
+        Text('Günlük çalışma rotası', style: text.headlineSmall),
+        const Text('Bugün ne kadar vaktin var?'),
+        const SizedBox(height: HarmoniaSpacing.md),
+        SegmentedButton<DailyBudget>(
+          key: const Key('plan_budget'),
+          segments: [
+            for (final b in DailyBudget.values)
+              ButtonSegment(
+                value: b,
+                label: Text('${b.minutes} dk', key: Key('budget_${b.minutes}')),
+              ),
+          ],
+          selected: {_budget},
+          onSelectionChanged: (s) {
+            _budget = s.single;
+            // Convenience only; a failed save keeps today's choice.
+            widget.preferences
+                ?.saveDailyBudget(_budget)
+                .catchError((Object _) {});
+            _reload();
+          },
+        ),
+        const SizedBox(height: HarmoniaSpacing.md),
+        Text(
+          'Taslak süreler ve ölçütler; eğitimci onayı bekliyor.',
+          style: text.bodySmall,
+        ),
+        ExpansionTile(
+          key: const Key('plan_help'),
+          tilePadding: EdgeInsets.zero,
+          title: const Text('Plan nasıl kurulur?'),
+          children: const [
             Text(
-              'Süreler, tekrar aralıkları (1/3/7/14 gün) ve ölçütler geliştirici taslağıdır; eğitimci onayı ve öğrenme pilotu bekliyor. Plan her gün gece yarısı yenilenir.',
-              style: text.bodySmall,
+              'Önce kalıcılık kontrolü, sonra tekrar, sonra yeni çalışma. Tekrar aralıkları (1/3/7/14 gün) ve süreler geliştirici taslağıdır; öğrenme pilotu bekliyor. Plan her gün gece yarısı yenilenir. Geçerli tur sayısı beceri veya hazırlık yüzdesi değildir.',
             ),
           ],
         ),
-      ),
+        const SizedBox(height: HarmoniaSpacing.md),
+        FutureBuilder<DailyPlan>(
+          future: _plan,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState != ConnectionState.done) {
+              return const ContentStatusPanel(
+                key: Key('plan_loading'),
+                kind: ContentStatusKind.loading,
+                message: 'Yerel geçmişten günlük plan hazırlanıyor…',
+              );
+            }
+            if (snapshot.hasError) {
+              return ContentStatusPanel(
+                key: const Key('plan_error'),
+                kind: ContentStatusKind.error,
+                message:
+                    'Geçmiş okunamadığı için plan kurulamadı. Veri silinmedi. Yeniden deneyebilir veya Geçmiş ekranına bakabilirsin.',
+                onRetry: _reload,
+              );
+            }
+            return _PlanBody(plan: snapshot.data!, onOpen: _open);
+          },
+        ),
+      ],
     );
   }
 }
@@ -263,7 +291,11 @@ class _BlockCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text('$label · ~${b.minutes} dk', style: text.labelLarge),
+            Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: StatusPill('$label · ~${b.minutes} dk'),
+            ),
+            const SizedBox(height: HarmoniaSpacing.sm),
             Text(
               '${b.node.title} — ${b.exercise.title}',
               style: text.titleMedium,
@@ -279,18 +311,12 @@ class _BlockCard extends StatelessWidget {
               style: text.bodySmall,
             ),
             const SizedBox(height: HarmoniaSpacing.sm),
-            if (b.done)
-              OutlinedButton(
-                key: Key('plan_start_$index'),
-                onPressed: onOpen,
-                child: const Text('Bir tur daha'),
-              )
-            else
-              FilledButton(
-                key: Key('plan_start_$index'),
-                onPressed: onOpen,
-                child: Text(action),
-              ),
+            ChunkyButton(
+              key: Key('plan_start_$index'),
+              onPressed: onOpen,
+              tone: b.done ? ChunkyTone.neutral : ChunkyTone.primary,
+              label: b.done ? 'Bir tur daha' : action,
+            ),
           ],
         ),
       ),

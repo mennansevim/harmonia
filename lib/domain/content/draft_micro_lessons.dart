@@ -78,5 +78,42 @@ final draftMicroLessons = MicroLessonCatalog(
         ),
       ],
     ),
+    MicroLesson(
+      id: 'lesson-tonic-degree',
+      contentVersion: 'draft-1',
+      skillId: 'tonic-degree',
+      title: 'Tonik ve derece: önce do’yu yerleştir',
+      objective:
+          'Hedef sesi mutlak nota adıyla değil, duyulan tonal merkeze göre derece olarak düşünmek.',
+      route: LearningRoute.core,
+      dimension: SkillDimension.perception,
+      steps: [
+        LessonStep(
+          phase: LessonPhase.explanation,
+          instruction:
+              'Hareketli do yaklaşımında do, o sorunun tonal merkezidir. Aynı hece her soruda aynı mutlak frekans olmak zorunda değildir. Önce do’yu zihninde sabitle, sonra hedef sesin do’ya göre uzaklığını dinle.',
+        ),
+        LessonStep(
+          phase: LessonPhase.contrast,
+          instruction:
+              'Do–re, do–mi ve do–sol ilişkilerini yan yana karşılaştır. Yalnız hedef sesin ince veya kalın olmasına değil, do’dan kaç basamak uzaklaştığına odaklan. Eğitimci onaylı karşılaştırma örnekleri bekleniyor.',
+        ),
+        LessonStep(
+          phase: LessonPhase.guidedPractice,
+          instruction:
+              'Tonik bağlamını dinledikten sonra do’yu içinden tekrar et ve hedefe adım adım git. Bu strateji bir ipucudur; mevcut ders ses bankası henüz bağlı değildir.',
+        ),
+        LessonStep(
+          phase: LessonPhase.independentCheck,
+          instruction:
+              'Farklı bir tonikte, ipucu olmadan hedef dereceyi seç. Daha önceki sorunun mutlak sesini ezberlemek yeni soruda derece duyma kanıtı değildir. Kontrol seti bekleniyor.',
+        ),
+        LessonStep(
+          phase: LessonPhase.delayedCheck,
+          instruction:
+              'Başka bir gün ve farklı bir tonik bağlamında yeniden kontrol et. Bu metni okumak kalıcılık veya sınava hazırlık kanıtı değildir.',
+        ),
+      ],
+    ),
   ],
 );

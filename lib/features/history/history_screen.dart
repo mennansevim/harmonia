@@ -6,9 +6,11 @@ import '../../domain/models/exercise.dart';
 import '../../domain/models/exercise_result.dart';
 import '../../domain/models/measurement_provenance.dart';
 import '../common/content_status_panel.dart';
+import '../common/foreground_refresh_state.dart';
+import '../common/ui/harmonia_ui.dart';
 
 /// Local attempt history. Comparisons only inside one cohort (exercise,
-/// difficulty, mode, content, scoring and analyzer version); fewer than
+/// skill, difficulty, mode, content, scoring and analyzer version); fewer than
 /// [minComparable] valid attempts is shown as unknown, not as a trend.
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key, required this.history});
@@ -18,14 +20,31 @@ class HistoryScreen extends StatefulWidget {
   State<HistoryScreen> createState() => _HistoryScreenState();
 }
 
-class _HistoryScreenState extends State<HistoryScreen> {
-  late Future<List<ResultHistoryEntry>> _entries = widget.history.load();
+class _HistoryScreenState extends ForegroundRefreshState<HistoryScreen> {
+  late Future<List<ResultHistoryEntry>> _entries = _loadForView();
+
+  Future<List<ResultHistoryEntry>> _loadForView() {
+    final future = widget.history.load();
+    future.ignore();
+    return future;
+  }
 
   void _reload() {
     if (!mounted) return;
     setState(() {
-      _entries = widget.history.load();
+      _entries = _loadForView();
     });
+  }
+
+  @override
+  void refreshAfterForeground() => _reload();
+
+  @override
+  void didUpdateWidget(covariant HistoryScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.history != widget.history) {
+      _entries = _loadForView();
+    }
   }
 
   Future<void> _delete(String id) async {
@@ -58,7 +77,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
         ],
       ),
     );
-    if (ok != true) return;
+    if (ok != true || !mounted) return;
     try {
       await widget.history.clear();
     } catch (_) {
@@ -130,12 +149,29 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   padding: const EdgeInsets.all(HarmoniaSpacing.lg),
                   children: [
                     _CohortSummary(entries: snapshot.data!),
+                    ExpansionTile(
+                      key: const Key('history_help'),
+                      tilePadding: EdgeInsets.zero,
+                      title: const Text('Karşılaştırma nasıl yapılır?'),
+                      children: const [
+                        Text(
+                          'Yalnız aynı çalışma, beceri, zorluk, mod, içerik ve analiz sürümündeki aynı kaynaklı geçerli sonuçlar karşılaştırılır. En az 3 karşılaştırılabilir deneme gerekir. Ölçülemeyen değer sıfır hata veya başarı değildir.',
+                        ),
+                      ],
+                    ),
                     const SizedBox(height: HarmoniaSpacing.md),
                     for (final e in entries)
                       _EntryTile(
                         entry: e,
                         onDelete: () => _delete(e.attemptId),
                       ),
+                    const SizedBox(height: HarmoniaSpacing.sm),
+                    ChunkyButton(
+                      key: const Key('history_back'),
+                      label: 'Geri dön',
+                      tone: ChunkyTone.neutral,
+                      onPressed: () => Navigator.of(context).maybePop(),
+                    ),
                   ],
                 );
               },
@@ -147,22 +183,23 @@ class _HistoryScreenState extends State<HistoryScreen> {
   );
 }
 
-String _cohortKey(ExerciseResult r) => [
+Object _cohortKey(ExerciseResult r) => (
   r.exerciseId,
+  r.skill,
   r.difficulty,
   r.exerciseMode.wireValue,
   r.contentVersion,
   r.scoringVersion,
   r.provenance.source.name,
   r.provenance.analyzerVersion,
-].join('|');
+);
 
 class _CohortSummary extends StatelessWidget {
   const _CohortSummary({required this.entries});
   final List<ResultHistoryEntry> entries;
   @override
   Widget build(BuildContext context) {
-    final byCohort = <String, List<ExerciseResult>>{};
+    final byCohort = <Object, List<ExerciseResult>>{};
     for (final e in entries) {
       if (!e.result.isValid) continue;
       byCohort.putIfAbsent(_cohortKey(e.result), () => []).add(e.result);
@@ -175,6 +212,8 @@ class _CohortSummary extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            const StatusPill('Karşılaştırılabilir kanıt'),
+            const SizedBox(height: HarmoniaSpacing.sm),
             Text('Gelişim (aynı çalışma ve sürüm)', style: text.titleMedium),
             const SizedBox(height: HarmoniaSpacing.xs),
             if (byCohort.isEmpty)
@@ -196,19 +235,62 @@ String _trend(List<ExerciseResult> results) {
   if (results.length < HistoryScreen.minComparable) {
     return '$title: ${results.length} geçerli deneme — karşılaştırma için en az ${HistoryScreen.minComparable} gerekli, gelişim bilinmiyor.';
   }
-  final last = results.sublist(results.length - HistoryScreen.minComparable);
-  if (last.first.measurements['dimension'] == 'perception') {
+  final ordered = [...results]
+    ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
+  final last = ordered.sublist(ordered.length - HistoryScreen.minComparable);
+  if (last.any((r) => r.measurements['dimension'] == 'perception')) {
+    if (!last.every(_hasPerceptionCounts)) {
+      return '$title: karşılaştırılabilir ölçüm alanları eksik; gelişim bilinmiyor.';
+    }
     final correct = [
       for (final r in last)
         '${r.measurements['correct']}/${r.measurements['total']}',
     ];
     return '$title: son ${last.length} geçerli turda doğru ${correct.join(' → ')}.';
   }
+  if (last.any((r) => r.skill != Skill.rhythm)) {
+    return '$title: bu çalışma için sayısal gelişim henüz gösterilmiyor.';
+  }
+  if (!last.every((r) {
+    final missed = r.measurements['missed'];
+    final extra = r.measurements['extra'];
+    return missed is int && extra is int && missed >= 0 && extra >= 0;
+  })) {
+    return '$title: karşılaştırılabilir ölçüm alanları eksik; gelişim bilinmiyor.';
+  }
   final misses = [
     for (final r in last)
-      '${(r.measurements['missed'] as int? ?? 0) + (r.measurements['extra'] as int? ?? 0)}',
+      '${(r.measurements['missed'] as int) + (r.measurements['extra'] as int)}',
   ];
   return '$title: son ${last.length} geçerli denemede eksik+fazla vuruş ${misses.join(' → ')}.';
+}
+
+bool _hasPerceptionCounts(ExerciseResult r) {
+  final correct = r.measurements['correct'];
+  final total = r.measurements['total'];
+  return r.measurements['dimension'] == 'perception' &&
+      correct is int &&
+      total is int &&
+      total > 0 &&
+      correct >= 0 &&
+      correct <= total;
+}
+
+String? _entryDetail(ExerciseResult r) {
+  if (!r.isValid) return null;
+  if (r.measurements['dimension'] == 'perception') {
+    return _hasPerceptionCounts(r)
+        ? '${r.measurements['correct']}/${r.measurements['total']} doğru (dinleme)'
+        : 'Ayrıntılı ölçüm alanları eksik.';
+  }
+  if (r.skill != Skill.rhythm) return null;
+  if (!['matched', 'missed', 'extra'].every((key) {
+    final count = r.measurements[key];
+    return count is int && count >= 0;
+  })) {
+    return 'Ayrıntılı ölçüm alanları eksik.';
+  }
+  return '${r.measurements['matched']} eşleşme, ${r.measurements['missed']} eksik, ${r.measurements['extra']} fazla';
 }
 
 class _EntryTile extends StatelessWidget {
@@ -224,38 +306,50 @@ class _EntryTile extends StatelessWidget {
         '${local.day.toString().padLeft(2, '0')}.${local.month.toString().padLeft(2, '0')}.${local.year} '
         '${local.hour.toString().padLeft(2, '0')}:${local.minute.toString().padLeft(2, '0')}';
     final status = r.isValid ? 'Ölçüldü' : 'Ölçülemedi — puanlanmadı';
-    final detail = !r.isValid
-        ? null
-        : r.measurements['dimension'] == 'perception'
-        ? '${r.measurements['correct']}/${r.measurements['total']} doğru (dinleme)'
-        : r.skill == Skill.rhythm
-        ? '${r.measurements['matched']} eşleşme, ${r.measurements['missed']} eksik, ${r.measurements['extra']} fazla'
-        : null;
+    final detail = _entryDetail(r);
     return Card(
       margin: const EdgeInsets.only(bottom: HarmoniaSpacing.sm),
-      child: ListTile(
-        leading: Icon(
-          r.skill == Skill.rhythm
-              ? Icons.touch_app_outlined
-              : r.measurements['dimension'] == 'perception'
-              ? Icons.hearing
-              : Icons.music_note,
-          color: r.isValid ? null : colors.notMeasured,
-        ),
-        title: Text(r.exerciseId),
-        subtitle: Text(
-          [
-            date,
-            status,
-            ?detail,
-            'Kaynak: ${_source(r.provenance.source)} • İçerik ${r.contentVersion}',
-          ].join('\n'),
-        ),
-        trailing: IconButton(
-          key: Key('delete_${entry.attemptId}'),
-          tooltip: 'Bu kaydı sil',
-          icon: const Icon(Icons.delete_outline),
-          onPressed: onDelete,
+      child: Padding(
+        padding: const EdgeInsets.all(HarmoniaSpacing.md),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                Icon(
+                  r.skill == Skill.rhythm
+                      ? Icons.touch_app_outlined
+                      : r.measurements['dimension'] == 'perception'
+                      ? Icons.hearing
+                      : Icons.music_note,
+                  color: r.isValid ? null : colors.notMeasured,
+                ),
+                const SizedBox(width: HarmoniaSpacing.sm),
+                Expanded(
+                  child: Text(
+                    r.exerciseId,
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                ),
+                IconButton(
+                  key: Key('delete_${entry.attemptId}'),
+                  tooltip: 'Bu kaydı sil',
+                  icon: const Icon(Icons.delete_outline),
+                  onPressed: onDelete,
+                ),
+              ],
+            ),
+            DataLabel(date),
+            const SizedBox(height: HarmoniaSpacing.sm),
+            Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: StatusPill(status),
+            ),
+            if (detail != null) Text(detail),
+            Text(
+              'Kaynak: ${_source(r.provenance.source)} • İçerik ${r.contentVersion}',
+            ),
+          ],
         ),
       ),
     );

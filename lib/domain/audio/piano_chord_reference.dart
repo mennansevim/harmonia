@@ -31,6 +31,7 @@ class PianoChordReference {
         recallDelayMs > 10000 ||
         maxReferencePlays < 1 ||
         maxReferencePlays > 10 ||
+        (mode == ExerciseMode.recallExam && maxReferencePlays != 1) ||
         (mode != ExerciseMode.learning && mode != ExerciseMode.recallExam)) {
       throw ArgumentError('Invalid 2/3/4-note piano reference');
     }

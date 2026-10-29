@@ -71,6 +71,17 @@ class RhythmImitationController extends ChangeNotifier {
 
   RhythmImitationPhase phase = RhythmImitationPhase.idle;
   RhythmImitationOutcome? outcome;
+  RhythmGuidedSegment? guidedSegment;
+  bool get isGuided => guidedSegment != null;
+  RhythmGuidedSegment? get suggestedGuidedSegment {
+    final result = outcome;
+    if (result == null) return null;
+    return RhythmGuidedSegment.fromOutcome(
+      outcome: result,
+      protocol: _pattern.exercise.protocol,
+    );
+  }
+
   int referencePlays = 0;
   int tapsDuringReference = 0;
   bool playbackFailed = false;
@@ -100,7 +111,7 @@ class RhythmImitationController extends ChangeNotifier {
     notifyListeners();
   }
 
-  void _resetAttempt() {
+  void _resetAttempt({bool clearGuided = false}) {
     _idle?.cancel();
     _attemptId = null;
     recordOutcome = null;
@@ -111,6 +122,28 @@ class RhythmImitationController extends ChangeNotifier {
     referencePlays = 0;
     tapsDuringReference = 0;
     playbackFailed = false;
+    if (clearGuided) guidedSegment = null;
+  }
+
+  /// Starts an unscored excerpt around the first measured timing error.
+  void startGuidedSegment() {
+    if (phase != RhythmImitationPhase.finished || isGuided) return;
+    final segment = suggestedGuidedSegment;
+    if (segment == null) return;
+    ++_epoch;
+    _resetAttempt();
+    guidedSegment = segment;
+    retentionCheck = false;
+    _set(RhythmImitationPhase.idle);
+  }
+
+  /// Leaves the excerpt without turning it into a scored attempt.
+  void exitGuidedSegment() {
+    if (!isGuided) return;
+    ++_epoch;
+    _resetAttempt(clearGuided: true);
+    retentionCheck = false;
+    _set(RhythmImitationPhase.idle);
   }
 
   /// Starts the recommended action as a fresh attempt on its pattern.
@@ -132,11 +165,13 @@ class RhythmImitationController extends ChangeNotifier {
     ++_epoch;
     _pattern = next;
     retentionCheck = false;
-    _resetAttempt();
+    _resetAttempt(clearGuided: true);
     _set(RhythmImitationPhase.idle);
   }
 
   List<int> get _referenceMs {
+    final segment = guidedSegment;
+    if (segment != null) return segment.onsetsMs;
     final onsets = RhythmReferenceClock.onsetsMs(_pattern.exercise.protocol);
     if (onsets == null) throw ArgumentError('Invalid rhythm reference clock');
     return onsets;
@@ -197,15 +232,24 @@ class RhythmImitationController extends ChangeNotifier {
     _idle?.cancel();
     final epoch = ++_epoch;
     _set(RhythmImitationPhase.evaluating);
-    final result = await RhythmImitationEvaluator.evaluate(
-      protocol: _pattern.exercise.protocol,
-      tapTimestamps: List.unmodifiable(_taps),
-      referencePlays: referencePlays,
-    );
+    final taps = List<Duration>.unmodifiable(_taps);
+    final segment = guidedSegment;
+    final result = segment == null
+        ? await RhythmImitationEvaluator.evaluate(
+            protocol: _pattern.exercise.protocol,
+            tapTimestamps: taps,
+            referencePlays: referencePlays,
+          )
+        : await RhythmImitationEvaluator.evaluateGuided(
+            referenceOnsetsMs: segment.onsetsMs,
+            tapTimestamps: taps,
+            referencePlays: referencePlays,
+            maxReferencePlays: maxReferencePlays,
+          );
     if (epoch != _epoch || _closed) return;
     outcome = result;
     _set(RhythmImitationPhase.finished);
-    await _record(epoch, result);
+    if (!isGuided) await _record(epoch, result);
   }
 
   Future<void> _record(int epoch, RhythmImitationOutcome result) async {
@@ -246,7 +290,7 @@ class RhythmImitationController extends ChangeNotifier {
     ++_epoch;
     final wake = _wake;
     if (wake != null && !wake.isCompleted) wake.complete();
-    _resetAttempt();
+    _resetAttempt(clearGuided: true);
     _set(RhythmImitationPhase.idle);
     try {
       await player.stop();

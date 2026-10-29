@@ -5,14 +5,18 @@ import '../../app/app_channel.dart';
 import '../../app/app_services.dart';
 import '../../app/theme/harmonia_theme.dart';
 import '../../application/result_history.dart';
+import '../../application/practice_preferences.dart';
 import '../../domain/content/draft_micro_lessons.dart';
 import '../../domain/learning/daily_plan.dart';
+import '../../domain/learning/practice_resume.dart';
 import '../../domain/learning/rhythm_next_step.dart';
 import '../../domain/learning/skill_graph.dart';
+import '../../domain/learning/starting_check.dart';
 import '../../domain/models/learner_profile.dart';
 import '../audio_lab/audio_lab_screen.dart';
 import '../chord_exercise/chord_placeholder_screen.dart';
 import '../common/content_status_panel.dart';
+import '../common/foreground_refresh_state.dart';
 import '../common/ui/harmonia_ui.dart';
 import '../daily_plan/daily_plan_screen.dart';
 import '../history/history_screen.dart';
@@ -22,12 +26,14 @@ import '../learning/micro_lesson_screen.dart';
 import '../learning/next_step_text.dart';
 import '../melody/melody_session_screen.dart';
 import '../onboarding/goal_selection_screen.dart';
+import '../onboarding/starting_check_screen.dart';
 import '../pitch_comparison/pitch_comparison_screen.dart';
 import '../rhythm_imitation/rhythm_imitation_screen.dart';
 import '../single_tone_exercise/single_tone_exercise_screen.dart';
 import '../single_tone_session/single_tone_session_screen.dart';
 import '../skill_map/skill_map_screen.dart';
 import 'home_data.dart';
+import 'recent_practice_card.dart';
 import 'skill_path.dart';
 
 /// Honest module status shown to users; matches CURRENT_ROADMAP evidence.
@@ -165,13 +171,18 @@ class _TodayTab extends StatefulWidget {
 }
 
 class _TodayView {
-  const _TodayView(this.home, this.plan);
+  const _TodayView(this.home, this.plan, this.startingCheck, this.resume);
   final HomeData home;
   final DailyPlan plan;
+  final StartingCheckSummary startingCheck;
+  final PracticeResume? resume;
 }
 
-class _TodayTabState extends State<_TodayTab> {
+class _TodayTabState extends ForegroundRefreshState<_TodayTab> {
   late Future<_TodayView> _data = _loadForView();
+
+  @override
+  void refreshAfterForeground() => _reload();
 
   Future<_TodayView> _loadForView() {
     final future = _load();
@@ -198,25 +209,133 @@ class _TodayTabState extends State<_TodayTab> {
   }
 
   DailyBudget _budget = DailyBudget.twelve;
-  bool _budgetAsked = false;
+  WeeklyPracticeGoal? _weeklyGoal;
+  PracticePreferencesRepository? _preferencesRepository;
+  bool _preferencesSourceSeen = false;
+  int? _preferencesRevision;
+  int _preferencesLoadGeneration = 0;
+  bool _loadingPreferences = false;
+  bool _savingWeeklyGoal = false;
+  bool _preferencesReadFailed = false;
+  String? _weeklyGoalError;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (_budgetAsked) return;
-    _budgetAsked = true;
-    // Never blocks the screen: the plan ring updates when the saved
-    // preference arrives.
-    AppServices.maybeOf(context)?.preferences
-        ?.loadDailyBudget()
-        .then((saved) {
-          if (!mounted || saved == null || saved == _budget) return;
+    final services = AppServices.maybeOf(context);
+    final preferences = services?.preferences;
+    final revision = services?.preferencesRevision ?? 0;
+    final sourceChanged =
+        !_preferencesSourceSeen ||
+        !identical(_preferencesRepository, preferences);
+    if (!sourceChanged && _preferencesRevision == revision) {
+      return;
+    }
+    _preferencesSourceSeen = true;
+    _preferencesRepository = preferences;
+    _preferencesRevision = revision;
+    _loadingPreferences = false;
+    _savingWeeklyGoal = false;
+    _preferencesReadFailed = false;
+    _weeklyGoalError = null;
+    if (sourceChanged) {
+      final budgetChanged = _budget != DailyBudget.twelve;
+      _budget = DailyBudget.twelve;
+      _weeklyGoal = null;
+      if (budgetChanged) _data = _loadForView();
+    }
+    _loadPreferences(preferences);
+  }
+
+  void _loadPreferences(PracticePreferencesRepository? preferences) {
+    final generation = ++_preferencesLoadGeneration;
+    if (preferences == null) {
+      _loadingPreferences = false;
+      return;
+    }
+    _loadingPreferences = true;
+    // Reads run independently and never block the screen. The generation gate
+    // prevents a slow pre-import read from overwriting freshly imported data.
+    final budgetRead = preferences
+        .loadDailyBudget()
+        .then<void>((saved) {
+          if (!mounted || generation != _preferencesLoadGeneration) return;
+          final next = saved ?? DailyBudget.twelve;
+          if (next == _budget) return;
           setState(() {
-            _budget = saved;
+            _budget = next;
             _data = _loadForView();
           });
         })
-        .catchError((Object _) {});
+        .catchError((Object _) => _reportPreferenceReadFailure(generation));
+    final goalRead = preferences
+        .loadWeeklyGoal()
+        .then<void>((saved) {
+          if (!mounted || generation != _preferencesLoadGeneration) return;
+          if (saved == _weeklyGoal) return;
+          setState(() => _weeklyGoal = saved);
+        })
+        .catchError((Object _) => _reportPreferenceReadFailure(generation));
+    Future.wait<void>([budgetRead, goalRead]).whenComplete(() {
+      if (!mounted || generation != _preferencesLoadGeneration) return;
+      setState(() => _loadingPreferences = false);
+    });
+  }
+
+  void _reportPreferenceReadFailure(int generation) {
+    if (!mounted || generation != _preferencesLoadGeneration) return;
+    const message =
+        'Çalışma tercihleri tam yüklenemedi. Güvenli varsayılanlar kullanılıyor.';
+    if (_preferencesReadFailed && _weeklyGoalError == message) return;
+    setState(() {
+      _preferencesReadFailed = true;
+      _weeklyGoalError = message;
+    });
+  }
+
+  void _retryPreferences() {
+    final preferences = _preferencesRepository;
+    if (preferences == null || !_preferencesReadFailed) return;
+    setState(() {
+      _preferencesReadFailed = false;
+      _weeklyGoalError = null;
+    });
+    _loadPreferences(preferences);
+  }
+
+  Future<void> _setWeeklyGoal(WeeklyPracticeGoal? goal) async {
+    if (_loadingPreferences || _savingWeeklyGoal) return;
+    final preferences = AppServices.maybeOf(context)?.preferences;
+    if (preferences == null) return;
+    final generation = _preferencesLoadGeneration;
+    setState(() {
+      _savingWeeklyGoal = true;
+      _preferencesReadFailed = false;
+      _weeklyGoalError = null;
+    });
+    try {
+      await preferences.saveWeeklyGoal(goal);
+      if (mounted &&
+          generation == _preferencesLoadGeneration &&
+          identical(preferences, _preferencesRepository)) {
+        setState(() => _weeklyGoal = goal);
+      }
+    } catch (_) {
+      if (mounted &&
+          generation == _preferencesLoadGeneration &&
+          identical(preferences, _preferencesRepository)) {
+        setState(
+          () => _weeklyGoalError =
+              'Haftalık hedef kaydedilemedi. Önceki seçimin korundu; yeniden deneyebilirsin.',
+        );
+      }
+    } finally {
+      if (mounted &&
+          generation == _preferencesLoadGeneration &&
+          identical(preferences, _preferencesRepository)) {
+        setState(() => _savingWeeklyGoal = false);
+      }
+    }
   }
 
   Future<_TodayView> _load() async {
@@ -238,6 +357,17 @@ class _TodayTabState extends State<_TodayTab> {
         results: results,
         now: now,
         budget: budget,
+      ),
+      StartingCheckSummary.build(
+        graph: draftSkillGraph,
+        goal: widget.profile.goal,
+        results: results,
+      ),
+      PracticeResume.latest(
+        graph: draftSkillGraph,
+        goal: widget.profile.goal,
+        results: results,
+        now: now,
       ),
     );
   }
@@ -276,6 +406,30 @@ class _TodayTabState extends State<_TodayTab> {
     );
   }
 
+  void _openStartingCheck() {
+    final history = widget.history;
+    if (history == null) return;
+    _afterPush(
+      _push(
+        context,
+        StartingCheckScreen(goal: widget.profile.goal, history: history),
+      ),
+    );
+  }
+
+  void _openResume(PracticeResume resume) {
+    _afterPush(
+      _push(
+        context,
+        measuredExerciseScreen(
+          resume.exercise,
+          history: widget.history,
+          retentionCheck: false,
+        ),
+      ),
+    );
+  }
+
   void _openNode(PathNode n) {
     final e = n.nextExercise;
     if (e != null) {
@@ -305,7 +459,12 @@ class _TodayTabState extends State<_TodayTab> {
       child: FutureBuilder<_TodayView>(
         future: _data,
         builder: (context, snap) {
-          final d = snap.data;
+          // FutureBuilder may retain old data while a replacement loads or
+          // fails. Never show stale streak/path/actions as current evidence.
+          final d =
+              snap.connectionState == ConnectionState.done && !snap.hasError
+              ? snap.data
+              : null;
           return CustomScrollView(
             slivers: [
               SliverToBoxAdapter(
@@ -353,11 +512,7 @@ class _TodayTabState extends State<_TodayTab> {
                   children: [
                     if (widget.history != null) ...[
                       if (snap.connectionState != ConnectionState.done)
-                        const ContentStatusPanel(
-                          key: Key('today_loading'),
-                          kind: ContentStatusKind.loading,
-                          message: 'Bugünkü öneri için yerel geçmiş okunuyor.',
-                        )
+                        const _TodaySkeleton(key: Key('today_loading'))
                       else if (snap.hasError)
                         ContentStatusPanel(
                           key: const Key('today_error'),
@@ -366,14 +521,15 @@ class _TodayTabState extends State<_TodayTab> {
                               'Geçmiş okunamadığı için öneri gösterilemiyor. Veri silinmedi. Yeniden dene veya Profil › Çalışma geçmişi bölümünü kontrol et.',
                           onRetry: _reload,
                         )
-                      else
+                      else ...[
                         _NextCard(
                           view: d!,
                           onOpen: () => _openStep(d.home),
                           onOpenPlan: _openPlan,
                         ),
+                      ],
                     ],
-                    if (d != null)
+                    if (d != null) ...[
                       SkillPath(
                         nodes: d.home.path,
                         focusId: d.home.step.node?.id,
@@ -382,12 +538,198 @@ class _TodayTabState extends State<_TodayTab> {
                             : todayStepText(d.home.step).$3,
                         onOpen: _openNode,
                       ),
+                      const SizedBox(height: HarmoniaSpacing.md),
+                      if (!d.startingCheck.isComplete) ...[
+                        _StartingCheckCard(
+                          summary: d.startingCheck,
+                          onOpen: _openStartingCheck,
+                        ),
+                        const SizedBox(height: HarmoniaSpacing.md),
+                      ],
+                      if (d.resume case final resume?) ...[
+                        _ResumePracticeCard(
+                          resume: resume,
+                          onOpen: () => _openResume(resume),
+                        ),
+                        const SizedBox(height: HarmoniaSpacing.md),
+                      ],
+                      RecentPracticeCard(
+                        key: const Key('recent_practice'),
+                        days: d.home.recentPractice,
+                        weeklyGoal: _weeklyGoal,
+                        onWeeklyGoalChanged:
+                            AppServices.maybeOf(context)?.preferences == null
+                            ? null
+                            : _setWeeklyGoal,
+                        savingGoal: _savingWeeklyGoal,
+                        loadingGoal: _loadingPreferences,
+                        goalError: _weeklyGoalError,
+                        onRetryPreferences: _preferencesReadFailed
+                            ? _retryPreferences
+                            : null,
+                      ),
+                    ],
                   ],
                 ),
               ),
             ],
           );
         },
+      ),
+    );
+  }
+}
+
+class _StartingCheckCard extends StatelessWidget {
+  const _StartingCheckCard({required this.summary, required this.onOpen});
+
+  final StartingCheckSummary summary;
+  final VoidCallback onOpen;
+
+  @override
+  Widget build(BuildContext context) => Card(
+    key: const Key('starting_check_card'),
+    child: Padding(
+      padding: const EdgeInsets.all(HarmoniaSpacing.md),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const StatusPill('İsteğe bağlı'),
+          const SizedBox(height: HarmoniaSpacing.sm),
+          Text(
+            'Başlangıç kontrolü',
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
+          Text(
+            '${summary.completedCount}/${summary.items.length} kısa tur tamamlandı. Yalnız uygulamanın güvenilir ölçebildiği alanlardan çalışma başlangıcı önerir.',
+          ),
+          const SizedBox(height: HarmoniaSpacing.md),
+          ChunkyButton(
+            key: const Key('starting_check_open'),
+            onPressed: onOpen,
+            tone: ChunkyTone.neutral,
+            icon: Icons.fact_check_outlined,
+            label: summary.completedCount == 0
+                ? 'Kontrole başla'
+                : 'Kontrole devam et',
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+class _ResumePracticeCard extends StatelessWidget {
+  const _ResumePracticeCard({required this.resume, required this.onOpen});
+
+  final PracticeResume resume;
+  final VoidCallback onOpen;
+
+  @override
+  Widget build(BuildContext context) => Card(
+    key: const Key('resume_practice_card'),
+    child: Padding(
+      padding: const EdgeInsets.all(HarmoniaSpacing.md),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const StatusPill('Yerel geçmiş'),
+          const SizedBox(height: HarmoniaSpacing.sm),
+          Text(
+            'Son çalışmaya dön',
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
+          Text(resume.exercise.title),
+          const SizedBox(height: HarmoniaSpacing.xs),
+          Text(
+            resume.previousMeasurementValid
+                ? 'Son tur kaydedildi. Kaldığın sorudan değil, yeni bir turdan başlarsın.'
+                : 'Son ölçüm tamamlanamadı. Aynı çalışmayı yeni bir turla yeniden deneyebilirsin.',
+          ),
+          const Text('Ses, mikrofon veya yarım oturum otomatik açılmaz.'),
+          const SizedBox(height: HarmoniaSpacing.md),
+          ChunkyButton(
+            key: const Key('resume_practice_open'),
+            onPressed: onOpen,
+            tone: ChunkyTone.neutral,
+            icon: Icons.replay_outlined,
+            label: 'Yeni tur aç',
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+/// Static, non-interactive placeholders: never fake progress or measurements.
+/// One live announcement, with decorative shapes excluded from semantics.
+class _TodaySkeleton extends StatelessWidget {
+  const _TodaySkeleton({super.key});
+  @override
+  Widget build(BuildContext context) {
+    final color = Theme.of(context).colorScheme.surfaceContainerHigh;
+    Widget block(double width, double height) => FractionallySizedBox(
+      alignment: AlignmentDirectional.centerStart,
+      widthFactor: width,
+      child: Container(
+        height: height,
+        decoration: BoxDecoration(
+          color: color,
+          borderRadius: BorderRadius.circular(HarmoniaRadius.chip),
+        ),
+      ),
+    );
+    return Semantics(
+      liveRegion: true,
+      label:
+          'Bugünkü öneri için yerel geçmiş okunuyor. Öneri ve beceri yolu henüz hazır değil.',
+      excludeSemantics: true,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            'Bugün hazırlanıyor',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          const Text('Önerin ve beceri yolun için yerel geçmiş okunuyor.'),
+          const SizedBox(height: HarmoniaSpacing.md),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(HarmoniaSpacing.md),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  block(.65, 20),
+                  const SizedBox(height: HarmoniaSpacing.md),
+                  block(1, 16),
+                  const SizedBox(height: HarmoniaSpacing.sm),
+                  block(.8, 16),
+                  const SizedBox(height: HarmoniaSpacing.lg),
+                  block(1, 48),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: HarmoniaSpacing.md),
+          for (var i = 0; i < 3; i++)
+            Padding(
+              padding: const EdgeInsets.only(bottom: HarmoniaSpacing.md),
+              child: Row(
+                children: [
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: color,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: HarmoniaSpacing.md),
+                  Expanded(child: block(.75, 20)),
+                ],
+              ),
+            ),
+        ],
       ),
     );
   }

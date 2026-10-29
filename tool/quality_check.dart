@@ -28,6 +28,8 @@ List<QualityStep> qualityPlan({bool fetchDependencies = false}) =>
       QualityStep('Code tests (not device QA)', 'flutter', [
         'test',
         '--no-pub',
+        '--concurrency',
+        '4',
         '--reporter',
         'expanded',
       ]),

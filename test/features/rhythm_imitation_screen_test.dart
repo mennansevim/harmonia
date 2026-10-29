@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:harmonia/application/result_history.dart';
 import 'package:harmonia/domain/content/rhythm_patterns.dart';
+import 'package:harmonia/features/learning/micro_lesson_screen.dart';
 import 'package:harmonia/features/rhythm_imitation/rhythm_imitation_screen.dart';
 
 import '../support/fake_clip_player.dart';
@@ -63,6 +64,29 @@ void main() {
     expect(find.text('Başlangıç'), findsOneWidget);
     expect(find.text('Eksik'), findsOneWidget);
     expect(find.text('Doğru!'), findsNothing);
+    final playsBeforeLesson = player.calls.length;
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('rhythm_concept_review')),
+      100,
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('rhythm_concept_review')));
+    await tester.pumpAndSettle();
+    expect(find.byType(MicroLessonScreen), findsOneWidget);
+    expect(find.text('Hedef boyutu: Üretim'), findsOneWidget);
+    expect(player.calls.length, playsBeforeLesson);
+    await tester.tap(find.byKey(const Key('lesson_close')));
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('rhythm_start_guided')),
+      100,
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('rhythm_start_guided')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('rhythm_guided_label')), findsOneWidget);
+    expect(find.text('Zor bölümü dinle, sonra tekrar et'), findsOneWidget);
+    expect(find.byKey(const Key('rhythm_exit_guided')), findsNothing);
     expect(tester.takeException(), isNull);
     await tester.pumpWidget(const SizedBox());
     await tester.pumpAndSettle();

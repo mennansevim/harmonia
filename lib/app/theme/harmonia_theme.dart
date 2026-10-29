@@ -31,6 +31,21 @@ abstract final class HarmoniaMotion {
       MediaQuery.maybeDisableAnimationsOf(context) ?? false;
 }
 
+class HarmoniaHapticsScope extends InheritedNotifier<ValueNotifier<bool>> {
+  const HarmoniaHapticsScope({
+    super.key,
+    required ValueNotifier<bool> enabled,
+    required super.child,
+  }) : super(notifier: enabled);
+
+  static bool enabled(BuildContext context) =>
+      context
+          .dependOnInheritedWidgetOfExactType<HarmoniaHapticsScope>()
+          ?.notifier
+          ?.value ??
+      true;
+}
+
 /// Result semantics. Wrong octave is NEVER the success colour and an invalid
 /// measurement is neutral, not the error red: it is not a student mistake.
 @immutable

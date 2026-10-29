@@ -118,7 +118,9 @@ class _ChunkyButtonState extends State<ChunkyButton> {
         onTapUp: enabled ? (_) => setState(() => _down = false) : null,
         onTap: enabled
             ? () {
-                HapticFeedback.lightImpact();
+                if (HarmoniaHapticsScope.enabled(context)) {
+                  HapticFeedback.lightImpact();
+                }
                 widget.onPressed!();
               }
             : null,
@@ -172,7 +174,10 @@ class AnswerOption extends StatelessWidget {
       ),
       OptionState.selected => (
         scheme.primary,
-        scheme.primary.withValues(alpha: .08),
+        Color.alphaBlend(
+          scheme.primary.withValues(alpha: .08),
+          scheme.surfaceContainerLowest,
+        ),
         scheme.primary,
         null,
       ),
@@ -213,7 +218,9 @@ class AnswerOption extends StatelessWidget {
             borderRadius: BorderRadius.circular(HarmoniaRadius.button),
             onTap: enabled
                 ? () {
-                    HapticFeedback.selectionClick();
+                    if (HarmoniaHapticsScope.enabled(context)) {
+                      HapticFeedback.selectionClick();
+                    }
                     onTap!();
                   }
                 : null,
@@ -499,7 +506,8 @@ class LessonScaffold extends StatelessWidget {
     this.closeLabel = 'Çalışmayı kapat',
   });
 
-  final double progress;
+  /// Null for diagnostic sessions: never imply a measured score/progress.
+  final double? progress;
   final List<Widget> top;
   final List<Widget> bottom;
   final String? counter;
@@ -528,12 +536,14 @@ class LessonScaffold extends StatelessWidget {
                     onPressed: () => Navigator.of(context).maybePop(),
                   ),
                   const SizedBox(width: HarmoniaSpacing.xs),
-                  Expanded(
-                    child: LessonProgressBar(
-                      value: progress,
-                      semanticsLabel: 'Tur ilerlemesi',
+                  if (progress case final value?)
+                    Expanded(
+                      child: LessonProgressBar(
+                        value: value,
+                        semanticsLabel: 'Tur ilerlemesi',
+                      ),
                     ),
-                  ),
+                  if (progress == null) const Spacer(),
                   if (counter != null) ...[
                     const SizedBox(width: HarmoniaSpacing.md),
                     Text(counter!, style: harmoniaDataLabel(context)),
@@ -558,19 +568,35 @@ class LessonScaffold extends StatelessWidget {
                                   HarmoniaSpacing.lg)
                               .clamp(0, double.infinity),
                     ),
-                    child: IntrinsicHeight(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          ...top,
-                          if (bottom.isNotEmpty) ...[
-                            const Spacer(),
-                            const SizedBox(height: HarmoniaSpacing.md),
-                            ...bottom,
-                          ],
-                        ],
-                      ),
-                    ),
+                    // Diagnostic/results content can grow as help opens.
+                    // Keep it naturally scrollable rather than forcing an
+                    // intrinsic-height spacer beside variable-height content.
+                    // With no bottom actions there is no spacer to size.
+                    child: progress == null || bottom.isEmpty
+                        ? Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              ...top,
+                              if (bottom.isNotEmpty) ...[
+                                const SizedBox(height: HarmoniaSpacing.md),
+                                ...bottom,
+                              ],
+                            ],
+                          )
+                        : IntrinsicHeight(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                ...top,
+                                if (bottom.isNotEmpty) ...[
+                                  const Spacer(),
+                                  const SizedBox(height: HarmoniaSpacing.md),
+                                  ...bottom,
+                                ],
+                              ],
+                            ),
+                          ),
                   ),
                 ),
               ),

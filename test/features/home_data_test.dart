@@ -29,6 +29,68 @@ ExerciseResult _perc(int level, DateTime at, {int wrong = 0}) {
 final _now = DateTime(2026, 10, 14, 20);
 
 void main() {
+  test('recent activity counts unique days, not correctness or attempts', () {
+    final days = HomeData.recentPracticeOf([
+      _perc(0, _now, wrong: 8),
+      _perc(0, _now),
+      _perc(0, DateTime(2026, 10, 12, 10)),
+    ], _now);
+    expect(days, hasLength(7));
+    expect(days.where((d) => d.practiced), hasLength(2));
+    expect(days.first.date, DateTime(2026, 10, 8));
+    expect(days.last.practiced, isTrue);
+    expect(() => days.clear(), throwsUnsupportedError);
+  });
+
+  test(
+    'recent activity uses calendar boundaries and ignores future evidence',
+    () {
+      final now = DateTime(2026, 11, 2, 12);
+      final days = HomeData.recentPracticeOf([
+        _perc(0, DateTime(2026, 10, 26, 23)), // outside window
+        _perc(0, DateTime(2026, 10, 27)),
+        _perc(0, now.toUtc()), // same instant
+        _perc(0, DateTime(2026, 11, 2, 13)), // later today
+        _perc(0, DateTime(2026, 11, 3)),
+      ], now);
+      expect(days.first.date, DateTime(2026, 10, 27));
+      expect(days.where((d) => d.practiced), hasLength(2));
+    },
+  );
+
+  test('recent activity excludes invalid, demo, unknown and old cohorts', () {
+    final source = _perc(0, _now).toJson();
+    ExerciseResult changed(String key, Object? value) =>
+        ExerciseResult.fromJson({...source, key: value});
+    final days = HomeData.recentPracticeOf([
+      ExerciseResult.fromJson({
+        ...source,
+        'measurementStatus': 'invalid',
+        'scores': const ExerciseScores().toJson(),
+      }),
+      changed('contentVersion', 'old'),
+      changed('exerciseId', 'unknown'),
+      for (final origin in ['mock', 'synthetic', 'unverified'])
+        changed('provenance', {
+          'source': origin,
+          'analyzerVersion': PitchComparisonOutcome.version,
+        }),
+    ], _now);
+    expect(days.any((d) => d.practiced), isFalse);
+  });
+
+  test('recent activity respects supplied catalog including empty one', () {
+    final days = HomeData.recentPracticeOf([_perc(0, _now)], _now, catalog: []);
+    expect(days.any((d) => d.practiced), isFalse);
+    final data = HomeData.build(
+      graph: draftSkillGraph,
+      goal: PracticeGoal.foundations,
+      results: [_perc(0, _now)],
+      now: _now,
+    );
+    expect(data.recentPractice.last.practiced, isTrue);
+  });
+
   test('streak counts consecutive local days; survives until tomorrow', () {
     DateTime d(int back, [int h = 10]) => DateTime(2026, 10, 14 - back, h);
     expect(HomeData.streakOf(const [], _now), (0, false));

@@ -81,6 +81,23 @@ class FileResultHistory implements ResultHistoryRepository {
   });
 
   @override
+  Future<BatchRecordReport> recordAll(Iterable<ResultHistoryEntry> incoming) =>
+      _serial(() async {
+        final current = await _read();
+        final plan = planBatchRecords(
+          existing: current,
+          incoming: incoming,
+          capacity: capacity,
+        );
+        if (plan.report.count(RecordOutcome.recorded) > 0) {
+          // JsonFileStore replaces atomically; one failed write cannot expose a
+          // prefix of this import/sync batch.
+          await _write(plan.entries);
+        }
+        return plan.report;
+      });
+
+  @override
   Future<bool> delete(String attemptId) => _serial(() async {
     final entries = await _read();
     final kept = entries.where((e) => e.attemptId != attemptId).toList();

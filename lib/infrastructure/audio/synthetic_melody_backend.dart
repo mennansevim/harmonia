@@ -7,6 +7,29 @@ import 'just_audio_clip_player.dart';
 import 'pcm16_wav.dart';
 import 'plugin_audio_lab_backend.dart';
 
+/// Dedicated rehearsal adapter. Supply a fresh player, never the capture
+/// session's player; this adapter has no capture/permission dependency.
+class SyntheticMelodyPracticePlayer implements DiagnosticMelodyPracticePlayer {
+  SyntheticMelodyPracticePlayer(this._player);
+  final ReferenceClipPlayer _player;
+  Future<void>? _closing;
+
+  @override
+  Future<PlaybackHandle> play(DiagnosticMelodyPractice practice) {
+    if (_closing != null) throw StateError('Rehearsal player closed');
+    final bytes = List<int>.unmodifiable(
+      renderDiagnosticMelodyPractice(practice).encode(),
+    );
+    return _player.playWav(bytes);
+  }
+
+  @override
+  Future<void> stop() => _player.stop();
+
+  @override
+  Future<void> close() => _closing ??= _player.close();
+}
+
 /// Local sine reference, explicitly not a piano recording or approved lesson.
 /// Fixed 600 ms tones + 200 ms gaps, last gap 400 ms. No hidden transpose/mix.
 Pcm16Wav renderDiagnosticMelody(

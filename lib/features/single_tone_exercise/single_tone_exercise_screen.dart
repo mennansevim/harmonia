@@ -1,20 +1,18 @@
 import 'package:flutter/material.dart';
 
+import '../../app/theme/harmonia_theme.dart';
 import '../../domain/audio/pitch_analyzer.dart';
 import '../../domain/models/exercise.dart';
 import '../../domain/models/exercise_result.dart';
 import '../../domain/models/score_metric.dart';
 import '../../domain/scoring/pitch_exercise_scorer.dart';
 import '../../infrastructure/audio/mock/mock_pitch_analyzer.dart';
+import '../common/ui/harmonia_ui.dart';
 
-/// The first user-facing exercise screen (PRODUCT_SPEC.md § Egzersiz
-/// türleri: "Tek ses" / "Dinle ve söyle").
-///
-/// There is no real microphone capture yet (that lands with the real
-/// [PitchAnalyzer] implementation), so this screen lets a developer/tester
-/// pick which [MockPitchScenario] the mock engine should simulate — the
-/// scoring and feedback code paths below are otherwise exactly what the
-/// real microphone flow will drive.
+/// Developer-only result gallery: [MockPitchScenario] exercises deterministic
+/// feedback without opening a microphone, playing a reference or saving history.
+/// The separate real capture session remains unscored until its evidence gates
+/// pass; this gallery does not validate that pipeline.
 ///
 /// Feedback copy reuses the deterministic fallback strings from
 /// AI_COACH.md § Fallback: they are rule-based, not AI-generated, so
@@ -53,66 +51,110 @@ class SingleToneExerciseScreen extends StatefulWidget {
 class _SingleToneExerciseScreenState extends State<SingleToneExerciseScreen> {
   ExerciseResult? _lastResult;
   bool _isAnalyzing = false;
+  String? _error;
 
   Future<void> _runScenario(MockPitchScenario scenario) async {
-    final analyzer = widget.pitchAnalyzer;
-    if (analyzer is MockPitchAnalyzer) {
-      analyzer.setScenario(scenario);
-    }
-
-    setState(() => _isAnalyzing = true);
-
-    final pitchResult = await widget.pitchAnalyzer.analyze(
-      PitchAnalysisRequest(
-        samples: const [],
-        sampleRateHz: 44100,
-        targetFrequencyHz: widget.exercise.targetNote!.frequencyHz,
-      ),
-    );
-
-    final result = widget.scorer.score(
-      exercise: widget.exercise,
-      sessionId: widget.sessionId,
-      pitch: pitchResult,
-      createdAt: DateTime.now(),
-    );
-
-    if (!mounted) return;
+    if (_isAnalyzing || !mounted) return;
     setState(() {
-      _lastResult = result;
-      _isAnalyzing = false;
+      _isAnalyzing = true;
+      _lastResult = null;
+      _error = null;
     });
+    try {
+      final analyzer = widget.pitchAnalyzer;
+      if (analyzer is MockPitchAnalyzer) {
+        analyzer.setScenario(scenario);
+      }
+
+      final pitchResult = await widget.pitchAnalyzer.analyze(
+        PitchAnalysisRequest(
+          samples: const [],
+          sampleRateHz: 44100,
+          targetFrequencyHz: widget.exercise.targetNote!.frequencyHz,
+        ),
+      );
+
+      if (!mounted) return;
+      final result = widget.scorer.score(
+        exercise: widget.exercise,
+        sessionId: widget.sessionId,
+        pitch: pitchResult,
+        createdAt: DateTime.now(),
+      );
+
+      if (!mounted) return;
+      setState(() {
+        _lastResult = result;
+      });
+    } catch (_) {
+      if (mounted) {
+        setState(
+          () => _error = 'Örnek sonuç oluşturulamadı. Yeniden deneyebilirsin.',
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isAnalyzing = false);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final exercise = widget.exercise;
-    return Scaffold(
-      appBar: AppBar(title: Text(exercise.title)),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _TargetNoteCard(exercise: exercise),
-              const SizedBox(height: 24),
-              Text(
-                'Mikrofon girişi henüz simüle ediliyor',
-                style: Theme.of(context).textTheme.labelMedium,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 8),
-              _ScenarioButtons(isBusy: _isAnalyzing, onSelected: _runScenario),
-              const SizedBox(height: 24),
-              if (_isAnalyzing)
-                const Center(child: CircularProgressIndicator())
-              else if (_lastResult != null)
-                _FeedbackCard(result: _lastResult!),
-            ],
-          ),
+    return LessonScaffold(
+      progress: null,
+      counter: 'Simülasyon',
+      closeLabel: 'Tek ses sonuç örneklerini kapat',
+      top: [
+        const Align(
+          alignment: AlignmentDirectional.centerStart,
+          child: StatusPill('Mikrofon kapalı'),
         ),
-      ),
+        const SizedBox(height: HarmoniaSpacing.md),
+        Text(exercise.title, style: Theme.of(context).textTheme.headlineSmall),
+        const Text('Mikrofon girişi henüz simüle ediliyor'),
+        const Text(
+          'Bunlar hazır sonuç örnekleridir; senin başarını ölçmez, geçmişine veya gelişimine eklenmez.',
+        ),
+        const SizedBox(height: HarmoniaSpacing.md),
+        _TargetNoteCard(exercise: exercise),
+        if (_isAnalyzing)
+          Semantics(
+            liveRegion: true,
+            child: const Text(
+              'Örnek sonuç hazırlanıyor…',
+              key: Key('demo_pending'),
+            ),
+          )
+        else if (_lastResult != null)
+          Semantics(
+            liveRegion: true,
+            child: _FeedbackCard(result: _lastResult!),
+          ),
+        if (_error != null)
+          Semantics(
+            liveRegion: true,
+            child: Text(_error!, key: const Key('demo_error')),
+          ),
+      ],
+      bottom: [
+        Text(
+          'Bir sonuç örneği seç',
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
+        const SizedBox(height: HarmoniaSpacing.sm),
+        _ScenarioButtons(isBusy: _isAnalyzing, onSelected: _runScenario),
+        const SizedBox(height: HarmoniaSpacing.md),
+        const ExpansionTile(
+          key: Key('demo_help'),
+          tilePadding: EdgeInsets.zero,
+          title: Text('Bu örnekler neyi gösterir?'),
+          children: [
+            Text(
+              'Doğru nota, yanlış oktav ve geçersiz ölçüm gibi durumlarda açıklamanın nasıl görüneceğini gösterir. Sayılar simülasyona aittir; mikrofon açılmaz, referans ses çalınmaz ve ses kaydı alınmaz. Gerçek dinle-söyle oturumu ayrı bir modüldür; bu ekran onu doğrulamaz.',
+            ),
+          ],
+        ),
+      ],
     );
   }
 }
@@ -127,17 +169,20 @@ class _TargetNoteCard extends StatelessWidget {
     final target = exercise.targetNote!;
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(HarmoniaSpacing.md),
         child: Column(
           children: [
-            Text('Hedef Nota', style: Theme.of(context).textTheme.labelLarge),
+            Text(
+              'Örnek hedef nota',
+              style: Theme.of(context).textTheme.labelLarge,
+            ),
             const SizedBox(height: 8),
             Text(target.note, style: Theme.of(context).textTheme.displayMedium),
-            Text('${target.frequencyHz.toStringAsFixed(2)} Hz'),
+            DataLabel('${target.frequencyHz.toStringAsFixed(2)} Hz'),
             if (exercise.description != null) ...[
               const SizedBox(height: 12),
               Text(
-                exercise.description!,
+                'Örnek yönerge: ${exercise.description!}',
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
@@ -156,7 +201,7 @@ class _ScenarioButtons extends StatelessWidget {
   final ValueChanged<MockPitchScenario> onSelected;
 
   static const _labels = {
-    MockPitchScenario.correct: 'Doğru Söyle',
+    MockPitchScenario.correct: 'Doğru ses örneği',
     MockPitchScenario.wrongNote: 'Yanlış Nota',
     MockPitchScenario.wrongOctaveDown: 'Yanlış Oktav (Aşağı)',
     MockPitchScenario.wrongOctaveUp: 'Yanlış Oktav (Yukarı)',
@@ -173,10 +218,12 @@ class _ScenarioButtons extends StatelessWidget {
       alignment: WrapAlignment.center,
       children: [
         for (final entry in _labels.entries)
-          OutlinedButton(
+          ChunkyButton(
             key: Key('scenario_${entry.key.name}'),
             onPressed: isBusy ? null : () => onSelected(entry.key),
-            child: Text(entry.value),
+            tone: ChunkyTone.neutral,
+            expand: false,
+            label: entry.value,
           ),
       ],
     );
@@ -212,10 +259,11 @@ class _FeedbackCard extends StatelessWidget {
     if (result.isSuccess) {
       return _StatusCard(
         key: const Key('feedback_success'),
-        color: Colors.green,
+        color: context.resultColors.correct,
         icon: Icons.check_circle,
         title: 'Doğru!',
-        message: 'Notayı doğru ve kararlı söyledin.',
+        message:
+            'Bu örnekte nota doğru ve kararlı. Bu, senin sesinden alınmış bir sonuç değildir.',
         scores: result.scores,
       );
     }
@@ -233,7 +281,11 @@ class _FeedbackCard extends StatelessWidget {
 
     return _StatusCard(
       key: Key('feedback_${primaryError.type.wireValue}'),
-      color: Colors.amber.shade800,
+      color: !result.isValid
+          ? context.resultColors.notMeasured
+          : primaryError.type == ExerciseErrorType.wrongOctave
+          ? context.resultColors.wrongOctave
+          : context.resultColors.nearMiss,
       icon: Icons.info_outline,
       title: !result.isValid
           ? 'Ölçüm Alınamadı'
@@ -247,7 +299,7 @@ class _FeedbackCard extends StatelessWidget {
               ExerciseErrorType.early => 'Erken Başladın',
               ExerciseErrorType.invalidSignal => 'Ölçüm Alınamadı',
             },
-      message: _errorMessages[primaryError.type]!,
+      message: 'Örnek açıklama: ${_errorMessages[primaryError.type]!}',
       scores: result.scores,
     );
   }
@@ -272,12 +324,13 @@ class _StatusCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      color: color.withValues(alpha: 0.12),
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(HarmoniaSpacing.md),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            const StatusPill('Simülasyon sonucu'),
+            const SizedBox(height: HarmoniaSpacing.sm),
             Row(
               children: [
                 Icon(icon, color: color),
@@ -297,10 +350,11 @@ class _StatusCard extends StatelessWidget {
             const SizedBox(height: 16),
             if (!scores.hasMeasurements)
               const Text(
-                'Bu kayıt puanlanmadı; gelişim ortalamana eklenmez.',
+                'Bu örnek puanlanmadı; gelişim ortalamana eklenmez.',
                 key: Key('measurement_not_scored'),
               )
-            else
+            else ...[
+              const Text('Örnek puanlar • kişisel sonuç değildir'),
               Wrap(
                 spacing: 16,
                 runSpacing: 8,
@@ -310,6 +364,7 @@ class _StatusCard extends StatelessWidget {
                   _ScoreChip(label: 'Sabitlik', value: scores.stability),
                 ],
               ),
+            ],
           ],
         ),
       ),

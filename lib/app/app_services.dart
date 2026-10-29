@@ -13,6 +13,7 @@ class AppServices extends InheritedWidget {
     required this.history,
     required this.cleanup,
     this.preferences,
+    this.preferencesRevision = 0,
     required super.child,
   });
 
@@ -24,6 +25,11 @@ class AppServices extends InheritedWidget {
   /// On-device practice preferences (daily budget); optional.
   final PracticePreferencesRepository? preferences;
 
+  /// Increments after portable preferences are replaced while the app is
+  /// running. Consumers use it to refresh cached convenience settings without
+  /// replacing the navigator or resetting the selected home tab.
+  final int preferencesRevision;
+
   static AppServices? maybeOf(BuildContext context) =>
       context.dependOnInheritedWidgetOfExactType<AppServices>();
 
@@ -31,5 +37,6 @@ class AppServices extends InheritedWidget {
   bool updateShouldNotify(AppServices oldWidget) =>
       history != oldWidget.history ||
       cleanup != oldWidget.cleanup ||
-      preferences != oldWidget.preferences;
+      preferences != oldWidget.preferences ||
+      preferencesRevision != oldWidget.preferencesRevision;
 }
