@@ -347,3 +347,11 @@ değildir ve geç kalan eski async okumalar generation kapısıyla elenir.
 
 **Sınırlar:** Kulak eğitiminin genel türü (nota/aralık/akor/dizi/kadans tanıma, puan, seri) bu kategorideki tüm uygulamalarda ortaktır ve kimsenin özel ifadesi değildir; kod, metin, görsel düzen ve ders sırası artık Harmonia'ya özgüdür. Hukuki görüş değildir.
 
+## ADR-035 — Personal ana kimlik; Koro davetli ayrı modül
+
+**Tarih:** 2026-10-30 · **Durum:** kabul (kullanıcı: "koro modülü ayrı, ses nefes eğitimi vs bunlar tüm kullanıcılar için olacak"); IA-01/ONB-03 ile uygulandı (2026-10-30): Ses sekmesi, kişisel onboarding, atlanabilir aralık; koro modülü henüz yok. ADR-033'ün koro öncelikli sekme/onboarding kararını kısmen yerine geçer.
+
+**Karar:** Tek uygulama ve tek hesap. Harmonia Personal (nefes, ses aralığı, kulak, ritim, ezgi, günlük rota, Free/Pro) herkes içindir. Harmonia Choir ayrı modüldür: bir koroya davetle katılınca görünür; şef işleri web panelindedir. Bugünkü Koro Atölyesi araçları Personal'ın “Ses” bölümüne taşınır. Koro ödevindeki zorluk Personal egzersizine köprülenir; ilk sürümde şefin etiketiyle, otomatik tespitle değil.
+
+**Sınırlar:** Choir C1 kayıtları puanlanmaz; otomatik değerlendirme BENCH-01/VAD-01/CHOIR-01 kapılarından önce açılmaz. Sunucu, hesap, upload, web yayını ve ödeme ayrı kullanıcı yetkisi ve ADR ister. Plan: [PRODUCT_PLAN_PERSONAL_CHOIR.md](./PRODUCT_PLAN_PERSONAL_CHOIR.md).
+

@@ -22,17 +22,17 @@ void main() {
     test('sizes the route by daily minutes', () {
       final short = DailyRoute.forMinutes(3);
       expect(short.breath, isFalse);
-      expect(short.choirStep, isFalse);
+      expect(short.voiceStep, isFalse);
       expect(short.stepCount, 1);
 
       final five = DailyRoute.forMinutes(5);
       expect(five.breathSeconds, 60);
-      expect(five.choirStep, isFalse);
+      expect(five.voiceStep, isFalse);
       expect(five.stepCount, 2);
 
       final long = DailyRoute.forMinutes(10);
       expect(long.breathSeconds, 120);
-      expect(long.choirStep, isTrue);
+      expect(long.voiceStep, isTrue);
       expect(long.stepCount, 3);
     });
   });
@@ -72,19 +72,19 @@ void main() {
     await settle(tester);
     expect(find.byKey(const Key('route_lesson')), findsOneWidget);
     expect(find.byKey(const Key('route_breath')), findsNothing);
-    expect(find.byKey(const Key('route_koro')), findsNothing);
+    expect(find.byKey(const Key('route_voice')), findsNothing);
     expect(find.text('Derse başla'), findsOneWidget);
     expect(find.text('~3 DAKİKA'), findsOneWidget);
   });
 
-  testWidgets('a longer day is Nefes → lesson → Koro', (tester) async {
+  testWidgets('a longer day is Nefes → lesson → Ses', (tester) async {
     final store = memoryStore(_home(minutes: 10));
     await store.load();
     await tester.pumpWidget(app(store));
     await settle(tester);
     expect(find.byKey(const Key('route_breath')), findsOneWidget);
     expect(find.byKey(const Key('route_lesson')), findsOneWidget);
-    expect(find.byKey(const Key('route_koro')), findsOneWidget);
+    expect(find.byKey(const Key('route_voice')), findsOneWidget);
     expect(find.text('Çalışmaya başla'), findsOneWidget);
     expect(find.text('ŞİMDİ'), findsOneWidget);
   });

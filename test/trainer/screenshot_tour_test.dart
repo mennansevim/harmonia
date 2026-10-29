@@ -117,7 +117,7 @@ void main() {
     await tap(key('opt_alto'));
     await shot('ob_part');
     await tap(key('ob_continue'));
-    await tap(key('opt_koro'));
+    await tap(key('opt_voice'));
     await tap(key('opt_interval'));
     await shot('ob_focus');
     await tap(key('ob_continue'));
@@ -237,7 +237,7 @@ void main() {
     await tester.pump(const Duration(seconds: 1));
 
     await tap(key('tab_1'));
-    await shot('koro_hub');
+    await shot('voice_hub');
     await tap(key('koro_range'));
     await shot('range_intro');
     await tap(find.bySemanticsLabel('Geri'));

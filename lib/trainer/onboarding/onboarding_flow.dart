@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 import '../app/scope.dart';
 import '../domain/music.dart';
 import '../domain/trainers.dart';
+import '../home/daily_route.dart';
 import '../settings/settings_tab.dart';
 import '../ui/kit.dart';
 
-/// Harmonia's short first run: who you are in the choir, what to train and
-/// how often. The current step is persisted so a killed app resumes there.
+/// Harmonia's short first run: how you use Harmonia, your vocal range
+/// (optional), what to train and how often. Personal practice is the same
+/// for every role; the choir module is separate (ADR-035). The current step is persisted so a killed app resumes there.
 class OnboardingFlow extends StatefulWidget {
   const OnboardingFlow({super.key, required this.onFinished});
 
@@ -99,16 +101,17 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
       Ob.welcome => _Welcome(onStart: _next),
       Ob.role => _choices(
         'Harmonia\'yı nasıl kullanacaksın?',
-        'Akışı buna göre sıralarız.',
+        'Ses, nefes ve kulak çalışması herkes için aynı. '
+            'Koro modülü ayrı ve henüz hazır değil.',
         [
-          ('singer', Icons.mic_none_rounded, 'Koroda şarkı söylüyorum'),
-          ('conductor', Icons.groups_outlined, 'Koro şefi / eğitmeniyim'),
           (
             'solo',
             Icons.person_outline_rounded,
-            'Kendi başıma şan çalışıyorum',
+            'Sesimi ve kulağımı geliştirmek istiyorum',
           ),
           ('musician', Icons.piano_outlined, 'Enstrüman çalıyorum'),
+          ('singer', Icons.mic_none_rounded, 'Bir koroda söylüyorum'),
+          ('conductor', Icons.groups_outlined, 'Koro şefi / eğitmeniyim'),
         ],
         selected: [if (_answers['role'] is String) _answers['role'] as String],
         onTap: (id) {
@@ -118,25 +121,18 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
         },
       ),
       Ob.part => _choices(
-        'Hangi partide söylüyorsun?',
-        'Dersler senin aralığında çalar. Tenor ve bas bir oktav pesten duyar.',
+        'Sesin hangi aralığa yakın?',
+        'Dersler bu aralıkta çalar; tenor ve bas bir oktav pesten duyar. '
+            'Bilmiyorsan atla, Ses sekmesindeki testle sonra bulursun.',
         [
           for (final p in VoicePart.values)
             (p.name, Icons.graphic_eq_rounded, p.title),
-          (
-            'unknown',
-            Icons.help_outline_rounded,
-            'Bilmiyorum, sonra test ederim',
-          ),
         ],
-        selected: [
-          ?store.voicePart,
-          if (store.voicePart == null && _answers['partAsked'] == true)
-            'unknown',
-        ],
+        selected: [?store.voicePart],
+        optional: true,
         onTap: (id) {
-          store.voicePart = id == 'unknown' ? null : id;
-          store.answers['partAsked'] = true;
+          // Tapping the chosen range again clears it.
+          store.voicePart = store.voicePart == id ? null : id;
           store.save();
           setState(() {});
         },
@@ -145,7 +141,7 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
         'Önce neye odaklanalım?',
         'Birden fazla seçebilirsin.',
         [
-          ('koro', Icons.groups_rounded, 'Koro: ses aralığı, ritim, ezgi'),
+          ('voice', Icons.graphic_eq_rounded, 'Ses: aralık, ritim, ezgi'),
           for (final k in TrainerKind.values) (k.id, trainerIcon(k), k.title),
         ],
         selected: _list('focus'),
@@ -249,10 +245,12 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
     required List<String> selected,
     required ValueChanged<String> onTap,
     bool multi = false,
+    bool optional = false,
   }) => _Frame(
     step: _step,
     onBack: _back,
-    onNext: selected.isEmpty ? null : _next,
+    onNext: selected.isEmpty && !optional ? null : _next,
+    button: selected.isEmpty && optional ? 'Atla' : 'Devam',
     title: title,
     subtitle: subtitle,
     child: Column(
@@ -378,7 +376,7 @@ class _Welcome extends StatelessWidget {
         const _ChoirMark(),
         const SizedBox(height: 32),
         const Text(
-          'Koronda daha\ngüvenle söyle',
+          'Sesini ve kulağını\nher gün geliştir',
           style: TextStyle(
             fontSize: 34,
             height: 1.1,
@@ -389,7 +387,7 @@ class _Welcome extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         const Text(
-          'Kulağını eğit, partini tanı, ritmi ve ezgiyi tekrar et. '
+          'Nefesini hazırla, kulağını eğit, ritmi ve ezgiyi tekrar et. '
           'Ölçemediğimiz şeyi puanlamayız.',
           style: TT.body,
         ),
@@ -526,16 +524,20 @@ class _Ready extends StatelessWidget {
     final trainer =
         TrainerKind.values.where((k) => focus.contains(k.id)).firstOrNull ??
         TrainerKind.interval;
+    final role = store.answers['role'];
     final rows = [
       (
         Icons.mic_none_rounded,
-        'Parti',
-        store.part?.title ?? 'Seçilmedi · Koro sekmesinde test et',
+        'Aralık',
+        store.part?.title ?? 'Seçilmedi · Ses sekmesinde test et',
       ),
       (trainerIcon(trainer), 'İlk ders', trainer.title),
-      if (focus.contains('koro'))
-        (Icons.groups_rounded, 'Koro', 'Günlük planda bir koro adımı'),
+      if (DailyRoute.forMinutes(store.dailyMinutes).voiceStep)
+        (Icons.graphic_eq_rounded, 'Ses', 'Rotanın sonunda bir ses adımı'),
       (Icons.timer_outlined, 'Günlük', '${store.dailyMinutes} dakika'),
+      // Honest about the choir module: not built yet (ADR-035).
+      if (role == 'singer' || role == 'conductor')
+        (Icons.groups_outlined, 'Koro', 'Koro modülü henüz yok'),
     ];
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),

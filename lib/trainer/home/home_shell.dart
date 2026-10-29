@@ -51,7 +51,8 @@ class _HomeShellState extends State<HomeShell> {
   }
 }
 
-/// Four destinations; the choir workshop is a first-class tab.
+/// Four destinations. The voice workshop is for everyone (ADR-035); the
+/// invite-only choir module will add its own entry once it exists.
 class _NavBar extends StatelessWidget {
   const _NavBar({required this.index, required this.onTap});
   final int index;
@@ -60,7 +61,7 @@ class _NavBar extends StatelessWidget {
   Widget build(BuildContext context) {
     const items = [
       (Icons.wb_sunny_outlined, Icons.wb_sunny_rounded, 'Bugün'),
-      (Icons.groups_outlined, Icons.groups_rounded, 'Koro'),
+      (Icons.graphic_eq_outlined, Icons.graphic_eq_rounded, 'Ses'),
       (Icons.insights_outlined, Icons.insights_rounded, 'İlerleme'),
       (Icons.tune_outlined, Icons.tune_rounded, 'Ayarlar'),
     ];
@@ -302,7 +303,7 @@ Future<void> showVoicePartSheet(BuildContext context) {
         const SizedBox(height: 6),
         const Text(
           'Tenor ve bas seçilince dersler bir oktav pesten çalar. '
-          'Emin değilsen Koro sekmesindeki ses aralığı testi taslak bir öneri verir.',
+          'Emin değilsen Ses sekmesindeki ses aralığı testi taslak bir öneri verir.',
           style: TT.small,
         ),
         const SizedBox(height: 14),
@@ -386,7 +387,7 @@ class _WeekBar extends StatelessWidget {
   }
 }
 
-/// Today's route: one hero, the ordered steps (Hazırla → Ders → Koro, sized
+/// Today's route: one hero, the ordered steps (Hazırla → Ders → Ses, sized
 /// by daily minutes) and a single primary action.
 class _DailyRoute extends StatelessWidget {
   const _DailyRoute({
@@ -429,13 +430,13 @@ class _DailyRoute extends StatelessWidget {
         icon: trainerIcon(trainer),
         done: lessonDone,
       ),
-      if (route.choirStep)
+      if (route.voiceStep)
         _StepData(
-          key: 'route_koro',
+          key: 'route_voice',
           title: hasRange ? 'Kaç ses duyuyorsun?' : 'Ses aralığı testi',
           subtitle: hasRange
-              ? 'Koro · 2/3/4 sesli dokuyu ayırt et'
-              : 'Koro · isteğe bağlı mikrofon, taslak ölçüm',
+              ? 'Ses · 2/3/4 sesli dokuyu ayırt et'
+              : 'Ses · isteğe bağlı mikrofon, taslak ölçüm',
           icon: hasRange ? Icons.layers_outlined : Icons.mic_none_rounded,
           done: false,
           onTap: () => Navigator.of(context).push(

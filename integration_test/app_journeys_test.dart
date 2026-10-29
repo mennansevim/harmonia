@@ -82,7 +82,7 @@ void main() {
     await tapKey(tester, 'ob_continue');
     await tapKey(tester, 'opt_alto');
     await tapKey(tester, 'ob_continue');
-    await tapKey(tester, 'opt_koro');
+    await tapKey(tester, 'opt_voice');
     await tapKey(tester, 'opt_interval');
     await tapKey(tester, 'ob_continue');
     await tapKey(tester, 'notation_letter');
@@ -97,7 +97,7 @@ void main() {
 
     expect(find.byKey(const Key('daily_plan')), findsOneWidget);
     await tapKey(tester, 'tab_1');
-    expect(find.text('Koro Atölyesi'), findsWidgets);
+    expect(find.text('Ses Atölyesi'), findsWidgets);
     await tapKey(tester, 'tab_2');
     await tapKey(tester, 'tab_3');
     expect(find.byKey(const Key('settings_part')), findsOneWidget);
@@ -123,7 +123,7 @@ void main() {
     await tapKey(tester, 'ob_continue');
     await launch(tester);
     expect(find.byKey(const Key('get_started')), findsNothing);
-    expect(find.byKey(const Key('opt_koro')), findsOneWidget);
+    expect(find.byKey(const Key('opt_voice')), findsOneWidget);
   });
 
   testWidgets('today lesson finishes the intro and survives a restart', (
@@ -179,7 +179,7 @@ void main() {
     expect(store.streak, 1);
   });
 
-  testWidgets('choir tab opens range intro and the voice-count drill', (
+  testWidgets('voice tab opens range intro and the voice-count drill', (
     tester,
   ) async {
     await seedStore(_returning);

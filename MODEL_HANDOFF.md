@@ -42,6 +42,10 @@ Agora tek sesler: `src/PitchTest/lib/audioPlayer.ts` →
 header mono PCM16/48 kHz, tüm etiket/hak zinciri doğrulanmadı. Repo MIT olsa da
 sample hakları varsayılmadı; Harmonia'ya kopyalanmadı.
 
+## 2d. 2026-10-30 — ADR-035 Personal / Choir
+
+Plan: `PRODUCT_PLAN_PERSONAL_CHOIR.md`. Personal herkes içindir; eski “Koro” sekmesi **Ses** sekmesi (Ses Atölyesi, `KoroHub` sınıf adı korunuyor). Onboarding kişisel dille; aralık adımı atlanabilir; `focus` için `voice` id'si. Koro modülü (davet, ödev, kayıt gönderme, şef web paneli) yok ve sunucu/hesap/upload gerektirdiği için kullanıcı kararlarını (K1–K6) bekliyor. Kararsız başlanabilecek sonraki kod: CHOIR-M1 domain, MIDI-01 okuyucu.
+
 ## 2c. 2026-10-29 — TRAINER-02 farklılaşma
 
 Referans uygulamaya benzerlik bilinçli olarak azaltıldı (ADR-033): Harmonia paleti ve buton/kart dili, Bugün/Koro/İlerleme/Ayarlar sekmeleri, 8 adımlı koro onboarding'i, `VoicePart` ile partiye göre çalma, yerel koro seviyesi. Lig, istatistik kilidi, kullanıcı adı/topluluk ve 30 adımlı akış kaldırıldı. Yeni ekranlarda referans uygulamanın metnini/düzenini geri getirme. TRAINER-03 (ADR-034) ile ders/quiz/müfredat da yeniden yazıldı: `_ladder` müfredatı, Dinle → Söyle → Ayırt et, `ListenDisc` quiz, `SkillScreen`. Sıradaki doğal adım: Söyle adımını kalite kapılı mikrofonla isteğe bağlı ölçmek (ayrı kaynak etiketiyle).

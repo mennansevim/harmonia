@@ -13,13 +13,13 @@ import 'aksak_patterns.dart';
 import 'range_test.dart';
 import 'voice_count.dart';
 
-/// Choir workshop: single-voice and 2/3/4-voice preparation built on the
-/// Harmonia capture/pitch core. Status tags stay honest about what is
+/// Voice workshop ("Ses" tab, for every learner — ADR-035): single-voice and
+/// 2/3/4-voice work built on the Harmonia capture/pitch core. Status tags stay honest about what is
 /// experimental, draft or still waiting for recordings.
 class KoroHub extends StatelessWidget {
   const KoroHub({super.key, this.asTab = false});
 
-  /// Shown as the home "Koro" tab: no back button, no own scaffold colour.
+  /// Shown as the home "Ses" tab: no back button, no own scaffold colour.
   final bool asTab;
 
   void _push(BuildContext context, Widget screen, {bool legacy = false}) {
@@ -55,17 +55,17 @@ class KoroHub extends StatelessWidget {
           children: [
             if (asTab)
               tabHeader(
-                'Koro Atölyesi',
+                'Ses Atölyesi',
                 store.part == null
                     ? 'Ses aralığı, ritim, ezgi, çok seslilik'
-                    : '${store.part!.title} partisi için hazırlık',
+                    : '${store.part!.title} aralığında çalışma',
               )
             else
               const TopBar(
-                title: 'Koro Atölyesi',
+                title: 'Ses Atölyesi',
                 titleIcon: TrainerBadge(
                   color: TC.koro,
-                  icon: Icons.groups_rounded,
+                  icon: Icons.graphic_eq_rounded,
                   size: 32,
                 ),
               ),
@@ -85,7 +85,7 @@ class KoroHub extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'KORO HAZIRLIĞI',
+                          'SES ÇALIŞMASI',
                           style: TextStyle(
                             color: Colors.white70,
                             fontWeight: FontWeight.w800,

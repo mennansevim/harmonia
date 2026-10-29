@@ -73,7 +73,7 @@ void main() {
     await tester.pumpWidget(app(store));
     await settle(tester);
 
-    expect(find.text('Koronda daha\ngüvenle söyle'), findsOneWidget);
+    expect(find.text('Sesini ve kulağını\nher gün geliştir'), findsOneWidget);
     await tapKey(tester, 'get_started');
     expect(find.text('Harmonia\'yı nasıl kullanacaksın?'), findsOneWidget);
     await tapKey(tester, 'opt_singer');
@@ -81,7 +81,7 @@ void main() {
     await tapKey(tester, 'opt_tenor');
     await tapKey(tester, 'ob_continue');
     expect(store.part, VoicePart.tenor);
-    await tapKey(tester, 'opt_koro');
+    await tapKey(tester, 'opt_voice');
     await tapKey(tester, 'opt_chord');
     await tapKey(tester, 'ob_continue');
     await tapKey(tester, 'notation_letter');
@@ -91,6 +91,10 @@ void main() {
     await tapKey(tester, 'reminder_skip');
     expect(find.text('Planın kuruldu'), findsOneWidget);
     expect(find.text('Tenor'), findsOneWidget);
+    // A 10-minute day ends with a voice step; choir members are told the
+    // choir module does not exist yet.
+    expect(find.text('Rotanın sonunda bir ses adımı'), findsOneWidget);
+    expect(find.text('Koro modülü henüz yok'), findsOneWidget);
 
     // Persisted step: the flow position is saved while onboarding.
     expect(store.answers['obStep'], 'ready');
@@ -103,9 +107,31 @@ void main() {
     expect(store.lastTrainer, TrainerKind.chord.id);
     expect(find.text('Bugün'), findsWidgets);
     expect(find.byKey(const Key('daily_plan')), findsOneWidget);
-    // Choir is a first-class tab.
+    // The voice workshop is a tab for everyone; no choir tab yet (ADR-035).
+    expect(find.text('Koro'), findsNothing);
     await tapKey(tester, 'tab_1');
-    expect(find.text('Koro Atölyesi'), findsOneWidget);
+    expect(find.text('Ses Atölyesi'), findsOneWidget);
+  });
+
+  testWidgets('a solo learner can skip the vocal range step', (tester) async {
+    final store = memoryStore();
+    await store.load();
+    await tester.pumpWidget(app(store));
+    await settle(tester);
+    await tapKey(tester, 'get_started');
+    await tapKey(tester, 'opt_solo');
+    await tapKey(tester, 'ob_continue');
+    expect(find.text('Sesin hangi aralığa yakın?'), findsOneWidget);
+    expect(find.text('Atla'), findsOneWidget);
+    // Choosing then un-choosing a range brings the skip back.
+    await tapKey(tester, 'opt_alto');
+    expect(find.text('Devam'), findsOneWidget);
+    await tapKey(tester, 'opt_alto');
+    expect(store.voicePart, isNull);
+    await tapKey(tester, 'ob_continue');
+    expect(find.text('Önce neye odaklanalım?'), findsOneWidget);
+    expect(store.answers['role'], 'solo');
+    expect(store.voicePart, isNull);
   });
 
   testWidgets('resumes onboarding at the saved step after a restart', (
@@ -227,7 +253,7 @@ void main() {
     expect(find.text('BASAMAK 1'), findsOneWidget);
   });
 
-  testWidgets('choir hub lists the workshop and opens the voice-count drill', (
+  testWidgets('voice tab lists the workshop and opens the voice-count drill', (
     tester,
   ) async {
     final store = memoryStore({'onboardingDone': true, 'setupDone': true});
@@ -235,7 +261,7 @@ void main() {
     await tester.pumpWidget(app(store));
     await settle(tester);
     await tapKey(tester, 'tab_1');
-    expect(find.text('Koro Atölyesi'), findsWidgets);
+    expect(find.text('Ses Atölyesi'), findsWidgets);
     expect(find.text('Ses aralığı testi'), findsOneWidget);
     await tester.scrollUntilVisible(find.text('KAYIT BEKLENİYOR'), 200);
     expect(find.text('Aksak ritim'), findsOneWidget);

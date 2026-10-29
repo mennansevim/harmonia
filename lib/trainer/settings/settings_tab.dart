@@ -112,7 +112,7 @@ class SettingsTab extends StatelessWidget {
                   _Item(
                     icon: Icons.graphic_eq_rounded,
                     title: 'Ses aralığım',
-                    subtitle: 'Koro sekmesindeki testle ölçülür',
+                    subtitle: 'Ses sekmesindeki testle ölçülür',
                     value: _rangeLabel(store) ?? 'Ölçülmedi',
                   ),
                 ]),
@@ -229,7 +229,7 @@ class SettingsTab extends StatelessWidget {
                       'Nasıl çalışır?',
                       'Her eğitmenin bir Öğren yolu (dersler, kontrol noktaları, final) ve bir Pratik modu vardır. '
                           'Dersler yeni sesi tanıtır, hızlı kontrolle pekiştirir, sonra pratikte ölçer. '
-                          'Sesler cihazda sentezlenir. Koro Atölyesi mikrofonla ses aralığı ve tekrar çalışmaları sunar; '
+                          'Sesler cihazda sentezlenir. Ses Atölyesi mikrofonla ses aralığı ve tekrar çalışmaları sunar; '
                           'bu ölçümler deneyseldir ve eğitimci değerlendirmesinin yerini tutmaz.',
                     ),
                   ),
@@ -240,7 +240,7 @@ class SettingsTab extends StatelessWidget {
                       context,
                       'Gizlilik',
                       'Cevapların, ilerlemen ve tercihlerin yalnız bu cihazda saklanır. Hesap, reklam ya da izleme yoktur. '
-                          'Mikrofon yalnız Koro Atölyesi\'nde kaydı sen başlattığında kullanılır; kayıtlar yüklenmez.',
+                          'Mikrofon yalnız Ses Atölyesi\'nde kaydı sen başlattığında kullanılır; kayıtlar yüklenmez.',
                     ),
                   ),
                   _Item(

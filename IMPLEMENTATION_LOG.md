@@ -2175,3 +2175,35 @@ Bugün/Koro/İlerleme/Ayarlar sekmeleri korundu (devir notu bunu istiyor).
 
 Gerçek telefon, haptik his, ekran okuyucu, öğrenci/eğitimci kabulü yapılmadı.
 Nefes metni ve ritmi EDU-01 onayı bekliyor. Commit/push yapılmadı.
+
+## 2026-10-30 — Personal + Choir ürün planı (plan)
+
+**Kullanıcı isteği:** Dış LLM'in Personal/Choir önerisi ve “koro ayrı, ses/nefes herkes için” kararıyla geliştirme planı.
+
+- Yeni [PRODUCT_PLAN_PERSONAL_CHOIR.md](./PRODUCT_PLAN_PERSONAL_CHOIR.md): iddia-repo karşılaştırması, ürün yapısı, K1–K6 kullanıcı kararları, Personal kolu (IA-01, ONB-03, PREP-02) ve Choir kolu C0–C3 (CHOIR-D0/ADR/M1, B1–B2, W1–W4, A1–A2, N1, LEGAL-C1, MIDI-01–05, CHOIR-01, CAL-03b, E1–E2, BRIDGE-01/02), KDV/kanal düzeltmeli gelir tablosu, şef iş yükü riski, takvim.
+- ADR-035 eklendi; CURRENT_ROADMAP'e özet girdi.
+- Kod, test, sunucu, hesap veya dış iletişim değişmedi. `choir_practice` bugün yalnız mod değeri ve mimari kural; koro sunucusu/upload/web paneli/MIDI okuyucu yok.
+
+## 2026-10-30 — IA-01 + ONB-03: Ses sekmesi ve kişisel onboarding (ADR-035)
+
+**Kullanıcı isteği:** Plan §9'daki ilk işi başlatmak.
+
+### Uygulananlar
+
+- `home_shell.dart`: sekme “Koro” → “Ses” (graphic_eq ikonu); rota adımı `route_voice`, alt metinler “Ses ·”; parti sayfası metni Ses sekmesine yönlendirir.
+- `daily_route.dart`: `choirStep` → `voiceStep` (davranış aynı).
+- `koro_hub.dart`: başlık “Ses Atölyesi”, kahraman etiketi “SES ÇALIŞMASI”, parti seçiliyse “<Parti> aralığında çalışma”. Çalışmalar, etiketler ve anahtarlar (`koro_range`, `koro_voices`) aynı.
+- `onboarding_flow.dart`: karşılama “Sesini ve kulağını her gün geliştir”; rol sırası ve dürüst alt metin; aralık adımı `optional` — seçim yokken düğme “Atla”, seçili aralığa yeniden dokunmak temizler, “Bilmiyorum” seçeneği ve `partAsked` yazımı kaldırıldı; odak `koro` → `voice`; Hazır ekranı “Aralık” satırı, ses adımı satırı `DailyRoute` ile tutarlı, korist/şef için “Koro modülü henüz yok”.
+- `settings_tab.dart`: Koro Atölyesi atıfları Ses.
+- Testler: onboarding/sekme/rota/E2E/ekran turu yeni metin ve anahtarlarla; yeni test “a solo learner can skip the vocal range step”; ilk onboarding testi Koro sekmesi olmadığını ve korist için dürüst satırı doğrular.
+
+### Doğrulama
+
+- `dart tool/quality_check.dart`: format → analyze → **1013 test geçti**, 1 opt-in atlandı. `integration_test` formatı temiz.
+- Ekran turu (`TOUR_DIR`) üretildi; rol, hazır ve Ses Atölyesi görüntüleri elle incelendi.
+- `flutter test integration_test -d <iPhone 17 Pro, iOS 26.5>`: **6/6 geçti** (~1 dk 23 sn). Bir test adı “voice tab …” olarak düzeltildi.
+
+### Sınırlar
+
+Rol yalnız kaydedilir, içerik/akış değiştirmez. Koro modülü, sunucu, davet ve şef paneli yok. Store şeması değişmedi; eski `focus: ["koro"]` zararsızca yok sayılır. Gerçek cihaz ve kullanıcı kabulü açık.
+
