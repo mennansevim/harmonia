@@ -323,10 +323,19 @@ değildir ve geç kalan eski async okumalar generation kapısıyla elenir.
 
 ## ADR-032 — Kulak eğitimi ikizi ana deneyim; Koro Atölyesi ayrı kategori
 
-**Tarih:** 2026-10-29 · **Durum:** kabul (kullanıcı isteği, kullanıcı uyurken makul varsayılanlarla)
+**Tarih:** 2026-10-29 · **Durum:** kısmen yerine geçti (ADR-033: tasarım ve akış farklılaştırıldı)
 
 **Karar:** Uygulama girişi `TrainerApp` (5 dinleme eğitmeni: Öğren yolu + Pratik, istatistik, sıralama, ayarlar, kalıcı 30 adımlı onboarding). Harmonia'nın mikrofon/perde çekirdeği ve deneysel tekrar ekranları “Koro Atölyesi” kategorisinde toplanır. Eski `HarmoniaApp` kabuğu korunur ama açılışta kullanılmaz.
 
 **Gerekçe:** Kullanıcı referans uygulamanın akışını birebir istedi; koro hazırlığı ayrı modül olarak eklenecekti.
 
 **Sınırlar:** Marka/ad kopyalanmaz; ödeme, sahte yorum/istatistik, sahte lig oyuncusu yok. Dinleme quiz'leri yalnız dokunma cevabıdır (`touch`), mikrofon skoru değildir. Ses aralığı testi kalite kapısından geçmeyen kaydı “ölçülemedi” sayar; parti önerisi taslaktır. 2/3/4 sesli tekrar kayıtlar gelene kadar kapalı. Dinleme quiz sonuçları ayrı JSON'da tutulur, `ResultHistory`/mastery'ye yazılmaz (ritim ekranları kendi geçmişine yazmaya devam eder).
+
+## ADR-033 — Referans uygulamadan farklılaşma: koro öncelikli Harmonia deneyimi
+
+**Tarih:** 2026-10-29 · **Durum:** kabul (kullanıcı isteği: "kopya ibarelerini değiştirelim, tasarımı ve özellikleri farklılaştıralım")
+
+**Karar:** Eğitmen modülü referans uygulamanın görünümünü ve akışını taşımaz. Görsel kimlik Harmonia A+C markasına geçti (indigo ana renk, güneş sarısı seri, beceri başına ayrı vurgu, alt kenarlı "chunky" buton, ince çizgili kartlar). Sekmeler Bugün / Koro / İlerleme / Ayarlar; Koro Atölyesi birinci sınıf sekme. 30 adımlı onboarding kaldırıldı; yerine 8 adımlı koro akışı (rol, parti, odak, nota adı, günlük süre, hatırlatma, plan). Sıralama/lig ekranı, istatistik kilidi, kullanıcı adı ve topluluk panosu kaldırıldı; yerine koro temalı yerel seviye kartı. Yeni özellik: seçilen parti (SATB) ders sesini öğrencinin aralığına taşır (tenor/bas bir oktav pes). Belirgin çeviri ifadeler Harmonia diliyle yeniden yazıldı.
+
+**Sınırlar:** Parti yalnız çalma register'ını değiştirir; skor/tolerans/rubrik değişmez. Ses aralığı testindeki parti önerisi taslaktır; "partim olarak kaydet" kullanıcının seçimidir. Ders/quiz mekaniği (öğren-pratik, tanı/evet-hayır/bul soru tipleri, kontrol noktası) türün yaygın kalıplarıdır ama hâlâ referansa işlevsel olarak yakındır; mağaza öncesi ek farklılaşma ve referans sahibinin onayı ayrıca değerlendirilmelidir. Hukuki uygunluk görüşü değildir.
+

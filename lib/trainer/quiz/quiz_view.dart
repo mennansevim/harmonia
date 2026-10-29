@@ -42,7 +42,7 @@ class QuizView extends StatefulWidget {
   final bool allowRetry;
   final bool showCounter;
 
-  /// "HIZLI KONTROL" header for lesson checks.
+  /// "KISA YOKLAMA" header for lesson checks.
   final String? quickCheckLabel;
   final VoidCallback? onExit;
 
@@ -175,7 +175,7 @@ class _QuizViewState extends State<QuizView> {
       return;
     }
     if (widget.allowRetry && wasFirst && _q.type == QuestionType.identify) {
-      setState(() => _status = 'Olmadı! Tekrar dene');
+      setState(() => _status = 'Bir daha dinle');
       return;
     }
     setState(() {
@@ -195,8 +195,8 @@ class _QuizViewState extends State<QuizView> {
       _correctPick = chosen ?? _q.answer;
       _phase = _Phase.feedback;
       _status = switch (_q.type) {
-        QuestionType.find => 'Buldun!',
-        _ => _records.last.correct ? 'Harika kulak!' : 'Doğru!',
+        QuestionType.find => 'Doğru ses!',
+        _ => _records.last.correct ? 'Tam isabet!' : 'Doğru!',
       };
     });
     _advanceSoon();
@@ -216,7 +216,7 @@ class _QuizViewState extends State<QuizView> {
     setState(() {
       _phase = _Phase.resetting;
       _frame = null;
-      _status = 'Kulağın sıfırlanıyor...';
+      _status = 'Kulağını dinlendir...';
     });
     _scope.audio.play(SoundFactory(_rand).earReset());
     Future<void>.delayed(const Duration(milliseconds: 1300), () {
@@ -288,7 +288,7 @@ class _QuizViewState extends State<QuizView> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
-            _q.type == QuestionType.yesNo ? 'Tam değil' : 'Neredeyse!',
+            _q.type == QuestionType.yesNo ? 'Tam değil' : 'Az kaldı!',
             textAlign: TextAlign.center,
             style: TT.h3,
           ),
@@ -326,7 +326,7 @@ class _QuizViewState extends State<QuizView> {
             label: _index == widget.questions.length - 1
                 ? 'Devam'
                 : 'Sonraki soru',
-            color: TC.blue,
+            color: TC.primary,
             onPressed: () => Navigator.pop(context),
           ),
         ],
@@ -365,7 +365,7 @@ class _QuizViewState extends State<QuizView> {
           const SizedBox(height: 16),
           BigButton(
             label: 'İpuçlarını gizle',
-            color: TC.blue,
+            color: TC.primary,
             onPressed: () => Navigator.pop(context, true),
           ),
           TextLink('Kalsın', onTap: () => Navigator.pop(context, false)),
@@ -449,7 +449,7 @@ class _QuizViewState extends State<QuizView> {
             _status == _defaultPrompt
         ? '${_secondsLeft}sn'
         : _status;
-    final colored = _status == 'Harika kulak!';
+    final colored = _status == 'Tam isabet!';
     return Semantics(
       liveRegion: true,
       child: Text(
@@ -737,9 +737,9 @@ class _AnswerCell extends StatelessWidget {
     final bg = correct
         ? TC.green
         : wrong
-        ? const Color(0xFFFCE4E7)
+        ? const Color(0xFFFDE5E1)
         : resetting
-        ? const Color(0xFFEFF2F7)
+        ? const Color(0xFFF0EFF8)
         : Colors.white;
     final border = correct
         ? TC.green
@@ -821,7 +821,7 @@ class _YesNoButton extends StatelessWidget {
           duration: const Duration(milliseconds: 160),
           height: 72,
           decoration: BoxDecoration(
-            color: enabled ? soft(color) : const Color(0xFFEFF2F7),
+            color: enabled ? soft(color) : const Color(0xFFF0EFF8),
             borderRadius: BorderRadius.circular(18),
             border: Border.all(
               color: enabled ? color.withValues(alpha: 0.35) : TC.line,
@@ -851,7 +851,7 @@ class _YesNoButton extends StatelessWidget {
                   fontWeight: FontWeight.w700,
                   fontSize: 16,
                   color: enabled
-                      ? (yes ? const Color(0xFF15803D) : TC.red)
+                      ? (yes ? const Color(0xFF137A52) : TC.red)
                       : TC.muted,
                 ),
               ),
@@ -892,9 +892,9 @@ class _SoundButton extends StatelessWidget {
         : selected
         ? color
         : wrong
-        ? const Color(0xFFFCE4E7)
+        ? const Color(0xFFFDE5E1)
         : resetting
-        ? const Color(0xFFEFF2F7)
+        ? const Color(0xFFF0EFF8)
         : Colors.white;
     final fg = correct || selected ? Colors.white : (wrong ? TC.red : TC.muted);
     return Semantics(
@@ -992,12 +992,12 @@ class _CompareCard extends StatelessWidget {
             width: 32,
             height: 32,
             decoration: BoxDecoration(
-              color: good ? const Color(0xFFDCFCE7) : const Color(0xFFFCE4E7),
+              color: good ? const Color(0xFFDDF6EC) : const Color(0xFFFDE5E1),
               borderRadius: BorderRadius.circular(9),
             ),
             child: Icon(
               good ? Icons.check_rounded : Icons.close_rounded,
-              color: good ? const Color(0xFF16A34A) : TC.red,
+              color: good ? const Color(0xFF137A52) : TC.red,
               size: 20,
             ),
           ),
@@ -1023,7 +1023,7 @@ class _CompareCard extends StatelessWidget {
             tooltip: 'Dinle',
             onPressed: onPlay,
             style: IconButton.styleFrom(
-              backgroundColor: const Color(0xFFEFF2F7),
+              backgroundColor: const Color(0xFFF0EFF8),
             ),
             icon: const Icon(
               Icons.volume_up_outlined,
@@ -1063,7 +1063,7 @@ class PianoAnswer extends StatelessWidget {
           ? TC.red
           : black
           ? (enabled.contains(pc) ? TC.ink : const Color(0xFF9AA3B2))
-          : (enabled.contains(pc) ? Colors.white : const Color(0xFFF1F3F7));
+          : (enabled.contains(pc) ? Colors.white : const Color(0xFFF0EFF8));
       Widget key(
         int pc,
         bool black,

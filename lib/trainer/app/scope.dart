@@ -28,6 +28,10 @@ class TrainerScope extends InheritedWidget {
   static TrainerScope of(BuildContext context) =>
       context.dependOnInheritedWidgetOfExactType<TrainerScope>()!;
 
+  /// Lookup without a rebuild dependency; safe in initState.
+  static TrainerScope read(BuildContext context) =>
+      context.getInheritedWidgetOfExactType<TrainerScope>()!;
+
   @override
   bool updateShouldNotify(TrainerScope old) =>
       store != old.store || audio != old.audio || reminders != old.reminders;

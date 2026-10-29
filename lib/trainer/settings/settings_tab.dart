@@ -6,11 +6,18 @@ import '../../application/practice_reminder.dart';
 import '../app/scope.dart';
 import '../audio/synth.dart';
 import '../domain/music.dart';
+import '../home/home_shell.dart';
 import '../state/trainer_store.dart';
 import '../stats/stats_tab.dart';
 import '../ui/kit.dart';
 
 const appVersionLabel = 'Sürüm 1.0 (beta)';
+
+String? _rangeLabel(TrainerStore store) {
+  final r = store.koroRange?.split('-').map(int.tryParse).toList();
+  if (r == null || r.length != 2 || r.contains(null)) return null;
+  return '${PitchClass.midiName(r[0]!, store.notation)} – ${PitchClass.midiName(r[1]!, store.notation)}';
+}
 
 /// Turns the daily reminder on/off and mirrors the outcome in the store.
 Future<String?> setReminder(BuildContext context, bool on) async {
@@ -63,12 +70,12 @@ class SettingsTab extends StatelessWidget {
                         width: 46,
                         height: 46,
                         decoration: BoxDecoration(
-                          color: TC.orangeSoft,
+                          color: TC.primarySoft,
                           borderRadius: BorderRadius.circular(14),
                         ),
                         child: const Icon(
                           Icons.person_outline_rounded,
-                          color: TC.orange,
+                          color: TC.primary,
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -77,7 +84,9 @@ class SettingsTab extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              store.accountLabel ?? 'Misafir',
+                              store.part == null
+                                  ? 'Harmonia'
+                                  : '${store.part!.title} partisi',
                               style: TT.title,
                             ),
                             const Text(
@@ -90,27 +99,20 @@ class SettingsTab extends StatelessWidget {
                     ],
                   ),
                 ),
-                const _Caption('HESAP'),
+                const _Caption('KORO'),
                 _Group([
                   _Item(
-                    icon: Icons.alternate_email_rounded,
-                    title: store.username.isEmpty ? '...' : store.username,
-                    subtitle: 'Uygulamadaki kullanıcı adın',
-                    onTap: () => _editName(context, store),
+                    key: const Key('settings_part'),
+                    icon: Icons.mic_none_rounded,
+                    title: 'Partim',
+                    value: store.part?.title ?? 'Seçilmedi',
+                    onTap: () => showVoicePartSheet(context),
                   ),
-                ]),
-                const _Caption('TOPLULUK'),
-                _Group([
                   _Item(
-                    icon: Icons.forum_outlined,
-                    iconColor: TC.blue,
-                    title: 'Geri bildirim panosu',
-                    subtitle: 'Fikir paylaş, sıradaki özelliğe oy ver',
-                    onTap: () => _info(
-                      context,
-                      'Geri bildirim panosu',
-                      'Topluluk panosu sunucu gerektiriyor ve henüz açık değil. Fikirlerini doğrudan Harmonia ekibine iletebilirsin.',
-                    ),
+                    icon: Icons.graphic_eq_rounded,
+                    title: 'Ses aralığım',
+                    subtitle: 'Koro sekmesindeki testle ölçülür',
+                    value: _rangeLabel(store) ?? 'Ölçülmedi',
                   ),
                 ]),
                 const _Caption('TERCİHLER'),
@@ -287,43 +289,6 @@ class SettingsTab extends StatelessWidget {
     if (ok) await store.resetAll();
   }
 
-  static Future<void> _editName(
-    BuildContext context,
-    TrainerStore store,
-  ) async {
-    final controller = TextEditingController(text: store.username);
-    final name = await showCupertinoDialog<String>(
-      context: context,
-      builder: (context) => CupertinoAlertDialog(
-        title: const Text('Kullanıcı adı'),
-        content: Padding(
-          padding: const EdgeInsets.only(top: 12),
-          child: CupertinoTextField(
-            controller: controller,
-            maxLength: 24,
-            autofocus: true,
-          ),
-        ),
-        actions: [
-          CupertinoDialogAction(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Vazgeç'),
-          ),
-          CupertinoDialogAction(
-            isDefaultAction: true,
-            onPressed: () => Navigator.pop(context, controller.text.trim()),
-            child: const Text('Kaydet'),
-          ),
-        ],
-      ),
-    );
-    controller.dispose();
-    if (name != null) {
-      store.username = name;
-      store.save();
-    }
-  }
-
   static void _info(BuildContext context, String title, String body) =>
       showTrainerSheet<void>(
         context,
@@ -362,7 +327,7 @@ class SettingsTab extends StatelessWidget {
               label: label(v),
               selected: v == current,
               multi: false,
-              color: TC.orange,
+              color: TC.primary,
               onTap: () {
                 onPick(v);
                 Navigator.pop(context);
@@ -394,7 +359,7 @@ class _Group extends StatelessWidget {
       children: [
         for (var i = 0; i < children.length; i++) ...[
           if (i > 0)
-            const Divider(height: 1, indent: 60, color: Color(0xFFEFF1F5)),
+            const Divider(height: 1, indent: 60, color: Color(0xFFF0EFF8)),
           children[i],
         ],
       ],
@@ -430,8 +395,8 @@ class _Item extends StatelessWidget {
             height: 34,
             decoration: BoxDecoration(
               color: iconColor == TC.red
-                  ? const Color(0xFFFEE2E2)
-                  : const Color(0xFFF1F3F7),
+                  ? const Color(0xFFFDE5E1)
+                  : const Color(0xFFF0EFF8),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(icon, size: 19, color: iconColor),
@@ -485,7 +450,7 @@ class _Toggle extends StatelessWidget {
           width: 34,
           height: 34,
           decoration: BoxDecoration(
-            color: const Color(0xFFF1F3F7),
+            color: const Color(0xFFF0EFF8),
             borderRadius: BorderRadius.circular(10),
           ),
           child: Icon(icon, size: 19, color: TC.body),
@@ -506,7 +471,7 @@ class _Toggle extends StatelessWidget {
         ),
         CupertinoSwitch(
           value: value,
-          activeTrackColor: TC.blue,
+          activeTrackColor: TC.primary,
           onChanged: onChanged,
         ),
       ],

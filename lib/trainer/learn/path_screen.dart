@@ -40,7 +40,7 @@ class _PathScreenState extends State<PathScreen> {
               ),
               const SizedBox(height: 8),
               const Text(
-                'Bu bölümü zaten biliyor musun?',
+                'Bildiğin yerleri atla',
                 textAlign: TextAlign.center,
                 style: TT.h3,
               ),
@@ -188,12 +188,12 @@ class _NodeRow extends StatelessWidget {
       );
     } else if (exam) {
       marker = _circle(
-        const Color(0xFFE5E9F0),
+        const Color(0xFFE4E3EF),
         const Icon(Icons.emoji_events_outlined, color: TC.muted, size: 20),
       );
     } else {
       marker = _circle(
-        const Color(0xFFE9EDF3),
+        const Color(0xFFE9E8F4),
         const Icon(Icons.lock_outline_rounded, color: TC.muted, size: 18),
       );
     }
@@ -255,7 +255,7 @@ class _NodeRow extends StatelessWidget {
                             if (gate || exam) ...[
                               Tag(
                                 exam ? 'FİNAL SINAVI' : 'KONTROL NOKTASI',
-                                color: exam ? TC.purple : color,
+                                color: exam ? TC.magenta : color,
                               ),
                               const SizedBox(height: 6),
                             ],
@@ -301,7 +301,7 @@ class _NodeRow extends StatelessWidget {
                             ),
                             if (review) ...[
                               const SizedBox(height: 4),
-                              const Tag('TEKRAR', color: TC.gold),
+                              const Tag('TEKRAR', color: TC.amber),
                             ],
                           ],
                         )

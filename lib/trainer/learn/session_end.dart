@@ -44,7 +44,7 @@ class _SessionEndState extends State<SessionEnd> {
     final strong = s.accuracy >= 0.7;
     final headline = gate
         ? (widget.passed ? 'Geçtin!' : 'Bu sefer olmadı')
-        : (strong ? 'Kilitlendi!' : 'Neredeyse!');
+        : (strong ? 'Yerine oturdu!' : 'Az kaldı!');
     final message = gate
         ? (widget.passed
               ? '%$pct ile ${node!.title} tamam. Önceki derslerin hepsi açıldı.'
@@ -71,7 +71,7 @@ class _SessionEndState extends State<SessionEnd> {
                           children: [
                             _Ring(
                               value: s.accuracy,
-                              color: TC.orange,
+                              color: TC.primary,
                               icon: trainerIcon(kind),
                             ),
                             const SizedBox(height: 26),
@@ -79,9 +79,9 @@ class _SessionEndState extends State<SessionEnd> {
                               gate
                                   ? 'KONTROL NOKTASI'
                                   : strong
-                                  ? 'YENİ DERS · KİLİTLENDİ'
+                                  ? 'YENİ DERS · YERİNE OTURDU'
                                   : 'YENİ DERS · DEVAM',
-                              color: TC.orange,
+                              color: TC.primary,
                             ),
                             const SizedBox(height: 12),
                             Text(headline, style: TT.h2),
@@ -118,7 +118,7 @@ class _SessionEndState extends State<SessionEnd> {
                           ),
                           const SizedBox(height: 10),
                           const Text(
-                            'Oturum tamamlandı!',
+                            'Çalışma bitti',
                             textAlign: TextAlign.center,
                             style: TT.h3,
                           ),
@@ -165,12 +165,12 @@ class _SessionEndState extends State<SessionEnd> {
                                   width: 34,
                                   height: 34,
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFFDCFCE7),
+                                    color: const Color(0xFFDDF6EC),
                                     borderRadius: BorderRadius.circular(9),
                                   ),
                                   child: const Icon(
                                     Icons.bolt_rounded,
-                                    color: Color(0xFF16A34A),
+                                    color: Color(0xFF137A52),
                                   ),
                                 ),
                                 const SizedBox(width: 12),
@@ -251,7 +251,7 @@ class _ItemRow extends StatelessWidget {
             color: ratio >= 0.8
                 ? TC.green
                 : ratio >= 0.5
-                ? TC.orange
+                ? TC.primary
                 : TC.red,
             height: 8,
           ),
@@ -288,7 +288,7 @@ class _Ring extends StatelessWidget {
               strokeWidth: 6,
               strokeCap: StrokeCap.round,
               color: color,
-              backgroundColor: const Color(0xFFEFF2F7),
+              backgroundColor: const Color(0xFFF0EFF8),
             ),
           ),
           Container(
@@ -322,7 +322,7 @@ class _MiniRing extends StatelessWidget {
             value: pct / 100,
             strokeWidth: 4,
             color: color,
-            backgroundColor: const Color(0xFFEFF2F7),
+            backgroundColor: const Color(0xFFF0EFF8),
           ),
         ),
         Text(
@@ -364,10 +364,10 @@ Future<void> maybeCelebrateStreak(BuildContext context) async {
           children: [
             const Text('🔥', style: TextStyle(fontSize: 64)),
             const SizedBox(height: 6),
-            Text('$streak günlük seri!', style: TT.h2),
+            Text('$streak gün üst üste!', style: TT.h2),
             const SizedBox(height: 8),
             const Text(
-              'Harika gidiyorsun. Büyütmek için her gün uğra.',
+              'Seriyi korumak için yarın birkaç dakika yeter.',
               textAlign: TextAlign.center,
               style: TT.body,
             ),
@@ -393,8 +393,8 @@ Future<void> maybeCelebrateStreak(BuildContext context) async {
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               color: active
-                                  ? TC.orange
-                                  : const Color(0xFFEFF2F7),
+                                  ? TC.primary
+                                  : const Color(0xFFF0EFF8),
                               border: past && !active
                                   ? Border.all(color: TC.line, width: 1.5)
                                   : null,

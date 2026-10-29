@@ -7,145 +7,126 @@ import '../domain/trainers.dart';
 import '../state/trainer_store.dart';
 import '../ui/kit.dart';
 
-/// Statistics unlock after three first steps, then show real local evidence.
+/// Progress tab: a choir-themed level from local XP, then the learner's own
+/// evidence (no unlock gate, no leaderboard: there is no account server).
 class StatsTab extends StatelessWidget {
   const StatsTab({super.key});
 
   @override
   Widget build(BuildContext context) {
     final store = TrainerScope.of(context).store;
-    final steps = [
-      (store.setupDone, 'Nasıl çalıştığını öğren', 'Tanıtım ekranlarını bitir'),
-      (
-        store.days.values.any((d) => d.sessions > 0),
-        'Bir etkinlik tamamla',
-        'Günlük oturum, pratik ya da ders',
-      ),
-      (store.streak >= 2, 'Üst üste 2 gün çalış', 'Bir seri başlat'),
-    ];
-    final done = steps.where((s) => s.$1).length;
-    final unlocked = done == steps.length;
     return SafeArea(
       bottom: false,
       child: ListView(
         padding: EdgeInsets.zero,
         children: [
-          const _Header('İstatistik', 'Gelişimini gör'),
+          const _Header('İlerleme', 'Yalnız bu cihazdaki kendi kanıtın'),
           Padding(
-            padding: const EdgeInsets.all(16),
-            child: unlocked
-                ? _Unlocked(store: store)
-                : Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      AppCard(
-                        child: Column(
-                          children: [
-                            Text.rich(
-                              TextSpan(
-                                children: [
-                                  TextSpan(text: '$done', style: TT.h2),
-                                  const TextSpan(
-                                    text: ' / 3 tamam',
-                                    style: TT.body,
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            Row(
-                              children: [
-                                for (var i = 0; i < 3; i++)
-                                  Expanded(
-                                    child: Container(
-                                      margin: const EdgeInsets.symmetric(
-                                        horizontal: 4,
-                                      ),
-                                      height: 6,
-                                      decoration: BoxDecoration(
-                                        color: i < done
-                                            ? TC.orange
-                                            : const Color(0xFFE2E6EE),
-                                        borderRadius: BorderRadius.circular(3),
-                                      ),
-                                    ),
-                                  ),
-                              ],
-                            ),
-                            const SizedBox(height: 10),
-                            const Text(
-                              'İlerlemeni izlemek için bunları bitir',
-                              style: TT.small,
-                            ),
-                          ],
-                        ),
+            padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _LevelCard(store: store),
+                const SizedBox(height: 14),
+                _Unlocked(store: store),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Choir ladder derived from total XP (10 per correct answer, 2 per try).
+const choirLevels = [
+  (0, 'Dinleyici', Icons.hearing_rounded),
+  (500, 'Korist', Icons.mic_none_rounded),
+  (1500, 'Partisyon lideri', Icons.record_voice_over_rounded),
+  (4000, 'Solist', Icons.star_outline_rounded),
+  (8000, 'Şef yardımcısı', Icons.queue_music_rounded),
+  (15000, 'Maestro', Icons.workspace_premium_outlined),
+];
+
+class _LevelCard extends StatelessWidget {
+  const _LevelCard({required this.store});
+  final TrainerStore store;
+  @override
+  Widget build(BuildContext context) {
+    final xp = store.xp;
+    var i = 0;
+    while (i + 1 < choirLevels.length && xp >= choirLevels[i + 1].$1) {
+      i++;
+    }
+    final level = choirLevels[i];
+    final next = i + 1 < choirLevels.length ? choirLevels[i + 1] : null;
+    final progress = next == null
+        ? 1.0
+        : (xp - level.$1) / (next.$1 - level.$1);
+    return Container(
+      key: const Key('level_card'),
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: TC.primary,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: const BoxDecoration(
+                  color: TC.sun,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(level.$3, color: TC.onSun),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'SEVİYE ${i + 1} · $xp XP',
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 11.5,
+                        letterSpacing: 1.1,
                       ),
-                      const SizedBox(height: 20),
-                      const Text('İLK ADIMLAR', style: TT.caps),
-                      const SizedBox(height: 10),
-                      for (var i = 0; i < steps.length; i++)
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 10),
-                          child: AppCard(
-                            border:
-                                !steps[i].$1 && steps.take(i).every((s) => s.$1)
-                                ? TC.orange
-                                : null,
-                            child: Row(
-                              children: [
-                                Container(
-                                  width: 26,
-                                  height: 26,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: steps[i].$1
-                                        ? TC.orange
-                                        : Colors.white,
-                                    border: Border.all(
-                                      color: TC.orange,
-                                      width: 2,
-                                    ),
-                                  ),
-                                  child: steps[i].$1
-                                      ? const Icon(
-                                          Icons.check_rounded,
-                                          size: 16,
-                                          color: Colors.white,
-                                        )
-                                      : Center(
-                                          child: Container(
-                                            width: 10,
-                                            height: 10,
-                                            decoration: const BoxDecoration(
-                                              shape: BoxShape.circle,
-                                              color: TC.orange,
-                                            ),
-                                          ),
-                                        ),
-                                ),
-                                const SizedBox(width: 14),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(steps[i].$2, style: TT.title),
-                                      Text(steps[i].$3, style: TT.small),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      if (store.totalQuestions > 0) ...[
-                        const SizedBox(height: 12),
-                        const Text('ŞİMDİYE KADAR', style: TT.caps),
-                        const SizedBox(height: 10),
-                        _TrainerList(store: store),
-                      ],
-                    ],
-                  ),
+                    ),
+                    Text(
+                      level.$2,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 22,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(5),
+            child: LinearProgressIndicator(
+              value: progress.clamp(0.0, 1.0),
+              minHeight: 8,
+              color: TC.sun,
+              backgroundColor: Colors.white24,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            next == null
+                ? 'En üst seviyedesin · bu hafta ${store.weeklyXp()} XP'
+                : '${next.$2} için ${next.$1 - xp} XP · bu hafta ${store.weeklyXp()} XP',
+            style: const TextStyle(color: Colors.white, fontSize: 13),
           ),
         ],
       ),
@@ -159,15 +140,8 @@ class _Header extends StatelessWidget {
   final String subtitle;
   final Widget? trailing;
   @override
-  Widget build(BuildContext context) => Container(
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: const BorderRadius.vertical(bottom: Radius.circular(22)),
-      boxShadow: [
-        BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 12),
-      ],
-    ),
-    padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.fromLTRB(20, 16, 16, 14),
     child: Row(
       children: [
         Expanded(
@@ -175,6 +149,7 @@ class _Header extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(title, style: TT.h1),
+              const SizedBox(height: 2),
               Text(subtitle, style: TT.small),
             ],
           ),
@@ -236,8 +211,8 @@ class _Unlocked extends StatelessWidget {
                               height: math.max(4, 80 * counts[i] / peak),
                               decoration: BoxDecoration(
                                 color: i == 6
-                                    ? TC.orange
-                                    : TC.orange.withValues(alpha: 0.4),
+                                    ? TC.primary
+                                    : TC.primary.withValues(alpha: 0.4),
                                 borderRadius: BorderRadius.circular(6),
                               ),
                             ),
@@ -350,7 +325,7 @@ class _Ring extends StatelessWidget {
             value: value ?? 0,
             strokeWidth: 3.5,
             color: color,
-            backgroundColor: const Color(0xFFEFF2F7),
+            backgroundColor: const Color(0xFFF0EFF8),
           ),
         ),
         Text(
@@ -421,7 +396,7 @@ class TrainerStatsScreen extends StatelessWidget {
                                 '${delta >= 0 ? '▲' : '▼'} %${delta.abs()}',
                                 style: TextStyle(
                                   color: delta >= 0
-                                      ? const Color(0xFF16A34A)
+                                      ? const Color(0xFF137A52)
                                       : TC.red,
                                   fontWeight: FontWeight.w800,
                                 ),
@@ -494,7 +469,7 @@ class TrainerStatsScreen extends StatelessWidget {
                       Expanded(
                         child: _Extreme(
                           caption: 'EN GÜÇLÜ',
-                          color: const Color(0xFF16A34A),
+                          color: const Color(0xFF137A52),
                           text: tested.isEmpty
                               ? '—'
                               : '${label(tested.first.key)} · %${(tested.first.value.accuracy! * 100).round()}',
@@ -556,12 +531,12 @@ class _HeatChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final a = stat?.accuracy;
     final (bg, fg) = a == null
-        ? (const Color(0xFFF1F3F7), TC.faint)
+        ? (const Color(0xFFF0EFF8), TC.faint)
         : a >= 0.8
-        ? (const Color(0xFFDCFCE7), const Color(0xFF15803D))
+        ? (const Color(0xFFDDF6EC), const Color(0xFF137A52))
         : a >= 0.5
         ? (const Color(0xFFFEF9C3), const Color(0xFF854D0E))
-        : (const Color(0xFFFEE2E2), TC.red);
+        : (const Color(0xFFFDE5E1), TC.red);
     return Container(
       width: 70,
       padding: const EdgeInsets.symmetric(vertical: 8),

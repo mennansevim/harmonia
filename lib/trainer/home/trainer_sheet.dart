@@ -24,7 +24,7 @@ Future<void> openTrainerSheet(BuildContext context, TrainerKind kind) async {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(kind.title, style: TT.h3),
-                  const Text('Nasıl çalışmak istersin?', style: TT.small),
+                  const Text('Bugün nasıl çalışalım?', style: TT.small),
                 ],
               ),
             ),

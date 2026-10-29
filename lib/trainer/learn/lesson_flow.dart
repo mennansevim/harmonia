@@ -27,7 +27,10 @@ enum _Step { start, slides, quickCheck, lockedIn, complete, practice, result }
 class _LessonFlowState extends State<LessonFlow> {
   late final math.Random _random = widget.random ?? math.Random();
   late final QuizGenerator _gen = QuizGenerator(
-    QuizConfig.forNode(widget.node),
+    QuizConfig.forNode(
+      widget.node,
+      voice: TrainerScope.read(context).store.part,
+    ),
     random: _random,
   );
   _Step _step = _Step.start;
@@ -345,7 +348,7 @@ class _LessonFlowState extends State<LessonFlow> {
         ),
         const SizedBox(height: 22),
         AppCard(
-          color: const Color(0xFFF8FAFC),
+          color: const Color(0xFFF7F7FC),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -451,7 +454,7 @@ class _LessonFlowState extends State<LessonFlow> {
         record: false,
         forceHints: true,
         showCounter: false,
-        quickCheckLabel: 'HIZLI KONTROL',
+        quickCheckLabel: 'KISA YOKLAMA',
         onExit: () => Navigator.of(context).pop(false),
         onFinished: (_) => setState(() => _step = _Step.lockedIn),
       ),
@@ -460,7 +463,7 @@ class _LessonFlowState extends State<LessonFlow> {
       _Step.practice => QuizView(
         key: const ValueKey('practice'),
         title: node.isGate ? node.title : 'Pratik',
-        color: node.isGate ? color : TC.purple,
+        color: node.isGate ? color : TC.magenta,
         questions: node.isGate ? _gen.session() : _gen.lessonPractice(node),
         showCounter: node.isGate,
         onExit: () => Navigator.of(context).pop(false),
@@ -512,10 +515,10 @@ class _LessonFlowState extends State<LessonFlow> {
                       NodeKind.finalExam => 'FİNAL SINAVI',
                       _ when node.newItems.isEmpty => 'YENİ KARŞILAŞTIRMA',
                       _ => 'YENİ ${kind.unitWord.toUpperCase()}',
-                    }, color: TC.orange),
+                    }, color: TC.primary),
                     const SizedBox(height: 16),
                     TrainerBadge(
-                      color: gate ? color : TC.orange,
+                      color: gate ? color : TC.primary,
                       icon: gate ? Icons.flag_rounded : trainerIcon(kind),
                       size: 72,
                     ),
@@ -552,7 +555,7 @@ class _LessonFlowState extends State<LessonFlow> {
               child: BigButton(
                 label: gate ? 'Teste başla' : 'Derse başla',
                 chevron: true,
-                color: gate ? color : TC.orange,
+                color: gate ? color : TC.primary,
                 onPressed: () => setState(
                   () => _step = gate ? _Step.practice : _Step.slides,
                 ),
@@ -612,9 +615,9 @@ class _LessonFlowState extends State<LessonFlow> {
         height: 18,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: active ? Colors.white : const Color(0xFFDDE2EA),
+          color: active ? Colors.white : const Color(0xFFE4E3EF),
           border: Border.all(
-            color: active ? TC.orange : const Color(0xFFDDE2EA),
+            color: active ? TC.primary : const Color(0xFFE4E3EF),
             width: 4,
           ),
         ),
@@ -625,7 +628,7 @@ class _LessonFlowState extends State<LessonFlow> {
         style: TextStyle(
           fontSize: 10.5,
           fontWeight: FontWeight.w700,
-          color: active ? TC.orange : TC.muted,
+          color: active ? TC.primary : TC.muted,
         ),
       ),
     ],
@@ -665,7 +668,7 @@ class _LessonFlowState extends State<LessonFlow> {
               child: BigButton(
                 key: const Key('lesson_next'),
                 label: isIntro && last ? 'Tamam' : 'İleri',
-                color: kind == TrainerKind.pitch ? TC.blue : color,
+                color: kind == TrainerKind.pitch ? TC.primary : color,
                 onPressed: _nextSlide,
               ),
             ),
@@ -683,7 +686,7 @@ class _LessonFlowState extends State<LessonFlow> {
           TopBar(title: node.title, progress: 0.92, progressColor: color),
           Expanded(
             child: _readySlide(
-              'Kilitlendi',
+              'Yerine oturdu',
               node.newItems.isEmpty
                   ? 'Farkı duydun. Şimdi pratikte pekiştirelim.'
                   : '${node.newItems.map((i) => _label(i)).join(', ')} artık kulağında. Bu senin yeni işaret noktan.',
@@ -693,7 +696,7 @@ class _LessonFlowState extends State<LessonFlow> {
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
             child: BigButton(
               label: 'Devam',
-              color: kind == TrainerKind.pitch ? TC.blue : color,
+              color: kind == TrainerKind.pitch ? TC.primary : color,
               onPressed: () => setState(() => _step = _Step.complete),
             ),
           ),
@@ -717,7 +720,7 @@ class _LessonFlowState extends State<LessonFlow> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Tag('DERS TAMAMLANDI', color: TC.orange),
+                const Tag('DERS TAMAMLANDI', color: TC.primary),
                 const SizedBox(height: 16),
                 TrainerBadge(color: color, icon: trainerIcon(kind), size: 76),
                 const SizedBox(height: 18),
@@ -815,7 +818,7 @@ class ScaleLadder extends StatelessWidget {
                   height: scale.color == i ? 14 : 8,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: scale.color == i ? TC.purple : color,
+                    color: scale.color == i ? TC.magenta : color,
                   ),
                 ),
               ),

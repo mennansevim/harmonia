@@ -67,6 +67,29 @@ extension RegisterOctave on Register {
   };
 }
 
+/// SATB choir parts with their usual spans (MIDI). Lessons are played where
+/// the learner sings: lower parts hear every register one octave down.
+enum VoicePart {
+  soprano('Soprano', 60, 81),
+  alto('Alto', 53, 74),
+  tenor('Tenor', 48, 69),
+  bass('Bas', 40, 64);
+
+  const VoicePart(this.title, this.low, this.high);
+  final String title;
+  final int low;
+  final int high;
+
+  bool get lower => this == tenor || this == bass;
+
+  Register fit(Register r) => !lower
+      ? r
+      : switch (r) {
+          Register.high => Register.medium,
+          _ => Register.low,
+        };
+}
+
 class IntervalType {
   const IntervalType(this.id, this.semitones, this.name, this.feel, this.hook);
   final String id;

@@ -103,7 +103,11 @@ class TrainerStore extends ChangeNotifier {
   final Map<String, DayActivity> days = {};
   int xp = 0;
   String? lastTrainer;
-  bool leagueJoined = false;
+
+  /// Choir part the learner picked (VoicePart.name), null = not chosen.
+  String? voicePart;
+
+  VoicePart? get part => VoicePart.values.asNameMap()[voicePart];
   final Set<String> seenTrainerSheets = {};
   String? lastStreakCelebrated;
   String? koroRange;
@@ -173,7 +177,7 @@ class TrainerStore extends ChangeNotifier {
     days.clear();
     xp = 0;
     lastTrainer = null;
-    leagueJoined = false;
+    voicePart = null;
     seenTrainerSheets.clear();
     lastStreakCelebrated = null;
     koroRange = null;
@@ -363,7 +367,7 @@ class TrainerStore extends ChangeNotifier {
     },
     'xp': xp,
     'lastTrainer': lastTrainer,
-    'leagueJoined': leagueJoined,
+    'voicePart': voicePart,
     'seenSheets': seenTrainerSheets.toList(),
     'lastStreakCelebrated': lastStreakCelebrated,
     'koroRange': koroRange,
@@ -432,7 +436,10 @@ class TrainerStore extends ChangeNotifier {
     });
     xp = get<int>(doc, 'xp') ?? 0;
     lastTrainer = get<String>(doc, 'lastTrainer');
-    leagueJoined = get<bool>(doc, 'leagueJoined') ?? false;
+    voicePart =
+        VoicePart.values.asNameMap().containsKey(get<String>(doc, 'voicePart'))
+        ? get<String>(doc, 'voicePart')
+        : null;
     seenTrainerSheets
       ..clear()
       ..addAll(

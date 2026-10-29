@@ -3,12 +3,14 @@ import 'package:flutter/material.dart';
 import '../app/scope.dart';
 import '../domain/curriculum.dart';
 import '../domain/trainers.dart';
+import '../domain/music.dart';
 import '../koro/koro_hub.dart';
+import '../koro/range_test.dart';
+import '../koro/voice_count.dart';
 import '../learn/lesson_flow.dart';
 import '../practice/practice_setup.dart';
 import '../settings/settings_tab.dart';
 import '../state/trainer_store.dart';
-import '../stats/ranks_tab.dart';
 import '../stats/stats_tab.dart';
 import '../ui/kit.dart';
 import 'trainer_sheet.dart';
@@ -31,7 +33,12 @@ class _HomeShellState extends State<HomeShell> {
         backgroundColor: TC.canvas,
         body: IndexedStack(
           index: _tab,
-          children: const [PlayTab(), StatsTab(), RanksTab(), SettingsTab()],
+          children: const [
+            PlayTab(),
+            KoroHub(asTab: true),
+            StatsTab(),
+            SettingsTab(),
+          ],
         ),
         bottomNavigationBar: _NavBar(
           index: _tab,
@@ -42,6 +49,7 @@ class _HomeShellState extends State<HomeShell> {
   }
 }
 
+/// Four destinations; the choir workshop is a first-class tab.
 class _NavBar extends StatelessWidget {
   const _NavBar({required this.index, required this.onTap});
   final int index;
@@ -49,26 +57,17 @@ class _NavBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const items = [
-      (Icons.play_arrow_outlined, 'Oyna'),
-      (Icons.bar_chart_rounded, 'İstatistik'),
-      (Icons.emoji_events_outlined, 'Sıralama'),
-      (Icons.settings_outlined, 'Ayarlar'),
+      (Icons.wb_sunny_outlined, Icons.wb_sunny_rounded, 'Bugün'),
+      (Icons.groups_outlined, Icons.groups_rounded, 'Koro'),
+      (Icons.insights_outlined, Icons.insights_rounded, 'İlerleme'),
+      (Icons.tune_outlined, Icons.tune_rounded, 'Ayarlar'),
     ];
     return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: const Border(top: BorderSide(color: Color(0xFFEDEFF3))),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 10,
-          ),
-        ],
-      ),
+      color: Colors.white,
       child: SafeArea(
         top: false,
-        child: SizedBox(
-          height: 58,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(10, 6, 10, 6),
           child: Row(
             children: [
               for (var i = 0; i < items.length; i++)
@@ -76,33 +75,45 @@ class _NavBar extends StatelessWidget {
                   child: Semantics(
                     selected: i == index,
                     button: true,
-                    label: items[i].$2,
+                    label: items[i].$3,
                     excludeSemantics: true,
                     child: InkWell(
                       key: Key('tab_$i'),
+                      borderRadius: BorderRadius.circular(14),
                       onTap: () {
                         tapHaptic();
                         onTap(i);
                       },
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            items[i].$1,
-                            color: i == index ? TC.orange : TC.muted,
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            items[i].$2,
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: i == index
-                                  ? FontWeight.w800
-                                  : FontWeight.w500,
-                              color: i == index ? TC.orange : TC.muted,
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        margin: const EdgeInsets.symmetric(horizontal: 3),
+                        padding: const EdgeInsets.symmetric(vertical: 7),
+                        decoration: BoxDecoration(
+                          color: i == index
+                              ? TC.primarySoft
+                              : Colors.transparent,
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              i == index ? items[i].$2 : items[i].$1,
+                              color: i == index ? TC.primary : TC.muted,
                             ),
-                          ),
-                        ],
+                            const SizedBox(height: 2),
+                            Text(
+                              items[i].$3,
+                              style: TextStyle(
+                                fontSize: 11.5,
+                                fontWeight: i == index
+                                    ? FontWeight.w800
+                                    : FontWeight.w600,
+                                color: i == index ? TC.primary : TC.muted,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -158,13 +169,19 @@ class PlayTab extends StatefulWidget {
 }
 
 class _PlayTabState extends State<PlayTab> {
-  final _gridKey = GlobalKey();
-
-  String _greeting(DateTime now) => now.hour < 12
-      ? 'Günaydın'
-      : now.hour < 18
-      ? 'İyi günler'
-      : 'İyi akşamlar';
+  static const _months = [
+    'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', //
+    'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık',
+  ];
+  static const _weekdays = [
+    'Pazartesi',
+    'Salı',
+    'Çarşamba',
+    'Perşembe',
+    'Cuma',
+    'Cumartesi',
+    'Pazar',
+  ];
 
   Future<void> _beginToday() =>
       startTodaySession(TrainerScope.of(context).store, Navigator.of(context));
@@ -175,345 +192,285 @@ class _PlayTabState extends State<PlayTab> {
     final now = store.now;
     final focus = focusTrainer(store);
     final next = store.nextNode(focus);
-    final last = TrainerKind.values
-        .where((k) => k.id == store.lastTrainer)
-        .firstOrNull;
     return SafeArea(
       bottom: false,
-      child: CustomScrollView(
-        slivers: [
-          SliverToBoxAdapter(
-            child: Container(
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.vertical(
-                  bottom: Radius.circular(26),
-                ),
-              ),
-              padding: const EdgeInsets.fromLTRB(16, 10, 16, 14),
-              child: Column(
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(_greeting(now), style: TT.small),
-                            const Text('Çalışmaya hazır mısın?', style: TT.h2),
-                          ],
-                        ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: TC.orangeSoft,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Text(
-                          '🔥 ${store.streak}',
-                          key: const Key('streak_badge'),
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w800,
-                            color: TC.orangeDeep,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 14),
-                  _WeekStrip(store: store),
-                ],
-              ),
-            ),
-          ),
-          SliverPadding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
-            sliver: SliverList.list(
-              children: [
-                _TodayCard(
-                  done: store.sessionToday,
-                  next: next,
-                  minutes: store.dailyMinutes,
-                  onBegin: _beginToday,
-                  onExplore: () => Scrollable.ensureVisible(
-                    _gridKey.currentContext!,
-                    duration: const Duration(milliseconds: 400),
-                  ),
-                ),
-                if (last != null && store.nextNode(last) != null) ...[
-                  const SizedBox(height: 14),
-                  _ResumeCard(kind: last),
-                ],
-                const SizedBox(height: 22),
-                Row(
-                  key: _gridKey,
-                  children: const [
-                    Expanded(child: Divider(color: TC.line)),
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 10),
-                      child: Text('BİR BECERİ ÇALIŞ', style: TT.caps),
+      child: ListView(
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 28),
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${_weekdays[now.weekday - 1]}, ${now.day} ${_months[now.month - 1]}'
+                          .toUpperCase(),
+                      style: TT.caps,
                     ),
-                    Expanded(child: Divider(color: TC.line)),
+                    const SizedBox(height: 2),
+                    const Text('Bugün', style: TT.h1),
                   ],
                 ),
-                const SizedBox(height: 12),
-                _SkillGrid(),
-                const SizedBox(height: 12),
-                const _KoroCard(),
-              ],
-            ),
+              ),
+              _StreakChip(days: store.streak),
+            ],
           ),
+          const SizedBox(height: 12),
+          _PartChip(store: store),
+          const SizedBox(height: 14),
+          _WeekBar(store: store),
+          const SizedBox(height: 18),
+          _DailyPlan(
+            store: store,
+            trainer: focus,
+            next: next,
+            onBegin: _beginToday,
+          ),
+          const SizedBox(height: 24),
+          const Text('BECERİLER', style: TT.caps),
+          const SizedBox(height: 10),
+          for (final k in TrainerKind.values) _SkillRow(kind: k, store: store),
         ],
       ),
     );
   }
 }
 
-class _WeekStrip extends StatelessWidget {
-  const _WeekStrip({required this.store});
+class _StreakChip extends StatelessWidget {
+  const _StreakChip({required this.days});
+  final int days;
+  @override
+  Widget build(BuildContext context) => Semantics(
+    label: '$days günlük seri',
+    excludeSemantics: true,
+    child: Container(
+      key: const Key('streak_badge'),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+      decoration: BoxDecoration(
+        color: days > 0 ? TC.sun : TC.primarySoft,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.wb_sunny_rounded,
+            size: 18,
+            color: days > 0 ? TC.onSun : TC.muted,
+          ),
+          const SizedBox(width: 5),
+          Text(
+            '$days gün',
+            style: TextStyle(
+              fontWeight: FontWeight.w800,
+              color: days > 0 ? TC.onSun : TC.muted,
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+/// The learner's choir part; tapping changes where lessons are played.
+class _PartChip extends StatelessWidget {
+  const _PartChip({required this.store});
+  final TrainerStore store;
+  @override
+  Widget build(BuildContext context) {
+    final part = store.part;
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: ActionChip(
+        key: const Key('part_chip'),
+        avatar: const Icon(Icons.mic_none_rounded, size: 18, color: TC.primary),
+        label: Text(
+          part == null
+              ? 'Partini seç'
+              : '${part.title} · dersler senin aralığında çalar',
+        ),
+        labelStyle: const TextStyle(
+          color: TC.primary,
+          fontWeight: FontWeight.w700,
+        ),
+        backgroundColor: TC.primarySoft,
+        side: BorderSide.none,
+        shape: const StadiumBorder(),
+        onPressed: () => showVoicePartSheet(context),
+      ),
+    );
+  }
+}
+
+/// Picker shared by home and settings. Changes playback only, never scores.
+Future<void> showVoicePartSheet(BuildContext context) {
+  final store = TrainerScope.of(context).store;
+  return showTrainerSheet<void>(
+    context,
+    (sheet) => Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const Text('Hangi partide söylüyorsun?', style: TT.h3),
+        const SizedBox(height: 6),
+        const Text(
+          'Tenor ve bas seçilince dersler bir oktav pesten çalar. '
+          'Emin değilsen Koro sekmesindeki ses aralığı testi taslak bir öneri verir.',
+          style: TT.small,
+        ),
+        const SizedBox(height: 14),
+        for (final p in VoicePart.values)
+          ChoiceTile(
+            key: Key('part_${p.name}'),
+            label: p.title,
+            multi: false,
+            selected: store.voicePart == p.name,
+            onTap: () {
+              store.voicePart = p.name;
+              store.save();
+              Navigator.pop(sheet);
+            },
+          ),
+        TextLink(
+          'Seçme, varsayılan aralıkta çal',
+          onTap: () {
+            store.voicePart = null;
+            store.save();
+            Navigator.pop(sheet);
+          },
+        ),
+      ],
+    ),
+  );
+}
+
+/// This week as seven bars: filled for days with practice.
+class _WeekBar extends StatelessWidget {
+  const _WeekBar({required this.store});
   final TrainerStore store;
   @override
   Widget build(BuildContext context) {
     final now = store.now;
     final today = DateTime(now.year, now.month, now.day);
     final monday = today.subtract(Duration(days: today.weekday - 1));
-    const labels = ['P', 'S', 'Ç', 'P', 'C', 'C', 'P'];
+    const labels = ['Pt', 'Sa', 'Ça', 'Pe', 'Cu', 'Ct', 'Pz'];
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         for (var i = 0; i < 7; i++)
-          Builder(
-            builder: (context) {
-              final d = monday.add(Duration(days: i));
-              final isToday = d == today;
-              final active = store.activeOn(d);
-              return Column(
-                children: [
-                  Container(
-                    width: 34,
-                    height: 34,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: active || isToday ? TC.orange : Colors.white,
-                      border: Border.all(
-                        color: active || isToday ? TC.orange : TC.line,
-                        width: 1.5,
+          Expanded(
+            child: Builder(
+              builder: (context) {
+                final d = monday.add(Duration(days: i));
+                final active = store.activeOn(d);
+                final isToday = d == today;
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 3),
+                  child: Column(
+                    children: [
+                      Container(
+                        height: 8,
+                        decoration: BoxDecoration(
+                          color: active ? TC.primary : TC.line,
+                          borderRadius: BorderRadius.circular(4),
+                          border: isToday && !active
+                              ? Border.all(color: TC.primary, width: 1.5)
+                              : null,
+                        ),
                       ),
-                    ),
-                    child: active
-                        ? const Icon(
-                            Icons.check_rounded,
-                            size: 18,
-                            color: Colors.white,
-                          )
-                        : Text(
-                            labels[i],
-                            style: TextStyle(
-                              fontWeight: FontWeight.w700,
-                              fontSize: 12,
-                              color: isToday ? Colors.white : TC.muted,
-                            ),
-                          ),
+                      const SizedBox(height: 4),
+                      Text(
+                        labels[i],
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: isToday
+                              ? FontWeight.w800
+                              : FontWeight.w500,
+                          color: isToday ? TC.primary : TC.muted,
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '${d.day}',
-                    style: const TextStyle(fontSize: 11, color: TC.muted),
-                  ),
-                ],
-              );
-            },
+                );
+              },
+            ),
           ),
       ],
     );
   }
 }
 
-class _TodayCard extends StatelessWidget {
-  const _TodayCard({
-    required this.done,
+/// Today's plan: one ear lesson plus one choir step, as a checklist.
+class _DailyPlan extends StatelessWidget {
+  const _DailyPlan({
+    required this.store,
+    required this.trainer,
     required this.next,
-    required this.minutes,
     required this.onBegin,
-    required this.onExplore,
   });
-  final bool done;
+  final TrainerStore store;
+  final TrainerKind trainer;
   final LessonNode? next;
-  final int minutes;
   final VoidCallback onBegin;
-  final VoidCallback onExplore;
 
   @override
   Widget build(BuildContext context) {
+    final lessonDone = store.sessionToday;
+    final hasRange = store.koroRange != null;
     final lesson = next;
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(24),
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFFF8A43A), TC.orangeDeep],
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: TC.orange.withValues(alpha: 0.35),
-            blurRadius: 18,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.all(18),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  'BUGÜNÜN OTURUMU · ~$minutes DK',
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.9),
-                    fontWeight: FontWeight.w800,
-                    fontSize: 11.5,
-                    letterSpacing: 1.1,
-                  ),
-                ),
-              ),
-              if (done)
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 5,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.25),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: const Text(
-                    '✓ Bitti',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w800,
-                      fontSize: 12,
-                    ),
-                  ),
-                ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            done
-                ? 'Bugünlük bitti'
-                : (lesson == null
-                      ? 'Tüm yollar tamam!'
-                      : 'Hafıza, tekrar, sonra yeni'),
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 24,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            done
-                ? 'Tekrar listende bir şey kalmadı. Yeni bir eğitmen keşfederek yarına önden başla.'
-                : lesson == null
-                ? 'Pratik modunda kulağını keskin tut ya da Koro Atölyesi\'ni dene.'
-                : 'Öğren · ${lesson.title}\nPratik · yalnız yeni ses',
-            style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.92),
-              height: 1.4,
-            ),
-          ),
-          const SizedBox(height: 16),
-          SizedBox(
-            width: double.infinity,
-            height: 50,
-            child: FilledButton.icon(
-              key: const Key('today_begin'),
-              style: FilledButton.styleFrom(
-                backgroundColor: Colors.white,
-                foregroundColor: TC.orangeDeep,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                textStyle: const TextStyle(
-                  fontWeight: FontWeight.w800,
-                  fontSize: 16,
-                ),
-              ),
-              onPressed: done || lesson == null ? onExplore : onBegin,
-              icon: Icon(
-                done || lesson == null
-                    ? Icons.explore_outlined
-                    : Icons.play_arrow_rounded,
-              ),
-              label: Text(
-                done || lesson == null ? 'Bir eğitmen keşfet' : 'Başla',
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ResumeCard extends StatelessWidget {
-  const _ResumeCard({required this.kind});
-  final TrainerKind kind;
-  @override
-  Widget build(BuildContext context) {
-    final store = TrainerScope.of(context).store;
-    final color = trainerColor(kind);
-    final m = store.mastery(kind);
     return AppCard(
+      key: const Key('daily_plan'),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Row(
             children: [
-              TrainerBadge(color: color, icon: trainerIcon(kind), size: 40),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text('KALDIĞIN YERDEN DEVAM ET', style: TT.caps),
-                    Text(kind.title, style: TT.title),
-                  ],
-                ),
-              ),
+              const Expanded(child: Text('Günün planı', style: TT.h3)),
+              Tag('~${store.dailyMinutes} DK', color: TC.primary),
             ],
           ),
           const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: ProgressBar(value: m, color: color, height: 8),
-              ),
-              const SizedBox(width: 8),
-              Text(
-                '%${(m * 100).round()}',
-                style: TextStyle(color: color, fontWeight: FontWeight.w800),
-              ),
-            ],
+          _PlanStep(
+            done: lessonDone,
+            color: trainerColor(trainer),
+            icon: trainerIcon(trainer),
+            title: lesson == null ? '${trainer.title} tamam' : lesson.title,
+            subtitle: '${trainer.title} · kulak dersi',
           ),
-          const SizedBox(height: 12),
-          BigButton(
-            label: 'Pratiğe devam et',
-            icon: Icons.play_arrow_rounded,
-            color: color,
-            onPressed: () => Navigator.of(context).push(
+          _PlanStep(
+            done: false,
+            color: TC.koro,
+            icon: hasRange ? Icons.layers_outlined : Icons.graphic_eq_rounded,
+            title: hasRange ? 'Kaç ses duyuyorsun?' : 'Ses aralığı testi',
+            subtitle: hasRange
+                ? 'Koro · 2/3/4 sesli dokuyu ayırt et'
+                : 'Koro · partini bulmak için taslak ölçüm',
+            onTap: () => Navigator.of(context).push(
               MaterialPageRoute<void>(
-                builder: (_) => PracticeSetupScreen(trainer: kind),
+                builder: (_) => hasRange
+                    ? const VoiceCountScreen()
+                    : const RangeTestScreen(),
               ),
             ),
+          ),
+          const SizedBox(height: 8),
+          BigButton(
+            key: const Key('today_begin'),
+            label: lessonDone
+                ? 'Bugünlük ders tamam'
+                : lesson == null
+                ? 'Pratik yap'
+                : 'Derse başla',
+            icon: Icons.play_arrow_rounded,
+            onPressed: lessonDone
+                ? null
+                : lesson == null
+                ? () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => PracticeSetupScreen(trainer: trainer),
+                    ),
+                  )
+                : onBegin,
           ),
         ],
       ),
@@ -521,71 +478,108 @@ class _ResumeCard extends StatelessWidget {
   }
 }
 
-class _SkillGrid extends StatelessWidget {
+class _PlanStep extends StatelessWidget {
+  const _PlanStep({
+    required this.done,
+    required this.color,
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    this.onTap,
+  });
+  final bool done;
+  final Color color;
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final VoidCallback? onTap;
   @override
-  Widget build(BuildContext context) => LayoutBuilder(
-    builder: (context, c) {
-      final w = (c.maxWidth - 12) / 2;
-      return Wrap(
-        spacing: 12,
-        runSpacing: 12,
+  Widget build(BuildContext context) => InkWell(
+    onTap: onTap,
+    borderRadius: BorderRadius.circular(12),
+    child: Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
         children: [
-          for (final k in TrainerKind.values)
-            SizedBox(
-              width: k == TrainerKind.progression ? c.maxWidth : w,
-              child: AppCard(
-                key: Key('skill_${k.id}'),
-                onTap: () => openTrainerSheet(context, k),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    TrainerBadge(color: trainerColor(k), icon: trainerIcon(k)),
-                    const SizedBox(height: 14),
-                    Text(k.shortTitle, style: TT.title),
-                    const SizedBox(height: 2),
-                    Text(k.tagline, style: TT.small),
-                  ],
-                ),
-              ),
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: done ? TC.green : soft(color),
+              borderRadius: BorderRadius.circular(12),
             ),
+            child: Icon(
+              done ? Icons.check_rounded : icon,
+              color: done ? Colors.white : color,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TT.title.copyWith(
+                    decoration: done ? TextDecoration.lineThrough : null,
+                  ),
+                ),
+                Text(subtitle, style: TT.small),
+              ],
+            ),
+          ),
+          if (onTap != null)
+            const Icon(Icons.chevron_right_rounded, color: TC.faint),
         ],
-      );
-    },
+      ),
+    ),
   );
 }
 
-class _KoroCard extends StatelessWidget {
-  const _KoroCard();
+class _SkillRow extends StatelessWidget {
+  const _SkillRow({required this.kind, required this.store});
+  final TrainerKind kind;
+  final TrainerStore store;
   @override
-  Widget build(BuildContext context) => AppCard(
-    key: const Key('skill_koro'),
-    onTap: () => Navigator.of(
-      context,
-    ).push(MaterialPageRoute<void>(builder: (_) => const KoroHub())),
-    color: const Color(0xFFF1EFFE),
-    child: Row(
-      children: [
-        const TrainerBadge(
-          color: TC.indigo,
-          icon: Icons.groups_rounded,
-          size: 52,
-        ),
-        const SizedBox(width: 14),
-        const Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Koro Atölyesi', style: TT.title),
-              SizedBox(height: 2),
-              Text(
-                'Ses aralığı testi, ritim, ezgi, aksak ritim ve 2/3/4 sesli çalışma',
-                style: TT.small,
+  Widget build(BuildContext context) {
+    final color = trainerColor(kind);
+    final m = store.mastery(kind);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: AppCard(
+        key: Key('skill_${kind.id}'),
+        padding: const EdgeInsets.all(14),
+        onTap: () => openTrainerSheet(context, kind),
+        child: Row(
+          children: [
+            TrainerBadge(color: color, icon: trainerIcon(kind), size: 42),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(child: Text(kind.shortTitle, style: TT.title)),
+                      Text(
+                        '%${(m * 100).round()}',
+                        style: TextStyle(
+                          color: color,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 2),
+                  Text(kind.tagline, style: TT.small),
+                  const SizedBox(height: 8),
+                  ProgressBar(value: m, color: color, height: 5),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
-        const Tag('YENİ', color: TC.indigo),
-      ],
-    ),
-  );
+      ),
+    );
+  }
 }

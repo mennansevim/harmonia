@@ -107,7 +107,7 @@ class _VoiceCountScreenState extends State<VoiceCountScreen> {
                 ),
                 BigButton(
                   label: 'Bitti',
-                  color: TC.indigo,
+                  color: TC.koro,
                   onPressed: () => Navigator.pop(context),
                 ),
               ],
@@ -126,14 +126,14 @@ class _VoiceCountScreenState extends State<VoiceCountScreen> {
               TopBar(
                 title: 'Kaç ses duyuyorsun?',
                 progress: (_index + (_picked == null ? 0 : 1)) / widget.length,
-                progressColor: TC.indigo,
+                progressColor: TC.koro,
                 counter: '${_index + 1} / ${widget.length}',
                 shadow: true,
               ),
               const Spacer(),
               WaveView(
                 playing: TrainerScope.of(context).audio.playing,
-                color: TC.indigo,
+                color: TC.koro,
                 label: 'AKORU TEKRARLA',
                 onTap: _picked == null ? _play : null,
                 height: 200,
@@ -143,7 +143,7 @@ class _VoiceCountScreenState extends State<VoiceCountScreen> {
                 _picked == null
                     ? 'Aynı anda kaç ses çalıyor?'
                     : _frame == true
-                    ? 'Harika kulak!'
+                    ? 'Tam isabet!'
                     : 'Doğrusu $_answer ses',
                 style: TT.title,
               ),

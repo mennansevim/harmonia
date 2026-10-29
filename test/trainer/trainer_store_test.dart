@@ -87,7 +87,8 @@ void main() {
       ..timbre = Timbre.cello
       ..transposition = 3
       ..dailyMinutes = 12
-      ..koroRange = '48-67';
+      ..koroRange = '48-67'
+      ..voicePart = 'alto';
     a.answers['focus'] = ['interval'];
     a.completeNode(trainerPaths[TrainerKind.pitch]!.nodes[0], 1);
     a.recordAnswer(TrainerKind.pitch, '4', true);
@@ -102,6 +103,7 @@ void main() {
     expect(b.transposition, 3);
     expect(b.dailyMinutes, 12);
     expect(b.koroRange, '48-67');
+    expect(b.part, VoicePart.alto);
     expect(b.answers['focus'], ['interval']);
     expect(b.isComplete('pitch-intro'), isTrue);
     expect(b.itemStats(TrainerKind.pitch)['4']!.correct, 1);

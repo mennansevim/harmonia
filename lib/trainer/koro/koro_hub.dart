@@ -7,6 +7,7 @@ import '../../features/rhythm_imitation/rhythm_imitation_screen.dart';
 import '../../features/single_tone_session/single_tone_session_screen.dart';
 import '../app/scope.dart';
 import '../domain/music.dart';
+import '../stats/stats_tab.dart';
 import '../ui/kit.dart';
 import 'aksak_patterns.dart';
 import 'range_test.dart';
@@ -16,7 +17,10 @@ import 'voice_count.dart';
 /// Harmonia capture/pitch core. Status tags stay honest about what is
 /// experimental, draft or still waiting for recordings.
 class KoroHub extends StatelessWidget {
-  const KoroHub({super.key});
+  const KoroHub({super.key, this.asTab = false});
+
+  /// Shown as the home "Koro" tab: no back button, no own scaffold colour.
+  final bool asTab;
 
   void _push(BuildContext context, Widget screen, {bool legacy = false}) {
     final scope = TrainerScope.of(context);
@@ -46,17 +50,25 @@ class KoroHub extends StatelessWidget {
     return Scaffold(
       backgroundColor: TC.canvas,
       body: SafeArea(
+        bottom: !asTab,
         child: Column(
           children: [
-            const TopBar(
-              title: 'Koro Atölyesi',
-              titleIcon: TrainerBadge(
-                color: TC.indigo,
-                icon: Icons.groups_rounded,
-                size: 32,
+            if (asTab)
+              tabHeader(
+                'Koro Atölyesi',
+                store.part == null
+                    ? 'Ses aralığı, ritim, ezgi, çok seslilik'
+                    : '${store.part!.title} partisi için hazırlık',
+              )
+            else
+              const TopBar(
+                title: 'Koro Atölyesi',
+                titleIcon: TrainerBadge(
+                  color: TC.koro,
+                  icon: Icons.groups_rounded,
+                  size: 32,
+                ),
               ),
-              shadow: true,
-            ),
             Expanded(
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
@@ -66,7 +78,7 @@ class KoroHub extends StatelessWidget {
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(22),
                       gradient: const LinearGradient(
-                        colors: [Color(0xFF7C6CF8), TC.indigo],
+                        colors: [Color(0xFF7C6CF8), TC.koro],
                       ),
                     ),
                     child: const Column(
@@ -235,10 +247,10 @@ class _Row extends StatelessWidget {
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: const Color(0xFFEDEBFE),
+                color: const Color(0xFFEEEBFF),
                 borderRadius: BorderRadius.circular(13),
               ),
-              child: Icon(icon, color: TC.indigo),
+              child: Icon(icon, color: TC.koro),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -249,7 +261,7 @@ class _Row extends StatelessWidget {
                   const SizedBox(height: 2),
                   Text(subtitle, style: TT.small),
                   const SizedBox(height: 6),
-                  Tag(tag, color: muted ? TC.muted : TC.indigo),
+                  Tag(tag, color: muted ? TC.muted : TC.koro),
                 ],
               ),
             ),

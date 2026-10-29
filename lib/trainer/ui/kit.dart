@@ -7,43 +7,46 @@ import 'package:flutter/services.dart';
 
 import '../domain/trainers.dart';
 
-/// Visual system of the ear trainer: white canvas, warm orange primary and
-/// one accent colour per trainer.
+/// Harmonia visual system (A+C brand, see lib/app/theme): lavender canvas,
+/// indigo primary shared with the choir workshop, sun for streaks and one
+/// accent colour per skill.
 abstract final class TC {
-  static const orange = Color(0xFFF39221);
-  static const orangeDeep = Color(0xFFEA7A0C);
-  static const orangeSoft = Color(0xFFFFF1E2);
-  static const blue = Color(0xFF2DA8E6);
-  static const blueDeep = Color(0xFF1C8FD6);
-  static const purple = Color(0xFF9333EA);
-  static const gold = Color(0xFFD99A13);
-  static const teal = Color(0xFF1FB394);
-  static const indigo = Color(0xFF5B46F5);
-  static const green = Color(0xFF2BD25B);
-  static const red = Color(0xFFE0283F);
-  static const ink = Color(0xFF1F2937);
-  static const body = Color(0xFF4B5563);
-  static const muted = Color(0xFF8A94A6);
-  static const faint = Color(0xFFC3C9D4);
-  static const line = Color(0xFFE3E7EE);
-  static const canvas = Color(0xFFF5F7FA);
+  static const primary = Color(0xFF5B46F5);
+  static const primaryDeep = Color(0xFF3B2BBF);
+  static const primarySoft = Color(0xFFEEEBFF);
+  static const koro = primary;
+  static const sun = Color(0xFFFFC531);
+  static const onSun = Color(0xFF3D2C00);
+  static const coral = Color(0xFFE5483A);
+  static const teal = Color(0xFF0F9D8A);
+  static const magenta = Color(0xFFC2307A);
+  static const amber = Color(0xFFC98400);
+  static const sky = Color(0xFF1E88E5);
+  static const green = Color(0xFF1AA874);
+  static const red = Color(0xFFD92D20);
+  static const ink = Color(0xFF17183A);
+  static const body = Color(0xFF45486A);
+  static const muted = Color(0xFF6E7294);
+  static const faint = Color(0xFFC4C3D9);
+  static const line = Color(0xFFE4E3EF);
+  static const canvas = Color(0xFFF7F7FC);
   static const card = Colors.white;
 }
 
 Color trainerColor(TrainerKind kind) => switch (kind) {
-  TrainerKind.pitch => TC.orange,
-  TrainerKind.interval => TC.blue,
-  TrainerKind.chord => TC.purple,
-  TrainerKind.scale => TC.gold,
-  TrainerKind.progression => TC.teal,
+  TrainerKind.pitch => TC.coral,
+  TrainerKind.interval => TC.teal,
+  TrainerKind.chord => TC.magenta,
+  TrainerKind.scale => TC.amber,
+  TrainerKind.progression => TC.sky,
 };
 
 IconData trainerIcon(TrainerKind kind) => switch (kind) {
-  TrainerKind.pitch => Icons.music_note_rounded,
-  TrainerKind.interval => Icons.queue_music_rounded,
-  TrainerKind.chord => Icons.piano_rounded,
-  TrainerKind.scale => Icons.stairs_rounded,
-  TrainerKind.progression => Icons.equalizer_rounded,
+  TrainerKind.pitch => Icons.adjust_rounded,
+  TrainerKind.interval => Icons.height_rounded,
+  TrainerKind.chord => Icons.layers_rounded,
+  TrainerKind.scale => Icons.signal_cellular_alt_rounded,
+  TrainerKind.progression => Icons.route_rounded,
 };
 
 Color _shade(Color c, double amount) {
@@ -58,11 +61,11 @@ ThemeData trainerTheme() {
   final base = ThemeData(
     useMaterial3: true,
     colorScheme: ColorScheme.fromSeed(
-      seedColor: TC.orange,
-      primary: TC.orange,
+      seedColor: TC.primary,
+      primary: TC.primary,
       surface: Colors.white,
     ),
-    scaffoldBackgroundColor: Colors.white,
+    scaffoldBackgroundColor: TC.canvas,
     splashFactory: InkRipple.splashFactory,
   );
   return base.copyWith(
@@ -116,13 +119,14 @@ abstract final class TT {
 
 void tapHaptic() => HapticFeedback.selectionClick();
 
-/// Full-width gradient call to action.
-class BigButton extends StatelessWidget {
+/// Full-width chunky call to action: flat fill on a darker base edge that
+/// presses down on tap (Harmonia direction A).
+class BigButton extends StatefulWidget {
   const BigButton({
     super.key,
     required this.label,
     required this.onPressed,
-    this.color = TC.orange,
+    this.color = TC.primary,
     this.icon,
     this.chevron = false,
     this.busy = false,
@@ -136,89 +140,103 @@ class BigButton extends StatelessWidget {
   final bool busy;
 
   @override
+  State<BigButton> createState() => _BigButtonState();
+}
+
+class _BigButtonState extends State<BigButton> {
+  static const _edge = 4.0;
+  bool _down = false;
+
+  void _press(bool down) {
+    if (_down != down) setState(() => _down = down);
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final enabled = onPressed != null && !busy;
+    final enabled = widget.onPressed != null && !widget.busy;
+    final lit = enabled || widget.busy;
+    final fill = lit ? widget.color : const Color(0xFFE4E3EF);
+    final base = lit ? _shade(widget.color, -0.16) : const Color(0xFFCFCEE0);
+    final fg = lit ? Colors.white : TC.muted;
+    final drop = enabled && _down ? _edge : 0.0;
     return Semantics(
       button: true,
       enabled: enabled,
-      label: label,
+      label: widget.label,
       excludeSemantics: true,
-      child: AnimatedOpacity(
-        duration: const Duration(milliseconds: 150),
-        opacity: enabled || busy ? 1 : 0.55,
-        child: Container(
-          height: 54,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            gradient: enabled || busy
-                ? LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [_shade(color, 0.05), _shade(color, -0.04)],
-                  )
-                : null,
-            color: enabled || busy ? null : const Color(0xFFDDE2EA),
-            boxShadow: enabled
-                ? [
-                    BoxShadow(
-                      color: color.withValues(alpha: 0.28),
-                      blurRadius: 14,
-                      offset: const Offset(0, 6),
-                    ),
-                  ]
-                : null,
-          ),
-          child: Material(
-            type: MaterialType.transparency,
-            child: InkWell(
-              borderRadius: BorderRadius.circular(16),
-              splashColor: Colors.white.withValues(alpha: 0.18),
-              highlightColor: Colors.black.withValues(alpha: 0.04),
-              onTap: enabled
-                  ? () {
-                      tapHaptic();
-                      onPressed!();
-                    }
-                  : null,
-              child: Center(
-                child: busy
-                    ? const _Dots()
-                    : Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if (icon != null) ...[
-                            Icon(
-                              icon,
-                              color: enabled ? Colors.white : TC.muted,
-                              size: 20,
-                            ),
-                            const SizedBox(width: 8),
-                          ],
-                          Flexible(
-                            child: FittedBox(
-                              fit: BoxFit.scaleDown,
-                              child: Text(
-                                label,
-                                maxLines: 1,
-                                style: TextStyle(
-                                  color: enabled ? Colors.white : TC.muted,
-                                  fontSize: 16.5,
-                                  fontWeight: FontWeight.w800,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTapDown: enabled ? (_) => _press(true) : null,
+        onTapCancel: () => _press(false),
+        onTapUp: enabled ? (_) => _press(false) : null,
+        onTap: enabled
+            ? () {
+                tapHaptic();
+                widget.onPressed!();
+              }
+            : null,
+        child: SizedBox(
+          height: 54 + _edge,
+          child: Stack(
+            children: [
+              Positioned.fill(
+                top: _edge,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: base,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+              ),
+              AnimatedPositioned(
+                duration: const Duration(milliseconds: 70),
+                left: 0,
+                right: 0,
+                top: drop,
+                height: 54,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: fill,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Center(
+                    child: widget.busy
+                        ? const _Dots()
+                        : Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                if (widget.icon != null) ...[
+                                  Icon(widget.icon, color: fg, size: 20),
+                                  const SizedBox(width: 8),
+                                ],
+                                Flexible(
+                                  child: FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    child: Text(
+                                      widget.label,
+                                      maxLines: 1,
+                                      style: TextStyle(
+                                        color: fg,
+                                        fontSize: 16.5,
+                                        fontWeight: FontWeight.w800,
+                                        letterSpacing: 0.2,
+                                      ),
+                                    ),
+                                  ),
                                 ),
-                              ),
+                                if (widget.chevron) ...[
+                                  const SizedBox(width: 6),
+                                  Icon(Icons.chevron_right_rounded, color: fg),
+                                ],
+                              ],
                             ),
                           ),
-                          if (chevron) ...[
-                            const SizedBox(width: 6),
-                            Icon(
-                              Icons.chevron_right_rounded,
-                              color: enabled ? Colors.white : TC.muted,
-                            ),
-                          ],
-                        ],
-                      ),
+                  ),
+                ),
               ),
-            ),
+            ],
           ),
         ),
       ),
@@ -296,7 +314,7 @@ class BackSquare extends StatelessWidget {
         width: 36,
         height: 36,
         decoration: BoxDecoration(
-          color: const Color(0xFFEEF1F6),
+          color: const Color(0xFFEFEEF8),
           borderRadius: BorderRadius.circular(10),
         ),
         child: const Icon(Icons.chevron_left_rounded, color: TC.ink),
@@ -309,7 +327,7 @@ class ProgressBar extends StatelessWidget {
   const ProgressBar({
     super.key,
     required this.value,
-    this.color = TC.blue,
+    this.color = TC.primary,
     this.height = 6,
   });
   final double value;
@@ -320,7 +338,7 @@ class ProgressBar extends StatelessWidget {
     borderRadius: BorderRadius.circular(height),
     child: Stack(
       children: [
-        Container(height: height, color: const Color(0xFFE2E6EE)),
+        Container(height: height, color: const Color(0xFFE4E3EF)),
         AnimatedFractionallySizedBox(
           duration: const Duration(milliseconds: 350),
           curve: Curves.easeOutCubic,
@@ -339,7 +357,7 @@ class TopBar extends StatelessWidget {
     this.title,
     this.leading,
     this.progress,
-    this.progressColor = TC.blue,
+    this.progressColor = TC.primary,
     this.counter,
     this.onBack,
     this.titleIcon,
@@ -456,14 +474,10 @@ class AppCard extends StatelessWidget {
     decoration: BoxDecoration(
       color: color,
       borderRadius: BorderRadius.circular(radius),
-      border: border == null ? null : Border.all(color: border!, width: 1.5),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.black.withValues(alpha: 0.045),
-          blurRadius: 14,
-          offset: const Offset(0, 4),
-        ),
-      ],
+      // Direction C: thin hairline cards instead of floating shadows.
+      border: border == null
+          ? Border.all(color: TC.line)
+          : Border.all(color: border!, width: 1.5),
     ),
     child: Material(
       type: MaterialType.transparency,
@@ -525,7 +539,7 @@ class ChoiceTile extends StatelessWidget {
     this.multi = true,
     this.leading,
     this.trailing,
-    this.color = TC.blue,
+    this.color = TC.primary,
   });
   final String label;
   final bool selected;
@@ -630,7 +644,7 @@ class Segmented<T> extends StatelessWidget {
     required this.selected,
     required this.label,
     required this.onChanged,
-    this.color = TC.orange,
+    this.color = TC.primary,
     this.joined = false,
   });
   final List<T> values;
@@ -925,7 +939,7 @@ Future<T?> showTrainerSheet<T>(
               width: 40,
               height: 5,
               decoration: BoxDecoration(
-                color: const Color(0xFFD5DAE2),
+                color: const Color(0xFFD3D2E6),
                 borderRadius: BorderRadius.circular(3),
               ),
             ),

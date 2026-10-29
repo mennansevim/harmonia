@@ -6,6 +6,7 @@ import 'package:harmonia/application/result_history.dart';
 import 'package:harmonia/trainer/app/trainer_app.dart';
 import 'package:harmonia/trainer/audio/trainer_audio.dart';
 import 'package:harmonia/trainer/domain/curriculum.dart';
+import 'package:harmonia/trainer/domain/music.dart';
 import 'package:harmonia/trainer/domain/trainers.dart';
 import 'package:harmonia/trainer/state/trainer_store.dart';
 
@@ -72,69 +73,39 @@ void main() {
     await tester.pumpWidget(app(store));
     await settle(tester);
 
-    expect(find.text('Tahmin etmeyi bırak'), findsOneWidget);
+    expect(find.text('Koronda daha\ngüvenle söyle'), findsOneWidget);
     await tapKey(tester, 'get_started');
-    for (var i = 0; i < 3; i++) {
-      await tapKey(tester, 'ob_continue');
-    }
-    expect(find.text('Hangi enstrümanı çalıyorsun?'), findsOneWidget);
-    await tapKey(tester, 'opt_voice');
+    expect(find.text('Harmonia\'yı nasıl kullanacaksın?'), findsOneWidget);
+    await tapKey(tester, 'opt_singer');
     await tapKey(tester, 'ob_continue');
-    await tapKey(tester, 'opt_student', settleMs: 900);
-    expect(find.text('Neyi başarmak istiyorsun?'), findsOneWidget);
-    await tapKey(tester, 'opt_choir');
+    await tapKey(tester, 'opt_tenor');
     await tapKey(tester, 'ob_continue');
-    await tapKey(tester, 'opt_few');
-    await tapKey(tester, 'ob_continue');
-    await tapKey(tester, 'try_it');
-
-    // Skip all samples through the "No worries" sheet.
-    await tapKey(tester, 'sample_skip');
-    await tester.tap(find.text('Kalanları atla'));
-    await settle(tester);
-    expect(find.text('Harika iş!'), findsOneWidget);
-    await tapKey(tester, 'ob_continue');
-
+    expect(store.part, VoicePart.tenor);
     await tapKey(tester, 'opt_koro');
+    await tapKey(tester, 'opt_chord');
     await tapKey(tester, 'ob_continue');
-    await tapKey(tester, 'opt_consistency');
-    await tapKey(tester, 'ob_continue');
-    await tapKey(tester, 'ob_continue'); // minutes
-    await tapKey(tester, 'ob_continue'); // marathon
-    await tapKey(tester, 'opt_trust');
-    await tapKey(tester, 'ob_continue');
-    await tapKey(tester, 'ob_continue'); // potential
-    await tapKey(tester, 'reminder_skip');
-    await tapKey(tester, 'ob_continue'); // all done
-    await settle(tester, 4800); // building
-    expect(find.text('Tebrikler!'), findsOneWidget);
-    await tester.scrollUntilVisible(find.text('Koro hazırlığı'), 200);
-    expect(find.text('Koro hazırlığı'), findsOneWidget);
-    await tapKey(tester, 'ob_continue');
-    await tapKey(tester, 'save_skip');
-    expect(find.text('Beta boyunca her şey ücretsiz'), findsOneWidget);
-    await tapKey(tester, 'ob_continue');
-    for (var i = 0; i < 3; i++) {
-      await tapKey(tester, 'ob_continue');
-    }
     await tapKey(tester, 'notation_letter');
     await tapKey(tester, 'ob_continue');
-    await tapKey(tester, 'ob_continue'); // prefs
-    expect(find.text('Kısa bir seviye kontrolü'), findsOneWidget);
-    await tester.tap(find.text('Atla, yeni başlıyorum'));
-    await settle(tester);
-    expect(find.text('Bugünkü oturumun'), findsOneWidget);
+    await tapKey(tester, 'minutes_10');
+    await tapKey(tester, 'ob_continue');
+    await tapKey(tester, 'reminder_skip');
+    expect(find.text('Planın kuruldu'), findsOneWidget);
+    expect(find.text('Tenor'), findsOneWidget);
 
     // Persisted step: the flow position is saved while onboarding.
-    expect(store.answers['obStep'], 'today');
+    expect(store.answers['obStep'], 'ready');
     await tester.tap(find.text('Ana sayfaya git'));
     await settle(tester);
 
     expect(store.onboardingDone, isTrue);
     expect(store.setupDone, isTrue);
-    expect(find.text('Çalışmaya hazır mısın?'), findsOneWidget);
-    await tester.scrollUntilVisible(find.byKey(const Key('skill_koro')), 200);
-    expect(find.byKey(const Key('skill_koro')), findsOneWidget);
+    expect(store.dailyMinutes, 10);
+    expect(store.lastTrainer, TrainerKind.chord.id);
+    expect(find.text('Bugün'), findsWidgets);
+    expect(find.byKey(const Key('daily_plan')), findsOneWidget);
+    // Choir is a first-class tab.
+    await tapKey(tester, 'tab_1');
+    expect(find.text('Koro Atölyesi'), findsOneWidget);
   });
 
   testWidgets('resumes onboarding at the saved step after a restart', (
@@ -146,7 +117,7 @@ void main() {
     await store.load();
     await tester.pumpWidget(app(store));
     await settle(tester);
-    expect(find.textContaining('Her gün ne kadar'), findsOneWidget);
+    expect(find.textContaining('Günde kaç dakika'), findsOneWidget);
   });
 
   testWidgets('trainer sheet opens the learn path and practice setup', (
@@ -158,10 +129,10 @@ void main() {
     await settle(tester);
 
     await tapKey(tester, 'skill_interval');
-    expect(find.text('Nasıl çalışmak istersin?'), findsOneWidget);
+    expect(find.text('Bugün nasıl çalışalım?'), findsOneWidget);
     await tapKey(tester, 'sheet_learn');
     // First visit explains checkpoints.
-    expect(find.text('Bu bölümü zaten biliyor musun?'), findsOneWidget);
+    expect(find.text('Bildiğin yerleri atla'), findsOneWidget);
     await tester.tap(find.text('Anladım'));
     await settle(tester);
     expect(find.text('Giriş: Aralık Eğitimi'), findsOneWidget);
@@ -196,7 +167,7 @@ void main() {
       } else if (find.text('Devam').evaluate().isNotEmpty) {
         await tester.tap(find.text('Devam'));
         await settle(tester, 400);
-      } else if (find.textContaining('Tekrar dene').evaluate().isNotEmpty) {
+      } else if (find.textContaining('Bir daha dinle').evaluate().isNotEmpty) {
         await tester.tap(find.bySemanticsLabel('Sol').first);
         await settle(tester, 400);
       }
@@ -209,10 +180,10 @@ void main() {
     expect(find.byKey(const Key('session_results')), findsOneWidget);
     expect(store.trainerReps(TrainerKind.pitch), 8);
     await tapKey(tester, 'session_results');
-    expect(find.text('Oturum tamamlandı!'), findsOneWidget);
+    expect(find.text('Çalışma bitti'), findsOneWidget);
     await tapKey(tester, 'session_done');
     // First activity of the day celebrates the streak.
-    expect(find.text('1 günlük seri!'), findsOneWidget);
+    expect(find.text('1 gün üst üste!'), findsOneWidget);
     await tester.tap(find.text('Devam et'));
     await settle(tester);
     expect(store.streak, 1);
@@ -269,7 +240,7 @@ void main() {
     await store.load();
     await tester.pumpWidget(app(store));
     await settle(tester);
-    await tapKey(tester, 'skill_koro');
+    await tapKey(tester, 'tab_1');
     expect(find.text('Koro Atölyesi'), findsWidgets);
     expect(find.text('Ses aralığı testi'), findsOneWidget);
     await tester.scrollUntilVisible(find.text('KAYIT BEKLENİYOR'), 200);
@@ -287,10 +258,10 @@ void main() {
     await tester.pumpWidget(app(store));
     await settle(tester);
     await tapKey(tester, 'tab_3');
-    expect(find.text('Deneyimini özelleştir'), findsOneWidget);
+    expect(find.byKey(const Key('settings_part')), findsOneWidget);
     await tapKey(tester, 'delete_data');
     await tester.tap(find.text('Sil'));
     await settle(tester, 1200);
-    expect(find.text('Tahmin etmeyi bırak'), findsOneWidget);
+    expect(find.byKey(const Key('get_started')), findsOneWidget);
   });
 }

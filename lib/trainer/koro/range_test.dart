@@ -87,27 +87,11 @@ class MicRangeProbe implements RangeProbe {
   Future<void> close() => _backend.close();
 }
 
-class ChoirPart {
-  const ChoirPart(this.name, this.low, this.high);
-  final String name;
-  final int low;
-  final int high;
-}
-
-const choirParts = [
-  ChoirPart('Soprano', 60, 81),
-  ChoirPart('Alto', 53, 74),
-  ChoirPart('Tenor', 48, 69),
-  ChoirPart('Bas', 40, 64),
-];
-
-/// Draft suggestion: the part whose usual span overlaps the measured range
-/// most (ties go to the closer centre). Not an educator's voice placement.
-ChoirPart? suggestPart(int low, int high) {
+VoicePart? suggestPart(int low, int high) {
   if (high - low < 5) return null;
-  ChoirPart? best;
+  VoicePart? best;
   var bestScore = -1.0;
-  for (final p in choirParts) {
+  for (final p in VoicePart.values) {
     final overlap =
         (high < p.high ? high : p.high) - (low > p.low ? low : p.low);
     final centre = ((low + high) / 2 - (p.low + p.high) / 2).abs();
@@ -243,7 +227,7 @@ class _RangeTestScreenState extends State<RangeTestScreen> {
               _Stage.result => 1,
               _ => _high ? 0.66 : 0.33,
             },
-            progressColor: TC.indigo,
+            progressColor: TC.koro,
           ),
           Expanded(child: _body()),
         ],
@@ -252,7 +236,8 @@ class _RangeTestScreenState extends State<RangeTestScreen> {
   );
 
   Widget _body() {
-    final notation = TrainerScope.of(context).store.notation;
+    final store = TrainerScope.of(context).store;
+    final notation = store.notation;
     switch (_stage) {
       case _Stage.intro:
         return _Page(
@@ -352,13 +337,13 @@ class _RangeTestScreenState extends State<RangeTestScreen> {
             _RangeChart(low: low, high: high, notation: notation),
             const SizedBox(height: 20),
             AppCard(
-              color: const Color(0xFFF1EFFE),
+              color: const Color(0xFFEEEBFF),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text('OLASI PARTİ · TASLAK', style: TT.caps),
                   const SizedBox(height: 4),
-                  Text(part?.name ?? 'Belirsiz', style: TT.h3),
+                  Text(part?.title ?? 'Belirsiz', style: TT.h3),
                   const SizedBox(height: 4),
                   const Text(
                     'Yalnız ölçülen iki uç notaya dayanır. Ses rengi, geçiş bölgeleri ve rahat tessitura ölçülmedi; parti kararını koro şefi verir.',
@@ -368,9 +353,21 @@ class _RangeTestScreenState extends State<RangeTestScreen> {
               ),
             ),
             const SizedBox(height: 20),
+            if (part != null && store.voicePart != part.name) ...[
+              OutlinedButton.icon(
+                key: const Key('range_save_part'),
+                onPressed: () => setState(() {
+                  store.voicePart = part.name;
+                  store.save();
+                }),
+                icon: const Icon(Icons.how_to_reg_outlined),
+                label: Text('${part.title} partisinde çalış'),
+              ),
+              const SizedBox(height: 12),
+            ],
             BigButton(
               label: 'Bitti',
-              color: TC.indigo,
+              color: TC.koro,
               onPressed: () => Navigator.pop(context),
             ),
             TextLink('Testi tekrarla', onTap: _restart),
@@ -426,7 +423,7 @@ class _Page extends StatelessWidget {
           ),
         ),
         if (button != null)
-          BigButton(label: button!, color: TC.indigo, onPressed: onPressed),
+          BigButton(label: button!, color: TC.koro, onPressed: onPressed),
         if (secondary != null) TextLink(secondary!, onTap: onSecondary!),
       ],
     ),
@@ -443,7 +440,7 @@ class _LevelBar extends StatelessWidget {
       children: [
         const Text('GİRİŞ SEVİYESİ', style: TT.caps),
         const SizedBox(height: 8),
-        ProgressBar(value: v, color: v > 0.92 ? TC.red : TC.indigo, height: 10),
+        ProgressBar(value: v, color: v > 0.92 ? TC.red : TC.koro, height: 10),
         const SizedBox(height: 6),
         const Text(
           'Yalnız gösterge; ses kalitesi ölçümü değildir.',
@@ -473,7 +470,7 @@ class _RangeChart extends StatelessWidget {
         final w = c.maxWidth;
         return Column(
           children: [
-            for (final p in choirParts)
+            for (final p in VoicePart.values)
               Padding(
                 padding: const EdgeInsets.only(bottom: 6),
                 child: Row(
@@ -494,7 +491,7 @@ class _RangeChart extends StatelessWidget {
                                 height: 8,
                                 child: Container(
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFFE2E6EE),
+                                    color: const Color(0xFFE4E3EF),
                                     borderRadius: BorderRadius.circular(4),
                                   ),
                                 ),
@@ -526,7 +523,7 @@ class _RangeChart extends StatelessWidget {
                             height: 14,
                             child: Container(
                               decoration: BoxDecoration(
-                                color: TC.indigo,
+                                color: TC.koro,
                                 borderRadius: BorderRadius.circular(7),
                               ),
                             ),

@@ -77,7 +77,7 @@ void main() {
       }
     });
 
-    test('lesson counts match the reference structure', () {
+    test('lesson counts stay stable', () {
       expect(trainerPaths[TrainerKind.chord]!.lessonCount, 26);
       expect(trainerPaths[TrainerKind.scale]!.lessonCount, 25);
       expect(
@@ -233,10 +233,21 @@ void main() {
       },
     );
 
+    test('lower choir parts hear lessons one octave down', () {
+      final node = trainerPaths[TrainerKind.interval]!.nodes.firstWhere(
+        (n) => n.registers.contains(Register.high),
+      );
+      final tenor = QuizConfig.forNode(node, voice: VoicePart.tenor);
+      final alto = QuizConfig.forNode(node, voice: VoicePart.alto);
+      expect(tenor.registers, isNot(contains(Register.high)));
+      expect(alto.registers, node.registers);
+      expect(VoicePart.bass.fit(Register.medium), Register.low);
+    });
+
     test('part suggestion is draft and needs a real span', () {
       expect(suggestPart(60, 62), isNull);
-      expect(suggestPart(62, 81)!.name, 'Soprano');
-      expect(suggestPart(41, 62)!.name, 'Bas');
+      expect(suggestPart(62, 81)!.title, 'Soprano');
+      expect(suggestPart(41, 62)!.title, 'Bas');
     });
   });
 }

@@ -1989,3 +1989,20 @@ benchmark kapıları açık. Commit/push/deploy yapılmadı.
 - **Sınırlar:** Ses çıkışı kulakla dinlenmedi (oturum sesi duyamaz; yalnız dosya/oynatıcı yolu doğrulandı). Giriş seviyesi çubuğu kayıt sırasında hareket etmedi — sessiz oda mı, simülatörde amplitude akışı mı belirsiz; gerçek cihazda bakılmalı. Analiz aşaması simülatörde ~5–6 sn sürdü. Gerçek iPhone, insan sesiyle ses aralığı ölçümü ve onboarding'in tamamının cihazda elle gezilmesi yapılmadı (onboarding'in tamamı widget testiyle doğrulanıyor).
 - **Doğrulama:** `dart tool/quality_check.dart` → format/analyze temiz, **992 test geçti, 1 atlandı**.
 
+## 2026-10-29 — TRAINER-02 referans uygulamadan farklılaşma (ADR-033)
+
+**Kullanıcı isteği:** Kopya ifadelerini değiştirmek, tasarımı ve özellikleri farklılaştırmak (mağaza/kopya riski).
+
+**Kod:**
+- `ui/kit.dart`: renk token'ları anlamsal adlara geçti (`TC.primary`, `koro`, `sun`, `coral`, `teal`, `magenta`, `amber`, `sky`); Harmonia indigo paleti, lavanta zemin, yeni beceri ikonları; `BigButton` alt kenarlı basılan buton; `AppCard` gölge yerine ince çizgi.
+- `home/home_shell.dart`: sekmeler Bugün / Koro / İlerleme / Ayarlar; yeni Bugün sayfası (tarih başlığı, güneş seri çipi, parti çipi, haftalık çubuk, iki adımlı "Günün planı" = kulak dersi + koro adımı, ilerleme çubuklu beceri listesi); `showVoicePartSheet`.
+- `onboarding/onboarding_flow.dart`: 8 adımlı yeni akış; `samples.dart` ve `level_check.dart` kaldırıldı. Adım kalıcılığı korunuyor.
+- `stats/stats_tab.dart`: İlerleme sekmesi; kilit kaldırıldı; koro temalı seviye kartı (Dinleyici → Maestro, yalnız yerel XP). `stats/ranks_tab.dart` silindi; store'da `leagueJoined` yerine `voicePart`.
+- `domain/music.dart`: `VoicePart` (SATB aralıkları, `fit(Register)`); `QuizConfig.forNode(voice:)`; dersler seçilen partinin aralığında çalar. Ses aralığı sonucu "X partisinde çalış" ile kaydedilebilir; Ayarlar'da Koro grubu (Partim, Ses aralığım).
+- `koro/koro_hub.dart`: sekme modu (`asTab`).
+- Belirgin çeviri ifadeler yeniden yazıldı (ör. "Kilitlendi" → "Yerine oturdu", "Harika kulak!" → "Tam isabet!", "N günlük seri!" → "N gün üst üste!").
+
+**Test:** onboarding, sekme, ayarlar testleri yeni akışa göre güncellendi; parti→register ve parti kalıcılığı testleri eklendi; ekran turu yeniden üretildi ve ana ekranlar gözle incelendi. `dart tool/quality_check.dart`: format+analyze temiz, 993 test geçti, 1 atlandı (ekran turu).
+
+**Sınırlar:** Ders/quiz mekaniği tür standardı olsa da işlevsel olarak referansa yakın kalıyor. Cihazda elle inceleme, gerçek iPhone ve insan sesiyle ölçüm hâlâ yapılmadı. Hukuki görüş değildir; yayın öncesi referans sahibinin onayı önerilir.
+

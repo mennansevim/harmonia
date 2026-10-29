@@ -79,10 +79,15 @@ class QuizConfig {
   final int? timeLimitSeconds;
   final int length;
 
-  factory QuizConfig.forNode(LessonNode node, {int? length}) => QuizConfig(
+  /// [voice] moves playback into the learner's choir part.
+  factory QuizConfig.forNode(
+    LessonNode node, {
+    int? length,
+    VoicePart? voice,
+  }) => QuizConfig(
     trainer: node.trainer,
     pool: node.items,
-    registers: node.registers,
+    registers: [for (final r in node.registers) voice?.fit(r) ?? r],
     direction: node.direction,
     length:
         length ??

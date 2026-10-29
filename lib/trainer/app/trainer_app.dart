@@ -108,7 +108,7 @@ class _TrainerAppState extends State<TrainerApp> {
                 backgroundColor: Colors.white,
                 body: Center(
                   child: TrainerBadge(
-                    color: TC.orange,
+                    color: TC.primary,
                     icon: Icons.music_note_rounded,
                     size: 84,
                   ),

@@ -42,6 +42,10 @@ Agora tek sesler: `src/PitchTest/lib/audioPlayer.ts` →
 header mono PCM16/48 kHz, tüm etiket/hak zinciri doğrulanmadı. Repo MIT olsa da
 sample hakları varsayılmadı; Harmonia'ya kopyalanmadı.
 
+## 2c. 2026-10-29 — TRAINER-02 farklılaşma
+
+Referans uygulamaya benzerlik bilinçli olarak azaltıldı (ADR-033): Harmonia paleti ve buton/kart dili, Bugün/Koro/İlerleme/Ayarlar sekmeleri, 8 adımlı koro onboarding'i, `VoicePart` ile partiye göre çalma, yerel koro seviyesi. Lig, istatistik kilidi, kullanıcı adı/topluluk ve 30 adımlı akış kaldırıldı. Yeni ekranlarda referans uygulamanın metnini/düzenini geri getirme. Sıradaki farklılaşma adayı: cevabı dokunmak yerine söyleyerek verme (kalite kapılı, ayrı kaynak etiketiyle).
+
 ## 2b. 2026-10-29 güncellemesi — yeni ana deneyim (TRAINER-01)
 
 `lib/main.dart` → `TrainerApp` (`lib/trainer/`). Aşağıdaki §3 eski `HarmoniaApp`
