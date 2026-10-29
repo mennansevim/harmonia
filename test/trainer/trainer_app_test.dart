@@ -212,6 +212,8 @@ void main() {
     await tester.pumpWidget(app(store));
     await settle(tester);
     await tapKey(tester, 'today_begin');
+    // Today's route opens with the unmeasured breathing guide; skip it.
+    await tapKey(tester, 'breath_skip');
     final path = trainerPaths[TrainerKind.pitch]!;
     final intro = path.nodes.first;
     expect(find.text(path.introSlides.first.title), findsOneWidget);

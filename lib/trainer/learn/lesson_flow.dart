@@ -237,6 +237,7 @@ class _LessonFlowState extends State<LessonFlow> with WidgetsBindingObserver {
       node: node,
       summary: _summary!,
       passed: _passed,
+      retryConfig: _gen.config,
       onDone: () => Navigator.of(context).pop(_passed),
     ),
     _ => _frame(),

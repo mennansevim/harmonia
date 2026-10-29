@@ -3,6 +3,7 @@
 //   flutter test test/trainer/screenshot_tour_test.dart \
 //     --dart-define=TOUR_DIR=/absolute/output/dir
 import 'dart:io';
+import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -15,7 +16,10 @@ import 'package:harmonia/application/result_history.dart';
 import 'package:harmonia/trainer/app/trainer_app.dart';
 import 'package:harmonia/trainer/audio/trainer_audio.dart';
 import 'package:harmonia/trainer/domain/trainers.dart';
+import 'package:harmonia/trainer/learn/session_end.dart';
 import 'package:harmonia/trainer/practice/practice_setup.dart';
+import 'package:harmonia/trainer/quiz/quiz.dart';
+import 'package:harmonia/trainer/settings/membership_screen.dart';
 import 'package:harmonia/trainer/stats/stats_tab.dart';
 import 'package:harmonia/trainer/state/trainer_store.dart';
 
@@ -69,6 +73,13 @@ void main() {
     }
 
     Future<void> tap(Finder f, {int ms = 700}) async {
+      if (f.evaluate().isEmpty) {
+        await tester.scrollUntilVisible(
+          f,
+          200,
+          scrollable: find.byType(Scrollable).last,
+        );
+      }
       await tester.tap(f.first, warnIfMissed: false);
       for (var i = 0; i < ms ~/ 100; i++) {
         await tester.pump(const Duration(milliseconds: 100));
@@ -140,6 +151,43 @@ void main() {
     nav.popUntil((r) => r.isFirst);
     await tester.pump(const Duration(seconds: 1));
 
+    // Today's route: the unmeasured breathing guide, mid-cycle.
+    await tap(key('today_begin'));
+    for (var i = 0; i < 25; i++) {
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+    await shot('breath');
+    nav.popUntil((r) => r.isFirst);
+    await tester.pump(const Duration(seconds: 1));
+
+    // Session end: measured vs not measured, details collapsed.
+    const endConfig = QuizConfig(
+      trainer: TrainerKind.interval,
+      pool: ['m3', 'M3', 'P5'],
+      length: 8,
+    );
+    final endQuestions = QuizGenerator(
+      endConfig,
+      random: math.Random(3),
+    ).session();
+    store.markBreathDone();
+    nav.push(
+      MaterialPageRoute<void>(
+        builder: (_) => SessionEnd(
+          summary: QuizSummary([
+            for (var i = 0; i < endQuestions.length; i++)
+              AnswerRecord(endQuestions[i], i != 2),
+          ]),
+          title: 'Aralıklar',
+          retryConfig: endConfig,
+          onDone: () {},
+        ),
+      ),
+    );
+    await shot('session_end');
+    nav.popUntil((r) => r.isFirst);
+    await tester.pump(const Duration(seconds: 1));
+
     await tap(key('skill_pitch'));
     await tap(key('skill_free'));
     await shot('practice_setup_pitch');
@@ -183,6 +231,11 @@ void main() {
     await tester.pump(const Duration(seconds: 1));
     await tap(key('tab_3'));
     await shot('settings');
+    nav.push(MaterialPageRoute<void>(builder: (_) => const MembershipScreen()));
+    await shot('membership');
+    nav.popUntil((r) => r.isFirst);
+    await tester.pump(const Duration(seconds: 1));
+
     await tap(key('tab_1'));
     await shot('koro_hub');
     await tap(key('koro_range'));

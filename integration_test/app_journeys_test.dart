@@ -132,6 +132,8 @@ void main() {
     await seedStore(_returning);
     await launch(tester);
     await tapKey(tester, 'today_begin');
+    // Today's route opens with the unmeasured breathing guide; skip it.
+    await tapKey(tester, 'breath_skip');
     final path = trainerPaths[TrainerKind.pitch]!;
     final intro = path.nodes.first;
     for (var i = 0; i < 20; i++) {

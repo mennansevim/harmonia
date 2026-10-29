@@ -10,6 +10,7 @@ import '../home/home_shell.dart';
 import '../state/trainer_store.dart';
 import '../stats/stats_tab.dart';
 import '../ui/kit.dart';
+import 'membership_screen.dart';
 
 const appVersionLabel = 'Sürüm 1.0 (beta)';
 
@@ -201,6 +202,21 @@ class SettingsTab extends StatelessWidget {
                         messenger.showSnackBar(SnackBar(content: Text(error)));
                       }
                     },
+                  ),
+                ]),
+                const _Caption('ÜYELİK'),
+                _Group([
+                  _Item(
+                    key: const Key('settings_membership'),
+                    icon: Icons.diamond_outlined,
+                    title: 'Premium ve Plus',
+                    subtitle: 'Bugün tüm çalışmalar ücretsiz',
+                    value: 'Yakında',
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => const MembershipScreen(),
+                      ),
+                    ),
                   ),
                 ]),
                 const _Caption('HAKKINDA'),

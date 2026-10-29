@@ -117,6 +117,7 @@ class _PracticeSetupScreenState extends State<PracticeSetupScreen> {
                 builder: (endContext) => SessionEnd(
                   summary: summary,
                   title: kind.title,
+                  retryConfig: config,
                   onDone: () => Navigator.of(endContext).pop(),
                 ),
               ),

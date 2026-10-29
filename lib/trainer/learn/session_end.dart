@@ -4,10 +4,13 @@ import '../app/scope.dart';
 import '../domain/curriculum.dart';
 import '../domain/trainers.dart';
 import '../quiz/quiz.dart';
+import '../quiz/quiz_view.dart';
 import '../ui/kit.dart';
 
-/// Single evidence card at the end of a lesson, gate or free session:
-/// accuracy, per-item first attempts, XP and the day streak inline.
+/// End of a lesson, gate or free session in two layers: a headline result
+/// with what was measured, not measured or experimental, then the per-item
+/// details on demand. "Yanlışları tekrar et" runs a short, unrecorded
+/// retry on fresh examples of the missed items.
 class SessionEnd extends StatelessWidget {
   const SessionEnd({
     super.key,
@@ -16,6 +19,7 @@ class SessionEnd extends StatelessWidget {
     this.node,
     this.passed = true,
     this.title,
+    this.retryConfig,
   });
   final LessonNode? node;
   final QuizSummary summary;
@@ -23,11 +27,13 @@ class SessionEnd extends StatelessWidget {
   final String? title;
   final VoidCallback onDone;
 
+  /// How the session sounded; enables the short retry when set.
+  final QuizConfig? retryConfig;
+
   @override
   Widget build(BuildContext context) {
     final store = TrainerScope.of(context).store;
     final s = summary;
-    final pct = (s.accuracy * 100).round();
     final kind =
         node?.trainer ??
         s.records.firstOrNull?.question.trainer ??
@@ -54,6 +60,20 @@ class SessionEnd extends StatelessWidget {
       ..sort(
         (a, b) => (a.value.$1 / a.value.$2).compareTo(b.value.$1 / b.value.$2),
       );
+    String label(String id) => itemLabel(
+      kind,
+      id,
+      notation: store.notation,
+      transposition: store.transposition,
+      long: true,
+    );
+    final missed = [
+      for (final e in items)
+        if (e.value.$1 < e.value.$2) e.key,
+    ];
+    final weakest = missed.isEmpty ? null : items.first;
+    final sang = node != null && !gate && kind == TrainerKind.pitch;
+    final upNext = store.nextNode(kind);
     return Scaffold(
       backgroundColor: TC.canvas,
       body: SafeArea(
@@ -61,7 +81,7 @@ class SessionEnd extends StatelessWidget {
           children: [
             Expanded(
               child: ListView(
-                padding: const EdgeInsets.fromLTRB(20, 28, 20, 16),
+                padding: const EdgeInsets.fromLTRB(18, 24, 18, 16),
                 children: [
                   Text(
                     (title ?? node?.title ?? kind.title).toUpperCase(),
@@ -71,18 +91,81 @@ class SessionEnd extends StatelessWidget {
                   Text(verdict, style: TT.h2),
                   const SizedBox(height: 4),
                   Text(note, style: TT.body),
-                  const SizedBox(height: 20),
-                  AppCard(
-                    child: Row(
-                      children: [
-                        _Stat(value: '%$pct', label: 'doğruluk', color: color),
-                        _Stat(
-                          value: '${s.correct}/${s.total}',
-                          label: 'ilk denemede',
-                          color: TC.ink,
-                        ),
-                        _Stat(value: '+$xp', label: 'XP', color: TC.ink),
-                      ],
+                  const SizedBox(height: 18),
+                  HeroCard(
+                    ring: false,
+                    padding: const EdgeInsets.all(18),
+                    child: IntrinsicHeight(
+                      child: Row(
+                        children: [
+                          Semantics(
+                            label:
+                                '${s.total} sorudan ${s.correct} ilk denemede doğru',
+                            excludeSemantics: true,
+                            child: SizedBox(
+                              width: 96,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    '${s.correct}',
+                                    key: const Key('session_score'),
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 43,
+                                      fontWeight: FontWeight.w800,
+                                      height: 1,
+                                      fontFeatures: [
+                                        FontFeature.tabularFigures(),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(height: 3),
+                                  Text(
+                                    '/ ${s.total} ilk deneme',
+                                    style: TextStyle(
+                                      color: Colors.white.withValues(
+                                        alpha: 0.78,
+                                      ),
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          VerticalDivider(
+                            width: 28,
+                            color: Colors.white.withValues(alpha: 0.28),
+                          ),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  kind.shortTitle,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Dokunma yanıtlarından ölçüldü · '
+                                  '%${(s.accuracy * 100).round()}',
+                                  style: TextStyle(
+                                    color: Colors.white.withValues(alpha: 0.78),
+                                    fontSize: 12.5,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                   if (store.practicedToday && store.streak > 0) ...[
@@ -111,22 +194,118 @@ class SessionEnd extends StatelessWidget {
                       ),
                     ),
                   ],
-                  const SizedBox(height: 22),
-                  const Text('SORU BAZINDA · İLK DENEME', style: TT.caps),
-                  const SizedBox(height: 8),
-                  for (final e in items)
-                    _ItemRow(
-                      label: itemLabel(
-                        kind,
-                        e.key,
-                        notation: store.notation,
-                        transposition: store.transposition,
-                        long: true,
-                      ),
-                      correct: e.value.$1,
-                      total: e.value.$2,
-                      color: color,
+                  const SizedBox(height: 12),
+                  _Evidence(
+                    key: const Key('evidence_measured'),
+                    status: 'ÖLÇÜLDÜ',
+                    statusColor: TC.green,
+                    title: weakest == null
+                        ? 'Tüm sesler ilk denemede doğru'
+                        : '${label(weakest.key)} ayrımı',
+                    body: weakest == null
+                        ? 'Bu turda karışan ses yok.'
+                        : missed.length == 1
+                        ? '${weakest.value.$2 - weakest.value.$1} soruda karıştı'
+                        : '${weakest.value.$2 - weakest.value.$1} soruda karıştı · '
+                              'toplam ${missed.length} seste hata var',
+                    action: weakest == null || retryConfig == null
+                        ? null
+                        : (
+                            'Yanlışları tekrar et',
+                            () => _retry(context, missed),
+                          ),
+                  ),
+                  if (sang)
+                    const _Evidence(
+                      key: Key('evidence_sing'),
+                      status: 'DENEYSEL',
+                      statusColor: TC.amber,
+                      title: 'Söyle adımı',
+                      body:
+                          'Söyleme puanlanmaz. Mikrofonu açtıysan gördüğün '
+                          'sent farkı yalnız tanısaldı.',
                     ),
+                  if (store.breathedToday)
+                    const _Evidence(
+                      key: Key('evidence_breath'),
+                      status: 'ÖLÇÜLMEDİ',
+                      statusColor: TC.muted,
+                      title: 'Nefes',
+                      body: 'Yönlendirme tamamlandı; kalite puanı üretilmedi.',
+                    ),
+                  if (upNext != null && !gate) ...[
+                    const SizedBox(height: 4),
+                    Container(
+                      key: const Key('session_next'),
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: TC.primarySoft,
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.auto_awesome_rounded,
+                            color: TC.primary,
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Sıradaki: ${upNext.title}',
+                                  style: TT.title.copyWith(
+                                    color: TC.primary,
+                                    fontSize: 14.5,
+                                  ),
+                                ),
+                                const Text(
+                                  'Bugün sekmesindeki rotadan başlar',
+                                  style: TT.small,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 8),
+                  Theme(
+                    data: Theme.of(
+                      context,
+                    ).copyWith(dividerColor: Colors.transparent),
+                    child: ExpansionTile(
+                      key: const Key('session_details'),
+                      tilePadding: const EdgeInsets.symmetric(horizontal: 4),
+                      childrenPadding: const EdgeInsets.symmetric(
+                        horizontal: 4,
+                      ),
+                      title: const Text(
+                        'AYRINTILI KANIT · SORU BAZINDA',
+                        style: TT.caps,
+                      ),
+                      subtitle: Text('+$xp XP', style: TT.small),
+                      children: [
+                        for (final e in items)
+                          _ItemRow(
+                            label: label(e.key),
+                            correct: e.value.$1,
+                            total: e.value.$2,
+                            color: color,
+                          ),
+                        const Padding(
+                          padding: EdgeInsets.only(top: 6, bottom: 4),
+                          child: Text(
+                            'Yalnız ilk denemeler sayılır. Kısa tekrar bu '
+                            'sonuçları ve ilerlemeyi değiştirmez.',
+                            style: TT.small,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -135,7 +314,6 @@ class SessionEnd extends StatelessWidget {
               child: BigButton(
                 key: const Key('session_done'),
                 label: 'Bitti',
-                color: color,
                 onPressed: onDone,
               ),
             ),
@@ -144,28 +322,111 @@ class SessionEnd extends StatelessWidget {
       ),
     );
   }
+
+  /// Three fresh questions on the missed items, weakest first. Unrecorded:
+  /// nothing reaches stats, XP, streak or lesson progress.
+  Future<void> _retry(BuildContext context, List<String> missed) async {
+    final config = retryConfig!;
+    final gen = QuizGenerator(config);
+    final questions = [
+      for (var i = 0; i < 3; i++)
+        () {
+          final target = missed[i % missed.length];
+          return config.pool.length > 1 && config.pool.contains(target)
+              ? QuizQuestion.identify(
+                  trainer: config.trainer,
+                  answer: target,
+                  options: config.pool,
+                  sound: gen.soundOf(target),
+                )
+              : gen.find(target: target, choices: 3);
+        }(),
+    ];
+    final messenger = ScaffoldMessenger.of(context);
+    final result = await Navigator.of(context).push<QuizSummary>(
+      MaterialPageRoute(
+        builder: (routeContext) => QuizView(
+          title: 'Kısa tekrar',
+          questions: questions,
+          record: false,
+          showCounter: true,
+          onExit: () => Navigator.of(routeContext).pop(),
+          onFinished: (summary) => Navigator.of(routeContext).pop(summary),
+        ),
+      ),
+    );
+    if (result == null) return;
+    messenger.showSnackBar(
+      SnackBar(
+        key: const Key('retry_result'),
+        content: Text(
+          'Kısa tekrar: ${result.correct}/${result.total} · '
+          'ilerlemene ve istatistiklerine yazılmadı.',
+        ),
+      ),
+    );
+  }
 }
 
-class _Stat extends StatelessWidget {
-  const _Stat({required this.value, required this.label, required this.color});
-  final String value;
-  final String label;
-  final Color color;
+class _Evidence extends StatelessWidget {
+  const _Evidence({
+    super.key,
+    required this.status,
+    required this.statusColor,
+    required this.title,
+    required this.body,
+    this.action,
+  });
+  final String status;
+  final Color statusColor;
+  final String title;
+  final String body;
+  final (String, VoidCallback)? action;
   @override
-  Widget build(BuildContext context) => Expanded(
-    child: Column(
-      children: [
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.w800,
-            color: color,
-            fontFeatures: const [FontFeature.tabularFigures()],
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(bottom: 8),
+    child: AppCard(
+      radius: 16,
+      padding: const EdgeInsets.fromLTRB(14, 13, 14, 13),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            status,
+            style: TT.caps.copyWith(fontSize: 10, color: statusColor),
           ),
-        ),
-        Text(label, style: TT.small),
-      ],
+          const SizedBox(height: 4),
+          Text(title, style: TT.title.copyWith(fontSize: 14.5)),
+          const SizedBox(height: 2),
+          Text(body, style: TT.small.copyWith(fontSize: 12.5)),
+          if (action != null) ...[
+            const SizedBox(height: 8),
+            TextButton(
+              key: const Key('retry_missed'),
+              onPressed: action!.$2,
+              style: TextButton.styleFrom(
+                foregroundColor: TC.primary,
+                backgroundColor: TC.primarySoft,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
+                minimumSize: const Size(0, 36),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              child: Text(
+                action!.$1,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w800,
+                  fontSize: 13,
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
     ),
   );
 }

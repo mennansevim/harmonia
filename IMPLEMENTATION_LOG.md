@@ -2106,3 +2106,72 @@ Ortam notu: `/opt/homebrew/Caskroom/flutter/3.47.8/flutter` sembolik bağı
 3.44.4 SDK checkout'una gidiyor; `flutter pub get` `integration_test`'in SDK
 sabitlemeleri yüzünden `matcher`/`meta`/`test_api`/`vm_service` lock
 sürümlerini bir alt sürüme indirdi. Commit/push/deploy yapılmadı.
+
+## 2026-10-29 — Dış ürün önerisi değerlendirmesi (plan)
+
+**Kullanıcı isteği:** Başka bir LLM'in rakip/konumlandırma/gelir önerisini
+değerlendirip yol haritası çıkarmak. Kod değişmedi; test çalıştırılmadı.
+
+- Yeni belge: [PRODUCT_ROADMAP_90D.md](./PRODUCT_ROADMAP_90D.md) — iddiaların
+  repo ile karşılaştırması, kabul/uyarla/ertele/reddet listesi, KDV dahil
+  düzeltilmiş katkı hesabı (~126 TL/abone; 50–60 bin TL için ~400–475 ödeyen)
+  ve Faz 0–4 planı.
+- Repo kontrolü: Bugün sekmesinde tek “Günün planı” kartı zaten var; seçilen
+  günlük süre (`dailyMinutes`) planı değiştirmiyor; trainer ikizinde
+  karışan-çift kısa tekrarı ve nefes adımı yok.
+- Sınır: rakip fiyat/özellik iddiaları bu oturumda yeniden doğrulanmadı;
+  pazar büyüklüğü varsayımı doğrulanmadı. Commit/push yapılmadı.
+
+## 2026-10-30 — DESIGN-02: tasarım devri (Bugün rotası, Nefes, sonuç, üyelik)
+
+**Kullanıcı isteği:** `design-exports/harmonia-design-handoff.zip` içindeki
+taslağa göre tasarımı revize etmek. Taslak HTML ürün kodu sayılmadı; Flutter
+trainer bileşenleri (`TC`/`TT`, `AppCard`, `BigButton`) kullanıldı. Mevcut
+Bugün/Koro/İlerleme/Ayarlar sekmeleri korundu (devir notu bunu istiyor).
+
+### Uygulananlar
+
+- `lib/trainer/home/daily_route.dart` (HOME-02): `dailyMinutes` artık planı
+  belirliyor. ≤3 dk yalnız ders; ≤5 dk 1 dk nefes + ders; daha uzun 2 dk
+  nefes + ders + Koro adımı. Deterministik, içerik üretmez.
+- `home_shell.dart` Bugün: gradyan rota kartı (“{Parti} için günlük rota”,
+  ~N DAKİKA), numaralı adımlar ve “ŞİMDİ” etiketi, tek ana düğme, “kayıtlar
+  cihazdan çıkmaz” notu. Parti seçilmemişse kart içinde “Partini seç”.
+  Beceri listesi “TÜM BECERİLER” başlığıyla aşağıda.
+- `lib/trainer/prepare/breath_screen.dart` (PREP-01): halka + faz kutuları,
+  kalan süre, döngü sayısı, “Sessiz mod · mikrofon kapalı”, Duraklat/Devam,
+  “Nefesi atla”. Arka plana geçince durur, kendiliğinden devam etmez.
+  Bitince yalnız `TrainerStore.breathDay` yazılır; seri, XP, istatistik ve
+  ders ilerlemesi değişmez. 4/2/6 düzeni taslaktır, eğitimci onayı yok.
+- `session_end.dart` (RESULT-02 + RETRY-02a): skor kartı (ilk deneme
+  doğruları, dokunma kaynağı), ÖLÇÜLDÜ (en çok karışan ses), DENEYSEL
+  (pitch dersinde Söyle adımı puansız), ÖLÇÜLMEDİ (bugün nefes yapıldıysa),
+  sıradaki ders ve açılır soru bazında ayrıntı. “Yanlışları tekrar et”
+  karışan seslerden 3 yeni örnekli soru açar; `QuizView(record: false)`.
+  Ertesi gün kalıcılık kontrolü bu pakette yok.
+- `settings/membership_screen.dart`: Premium/Plus önizlemesi; fiyat
+  “henüz belirlenmedi”, düğme kapalı, Plus'ın gerçek eğitimci olduğu ve AI
+  metninin eğitimci yorumu sayılmadığı yazılı. Taslaktaki 249/799 TL ve
+  “7 gün dene” kullanılmadı (onaylı fiyat/mağaza ürünü yok).
+- `kit.dart`: `SoftButton`, `HeroCard`, `HeroPill`.
+
+### Doğrulama
+
+- `dart tool/quality_check.dart`: format/analyze temiz, **1012 test geçti**,
+  1 opt-in ekran turu atlandı. Yeni `test/trainer/trainer_route_test.dart`
+  (8 test): rota boyutları, breathDay kalıcılığı/sıfırlama ve kanıt dışı
+  kalması, 3/10 dk ana sayfa, nefesin bitip derse geçmesi, duraklatma ve
+  geri, sonuç kanıt kartları + kaydedilmeyen tekrar, fiyatsız üyelik.
+- Mevcut “bugünkü ders” widget ve E2E testleri nefes adımını atlayacak
+  şekilde güncellendi; `flutter test integration_test` iOS 26.5 iPhone 17 Pro
+  simülatöründe **6/6 geçti** (1 dk 24 sn).
+- Ekran turu (`screenshot_tour_test`) Bugün beceri listesi kaydırma, nefes,
+  sonuç ve üyelik görüntüleriyle genişletildi ve üretildi.
+- iOS 26.5 iPhone 17 Pro simülatöründe (xcodebuild arm64 yedeği; `flutter
+  build ios --simulator` bu oturumda Xcode “cancelled” ile düştü) Bugün ve
+  Nefes ekranları elle açıldı.
+
+### Sınırlar
+
+Gerçek telefon, haptik his, ekran okuyucu, öğrenci/eğitimci kabulü yapılmadı.
+Nefes metni ve ritmi EDU-01 onayı bekliyor. Commit/push yapılmadı.

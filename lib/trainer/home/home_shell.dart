@@ -7,12 +7,14 @@ import '../domain/music.dart';
 import '../koro/koro_hub.dart';
 import '../koro/range_test.dart';
 import '../koro/voice_count.dart';
+import '../prepare/breath_screen.dart';
 import '../learn/lesson_flow.dart';
 import '../practice/practice_setup.dart';
 import '../settings/settings_tab.dart';
 import '../state/trainer_store.dart';
 import '../stats/stats_tab.dart';
 import '../ui/kit.dart';
+import 'daily_route.dart';
 import '../learn/skill_screen.dart';
 
 class HomeShell extends StatefulWidget {
@@ -183,8 +185,25 @@ class _PlayTabState extends State<PlayTab> {
     'Pazar',
   ];
 
-  Future<void> _beginToday() =>
-      startTodaySession(TrainerScope.of(context).store, Navigator.of(context));
+  /// Walks today's route: the breathing guide first (unless done or not in
+  /// today's route), then the ear lesson.
+  Future<void> _beginToday() async {
+    final store = TrainerScope.of(context).store;
+    final nav = Navigator.of(context);
+    final route = DailyRoute.forMinutes(store.dailyMinutes);
+    if (route.breath && !store.breathedToday) {
+      final go = await nav.push<bool>(
+        MaterialPageRoute(
+          builder: (_) => BreathScreen(
+            totalSeconds: route.breathSeconds,
+            stepLabel: 'ADIM 1 / ${route.stepCount}',
+          ),
+        ),
+      );
+      if (go != true) return;
+    }
+    await startTodaySession(store, nav);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -195,7 +214,7 @@ class _PlayTabState extends State<PlayTab> {
     return SafeArea(
       bottom: false,
       child: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 28),
+        padding: const EdgeInsets.fromLTRB(18, 12, 18, 28),
         children: [
           Row(
             children: [
@@ -217,18 +236,16 @@ class _PlayTabState extends State<PlayTab> {
             ],
           ),
           const SizedBox(height: 12),
-          _PartChip(store: store),
-          const SizedBox(height: 14),
           _WeekBar(store: store),
-          const SizedBox(height: 18),
-          _DailyPlan(
+          const SizedBox(height: 16),
+          _DailyRoute(
             store: store,
             trainer: focus,
             next: next,
             onBegin: _beginToday,
           ),
-          const SizedBox(height: 24),
-          const Text('BECERİLER', style: TT.caps),
+          const SizedBox(height: 26),
+          const Text('TÜM BECERİLER', style: TT.caps),
           const SizedBox(height: 10),
           for (final k in TrainerKind.values) _SkillRow(kind: k, store: store),
         ],
@@ -271,36 +288,6 @@ class _StreakChip extends StatelessWidget {
       ),
     ),
   );
-}
-
-/// The learner's choir part; tapping changes where lessons are played.
-class _PartChip extends StatelessWidget {
-  const _PartChip({required this.store});
-  final TrainerStore store;
-  @override
-  Widget build(BuildContext context) {
-    final part = store.part;
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: ActionChip(
-        key: const Key('part_chip'),
-        avatar: const Icon(Icons.mic_none_rounded, size: 18, color: TC.primary),
-        label: Text(
-          part == null
-              ? 'Partini seç'
-              : '${part.title} · dersler senin aralığında çalar',
-        ),
-        labelStyle: const TextStyle(
-          color: TC.primary,
-          fontWeight: FontWeight.w700,
-        ),
-        backgroundColor: TC.primarySoft,
-        side: BorderSide.none,
-        shape: const StadiumBorder(),
-        onPressed: () => showVoicePartSheet(context),
-      ),
-    );
-  }
 }
 
 /// Picker shared by home and settings. Changes playback only, never scores.
@@ -399,9 +386,10 @@ class _WeekBar extends StatelessWidget {
   }
 }
 
-/// Today's plan: one ear lesson plus one choir step, as a checklist.
-class _DailyPlan extends StatelessWidget {
-  const _DailyPlan({
+/// Today's route: one hero, the ordered steps (Hazırla → Ders → Koro, sized
+/// by daily minutes) and a single primary action.
+class _DailyRoute extends StatelessWidget {
+  const _DailyRoute({
     required this.store,
     required this.trainer,
     required this.next,
@@ -414,122 +402,246 @@ class _DailyPlan extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final route = DailyRoute.forMinutes(store.dailyMinutes);
     final lessonDone = store.sessionToday;
+    final breathDone = store.breathedToday;
     final hasRange = store.koroRange != null;
     final lesson = next;
-    return AppCard(
-      key: const Key('daily_plan'),
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Row(
-            children: [
-              const Expanded(child: Text('Günün planı', style: TT.h3)),
-              Tag('~${store.dailyMinutes} DK', color: TC.primary),
-            ],
-          ),
-          const SizedBox(height: 12),
-          _PlanStep(
-            done: lessonDone,
-            color: trainerColor(trainer),
-            icon: trainerIcon(trainer),
-            title: lesson == null ? '${trainer.title} tamam' : lesson.title,
-            subtitle: '${trainer.title} · kulak dersi',
-          ),
-          _PlanStep(
-            done: false,
-            color: TC.koro,
-            icon: hasRange ? Icons.layers_outlined : Icons.graphic_eq_rounded,
-            title: hasRange ? 'Kaç ses duyuyorsun?' : 'Ses aralığı testi',
-            subtitle: hasRange
-                ? 'Koro · 2/3/4 sesli dokuyu ayırt et'
-                : 'Koro · partini bulmak için taslak ölçüm',
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute<void>(
-                builder: (_) => hasRange
-                    ? const VoiceCountScreen()
-                    : const RangeTestScreen(),
-              ),
+    final part = store.part;
+    final steps = <_StepData>[
+      if (route.breath)
+        _StepData(
+          key: 'route_breath',
+          title: 'Nefes',
+          subtitle:
+              '${route.breathSeconds ~/ 60} dk · yönlendirmeli, mikrofonsuz',
+          icon: Icons.air_rounded,
+          done: breathDone,
+        ),
+      _StepData(
+        key: 'route_lesson',
+        title: lesson == null ? '${trainer.title} tamam' : lesson.title,
+        subtitle: lesson == null
+            ? 'Serbest pratikle devam et'
+            : lesson.kind == NodeKind.intro
+            ? '${trainer.shortTitle} · kısa tanıtım'
+            : '${trainer.shortTitle} · dinle, söyle, ayırt et',
+        icon: trainerIcon(trainer),
+        done: lessonDone,
+      ),
+      if (route.choirStep)
+        _StepData(
+          key: 'route_koro',
+          title: hasRange ? 'Kaç ses duyuyorsun?' : 'Ses aralığı testi',
+          subtitle: hasRange
+              ? 'Koro · 2/3/4 sesli dokuyu ayırt et'
+              : 'Koro · isteğe bağlı mikrofon, taslak ölçüm',
+          icon: hasRange ? Icons.layers_outlined : Icons.mic_none_rounded,
+          done: false,
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (_) =>
+                  hasRange ? const VoiceCountScreen() : const RangeTestScreen(),
             ),
           ),
-          const SizedBox(height: 8),
-          BigButton(
-            key: const Key('today_begin'),
-            label: lessonDone
-                ? 'Bugünlük ders tamam'
-                : lesson == null
-                ? 'Pratik yap'
-                : 'Derse başla',
-            icon: Icons.play_arrow_rounded,
-            onPressed: lessonDone
-                ? null
-                : lesson == null
-                ? () => Navigator.of(context).push(
-                    MaterialPageRoute<void>(
-                      builder: (_) => PracticeSetupScreen(trainer: trainer),
+        ),
+    ];
+    final current = steps.indexWhere((s) => !s.done && s.onTap == null);
+    final pitch = route.breath
+        ? 'Nefesini hazırla, sesleri duy, istersen söyle. '
+              'Sonuçta yalnız ölçülenleri görürsün.'
+        : 'Kısa gün: tek bir kulak dersi. '
+              'Sonuçta yalnız ölçülenleri görürsün.';
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        HeroCard(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: 138),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                HeroPill('~${store.dailyMinutes} DAKİKA'),
+                const SizedBox(height: 11),
+                Padding(
+                  padding: const EdgeInsets.only(right: 90),
+                  child: Text(
+                    part == null
+                        ? 'Günlük rotan'
+                        : '${part.title} için günlük rota',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 22,
+                      fontWeight: FontWeight.w800,
+                      height: 1.2,
                     ),
-                  )
-                : onBegin,
+                  ),
+                ),
+                const SizedBox(height: 7),
+                Text(
+                  pitch,
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.86),
+                    fontSize: 14,
+                    height: 1.42,
+                  ),
+                ),
+                if (part == null) ...[
+                  const SizedBox(height: 12),
+                  _PartLink(onTap: () => showVoicePartSheet(context)),
+                ],
+              ],
+            ),
           ),
-        ],
-      ),
+        ),
+        const SizedBox(height: 12),
+        Column(
+          key: const Key('daily_plan'),
+          children: [
+            for (var i = 0; i < steps.length; i++)
+              _RouteStep(
+                index: i + 1,
+                data: steps[i],
+                current: i == current && !lessonDone,
+              ),
+          ],
+        ),
+        const SizedBox(height: 6),
+        BigButton(
+          key: const Key('today_begin'),
+          label: lessonDone
+              ? 'Bugünlük ders tamam'
+              : lesson == null
+              ? 'Pratik yap'
+              : breathDone || !route.breath
+              ? 'Derse başla'
+              : 'Çalışmaya başla',
+          icon: Icons.arrow_forward_rounded,
+          onPressed: lessonDone
+              ? null
+              : lesson == null
+              ? () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => PracticeSetupScreen(trainer: trainer),
+                  ),
+                )
+              : onBegin,
+        ),
+        const SizedBox(height: 9),
+        const Text(
+          'Kayıtlar cihazdan çıkmaz; mikrofon adımları isteğe bağlıdır ve atlanabilir.',
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 12, color: TC.muted, height: 1.35),
+        ),
+      ],
     );
   }
 }
 
-class _PlanStep extends StatelessWidget {
-  const _PlanStep({
-    required this.done,
-    required this.color,
-    required this.icon,
+class _StepData {
+  const _StepData({
+    required this.key,
     required this.title,
     required this.subtitle,
+    required this.icon,
+    required this.done,
     this.onTap,
   });
-  final bool done;
-  final Color color;
-  final IconData icon;
+  final String key;
   final String title;
   final String subtitle;
+  final IconData icon;
+  final bool done;
   final VoidCallback? onTap;
+}
+
+class _PartLink extends StatelessWidget {
+  const _PartLink({required this.onTap});
+  final VoidCallback onTap;
   @override
-  Widget build(BuildContext context) => InkWell(
-    onTap: onTap,
-    borderRadius: BorderRadius.circular(12),
-    child: Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+  Widget build(BuildContext context) => Semantics(
+    button: true,
+    child: InkWell(
+      key: const Key('part_chip'),
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(99),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: const [
+            Icon(Icons.mic_none_rounded, size: 17, color: Colors.white),
+            SizedBox(width: 5),
+            Text(
+              'Partini seç',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w800,
+                decoration: TextDecoration.underline,
+                decorationColor: Colors.white,
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+class _RouteStep extends StatelessWidget {
+  const _RouteStep({
+    required this.index,
+    required this.data,
+    required this.current,
+  });
+  final int index;
+  final _StepData data;
+  final bool current;
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(bottom: 8),
+    child: AppCard(
+      key: Key(data.key),
+      radius: 16,
+      padding: const EdgeInsets.all(12),
+      onTap: data.onTap,
       child: Row(
         children: [
           Container(
-            width: 40,
-            height: 40,
+            width: 32,
+            height: 32,
+            alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: done ? TC.green : soft(color),
-              borderRadius: BorderRadius.circular(12),
+              color: data.done ? TC.green : TC.primarySoft,
+              borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(
-              done ? Icons.check_rounded : icon,
-              color: done ? Colors.white : color,
-            ),
+            child: data.done
+                ? const Icon(Icons.check_rounded, color: Colors.white, size: 20)
+                : Text(
+                    '$index',
+                    style: const TextStyle(
+                      color: TC.primary,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 11),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  title,
-                  style: TT.title.copyWith(
-                    decoration: done ? TextDecoration.lineThrough : null,
-                  ),
-                ),
-                Text(subtitle, style: TT.small),
+                Text(data.title, style: TT.title.copyWith(fontSize: 14.5)),
+                Text(data.subtitle, style: TT.small.copyWith(fontSize: 12)),
               ],
             ),
           ),
-          if (onTap != null)
-            const Icon(Icons.chevron_right_rounded, color: TC.faint),
+          if (current)
+            const Tag('ŞİMDİ', color: TC.primary)
+          else if (data.onTap != null)
+            const Icon(Icons.chevron_right_rounded, color: TC.faint)
+          else if (!data.done)
+            Icon(data.icon, color: TC.faint, size: 20),
         ],
       ),
     ),

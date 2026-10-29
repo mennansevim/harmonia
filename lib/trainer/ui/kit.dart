@@ -296,6 +296,119 @@ class TextLink extends StatelessWidget {
   );
 }
 
+/// Secondary full-width action on the soft lavender fill.
+class SoftButton extends StatelessWidget {
+  const SoftButton({super.key, required this.label, required this.onPressed});
+  final String label;
+  final VoidCallback? onPressed;
+  @override
+  Widget build(BuildContext context) => SizedBox(
+    width: double.infinity,
+    child: TextButton(
+      onPressed: onPressed == null
+          ? null
+          : () {
+              tapHaptic();
+              onPressed!();
+            },
+      style: TextButton.styleFrom(
+        foregroundColor: TC.primary,
+        backgroundColor: TC.primarySoft,
+        minimumSize: const Size.fromHeight(50),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      ),
+      child: Text(
+        label,
+        textAlign: TextAlign.center,
+        style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15),
+      ),
+    ),
+  );
+}
+
+/// Indigo gradient surface for the one thing a screen is about (today's
+/// route, a session's headline result). Decorative ring stays out of
+/// the accessibility tree.
+class HeroCard extends StatelessWidget {
+  const HeroCard({
+    super.key,
+    required this.child,
+    this.padding = const EdgeInsets.all(20),
+    this.ring = true,
+  });
+  final Widget child;
+  final EdgeInsets padding;
+  final bool ring;
+  @override
+  Widget build(BuildContext context) => ClipRRect(
+    borderRadius: BorderRadius.circular(24),
+    child: DecoratedBox(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [TC.primary, TC.primaryDeep],
+        ),
+      ),
+      child: Stack(
+        children: [
+          if (ring)
+            Positioned(
+              right: -31,
+              top: -24,
+              child: ExcludeSemantics(
+                child: Transform.rotate(
+                  angle: 0.2,
+                  child: Container(
+                    width: 152,
+                    height: 152,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.12),
+                        width: 24,
+                      ),
+                    ),
+                    alignment: Alignment.center,
+                    child: Icon(
+                      Icons.music_note_rounded,
+                      size: 40,
+                      color: Colors.white.withValues(alpha: 0.9),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          Padding(padding: padding, child: child),
+        ],
+      ),
+    ),
+  );
+}
+
+/// Small uppercase pill on a hero (white on translucent white).
+class HeroPill extends StatelessWidget {
+  const HeroPill(this.text, {super.key});
+  final String text;
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+    decoration: BoxDecoration(
+      color: Colors.white.withValues(alpha: 0.17),
+      borderRadius: BorderRadius.circular(99),
+    ),
+    child: Text(
+      text,
+      style: const TextStyle(
+        color: Colors.white,
+        fontSize: 11,
+        fontWeight: FontWeight.w800,
+        letterSpacing: 0.8,
+      ),
+    ),
+  );
+}
+
 /// Grey rounded back square used on every pushed screen.
 class BackSquare extends StatelessWidget {
   const BackSquare({super.key, this.onTap});

@@ -112,6 +112,15 @@ class TrainerStore extends ChangeNotifier {
   String? lastStreakCelebrated;
   String? koroRange;
 
+  /// Day key of the last finished breathing guide. Self-paced and unmeasured:
+  /// it ticks today's route step only, never streak, XP or mastery.
+  String? breathDay;
+  bool get breathedToday => breathDay == dayKey(now);
+  void markBreathDone() {
+    breathDay = dayKey(now);
+    save();
+  }
+
   Future<void> load() async {
     try {
       final doc = await _persistence.read();
@@ -181,6 +190,7 @@ class TrainerStore extends ChangeNotifier {
     seenTrainerSheets.clear();
     lastStreakCelebrated = null;
     koroRange = null;
+    breathDay = null;
     notifyListeners();
   }
 
@@ -371,6 +381,7 @@ class TrainerStore extends ChangeNotifier {
     'seenSheets': seenTrainerSheets.toList(),
     'lastStreakCelebrated': lastStreakCelebrated,
     'koroRange': koroRange,
+    'breathDay': breathDay,
   };
 
   void _decode(Map<String, Object?> doc) {
@@ -447,5 +458,6 @@ class TrainerStore extends ChangeNotifier {
       );
     lastStreakCelebrated = get<String>(doc, 'lastStreakCelebrated');
     koroRange = get<String>(doc, 'koroRange');
+    breathDay = get<String>(doc, 'breathDay');
   }
 }
