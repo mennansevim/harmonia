@@ -166,6 +166,12 @@ Eşikler (−45 dBFS taban, 12 dB burst yayılımı, 10 dB etkinlik marjı, 0,4 
 
 İlk değer için hesap yok (ADR-004 uygulaması): uygulama yükleniyor → hedef seçimi (konservatuvar/temel/koro) → home. Profil yalnız hedef ve oluşturma zamanını, uygulamaya özel dizinde atomik (temp + rename) JSON olarak tutar; e-posta, ses veya cihaz kimliği yok, sunucuya gitmez. Bozuk profil sessizce silinmez veya üzerine yazılmaz; yeniden dene ve açık “profili sil ve yeniden başla” sunulur. Home yalnız gerçekte var olanı gösterir: Deneysel (ses/ortam kontrolü), Simülasyon (tek ses sonuç örnekleri), Kayıt bekleniyor (2/3/4 piyano), Henüz yok (planlananlar). Ayarlar satın alma/abonelik/hesap olmadığını açıkça söyler. Sonuç renk token'larında yanlış oktav başarı rengi, geçersiz ölçüm hata kırmızısı değildir; 4,5:1 metin kontrastı birim testlidir. Tasarımın nihai kabulü kullanıcı testine bağlıdır.
 
+**2026-10-20 ONB-01 eklemesi:** İlk hedef seçimi draft olarak günlük
+5/12/15 dakika adımına gider; kaydet veya süreyi değiştirmeden devam ile home.
+Süre mevcut ayrı preferences schema1'inde kalır; profil şeması değişmez.
+Settings hedef değişimi ve eski profiller bu adıma zorlanmaz. Süre başarı/
+garanti değil, değiştirilebilir planlama tercihidir; UXR-01 açık.
+
 ## ADR-023 — Gecikme tahmini diagnostic; düzeltme ayrı fiziksel kapı
 
 **Durum:** CAL-03a sentetik kod-testli; CAL-03b/cihaz ölçümü bekliyor.
@@ -208,6 +214,27 @@ Movable-do cevap heceleri absolute target label yerine geçmez. Bu doğrulama
 real sample tuning/clock/frequency, lisans, voice/device veya educator approval
 kanıtı vermez; bu kapılar ayrı. Yeni reader'lar malformed hedefi sessiz düzeltmez.
 
+## ADR-027 — Yerel günlük bildirim ve inexact Android zamanlama
+
+**Tarih:** 2026-10-21. **Durum:** REM-01c kod/test/build; fiziksel cihaz QA bekliyor.
+
+Günlük çalışma hatırlatması push veya sunucu yerine cihaz içi
+`flutter_local_notifications` ile kurulur. Cihazın IANA bölgesi
+`flutter_timezone`, DST güvenli takvim zamanı `timezone` ile belirlenir. Plugin
+başlatılırken izin istenmez; yalnız kullanıcının saat seçip açması izin akışını
+başlatır. Reddedilen izin sahte başarı üretmez ve OS bildirim ayarlarına açık
+eylem sunar. Coordinator'ın native başarıdan sonra persist, persist hatasında
+rollback ilkesi korunur.
+
+Android'de dakikası dakikasına garanti gerektirmeyen çalışma alışkanlığı için
+`inexactAllowWhileIdle` seçildi. Böylece `SCHEDULE_EXACT_ALARM`/
+`USE_EXACT_ALARM` ve mağaza denetimli alarm yetkisi istenmez; OEM pil yönetimi
+nedeniyle teslimat sapabileceği kullanıcı/QA sınırı olarak kalır. Tek kanal v1
+ve tek sabit notification id kullanılır. Android reboot receiver ve iOS delegate
+yerel yeniden zamanlama/sunum için bağlıdır. Build başarısı teslimat kanıtı
+değildir; gerçek izin, saat, reboot, DST ve pil davranışı fiziksel iki platformda
+geçilmeden özellik doğrulandı sayılmaz.
+
 ## Mevcut kararları değiştirme sınırı
 
 Şu kararlar benchmark veya kullanıcı görüşmesi olmadan değiştirilmemeli:
@@ -232,3 +259,74 @@ yalnız gerçek veriye bağlanır: dinlemede çalınan WAV'ın kendi zarfı ve
 doğruluğu veya puan ima etmez; hareket azaltma ayarında durağan gösterilir.
 Sınırlı süreli animasyonlar (kare saatiyle), sonsuz döngü yok. Ölçüt,
 tolerans ve skor kuralları değişmedi.
+
+## ADR-028 — Mikrofon reddinde açık OS ayarları kurtarması
+
+**Tarih:** 2026-10-21. **Durum:** SHELL-02 kod/test/build; fiziksel cihaz QA bekliyor.
+
+Mikrofon izninin sahibi kayıt backend'i olarak kalır; ekran yüklenirken izin
+istenmez. Tek ses, ezgi veya laboratuvar açık bir ret aldıktan sonra ortak kart
+yalnız kullanıcının dokunuşuyla uygulama ayarlarını açar. Ayarların açılması izin
+verildiği anlamına gelmez; kullanıcı döndüğünde kayıt eylemi izni yeniden
+kontrol eder. Platform false/exception sonucu başarı gibi sunulmaz.
+
+Adapter için MIT `permission_handler` 12.0.3 seçildi. 13.x compileSdk37 istediği
+ve mevcut AGP9.0.1 en fazla36 önerdiği için platform araç zinciri yükseltilmeden
+alınmadı. Android pasif status kalıcı reddi kesin ayıramadığından ürün sahte bir
+kalıcı-ret sınıflaması üretmez; ayar eylemi gerçekleşmiş her ret sonrasında
+güvenli çıkış olarak görünür. Fiziksel iki platform testi kabul kapısıdır.
+
+## ADR-029 — Başlangıç kontrolü seviye üretmez
+
+**Tarih:** 2026-10-22. **Durum:** SHELL-03a kod/test; SHELL-03b eğitimci/pilot bekliyor.
+
+İlk kullanımda hızlı değer için yalnız mevcut güvenilir dokunma kaynaklı üç
+egzersiz kullanılır: tiz/pes, düzenli puls ve ilk hareketli-do derece turu.
+Mevcut scorer/cohort korunur; yeni eşik veya birleşik skor tanımlanmaz. Geçersiz
+tur nötr yeniden denemedir, tek güçlü tur mastery değildir ve ölçülemeyen ses
+üretimi/ezgi/çok sesli alanlar bilinmiyor kalır.
+
+Eğitimci onaylı seviye bantları ve öğrenci kabul verisi olmadığı için domain'de
+“başlangıç/orta/ileri”, konservatuvara hazır veya kabul puanı üreten bir alan
+bulunmaz. UI yalnız üç turun durumu ile ilk çalışma odağını açıklar. Bu sınır,
+SHELL-03b dış kapıları geçmeden gevşetilmemelidir.
+
+## ADR-030 — “Devam et” tamamlanmış kanıttan yeni tur açar
+
+**Tarih:** 2026-10-22. **Durum:** SHELL-04f kod/test; cihaz/offline kabulü açık.
+
+“Kaldığın yerden devam” yalnız desteklenen güncel kohorttaki en son tamamlanmış
+yerel denemeyi işaret eder. Kullanıcı dokunduğunda aynı egzersiz yeni bir turla
+başlar. Yarım soru, rastgele tur durumu, player, ses buffer'ı, mikrofon route'u
+ve izin durumu saklanmaz veya geri yüklenmez. Gelecek tarihli ve sürüm/provenans
+eşleşmeyen kanıt fail-closed davranır. Böylece ürün devamlılık sunarken otomatik
+ses/kayıt veya sahte ölçüm riski yaratmaz.
+
+## ADR-031 — Yerel taşımada yalnız cihazdan bağımsız tercihler bulunur
+
+**Tarih:** 2026-10-24. **Durum:** DATA-03c kod/test; gerçek iki cihaz QA açık.
+
+Pano belgesi günlük çalışma süresi ve haftalık hedefi taşıyabilir. Hatırlatma
+saati, notification izni/schedule ve titreşim yeni cihaza uygulanmaz; bunlar
+platform izni, saat dilimi ve erişilebilirlik tercihine bağlıdır. V1 belgeleri
+okunur, yeni belgeler strict v2 olarak yazılır.
+
+Geçmiş ve tercih ayrı atomik dosyalardır. Sonuç batch'i önce uygulanır;
+ardından tercih yazımı başarısız olursa bu kısmi durum kullanıcıya açıkça
+bildirilir. Hesap/outbox/backend kararı olmadan cross-store transaction veya
+bulut senkronu taklit edilmez.
+
+DATA-03d ile yalnız başarılı tercih yazımı process-local revision artırır.
+Bugün görünümü bu sinyalle cache'ini yeniler; Navigator/Home kimliği korunarak
+seçili sekme sıfırlanmaz. Revision kalıcı senkron sürümü veya hesap revizyonu
+değildir ve geç kalan eski async okumalar generation kapısıyla elenir.
+
+## ADR-032 — Kulak eğitimi ikizi ana deneyim; Koro Atölyesi ayrı kategori
+
+**Tarih:** 2026-10-29 · **Durum:** kabul (kullanıcı isteği, kullanıcı uyurken makul varsayılanlarla)
+
+**Karar:** Uygulama girişi `TrainerApp` (5 dinleme eğitmeni: Öğren yolu + Pratik, istatistik, sıralama, ayarlar, kalıcı 30 adımlı onboarding). Harmonia'nın mikrofon/perde çekirdeği ve deneysel tekrar ekranları “Koro Atölyesi” kategorisinde toplanır. Eski `HarmoniaApp` kabuğu korunur ama açılışta kullanılmaz.
+
+**Gerekçe:** Kullanıcı referans uygulamanın akışını birebir istedi; koro hazırlığı ayrı modül olarak eklenecekti.
+
+**Sınırlar:** Marka/ad kopyalanmaz; ödeme, sahte yorum/istatistik, sahte lig oyuncusu yok. Dinleme quiz'leri yalnız dokunma cevabıdır (`touch`), mikrofon skoru değildir. Ses aralığı testi kalite kapısından geçmeyen kaydı “ölçülemedi” sayar; parti önerisi taslaktır. 2/3/4 sesli tekrar kayıtlar gelene kadar kapalı. Dinleme quiz sonuçları ayrı JSON'da tutulur, `ResultHistory`/mastery'ye yazılmaz (ritim ekranları kendi geçmişine yazmaya devam eder).

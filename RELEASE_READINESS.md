@@ -1,6 +1,6 @@
 # Harmonia — Yayın hazırlığı (canlıya çıkış açıkları)
 
-**Güncelleme:** 2026-10-14 · Kaynaklar: CURRENT_ROADMAP, IMPLEMENTATION_ROADMAP §5–§11.
+**Güncelleme:** 2026-10-25 · Kaynaklar: CURRENT_ROADMAP, IMPLEMENTATION_ROADMAP §5–§11.
 Durum sözlüğü roadmap ile aynı; kod-test geçmesi cihaz/pilot/yayın kabulü değildir.
 
 Tür: **K** = kodla kapatılabilir, **Ka** = kullanıcı kararı, **D** = dış kaynak
@@ -23,10 +23,10 @@ Tür: **K** = kodla kapatılabilir, **Ka** = kullanıcı kararı, **D** = dış 
 | Android derleme ortamı | D | Debug APK derlendi (2026-10-14; Gradle CMake 3.22.1'i kendisi kurdu). cmdline-tools eksik, `flutter doctor --android-licenses` onaylanmadı; gerçek Android cihaz/emülatörde çalıştırılmadı |
 | Release imzalama | Ka/D | Kod hazır (`android/key.properties`, gitignore). Keystore üretimi ve saklanması kullanıcıda; iOS için Apple Developer hesabı + signing team |
 | Uygulama kimliği | Ka | `com.harmonia.harmonia` geçici. Mağazaya ilk yüklemeden sonra değişmez; kendi alan adınızla seçilmeli |
-| Uygulama ikonu / açılış ekranı | K/D | Koddan üretilen marka ikonu (iOS alfasız 1024, Android uyarlanabilir + tek renk) ve tema renginde açılış ekranı eklendi. Profesyonel ikon tasarımı ve mağaza ekran görüntüleri hâlâ önerilir |
+| Uygulama ikonu / açılış ekranı | K/D | Koddan üretilen marka ikonu; iOS tek-boyut varsayılan/koyu/renklendirilmiş kaynakları asset-testli ve Xcode 27 actool uyarısız, Android uyarlanabilir + tek renk; tema renginde açılış ekranı. Fiziksel görünüm, profesyonel tasarım kabulü ve mağaza ekran görüntüleri açık |
 | Sürüm numarası | K | `1.0.0+1`; her yüklemede build numarası artırılmalı (CI yok) |
 | Gerçek cihazda gezinti | D | Simulator build başarılı, elle gezinti/gerçek iPhone/Android testi yok |
-| Mikrofon izni kalıcı ret → Ayarlar | Ka | SHELL-02: yeni plugin (ör. permission_handler/app_settings) kararı |
+| Mikrofon izni kalıcı ret → Ayarlar | D | SHELL-02 kod/build tamam (`permission_handler` 12.0.3); fiziksel iOS/Android ret, ayar açma ve uygulamaya dönüş QA bekliyor |
 | Gizlilik politikası URL'si | D | Mağaza zorunlu; metin + barındırma + hukuk incelemesi (LAUNCH-01) |
 | App Store gizlilik etiketi / Play Data safety | D | Uygulama veri toplamıyor (manifest bunu söylüyor); formlar hesapta doldurulur |
 | Yaş/çocuk güvenliği beyanı | D | Hedef kitle öğrenci; hukuk incelemesi |
@@ -36,11 +36,11 @@ uygulama adı "Harmonia", iOS PrivacyInfo.xcprivacy (izleme yok, veri toplama
 yok, dosya zaman damgası C617.1), release imzalama yapılandırması, yerel hata
 günlüğü + kopyalanabilir rapor, release'te kırmızı hata ekranı yerine sakin mesaj.
 
-**Arayüz (2026-10-15 A+C sonrası):** Bugün/Pratik/Gelişim/Profil ve tiz/pes,
-derece, ritim ekranları yeni tasarımda. Ayarlar, geçmiş, günlük plan, tek ses
-ve ezgi oturumları, ses laboratuvarı ve veri taşıma henüz eski düzende (tema
-uygulanmış). Gerçek cihaz, ekran okuyucu ve kullanıcı testi yapılmadı.
-Ayrıntılı liste: CURRENT_ROADMAP › "Kalan işler — 2026-10-15".
+**Arayüz (2026-10-25):** Bugün/Pratik/Gelişim/Profil; tiz/pes, derece, ritim,
+ayarlar, geçmiş, günlük plan, tek ses/ezgi oturumları, ses laboratuvarı ve veri
+taşıma A+C düzenine geçirildi ve widget testleri mevcut. Bu kod kapsamıdır;
+gerçek cihaz, ekran okuyucu ve kullanıcı testi yapılmadı. Ayrıntılı liste:
+CURRENT_ROADMAP › "Kalan işler — 2026-10-15".
 
 ## 3. Kapalı beta Core için açıklar
 
@@ -54,6 +54,8 @@ Ayrıntılı liste: CURRENT_ROADMAP › "Kalan işler — 2026-10-15".
 | Kullanıcı testi (UXR-01) | D | ≥5 öğrenci + 1 eğitimci |
 | 2/3/4 sesli piyano | D | Kullanıcının kayıtları + birlikte QA |
 | Ekran okuyucu manuel testi | D | VoiceOver/TalkBack |
+| Günlük hatırlatma teslimatı | D | Fiziksel iOS/Android izin, seçilen saat, reboot/DST ve OEM pil davranışı; kod/build REM-01c hazır |
+| Başlangıç yerleştirmesi | D | SHELL-03a üç dokunma turu kod-test hazır; eğitimci seviye bantları ve öğrenci kabulü olmadan yalnız pratik başlangıcı önerir |
 
 ## 4. İlk ücretli yayın için açıklar
 

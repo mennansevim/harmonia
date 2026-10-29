@@ -39,7 +39,7 @@ Durum sözlüğü: **bekliyor / geliştiriliyor / kod tamamlandı / doğrulandı
 | REL-05 | Ezgi placeholder fail-closed | Aynı nota sayısı sıra/timing/memory başarısı üretmez; ölçüm yoksa null/status | Kod/test doğrulandı; gerçek analyzer değil |
 | REL-06 | Egzersiz v2: nota/vuruş dizisi, tuning, hint, gecikme, order/set | Geçersiz egzersiz tanımı runtime'da reddedilir; round-trip sözleşme | Kısmi: protocol/binding/round-trip + REL-06a 12TET label/frequency/A4 metadata guard testli; session/katalog ve gerçek audio QA bekliyor |
 | REL-07 | Analiz/puan için evidence/provenance; içerik kalite kontrolü | Mock/gerçek ayrımı, session id, puanlama sürümü; mutable veri ve kopya sonuç kontrolleri | Kısmi: deep snapshot, pitch provenance/source cohort ve fixture loader testli; diğer analyzer/dedup/etiket QA bekliyor |
-| REL-08 | Tekrarlanabilir kalite komutları / CI taslağı | Format, test, analyze; secret olmadan yerel çalışma; CI etkinleştirme ayrı | Yerel runner + test/sağlayıcı-bağımsız taslak kod-testli; hosted run açık |
+| REL-08 | Tekrarlanabilir kalite komutları / CI taslağı | Format, test, analyze; secret olmadan yerel çalışma; CI etkinleştirme ayrı | Yerel runner + test/sağlayıcı-bağımsız taslak kod-testli; 08a full suite `--concurrency 4` ile kaynak baskısına karşı sabit; hosted run açık |
 
 R0 kod doğrulaması ses motorunun doğru duyduğunu kanıtlamaz. Pitch toleransları değiştirilmedi. Ritim coverage × timing fidelity formülü ilk deterministik implementasyondur, resmî sınav rubriği değildir. Gelişimde persistence/dedup/tuning/hint cohort ayrıntıları R2/R3'te genişletilir.
 
@@ -130,6 +130,91 @@ Hukuk/çocuk güvenliği, kayıt amaçları/saklama/aktarım ve hizmet/iade şar
 
 - **CONS-01:** 2/3/4 hedefin aynı audio clock'ta referansı; gain/clipping/telif.
 - **CONS-02:** Sıralı tek vokal segment/set eşleştirme; eksik/fazla/çevrim/oktav sonuçları. Eşzamanlı mikrofondan multipitch ayrı AR-GE.
+
+**2026-10-27 — CONS-01a:** Henüz gerçek WAV eklenmeden, incelenmiş hazır
+piyano kaydı için strict domain manifesti kod-testli. Yalnız 2/3/4 ses; klasör
+ile voice count eşleşmesi, alttan üste farklı MIDI, PCM16 WAV metadata bütçesi,
+SHA-256, hak referansı ve bağımsız nota etiketi inceleme referansı zorunlu.
+Manifest beyanı dosya/header/hash/nota/hak doğrulaması veya playback izni
+değildir. CONS-01b read-only file adapter ve gerçek kayıt QA'sı açık.
+
+**2026-10-27 — CONS-01b:** Manifest entry'sini açıkça seçilmiş yerel kökten
+salt-okunur yükleyen adapter kod-testli. Path/root/symlink, byte bütçesi ve
+okuma boyunca uzunluk kontrolü; SHA-256; RIFF/WAVE PCM16 mono/stereo header;
+sample rate/channel/frame exact eşleşmesi fail-closed. Defensive byte copy
+yalnız ilerideki player adapter'ına veri sağlar; bu paket oynatma, remix,
+nota/hak doğrulama veya UI açmaz. Gerçek kayıt QA + CONS-01c player açık.
+
+**2026-10-27 — CONS-01c:** Bir reviewed kayıt + doğrulanmış WAV byte snapshot'ı
+için dedicated `ChordReferenceSession` kod-testli. Autoplay yok; explicit play
+tamamlanıp player stop ve 0–10 sn recall delay bitmeden sıralı cevap kapısı
+açılmaz. Cancel/background/route-focus kesintisi epoch'u iptal eder ve otomatik
+resume etmez; cleanup failure tekrar oynatmayı fail-closed kapatır; close tekil
+ve serialize. Bu katman mikrofon açmaz, skor/history/mastery yazmaz. Gerçek
+kayıt QA, production player/UI wiring ve CONS-02 cevap segment/alignment açık.
+
+**2026-10-27 — CONS-02a:** Mevcut target-independent monofonik segment
+kanıtını reviewed MIDI/A4 hedefleriyle exact low→high sırada karşılaştıran
+domain adapter kod-testli. 2/3/4 hedef; eksik, fazla/mükerrer, yanlış pitch,
+yanlış oktav ve aynı mutlak hedef setinin farklı sırası ayrılıyor. Segment
+zamanları nominal sıraya çevrilir ve timing/recall puanı üretilmez; provenance
+ve discarded/non-pitched frame sayıları korunur. `diagnosticCandidateMatch`
+skor/history/mastery değildir. Capture composition, any-order/set seçeneği,
+BENCH/VAD ve gerçek cihaz kabulü açık.
+
+**2026-10-28 — CONS-02b:** Aynı matcher protokoldeki `ResponseOrder.anyOrder`
+için bounded set özeti üretiyor. En fazla dört hedef nedeniyle 2^N state DP;
+her gözlenen aday atlanır veya yalnız bir hedefe atanır. Exact mutlak pitch,
+yanlış oktav, eksik hedef ve fazla/mükerrer aday ayrı sayılır; ilgisiz pitch bir
+eksik + bir fazla bırakır. Exact-order alignment her durumda korunur ve ters
+sıra açıklaması kaybolmaz. Set modu da yalnız diagnostic aday eşleşmesidir;
+ExerciseResult/history/mastery açmaz. Gerçek capture/fixture/device kapıları açık.
+
+**2026-10-28 — CONS-02c:** `ChordResponseCaptureSession` reviewed referans ile
+tek sürekli monofonik öğrenci kaydını yaşam döngüsü düzeyinde bağlıyor. İzin ilk
+referanstan önce; capture yalnız playback+recall hazırsa başlar. Replay kapıyı
+yeniden kapatır. Stop sonrası metadata+PCM exact doğrulanır, native kayıt silinir
+ve yalnız ephemeral immutable snapshot kalır. Cancel/interruption/pending start
+serialize; cleanup failure replay'i kapatır. Worker/quality/matcher, skor,
+history/mastery ve UI yok; BENCH/VAD/cihaz kapıları açık.
+
+**2026-10-28 — CONS-02d:** Capture snapshot artık ölçüm anındaki route'u ve
+reviewed kayıt metadata'sını taşır. `ChordResponseDiagnosticAnalyzer` mevcut
+kalite kapısını zorunlu kullanır; missing/stale/wrong-route calibration veya
+silent/invalid kalite worker'ı çalıştırmaz. Usable durumda bounded worker →
+target-independent segment → exact/any-order matcher çalışır. Worker metadata
+ve provenance capture ile exact eşleşmezse çekimser kalır. Çıktı diagnostic
+candidate evidence; skor/history/mastery/AI değildir. BENCH/VAD/cihaz açık.
+
+**2026-10-29 — CONS-02e:** `ChordResponseCaptureSession` içine açık ve tekrar
+edilebilir ortam kalibrasyonu bağlandı. Oturum izin→route snapshot→1.5–5 sn
+sessizlik capture→metadata/PCM doğrulama→native discard→noise-floor sırasını
+aynı serialized kaynak kuyruğunda yürütür. Gürültü/aktivite tarafsız retry'dır;
+başarılı kalibrasyon referans boyunca kalır, cancel/interruption/close ile
+geçersizleşir. Üretim UI sonucu ve gerçek kayıt availability hâlâ kapalıdır.
+
+**2026-10-29 — CONS-02f:** `ChordResponseAttemptCoordinator` kalibrasyon,
+reviewed referans, tek sürekli sıralı cevap ve quality→worker→segment→matcher
+zincirini tek UI-ready application state machine'de birleştirir. Ürün kapısı
+kalibrasyon olmadan referans/cevap başlatmaz. Pending analiz sırasında
+cancel/replay/close eski sonucu yayımlayamaz; quality retry ile worker
+unavailable ayrıdır. Candidate evidence hâlâ skor/history/mastery/AI değildir.
+
+**2026-10-28 — CONS-01d:** `ChordReferenceSession` öğrenme/recall modunu ve
+1–10 completed-play kotasını taşır. Sayaç native completion sonrası artar;
+cancel/route/background/start failure tüketmez. Replay response-ready kapısını
+hemen kapatır ve yeniden tam playback+recall ister. Learning kotası açıkça
+verilir; recall exam tek dinleme, hedef görünmez. `PianoChordReference` da recall
+exam için tek dinlemeyi fail-closed doğrular. Bu sayaç duyma veya öğrenme kanıtı
+değildir; production UI/history/cihaz bağlantısı hâlâ açık.
+
+**2026-10-28 — CONS-01e:** App composition sınırı reviewed loader çıktısının
+recording metadata'sı ile defensive WAV snapshot'ını tek işlemde fresh player
+ve `ChordReferenceSession` ile bağlıyor. Invalid mode/quota player tahsisinden
+önce fail-closed; her create bağımsız player ister ve başarılı session kaynağın
+sahibidir. Create autoplay, mikrofon, skor/history/mastery veya placeholder
+availability açmaz. Production `JustAudioClipPlayer`/UI/capture wiring, gerçek
+kayıt QA ve cihaz route kabulü açık.
 - **CONS-03:** Fonksiyonel duyma, major/minor, solfej, ritim/ezgi dikte ve deşifre. Eğitimci onaylı notation/audio senkronu.
 - **CONS-04:** Okul/bölüm/yıl, kaynak URL/son kontrol, süre/hint/transpozisyon kuralları; bilinmeyen format genel deneme.
 - **CONS-05:** Süreli ipucusuz deneme ve rapor; çalgı/şan performansı ayrı uzman desteği/dış çalışma olarak görünür.
@@ -188,11 +273,12 @@ Kullanıcının A–Q modül listesi mevcut ID'lerle eşlendi; eksik kalanlar i�
 | ID | Öncelik | Kapsam / somut çıktı | Bağımlılık | Kabul kriteri ve test | Cihaz/insan/dış ihtiyaç | Risk | Efor | Dilim | Kanıt |
 |---|---|---|---|---|---|---|---|---|---|
 | SHELL-01 | P0 | Aurora token'ları (sonuç renkleri: yanlış oktav ≠ başarı, geçersiz = nötr), misafir hedef seçimi, home, ayarlar/yardım/gizlilik/abonelik/hesap, yerel profil + silme, startup hata/yeniden dene | — | Widget: ilk açılış → hedef → home, ayar akışları, silme onayı, bozuk profil, 320px/1.8×, dark; kontrast ≥4.5:1 birim testi | UXR-01 kullanıcı testi, ekran okuyucu manuel | Tasarım kabulü testsiz | M | B | K |
-| SHELL-02 | P0 | Mikrofon izni: önceden açıklama, ret, kalıcı ret → OS ayarlarına yönlendirme; izinsiz kullanılabilir yol | SHELL-01 | Fake platform: üç izin durumu; çıkmaz yok | Fiziksel iOS/Android izin diyalogları | Plugin seçimi/izin API farkları | S–M | B | P |
-| SHELL-03 | P1 | Başlangıç değerlendirmesi + seviye önerisi (hedef bazlı kısa set) | CORE-01/02, EDU-01 | Ölçülmeyen beceri “bilinmiyor”; seviye önerisi açıklamalı | Eğitimci seviye tanımı | Erken yanlış seviye | M | B | P |
+| SHELL-02 | P0 | **Kod/build tamam:** açık ret sonrası tek ses/ezgi/lab ekranlarında OS uygulama ayarları; girişte prompt yok, izinsiz çıkış/referans yolu korunur | SHELL-01 | 4 yeni fake/widget + üç ekran regresyonu; 824 full | Fiziksel iOS/Android kalıcı ret ve ayarlardan dönüş | Android pasif status kalıcı reddi ayıramaz; eylem yalnız gerçek ret sonrası görünür | S–M | B | K/D |
+| SHELL-03 | P1 | **03a kod tamam:** isteğe bağlı 3 dokunma turu, yerel devam ve açıklamalı pratik odağı; toplu seviye yok. **03b açık:** eğitimci onaylı hedef bazlı seviye tanımı | PERC-01, CORE-02; gerçek yerleştirme için CORE-01/EDU-01 | 4 domain + 4 widget/integration; ölçülmeyen beceri “bilinmiyor” | Eğitimci seviye tanımı + öğrenci kabulü | Erken yanlış seviye; bu nedenle readiness skoru kapalı | M | B | K/D |
 | QA-01a | P0 | Flutter erişilebilirlik kılavuz testleri (Android/iOS dokunma hedefi, etiketli hedef, metin kontrastı) | SHELL-01 | 5 widget testi; açık/koyu onboarding+home, oturum/ritim/lab/geçmiş | Ekran okuyucu manuel testi (VoiceOver/TalkBack) | Otomatik kılavuz ≠ tam erişilebilirlik | S | B | K |
+| UI-01b | P1 | Mevcut marka işaretinden iOS varsayılan/koyu/renklendirilmiş tek-boyut AppIcon kaynakları | UI-01, REL-09 | 4 asset testi; 1024 px, default opak, dark saydam, tinted gri tonlu; Xcode 27 actool uyarısız | Fiziksel iOS görünümü + profesyonel tasarım/mağaza QA | Sistem tint/maske görünümü cihazda farklılaşabilir | S | B | K/D |
 | UX-03a | P1 | Canlı giriş seviyesi göstergesi (record eklenti genliği, 100 ms, yalnız görüntü; tepe-tutma azalması sadece çizimde) | AUD-DEV-02 | 2 widget testi: etiketler, nota iddiası yok, yalnız mikrofon açıkken görünür | Cihazda dBFS doğrulaması | Platform genlik farkı | S | B | K |
-| SHELL-04 | P1 | Kaldığı yerden devam, ortak yükleniyor/boş/hata/offline bileşenleri | CORE-05 | Widget durum matrisi | — | — | S | B | P |
+| SHELL-04 | P1 | **04a–o kısmi kod tamam:** tercihler, ortak durumlar, consumer recovery, güvenli yeni tur, Today/plan/harita/geçmiş ön plan yenilemesi ve dependency replacement. Today tercih store kimliğini revision'dan ayrı izler; eski store'daki bekleyen save yeni UI'a yayın yapamaz, store değişince eski tercihler yeni okuma boyunca görünmez; alan-bazlı read failure eski veriyi diriltmeden nötr uyarı/açık retry verir ve pending read sırasında hedef yazımı kapalıdır. Yarım ses/mikrofon oturumu restore edilmez. Kalan: gerçek cihaz/offline kabul matrisi | CORE-05 | Domain + widget durum matrisi; SHELL-04f 6, 04g 2, 04h 3, 04i 3, 04j 1, 04k 1, 04l 1, 04m 1, 04n 1, 04o güçlendirilmiş test | Gerçek cihaz/offline kabulü | Sessiz stale state veya unsafe media restore | S | B | K/D |
 | UXR-01 | P0 | Kullanıcı testi protokolü: ilk değer süresi, hata anlama, doğru sonraki eylem; düşük cihaz performansı | SHELL-01, SESSION-01 | Protokol ve önceden kayıtlı eşikler DESIGN_QA.md'de; ≥5 öğrenci + 1 eğitimci | Katılımcılar (kullanıcı koordinasyonu), cihazlar | Küçük örneklem | S hazırlık | B | Protokol hazır, yürütülmedi |
 | CAL-01 | P0 | Noise-floor kalibrasyonu, kayıt kalite kapısı (sessizlik/kırpılma/düşük SNR/yetersiz etkinlik/referans kuyruğu), route politikası, latency sözleşmesi (ölçülmedi varsayılanı), lab bağlantısı | AUD-DEV-02/04 | 31 birim/controller/widget testi; route/rate/yaş değişiminde kalibrasyon geçersiz; ölçülmemiş latency düzeltme üretmez | — | Eşikler hipotez | M | B | K |
 | CAL-02 | P0 | Cihaz route matrisi ve eşik doğrulaması: hoparlör/kablolu/Bluetooth/USB; iOS route raporu, Android çıkarımı | CAL-01 | Önceden kayıtlı eşiklerle sessiz/gürültülü oda, konuşma, sızıntı kayıtları; sonuçlara bakıp eşik gevşetme yok | ≥1 iOS + ≥1 düşük/orta Android, kulaklıklar | Android route belirsizliği | M | B | P |
@@ -209,7 +295,13 @@ Kullanıcının A–Q modül listesi mevcut ID'lerle eşlendi; eksik kalanlar i�
 | CORE-05 / HIST-01 | P1 | Yerel sonuç geçmişi, attempt dedup, silme, kaynak ayrımı, cohort içi gelişim | REL-01 | 19 test: katı round-trip (7 mock senaryo + ritim), aynı attempt duplicate/conflict, kapasite, seri yazma, bozuk dosya korunur, ekran boş/bilinmiyor/trend/silme | Export (DATA-03) | Migration | M | B | K |
 | INT-01a | P1 | Hareketli do derece duyma (tonik bağlamı, soru başına ton, hece + aralık adı, karışma çifti) | ADR-024, PERC-01 | 12 test: dengeli seçenek, ton değişimi, tam yarım ton, tohumlu, sonuç/round-trip, eksik tur, beceri durumu, etiketler, ton dizisi, seçenek dışı cevap, kalıcılık, seviye kilidi/iptal, ekran + geçmiş, planlayıcı rotası | Eğitimci terminoloji/içerik onayı | Terminoloji karışması | M | B | K |
 | DATA-03a | P1 | Yerel ses-siz sürümlü dışa/içe aktarma (pano), strict doğrulama, geçmiş kurallarıyla import | CORE-05 | 7 birim + 4 widget testi | Gerçek cihazlar arası deneme | Bozuk belge | S | B | K |
+| DATA-03b | P1 | Toplu yerel sonuç importu: mevcut dedup/conflict/kapasite kurallarını planla, dosyaya tek atomik commit; yazma hatasında görünür prefix yok | DATA-03a, CORE-05 | 2 memory/file batch +1 file failure +1 widget failure; mevcut import sonucu regresyonu | Gerçek cihazlar arası pano denemesi; bulut için DATA-01/02 | Batch'i bulut sync sanma; kapasite sonucu açık kalmalı | S | B | K/D |
+| DATA-03c | P1 | Export v2: günlük bütçe + haftalık hedefi strict taşır; v1 uyumlu. Hatırlatma/titreşim cihazda kalır; preference dosyasına atomik uygulanır | DATA-03a/b, SHELL-04a, GROW-01b | 1 codec migration +1 file preservation +1 widget import; full863 | Gerçek iki cihaz pano denemesi | History+preference iki ayrı store; kısmi sonuç açık raporlanmalı | S | B | K/D |
+| DATA-03d | P1 | Başarılı taşınabilir tercih importunu çalışan Bugün görünümüne revision ile uygula; sekme/rota durumu korunur, geç kalan eski okuma elenir | DATA-03c, SHELL-04i | 1 callback regresyonu +1 widget revision/sekme testi; full864 | Gerçek cihazda açık rota + import kabulü | Global reset veya eski async read ile yeni tercihi ezme | S | B | K/D |
 | LEARN-04a | P1 | Beceri raporu: durum sayıları, bilinmeyen beceriler, tek hedef + eylem; yüzde yok | LEARN-01a, LEARN-03b | 5 birim + 2 widget testi | Eğitimci rapor dili onayı | Yanlış yorum | S | B | K |
+| F06a/b | P1 | Hatalı tiz/pes, ritim ve tonik/derece sonucundan ilgili taslak mikroderse isteğe bağlı geçiş; otomatik medya ve ilerleme yazımı yok | LEARN-02a/b, RETRY-01 | 3 uçtan uca widget akışı + 3 ders catalog/codec regresyonu; history/player değişmez | Eğitimci metin/ses onayı + öğretim pilotu | Okumayı öğrenme kanıtı sanma | S | B | K/D |
+| RETRY-01c | P1 | Ezgi diagnostic adaylarını referansla sembolik sırada karşılaştır; ilk farklı referans için iki seslik puansız dinleme bağlamı | CORE-03a/b, CORE-04b/c | 2 suggestion +2 widget/route testi ve mevcut session alignment regresyonu; clean/extra-only abstention, no autoplay/score | VAD/insan sesi benchmark'ı, cihaz playback ve eğitimci kabulü | Adayı doğrulanmış hata/hafıza sonucu sanma | S | B | K/D |
+| GROW-01c | P1 | Gelişim ekranında rolling-7 çalışma özeti, önceki 7 gün hacim karşılaştırması, egzersiz kırılımı ve geçersiz ölçüm sayısı; başarı yüzdesi yok | CORE-05, GROW-01a | 5 domain + 1 widget; current cohort/rota, stale/future, local calendar sınırları | Kullanıcı rapor dili kabulü | Hacmi öğrenme artışı sanma | S | B | K/D |
 | SHELL-04a | P1 | Günlük bütçe tercihinin cihazda saklanması (bozuk → varsayılan) | REL-09 | P0 | Dağıtım kanalı (dev/beta), uygulama adı, release imzalama yapılandırması, iOS gizlilik manifesti, RELEASE_READINESS | SHELL-01 | 3 test + iOS/Android build | Keystore, Apple hesabı, uygulama kimliği kararı | Yanlış imza/ID | S | B | K |
 | OPS-01a | P1 | Yerel hata günlüğü (kişisel metin yok), global handler, kopyalanabilir rapor; servis yok | SHELL-01 | 4 test | Servis seçimi (OPS-01) | Eksik görünürlük | S | B | K |
 | LEARN-03c | 3 birim + 1 widget testi | — | — | S | B | K |
@@ -218,7 +310,7 @@ Kullanıcının A–Q modül listesi mevcut ID'lerle eşlendi; eksik kalanlar i�
 | PERC-01 | P1 | Tiz/pes algı turu (8 dengeli sentetik çift, dokunma cevabı, öğrenme geri bildirimi, şans düzeyi), geçmiş + beceri grafiği bağlantısı | LEARN-01a, CORE-05 | 12 test: dengeli/tohumlu/tam cent, sabit cevap = şans, sonuç sözleşmesi/round-trip, eksik tur geçersiz, beceri merdiveni, ton çifti sessizliği, dinlemeden cevap yok, tekrar sayımı, tur ortasında seviye kilidi, iptal kaydetmez, ekran + geçmiş metni | Eğitimci seviye/ölçüt onayı | Algı ≠ üretim karışması | S | B | K |
 | LEARN-01a | P1 | Taslak beceri grafiği (önkoşul/rota/ölçüm desteği), kanıta dayalı durum merdiveni, hedefe göre beceri haritası | CORE-05, LEARN-03a | 14 test: tekrar/bilinmeyen/rota-arası önkoşul ve döngü reddi, ölçülen düğüm ↔ egzersiz bağı, sıra, rota filtresi, merdiven geçişleri, kötü sonraki deneme geri düşürür, denenmemiş egzersiz tavanı, farklı sürüm dışlanır, ekran durumları ve kılavuzlar | Eğitimci grafik/ölçüt onayı | Yanlış önkoşul | M | B | K |
 | LEARN-03a | P1 | Sonuçtan tek somut sonraki çalışma (kural tabanlı; hedefli tekrar → yeni desen → gecikmeli kontrol) | CORE-05, CORE-02a | 14 test: başla/ölçülemeyen/baskın hata/tek temiz ≠ ustalık/yeni desen/ertesi gün kontrol önceliği/kalıcı/başarısız kontrol/farklı sürüm-kaynak dışlama/mevcut desen önceliği; kalıcılık kontrolünde tek dinleme ve `retentionCheck` işareti; AI yok | Eğitimci eşik onayı, öğrenme pilotu | Yanlış ilerleme önerisi | M | B | K |
-| SHELL-02 karar | P0 | Kalıcı izin reddinde OS ayarlarına derin bağlantı için plugin seçimi (ör. permission_handler / app_settings) | — | Bağımlılık lisans/bakım incelemesi | **Kullanıcı kararı**: yeni bağımlılık | Supply-chain | S | B | P |
+| SHELL-02 karar | P0 | **Tamam:** MIT `permission_handler` 12.0.3; mevcut compileSdk36/AGP ve iOS SPM ile build edildi | — | Bağımlılık ve platform build kontrolü geçti | Fiziksel cihaz kabulü açık | Supply-chain sürüm takibi | S | B | K/D |
 | RANGE-01 (AUD-DEV-06) | P1 | Ses aralığı taraması | CORE-01 | Uç tekrar doğrulaması; belirsiz ≠ başarısız | BENCH-01 | Sağlık/SATB iddiası | M | Ü | P |
 | INT-01 | P1 | Aralık/fonksiyonel duyma içerik + algı/üretim ayrı ölçüm | EDU-01, CORE-01 | Melodik/harmonik ayrımı; eğitimci onaylı solfej yaklaşımı | Eğitimci | İçerik hakları | L | Ü | P |
 | AI-02a | P1 | Koç girdi/çıktı sözleşmesi, doğrulayıcı, zaman aşımı + yedek, yerel eval | REL-01, CORE-05 | 12 test: kaynak kapısı, metinsiz yük, skor/olmayan egzersiz/hazırlık %/eğitimci taklidi/teşhis/geçersizde övgü/uzunluk/bozuk metin reddi | Gateway + ücretli API onayı (AI-01/03) | Model davranışı | S | Ü | K (kod) |
@@ -453,3 +545,311 @@ exclusive player coordinator; play/stop/close/pending-start/background race
 fake testleri, büyük yazı ve sentetik/manual açıklaması. Mevcut mikrofon
 oturumuyla eşzamanlı kaynak paylaşımı yok; recall/history/mastery bağı yok.
 CORE-04 bütünü ve gerçek voice/device/EDU kapıları hâlâ açık.
+
+### 2026-10-15 18:45 TRT — UX-02b ezgi ekranı A+C migration
+
+Birleştirme sonrası CURRENT_ROADMAP yeni önceliğine uyuldu: CORE-04c2
+player yerine eski ezgi ekranı LessonScaffold/ChunkyButton/StatusPill'e taşındı.
+Kısa ana yönerge + açık sentetik/puansız durum; privacy/kayıt süreleri açılır
+yardımda. Diagnostic lesson progress:null, percentage yok, doğal kaydırma;
+numeric progress kullanan mevcut dersler aynı. Session callback/kalite/skor
+eşikleri değişmedi. 4 yeni widget + mevcut8 ezgi testleri; dış cihaz/UXR açık.
+Kalan UI migration listesi CURRENT_ROADMAP'te; CORE-04c2 hâlâ ayrı açık iş.
+
+### 2026-10-15 23:45 TRT — UX-02c mikroders okuyucu migration
+
+LessonScaffold progress:null + StatusPill/ChunkyButton; kısa görünür no-mastery
+uyarısı, açılır içerik bilgisi, alt geri dön eylemi. Beş faz ve özgün öğretim
+metinleri aynı; practice kapalı, okuma başarı/completion/history değildir.
+4 yeni widget + mevcut6 reader testi; close navigation kullanan map recovery
+testi yeni lesson_close'a taşındı, durum/veri assertions korunur. Kalan migration
+tek listede sürer; gerçek içerik/EDU/cihaz/pilot kapıları geçilmedi.
+
+### 2026-10-16 05:23 TRT — UX-02d piyano placeholder migration
+
+Null-progress A+C lesson shell, kısa kapalı açıklaması + açılır ürün akışı,
+2/3/4 kartlarda neutral disabled ChunkyButton. Prerecorded yönü/yer tutucular
+korundu; player/mic/scorer açılmaz. Katalog fast error eager observer; manual
+retry pending durumda eski hata/düğme gizli; mounted/dispose regression.
+5 yeni + mevcut5 hedefli test. Kayıt/hak/nota/cihaz QA ve gerçek chord modülü
+açık; kalan UI migration CURRENT_ROADMAP listesinde devam eder.
+
+### 2026-10-16 10:24 TRT — UX-02e veri taşıma migration/reliability
+
+Yerel null-progress lesson shell + ChunkyButton/StatusPill, live status. Onay
+dahil busy guard, kilitli input/iki eylem; pano Platform/MissingPlugin hatası
+safe retry, eski success yok; load sonrası disposed ise clipboard yazılmaz.
+Non-string exportedAt decoder cast yerine safe date format error. Schema1,
+onay, conflict/dedup/capacity ve profile semantics aynı. 6 yeni widget+1 codec
+regresyonu; gerçek cihazlar arası pano ve kullanıcı/cihaz kabulü hâlâ açık.
+
+### 2026-10-16 16:07 TRT — UX-02f tek ses oturumu migration
+
+Null-progress A+C lesson shell; görünür sentetik/puansız hedef ve phase,
+açılır kayıt/4sn/privacy yönergesi. Kalibrasyon→dinle/söyle contextual kontrol,
+response finish ve aktif cancel; gerçek InputLevelMeter aynı fazlarda kalır.
+Yeni attempt detail expansion sıfırlanır. Controller/quality/scorer kapıları
+aynı, verdict/score/history yok. 4 yeni widget; izin ret, close sırasında pending
+permission, dark/reduced-motion/büyük yazı ve mevcut akış/meter/a11y doğrulanır.
+Gerçek voice/device/BENCH/EDU ve kalan UI migration kapıları açık.
+
+### 2026-10-16 21:07 TRT — UX-02g günlük plan migration
+
+A+C null-progress lesson shell; görünür taslak uyarısı, açılır plan kuralları,
+bloklarda StatusPill/ChunkyButton. Budget seçimi/saklama, actual round counts,
+free minutes, retention flag, error/retry aynı. Completed blok optional neutral
+Bir tur daha; mastery/criteria/plan algorithm değişmez. Yeni4 + mevcut10
+plan/recovery testleri, shell navigation lesson_close'a taşındı. Gerçek süre/
+interval/öğretim kabulü ve kalan UI migration hâlâ açık.
+
+### 2026-10-17 02:18 TRT — UX-02h çalışma geçmişi migration
+
+A+C StatusPill/DataLabel/kartlar + geri dön; lazy ListView/AppBar korundu.
+Açılır karşılaştırma kuralları, yerel uyarı/silme onayı. Çakışmasız cohort'a
+skill eklendi; son3 tarihe göre. Eksik/bozuk ölçüm sıfır hata değildir;
+desteklenmeyen beceride sayısal trend yok. Rubrik/depo şeması aynı. Yeni6
+fake widget, hedefli16/full719, analyze/format temiz. Sıradaki UI: Ayarlar, Ses laboratuvarı, Tek ses sonuç
+örnekleri; CORE-04c2 ve gerçek cihaz/voice/eğitimci/yayın kapıları açık.
+
+### 2026-10-17 13:10 TRT — UX-02i ayarlar migration
+
+A+C kartlar/StatusPill/ChunkyButton ve semantic başlıklar; lazy liste/AppBar
+korundu. Kısa durumlar + açılır mikrofon/gizlilik rehberi; cleanup uyarısı
+gizlenmez. Profil silme kapsamı açık, onay dahil single-flight; hata retry.
+Hata raporunda required platform acknowledgement (aynı JSON codec), güvenli
+pano hata/retry ve busy/dispose koruması; sanitized format aynı. Yeni7,
+hedefli24/full726, analyze/format temiz. Kalan UI: Ses laboratuvarı, Tek ses sonuç örnekleri; ardından
+CORE-04c2. Fiziksel pano/cihaz/voice/eğitimci/yayın kapıları hâlâ açık.
+
+### 2026-10-18 19:10 TRT — UX-02j ses laboratuvarı migration
+
+Null-progress A+C lesson shell, görünür sentetik/deneysel/puansız açıklama,
+phase'e göre ChunkyButton eylemleri; açılır kayıt/privacy rehberi. Kalite ve
+diagnostic ayrı kartlar, metadata DataLabel; mikrofon meter koşulları aynı.
+Kalibrasyon mevcut kayıt silme uyarısı her durumda görünür. A11y kontrolü
+sonrası record/finish primary tone (shared palette değişmez). Controller,
+DSP/quality/route/skorer ve lifecycle aynı. Yeni5 + mevcut12 hedefli17/full731
+geçti; analyze temiz7.8sn, format203/0, diff check temiz.
+Kalan UI Tek ses sonuç örnekleri; ardından CORE-04c2. Fiziksel voice/cihaz/
+eğitimci/yayın kapıları hâlâ açık.
+
+### 2026-10-18 19:13 TRT — UX-02k tek ses sonuç örnekleri migration
+
+A+C null-progress shell, görünür simülasyon/mikrofon kapalı/kişisel puan
+değil; örnek hedef ve açılır yardım. Neutral ChunkyButton; geri bildirim
+tema token'larında (invalid nötr, octave başarı değil). Single-flight, stale
+result reset, safe error/retry/dispose; skorer/depo/gerçek oturum değişmez.
+Yeni5 + mevcut19 hedefli24, tüm senaryolar dark/reduced-motion320px1.8× ve
+iki tema a11y. Son runner exit0 full736 (+5), analyze temiz4.3sn, format203/0,
+diff check temiz. Listelenen migration ekranları tamam; sıradaki CORE-04c2.
+Diğer UX backlog'u ve gerçek cihaz/voice/eğitimci/yayın kapıları açık.
+
+### 2026-10-19 10:12 TRT — CORE-04c2a exclusive rehearsal player
+
+DiagnosticMelodyPracticePlayer + MelodyPracticePlayback: tek reference bound,
+noauto/single-flight, native mutation queue, stop/close epoch/wake, stale
+handle error observer ve cleanup fail-closed. SyntheticMelodyPracticePlayer
+exact c1 WAV'ını ayrı ReferenceClipPlayer'da oynatır; capture API'si/depo/skor
+bağı yok. Yeni12 + mevcut26 hedefli38/full748, runner exit0, analyze temiz11.3sn,
+format205/0 ve diff check temiz. UI bağlı değil; CORE-04c2 bütünü açık.
+Sıradaki c2b: explicit bölüm/1–3 tekrar seçimi, ayrı owned player ekranı;
+parent mikrofon oturumu idle/kapalı olmadan route açılmaz, playback/capture
+resource paylaşılmaz. Background/close/focus handler, pending start exit ve
+dar ekran/sentetik/manual açıklaması widget testli bağlanmalı. Dinleme
+tamamlandı sayacı öğretim/recall/history/mastery kanıtına dönüştürülmez.
+
+### 2026-10-19 15:15 TRT — CORE-04c2b rehearsal screen/navigation
+
+MelodyPracticeScreen explicit contiguous range/1–3 repeats, no mic/auto play/
+score/history; A+C null-progress, original Hz/manual synthetic notice. Parent
+canStart + handoff guard; await session.close before fresh player factory,
+pushReplacement removes capture route. Child PopScope awaits close before
+system/lesson back; failed cleanup locks route and requests app restart.
+Lifecycle + mobile AudioSession interruption/noisy/device handlers stop, no
+auto-resume; monitoring failure disables play. Yeni11 + mevcut17 hedefli28,
+dark/reduced-motion/büyük yazı ve iki tema a11y. Son runner exit0 full759 (+11),
+analyze temiz3.6sn, format207/0, diff check temiz. c2 kod bağlantısı hazır;
+gerçek focus/playback/route/device/EDU kabulü açık. Sıradaki bağımlılığı hazır
+iş CURRENT_ROADMAP onboarding 5/12/15 süre seçimi.
+
+### 2026-10-20 — ONB-01 guest duration step
+
+Goal draft→5/12/15 budget→home; save before profile, skip preserves existing/
+default budget. Busy/back/dispose, partial-write message/retry/no redundant
+budget save. Settings goal-only/returning profile/schema1 contracts unchanged.
+Selected AnswerOption opaque theme fill fixes contrast. Yeni9 + mevcut18
+shell/a11y; full768, analyze temiz3.7sn, format209/0, diff check temiz.
+Sıradaki kod işi ana sayfa yükleme iskeleti; süre bir eğitim başarısı ölçüsü
+değil. Gerçek kullanıcı/cihaz/voice/EDU/yayın kapıları açık.
+
+### 2026-10-20 — HOME-01 static loading/current-evidence guard
+
+Durağan home skeleton, tek semantic announcement, theme tokens; no progress/
+measurement/action fabrication. FutureBuilder retained data only done/no-error:
+refresh/replacement pending/error hides stale streak/path/recommendation.
+Explicit safe retry retained; repositories/planner/scoring unchanged. Yeni4,
+targeted15 passed; full772, analyze temiz5.2sn, format209/0, diff check temiz.
+Sonraki hazır kod işi tur sonu cevap karşılaştırması ve tekrar dinleme.
+Gerçek device/VoiceOver/BENCH/EDU/yayın kabulü değildir.
+
+### 2026-10-20 — REVIEW-01a perception answer breakdown
+
+Interval/high-low summaries show eight optional read-only comparison cards:
+known synthetic reference / selected touch answer / correct answer, explicit
+correct/different/unanswered text. Wide side-by-side, narrow/large-text stacked;
+no playback, writes, new scoring or persistence. Empty-bottom LessonScaffold
+uses natural scrolling to avoid intrinsic overflow on disclosure. Yeni5 +
+extended2 screen tests targeted7; full777, analyze temiz3.5sn, format211/0,
+diff check temiz. REVIEW-01b audio replay remains open: serialize load/stop/close,
+preserve completed outcome and retention evidence, explicit controls, lifecycle
+and failure tests before enablement. Real device/VoiceOver/EDU gates open.
+
+### 2026-10-20 — GROW-01a and commercial gap reconciliation
+
+Simply ecosystem, Yousician and Duolingo Music desk research with dated
+financial scope/source caveats; see COMMERCIAL_BENCHMARK_2026-10.md. Feature
+revenue ranking unknown. Existing F02/F05/F09/F12/F15/F16/F17/F19/F21 expanded,
+not duplicated. F27 habit/optional goal and F28 family-account plan added.
+GROW-01a implemented local rolling7 calendar-day activity, one valid supported
+cohort result/day; low score counts, mock/invalid/unknown/future excluded.
+No mastery/streak/scorer/planner change, no store/permission/backend. New4 data
++2 theme widgets; full783, analyze clean12.8s, format213/0, diff check clean.
+Next audio priority remains REVIEW-01b. Then GROW-01b voluntary target/reminder
+with permission/plugin/device gates; F28/social after DATA/PAY/privacy pilots.
+Safety and real-audio acceptance are not displaced by monetization features.
+
+### 2026-10-20 — REVIEW-01b comparative result playback
+
+Interval/high-low result cards now expose explicit, optional playback; there
+is no autoplay. Shared ReviewPlaybackCoordinator serializes stop→load→play,
+invalidates stale pending starts, makes the latest request win and supports
+an explicit stop. Interval can compare reference with the selected touch
+answer; high/low replays its reference pair. Review uses immutable finished
+items and never changes outcome, plays/retention counters, score or history.
+Background stops review but preserves the finished result. PopScope waits for
+review/player close before route release; close failure stays on-screen with
+recovery copy. apple-design agency/readability guidance informed the controls.
+
+New4 coordinator +2 route-gate tests; controller and two screen flows extended.
+Targeted24 passed; full791 (+8), analyze clean3.2s, format216/0, diff clean.
+Fakes and synthetic WAV only: no physical speaker/audio-focus/screen-reader or
+educator acceptance. REVIEW-01 code scope is complete; external gates remain.
+Next dependency-ready item is GROW-01b local voluntary weekly goal. Notification
+permission/plugin/device work remains a separate gate; no live service enabled.
+
+### 2026-10-20 — GROW-01b voluntary rolling-seven-day goal
+
+RecentPracticeCard now offers an optional local goal: none or 2/3/4/5 active
+days in the same rolling seven-day evidence window. Progress reuses GROW-01a's
+valid/current-cohort days, so wrong attempts count as practice while demo,
+invalid, future and unsupported evidence stays excluded. Copy explicitly says
+this is not mastery, an exam score or a punitive streak. Users can change or
+disable it at any time; no reward, paywall, shame or automatic notification.
+
+Practice preferences schema v2 stores daily budget and nullable weekly goal.
+Strict v1 daily-budget migration is retained; serialized read-modify-write
+prevents concurrent independent saves from losing either field. Pending saves
+are single-flight and a failure preserves the prior visible/stored goal. New2
+storage +2 widget tests; targeted24 and full795 (+4), analyze clean2.9s,
+format217/0, diff clean. Local/fake evidence only. Notification permission,
+native scheduling/plugin and physical-device QA remain open and were not added.
+
+### 2026-10-20 — RETRY-01a exact-mistake guided rounds
+
+Pitch high/low and movable-do interval summaries now offer a user-initiated
+short round containing only the exact missed items from the completed round.
+The same frequencies/tonics and normal immediate feedback are reused; no item
+is invented or generalized. UI marks the round as “Tekrar”, explains that it
+is practice-only and omits the normal full-round criterion. A fresh full round
+remains separately available.
+
+Guided rounds disable retention mode and never call history. Domain rounds carry
+an explicit guided flag and `toResult` throws, so a future caller cannot silently
+turn the practice loop into mastery/exam evidence. Two controller tests cover
+exact subset/order, completion, no second history entry and fail-closed result;
+both 320px/1.8× screen flows cover the action/label, and pitch completes the
+loop with no threshold/history mutation. Targeted15; full797 (+2), analyze and
+format clean, diff clean. Synthetic/fake only; educator/device acceptance open.
+
+### 2026-10-20 — RETRY-01b rhythm error-segment repetition
+
+Measured rhythm timelines now derive one deterministic excerpt around the first
+early/late/missed/extra event. The excerpt reuses adjacent source onsets,
+rebases only its local clock and is started explicitly from the result. It is
+visibly marked as guided and unscored; controller skips history/next-step and
+domain conversion to `ExerciseResult` throws. New2 domain +1 controller tests;
+the existing 320px/1.8× screen flow covers entry/layout. Full800, analyze clean,
+format217/0. Melody segmentation remains open; device/educator gates unchanged.
+
+### 2026-10-20 — REM-01a reminder boundary and local migration
+
+Added a validated daily reminder time, independent local persistence and exact
+v1/v2→v3 migration. `PracticeReminderCoordinator` requests permission only on
+explicit enable, serializes updates, changes the saved preference only after
+native schedule/cancel succeeds and attempts rollback if storage fails. The
+production adapter is deliberately unavailable: no plugin, alarm or permission
+prompt is claimed. New7 coordinator +1 storage test; full808, analyze clean,
+format219/0. Next gate is native adapter/product copy/settings UI/device QA.
+
+### 2026-10-21 — REM-01b reminder settings shell
+
+Settings now hosts a future-ready reminder card with explicit time selection,
+enable/change/disable, permission-denied and pending/failure copy. It calls the
+REM-01a coordinator only after user action. The shipping unavailable adapter
+shows a disabled honest state with no permission prompt or fake alarm. Injected
+adapter tests cover enable/disable/denied plus dark 320px/1.8× layout. New4;
+full812, analyze clean, format221/0. Native plugin and device delivery remain.
+
+### 2026-10-21 — HAPTIC-01 persisted haptic preference
+
+Settings now exposes a default-on haptic feedback switch backed by preferences
+schema4 and exact v3 migration. A shared inherited notifier gates every current
+direct `HapticFeedback` path; persistence completes before the app-wide value is
+published, and failure retains the previous state. Platform-channel tests prove
+that disabled suppresses the vibration request and enabled restores it. New3;
+full815, analyze clean, format222/0. Physical-device vibration and native
+reminder delivery remain separate gates.
+
+### 2026-10-21 — REM-01c native local-notification adapter
+
+The app now ships a Flutter local-notification adapter for Android/iOS with
+device IANA timezone lookup, daily wall-clock matching, inexact Android alarms
+that require no exact-alarm permission, reboot rescheduling receivers and an
+iOS notification delegate. Initialization never prompts; permission is
+requested only after the existing explicit settings action. Denial exposes a
+direct OS notification-settings recovery action. Driver tests cover unknown →
+denied, initialization failure, schedule/cancel/settings delegation and
+next-day wall-clock preservation. Full820, analyze clean, format224/0; Android
+debug APK and iOS simulator debug builds pass. Physical permission/delivery,
+reboot/DST/OEM behavior remain device gates.
+
+### 2026-10-21 — SHELL-02 microphone permission recovery
+
+After a real microphone denial, single-tone, melody and audio-lab screens now
+show one explicit app-settings action. Entry never requests permission or opens
+settings. The shared boundary serializes launches and reports false/exception
+results without claiming recovery. `permission_handler`12.0.3 is pinned because
+13.x requires compileSdk37 beyond the current AGP9.0.1 recommendation; Android
+debug and iOS simulator builds pass. New4 tests; full824, analysis clean,
+format228/0. Physical permanent-denial and settings-return behavior remain D.
+
+### 2026-10-22 — SHELL-03a honest starting check
+
+Today exposes an optional three-round starting check using only existing
+touch-proven pitch direction, steady pulse and movable-do exercises. The model
+reloads local history after each round, retries invalid evidence before moving
+on and suggests the first valid weak area after completion. It counts every
+engine/content/educator-gated route skill as unknown and never emits an
+aggregate level, admissions score or readiness claim. New4 domain +4 widget/
+integration tests; full832, analysis clean, format233/0. Educator-defined level
+bands and learner acceptance remain SHELL-03b external gates.
+
+### 2026-10-22 — SHELL-04f safe local continuation
+
+The latest completed result matching a supported current exercise cohort now
+offers a fresh round from Today. Invalid current evidence is retryable; future,
+retired-content and unknown-analyzer evidence fail closed. This is deliberately
+not mid-question/media-session persistence: no player, audio or microphone is
+restored or auto-started. New4 domain +2 integration tests; full838, analysis
+clean, format236/0. The remaining SHELL-04 offline/consumer and real-device
+acceptance matrix stays open.

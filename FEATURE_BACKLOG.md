@@ -2,6 +2,12 @@
 
 **Güncelleme:** 2026-10-11. P0: güvenilirlik; P1: ilk değer; P2: Premium/Plus; P3: ölçeklenme. “Planda” kodda tamamlandı demek değildir. Canlı AI, gerçek mikrofon, abonelik, eğitimci servisi ve lig henüz bağlı değildir.
 
+**Ticari ek güncelleme: 2026-10-20.** Üç ticari referansın doğrulanabilen
+özellikleri ve gelir verisinin sınırları: [benchmark](./COMMERCIAL_BENCHMARK_2026-10.md).
+F02/F05/F09/F12/F15/F16/F17/F19/F21 için yeni modül kopyası açılmaz; belgede
+eksik kabul kriterleri mevcut işlere eklendi. Büyük katalog MVP dışı kalır;
+özgün mini repertuvar ve aile paketi ayrı içerik/hesap/ücret kapılarına bağlı.
+
 | ID | Özellik | Kaynak/amaç | Mevcut durum → iş | Öncelik / faz | Kabul kriteri |
 |---|---|---|---|---|---|
 | F01 | Misafir başlangıç, hedef seçimi, kalibrasyon, güvenli aralık | Singing Carrots / Sing Sharp | Planda → izin, sessizlik/gürültü/Bluetooth, tekrar ve ayarlara git akışları | P0 / 1–2 | Hesapsız ilk çalışma; izin reddi çıkmaz yaratmaz; geçersiz kayıt başarısızlık değil yeniden ölçüm olur |
@@ -9,15 +15,15 @@
 | F03 | Tek ses/aralık/canlı nota bandı | EarMaster / Yousician | Mock ekran var → gerçek ölçüm ve canlı geri bildirim | P0 / 1–2 | Doğru nota ve oktav ayrı doğrulanır; benchmark; ölçülmeyen timing/memory 100 gösterilmez |
 | F04 | Ritim tap, sonra clap; ezgi singback | EarMaster / Complete Rhythm | Mock arayüzler var → gerçek giriş, onset ve nota eşleştirme | P1 / 2 | Eksik/fazla/erken/geç ayrılır; latency hesaba katılır; ölçüm tekrarlanabilir |
 | F05 | Beceri raporu → zayıf noktaya çalışma | MyEarTraining / ToneGym | Temel geçmiş planda → nota/aralık/vuruş dağılımı; yeterli örnek uyarısı | P1 / 2–3 | Pitch, ritim, ezgi farklı gösterilir; aynı zorlukta tarihsel karşılaştırma |
-| F06 | Hata sonrası 30–60 sn teori ve eğitmen örneği | Perfect Ear / Complete Ear / Sing Sharp | Yeni | P1 / 2 | Her temel hata için özgün metin/örnek; kullanıcı dersi atlayabilir; video şart değil |
+| F06 | Hata sonrası 30–60 sn teori ve eğitmen örneği | Perfect Ear / Complete Ear / Sing Sharp | **F06a/b kısmi kod:** hatalı tiz/pes, ritim ve tonik/derece sonucundan ilgili taslak metne isteğe bağlı geçiş; puan/mastery değişmez. Onaylı ses/eğitmen örneği ve süre/etki doğrulaması açık | P1 / 2 | Her temel hata için özgün metin/örnek; kullanıcı dersi atlayabilir; video şart değil |
 | F07 | Deşifre + ritim/ezgi dikte | EarMaster / Perfect Ear / Complete Rhythm | Yeni | P2 / 4 | Görerek söyleme ile duyarak hatırlama ayrı skor ve talimata sahip |
 | F08 | 2/3/4 sesi birlikte duy → tek tek söyle; akor tanıma ve çevrim | EarMaster / Complete Ear | Çok sesli sınav planda → 3/4 sesli teknik kapsam netleştirildi | P2 / 4; spike 1 | Sıralı/mükerrer/eksik sesler ayrılır; sınavda hedefler cevaptan önce açığa çıkmaz |
-| F09 | Hata döngüsü, tempo, zor bölüm tekrarı | Yousician / Complete Rhythm | Yeni | P1 / 2; genişleme 4 | Ezgi/ritim segmentini tekrar et; sınav modunda ipucu/loop kullanımını engelle veya ayrı işaretle |
+| F09 | Hata döngüsü, tempo, zor bölüm tekrarı | Yousician / Complete Rhythm | RETRY-01a algı yanlışları + RETRY-01b ritim hata kesiti + RETRY-01c deneysel ezgi aday bölümü kod-test. Ezgi yolu VAD/benchmark olmadan hata veya hafıza sonucu sayılmaz | P1 / 2; genişleme 4 | Yalnız yanlış öğeler; kullanıcı başlatır; rehberli tur history/mastery/sınav kanıtı olamaz; ezgide aday bölüm puansızdır ve otomatik çalmaz; sınav modunda ipucu/loop kullanımını engelle veya ayrı işaretle |
 | F10 | Fonksiyonel duyma, solfej, dizi/progresyon | Functional Ear / MyEar / Perfect Ear | Yeni | P2 / 4 | Tonik kur → derece duy → seç/söyle; fixed-do/movable-do öğretmen kararıyla açıklanır |
 | F11 | Egzersiz oluşturucu, sınırlandırılmış parametreler | Complete Ear / MyEar | Özel sınav planda → kişisel preset önce | P2 / 4; öğretmen 5 | Nota sayısı, ton, tempo, aralık, tekrar sayısı versiyonlu tanımda saklanır |
 | F12 | Adaptif tekrar + AI koç açıklaması | ToneGym / Sing Sharp / Singing Carrots | Planda → beceriye göre tekrar kuyruğu; AI ölçmez | P2 / 3 | Kurallı fallback vardır; öneri mevcut egzersiz kataloğundan seçilir; farklı model şart değil |
 | F13 | Konservatuvar denemesi + çalışmadan ayrı sonuç | EarMaster | Planda → yerel öğretmen şablonları, süre, ipucusuz ölçüm | P2 / 4 | İçerik/sınav/puanlama versiyonu raporda; resmî okul eşdeğerliği iddiası yok |
-| F14 | Offline çalışma ve cihazlar arası senkronizasyon | MyEarTraining | Offline prensibi var → sonuç kuyruğu/idempotency/sync çatışması | P1 / 2; bulut 3 | İnternetsiz core; iki cihaz aynı denemeyi iki kere saymaz |
+| F14 | Offline çalışma ve cihazlar arası senkronizasyon | MyEarTraining | Offline core + DATA-03a ses-siz pano taşıma; DATA-03b atomik batch import, attempt-id dedup/conflict ve kapasite raporu kod-test. Hesap/outbox/backend yok | P1 / 2; bulut 3 | İnternetsiz core; batch yazma hatası kısmi önek bırakmaz; aynı deneme iki kere sayılmaz; gerçek iki cihaz ve bulut çatışması dış kapı |
 | F15 | İsteğe bağlı haftalık beceri ligi + özel sınıf sıralaması | ToneGym / Complete Ear / Singing Carrots | Kontrollü lig planda → sezon/kurallar/uygun denemeler | P3 / 5 | Aynı test sürümü/zorluk; minimum deneme sayısı; takma ad; çıkış ve silme; sahte demo kullanıcıları üretime girmez |
 | F16 | Ücretsiz değer → Premium / yıllık / öğretmen paketi | Birçok rakip | Planda → fiyat araştırması, entitlement, restore, iptal/ağ hataları | P2 / 4 | İlk sonuç ücretsiz; mağaza fiyatı/dönemi/yenileme açık; geri yükleme; kullanıcı izin vermeden satın alma yok |
 | F17 | Öğretmen ödevi, sınıf kodu, rapor, grup lisansı | MyEar / Complete / EarMaster | Planda → B2B pilot ve sınıf gizliliği | P3 / 5 | Öğretmen yalnız kendi izinli öğrencisini görür; ödev/teslim/haftalık özet |
@@ -30,6 +36,8 @@
 | F24 | Koro giriş/bitiş, notalı söz, cümle ve repertuvar ödevi | Koro hazırlık açığı | Yeni; eğitimci onaylı içerik | P2 / 4 | Giriş/cutoff zamanlaması ayrı; ifade/diksiyon öğretmen gözlemi; lisans kontrolü ve gerçek prova ödevi |
 | F25 | Okul/bölüm/yıl gereksinim eşlemesi | Resmî sınavların farklılığı | F13 genişlemesi | P2 / 4 | Kaynak URL/yıl/son kontrol/içerik sürümü; çalgı/şan dış kapsamı görünür; otomatik sınav kazanma iddiası yok |
 | F26 | Değerlendirme geçerliliği ve sequence/rhythm sözleşmesi | Kod incelemesi AUD-01–07 | REL-01–05 uygulandı: status, progress cohort, rhythm event ve placeholder güvenliği; gerçek sequence/DSP bekliyor | P0 / 1–2 | Nullable/status; octave/sıra/ekstra vuruş fixture'ları; metric-specific geçerli örnekler; öğrenme ve sınav ayrımı |
+| F27 | Çalışma düzeni ve gönüllü haftalık hedef | Duolingo alışkanlık örüntüsü / Simply kısa çalışma | GROW-01a son7 gün kartı + GROW-01b yerel 2/3/4/5 gün hedefi + GROW-01c önceki haftayla hacim ve egzersiz kırılımı + HAPTIC-01 + REM-01c yerel hatırlatma kod-test/build; fiziksel teslimat QA bekliyor | P1 / 2–3 | Yerel takvim; aynı gün tek; düşük doğru çalışma sayılır; demo/stale/future hariç; geçersiz ölçüm ayrı; karşılaştırma beceri artışı değildir; bildirim yalnız açık izinle |
+| F28 | Aile/çoklu öğrenci aboneliği | Simply / Yousician aile ürünleri | Yeni backlog; uygulanmadı, satış planı onaylanmadı | P3 / 5 | Ayrı profiller/sonuçlar/kayıt yetkileri; entitlement/restore/ayrılma/silme; hesap ve ödeme kapıları, pilotla fiyat/kapasite; Plus insan hizmeti ayrıca kotaya bağlı |
 
 ## Yapılma sırası
 

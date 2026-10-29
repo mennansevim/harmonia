@@ -1,5 +1,12 @@
 # Harmonia — 10 rakip ve ürün çıkarımları
 
+**20 Ekim 2026 ticari ek inceleme:** Simply/Simply Piano, Yousician ve
+Duolingo Music için finansal kanıt, özellik örüntüleri, mevcut kod farkları
+ve kabul kriterleri [ticari benchmark](./COMMERCIAL_BENCHMARK_2026-10.md)
+belgesinde. Şirket geliri ile uygulama/modül geliri ayrıldı; “en çok kazanan
+ilk üç” veya özellik bazlı gelir sıralaması iddiası yok. Son7 gün çalışma
+kartı GROW-01a kodlandı; diğer eksikler mevcut backlog'a bağlandı.
+
 **İnceleme:** 2026-10-10 · **Kapsam:** konservatuvar hazırlığı, kulak eğitimi, ritim ve vokal geri bildirim.
 
 Bu liste indirme/gelir verisine dayalı bir “dünyanın en iyi 10'u” sıralaması değildir. Harmonia'nın dört temel becerisine en ilgili 10 karşılaştırma ürünüdür. Resmî ürün sayfaları ve yardım belgeleri üzerinden masa başı araştırması yapıldı; ücretli hesapla derslerin uygulamalı testi veya 10 ürünün tamamında ekran ekran görsel denetim yapılmadı. Doğrulanan özellikler ile aşağıdaki UX yorumları birbirinden ayrıdır. Fiyatlar ülkeye ve mağazaya göre değişebildiği için fiyat karşılaştırması yapılmadı. Pazarlama doğruluk/öğrenme/gelir iddiaları bağımsız kanıt kabul edilmedi.

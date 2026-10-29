@@ -1,7 +1,7 @@
 # Harmonia — 2/3/4 sesli piyano referansları
 
 **Tarih:** 2026-10-11  
-**Durum:** Hazır 2/3/4 sesli piyano kayıtları için klasör/katalog ve uygulamada placeholder ekranı var. Gerçek dosyalar/player/capture/cevap alignment yok. Önceki tekil sample mix kodu alternatif altyapı olarak korunuyor; ana içerik yolu değil.
+**Durum:** Hazır 2/3/4 sesli piyano kayıtları için klasör/katalog, placeholder ekranı, CONS-01a–e reviewed yükleme/playback/composer, CONS-02a/b exact-any-order matcher, CONS-02c gated monofonik cevap kaydı, CONS-02d route/kalite kapılı diagnostic zincir, CONS-02e session ortam kalibrasyonu ve CONS-02f uçtan uca attempt coordinator var. Gerçek piyano dosyaları, birlikte nota/hak/tını QA, production player/UI ve gerçek insan sesi benchmark'ı yok. Önceki tekil sample mix kodu alternatif altyapı olarak korunuyor; ana içerik yolu değil.
 
 ## Kullanıcının seçtiği çalgı ve açık dosya biçimi
 
@@ -39,14 +39,65 @@ PianoChordReference(midiNotes: [60, 64, 67, 71]); // C4, E4, G4, B4
 
 Dosya bankası MIDI key + declared tuning ile resolve edilir; dosya adından doğru nota/akort çıkarılmaz. Private dataset `AudioFixtureLoader` hash/header bütçe kapısından geçebilir; fixture→piano-bank metadata adapter'ı henüz yazılmadı. Bankanın bütün sample'ları için kaynak/hak zinciri, nota+oktav/A4 etiketleri, peak/seviye/süre ve piyanonun kayıtta netliği doğrulanmalı. Agora'nın lisansı belirsiz sample'ları kopyalanmadı.
 
-Hazır 2/3/4 akor kaydı gelirse yeniden mix yapılmaz: dosya ve **bilinen hedef nota listesi** eşlenir; mono/stereo/format ve lisans/import adapter'ı ayrıca hazırlanır. Canlı fiziksel piyano seçilirse teacher/reference capture fazı student-response fazından ayrılır. Bilinmeyen akoru otomatik transkribe etmek ayrı multipitch AR-GE; bu altyapının çalıştığı gibi sunulmaz.
+Hazır 2/3/4 akor kaydı gelirse yeniden mix yapılmaz: dosya ve **bilinen hedef nota listesi** eşlenir. CONS-01a `ReviewedChordRecordingManifest` yalnız açıkça `user_recorded_piano`, `pcm_s16le_wav`, 2/3/4 ses klasörü, 100 ms–10 sn metadata süresi, mono/stereo, 8–48 kHz, SHA-256, hak referansı ve ayrı etiket inceleme referansı kabul eder. MIDI hedefleri alttan üste ve ses sayısıyla aynı olmalıdır; kimlik/yol/hash tekrarları reddedilir. CONS-01b adapter yalnız seçili kök altındaki normal dosyayı açar; kök/ara/final symlink ve kaçışları reddeder, byte bütçesini okumadan önce uygular, SHA-256 sonrası RIFF/WAVE PCM16 mono/stereo header'ını parse eder ve gerçek sample rate/channel/frame değerlerini manifestle exact karşılaştırır. Başarılı yükleme defensive byte kopyası üretir ama player çağırmaz. CONS-01c bu snapshot'ı dedicated player'a yalnız explicit eylemle verir; tam playback + stop + bounded recall delay sonrasında `readyForSequentialResponse` olur. Stop, background ve route/focus kesintisi kapıyı iptal eder; otomatik resume yoktur. Hash/header veya koordinatör çalışması nota, akort, piyano tınısı, hak sahipliği ya da eğitim uygunluğunu kanıtlamaz. Canlı fiziksel piyano seçilirse teacher/reference capture fazı student-response fazından ayrılır. Bilinmeyen akoru otomatik transkribe etmek ayrı multipitch AR-GE; bu altyapının çalıştığı gibi sunulmaz.
 
 ## Oturum ve doğrulama kapıları
 
-Playback tamamlanana kadar student capture açılmaz. Renderer settle silence'ın varsayılan 250 ms değeri oda yankısını/cihaz latency'sini ölçmez veya yok etmeyi garanti etmez. Recall delay playback sonrasında session clock tarafından ayrıca uygulanır. Route/çağrı/background/replay/cancel yeni epoch gerektirir; öğrenmede ipucu/replay sayısı kaydedilir, sınavda nota adı/canlı doğru-yanlış gösterilmez. Hazırlanan dosya ile bu session guard'larının gerçek uygulaması farklı işlerdir; yeni chord coordinator/player henüz yok.
+Playback tamamlanana kadar student capture açılmaz. CONS-01c bunu soyut player ve test clock'u üzerinde uygular; gerçek UI henüz bu kapıyı tüketmez. Renderer settle silence'ın varsayılan 250 ms değeri oda yankısını/cihaz latency'sini ölçmez veya yok etmeyi garanti etmez. Recall delay playback sonrasında session clock tarafından ayrıca uygulanır. Route/çağrı/background/replay/cancel yeni epoch gerektirir; mevcut koordinatör kesintide kapıyı kapatır ve otomatik devam etmez. Öğrenmede ipucu/replay sayısının kalıcı kaydı ve sınav modu sonraki wiring işidir; sınavda nota adı/canlı doğru-yanlış gösterilmez.
+
+CONS-01d ile replay kotası session içinde uygulanır. Learning 1–10 açık limit
+alır; recall exam yalnız bir completed playback kabul eder ve
+`targetVisibleDuringResponse=false` yayınlar. Sayaç player completion callback'i
+sonrası artar; iptal, route/background kesintisi veya start failure kotayı
+tüketmez. Replay başladığı anda response readiness kapanır ve tekrar tam
+playback+recall gerekir. Bu sayı sesin gerçekten duyulduğunu kanıtlamaz ve
+history/mastery değildir; kalıcı event/UI wiring sonraki iştir.
+
+CONS-01e loader sonucundaki kayıt kimliği/nota metadata'sı ile defensive WAV
+snapshot'ını aynı session'a bağlar; UI'nın bunları ayrı kaynaklardan yanlış
+eşleştirmesine gerek bırakmaz. Her session fresh player alır, create autoplay
+yapmaz ve geçersiz sınav/replay politikası player tahsisinden önce reddedilir.
+Production player seçimi, kayıt kökü ve gerçek UI/capture bağlantısı açık kalır.
 
 Öğrenci cevabı monofonik frame→nota segment→sıra/set alignment ile değerlendirilir. Eksik/fazla/tekrar, doğru pitch-class ama yanlış oktav ve doğru sesler ama yanlış sıra ayrı kanıtlardır. Mevcut record diagnostic median/periodic ratio başarı/ezgi hafızası değildir. Kayıt/skor toleransları değiştirilmedi.
 
+CONS-02a exact sıra kolunu kodlar: reviewed manifestteki MIDI+A4 hedeflerini
+nominal low→high olaylara, diagnostic segmentleri de yalnız gözlenen sıraya
+çevirir. Eksik/fazla/mükerrer/wrong-pitch/wrong-octave mevcut bounded sequence
+alignment'ında kalır; hedeflerle aynı mutlak pitch seti farklı sıradaysa ayrıca
+`reorderedTargetCandidates` görünür. Segment onset'leri timing kanıtı veya
+hafıza puanı yapılmaz. Boş cevap `noResponse`, bozuk segment kanıtı
+`invalidEvidence`; her ikisinde başarı uydurulmaz.
+
+CONS-02b `ResponseOrder.anyOrder` kolunda exact alignment'ı silmeden ayrı
+bounded set özeti üretir. Her aday en fazla bir reviewed hedefe atanır. Doğru
+mutlak pitch, doğru pitch-class/yanlış oktav, eksik hedef ve fazla/mükerrer aday
+sayılır; ilgisiz perdeyi keyfî bir hedefe “wrong pitch” diye bağlamak yerine bir
+eksik + bir fazla bırakır. Setin tamamı doğru olsa bile bu sadece diagnostic
+candidate match'tir; VAD/insan benchmark'ı olmadan öğrenci başarısı değildir.
+
+CONS-02c izin diyaloğunu ilk referanstan önce tamamlar ve tam playback+recall
+kapısı açılmadan öğrenci kaydı başlatmaz. Öğrenci 2/3/4 hedefi aynı anda değil,
+tek sürekli kayıtta sırayla söyler. Stop sonrası backend kaydı silinir; immutable
+PCM snapshot sonraki worker için bellekte kalır. Replay, route/focus kesintisi,
+iptal ve pending native start readiness'i kapatır; otomatik resume yoktur. Bu
+snapshot henüz ses etkinliği, kalite, nota veya başarı kanıtı değildir.
+
+CONS-02d snapshot'ın capture öncesi route'unu korur ve aynı route/sample rate'e
+bağlı kullanılabilir noise-floor kalibrasyonu olmadan DSP'yi başlatmaz. Kalite
+geçerse mevcut bounded worker, target-independent segmenter ve explicit
+exact/any-order matcher sırasıyla çalışır. Worker metadata/provenance capture'ı
+değiştiremez. Ortaya çıkan eşleşme yalnız diagnostic candidate evidence'tır;
+insan sesi/VAD, hafıza başarısı, konservatuvar puanı veya mastery değildir.
+
 **Kod doğrulaması:** 221 test (+16), analyze temiz, format 58 dosya/0 değişiklik. 2/3/4-key binding/round-trip/tuning/snapshot/runtime bounds; mix simultaneity/headroom/fades/tail, key contribution/determinism, bank metadata/rate/tuning/origin/missing/short/silent/Nyquist. Gerçek piyano veya öğrenci kaydı, fiziksel telefon ve pedagojik doğrulama yok; mobil build tekrarlanmadı.
 
-**Sıradaki işler:** kullanıcı hazır 2/3/4 ses kayıtlarını getirince birlikte nota/oktav/akort/format/seviye/süre/hak QA; reviewed asset manifest/player ve fake-testli playback→settle/recall→response coordinator. Dosyalar gelene kadar placeholder'ı doldurma/oynatmayı açma. Öğrenci segment/alignment ve cihaz kapıları ayrı; lab PCM→diagnostics/cancel ve diğer bağımsız roadmap işleri devam eder.
+CONS-02e açık ortam ölçümünü aynı oturum/backend yaşam döngüsüne bağlar; izin,
+route, bounded silence, snapshot, discard ve calibration sırası testlidir.
+Calibration sonucu skor değildir ve diagnostic aşamasında yeniden doğrulanır.
+
+CONS-02f kalibrasyon→dinle→sırayla söyle→diagnostic durumlarını tek UI-facing
+coordinator'da toplar. Pending worker sonucu cancel/replay/close sonrası
+yayımlanamaz; kalite retry ve analiz unavailable öğrenci hatası değildir.
+
+**Sıradaki işler:** kullanıcı hazır 2/3/4 ses kayıtlarını getirince birlikte nota/oktav/akort/format/seviye/süre/hak QA; production player seçimi ve gerçek kayıt hazır olunca UI/result copy wiring. Dosyalar gelene kadar placeholder'ı doldurma/oynatmayı açma. Kalıcı replay event'i, BENCH/VAD ve cihaz lifecycle/route kapıları ayrı; diğer bağımsız roadmap işleri devam eder.

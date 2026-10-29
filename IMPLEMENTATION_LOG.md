@@ -902,3 +902,1090 @@ commit'lendi; 0875983 ile birleştirildi (home_screen'de SHELL-04e hata
 kurtarma yeni Bugün sekmesine taşındı, sekmeler ilk ziyarette kuruluyor).
 685 test, analyze/format temiz. Kalan işler CURRENT_ROADMAP'e tek liste
 olarak eklendi. Push/deploy yok.
+
+## 2026-10-15 18:45 TRT — UX-02b A+C ezgi ekranı migration
+
+Devralırken git clean, 447c268/0875983 birleşimi ve yeni tek kalan-iş listesi
+görüldü. Önceden planlanan CORE-04c2 yerine yeni UI önceliği izlendi; home/
+tasarım dalı/diğer ekranlar yeniden yazılmadı. MelodySessionScreen ortak
+LessonScaffold/ChunkyButton/StatusPill kullanır. Sentetik/puan yok ve mikrofon
+durumu görünür; uzun privacy/8sn/yeniden kalibrasyon bilgisi açık yardımda.
+Primary eylem ortam ölçümünden dinle-söyle'ye geçer; finish/cancel yalnız ilgili
+phase'te. Controller/DSP/quality/provenance/history değişmedi.
+
+LessonScaffold null progress diagnostic'lerde bar/percent üretmez; natural
+scroll column büyük yazıda expanding help/result'ı taşır. Mevcut numeric
+lessons aynı pinned/intrinsic layout'ta. apple-design readability/agency/
+reduced-motion kontrolüyle mevcut bileşenler yeniden kullanıldı; animasyon
+veya bağımlılık eklenmedi. İlk narrow test intrinsic-height taşmasını buldu,
+diagnostic doğal scroll ile çözüldü. Yeni testte dark() çağrısı düzeltildi;
+close testi asynchronous native/stream cleanup için gerçek-zone microtask'i
+bekler, cleanup assertion korunur.
+
+Hedefli12 (8mevcut+4yeni) ve son ortak runner exit0: full689 (+4), analyze
+temiz6.7sn, format202/0; diff check temiz. Testler fake/sentetik, fiziksel
+voice/device/UXR kabulü değil. CORE-04c2 hâlâ açık, kalan UI migration listesi
+güncellendi. Agora read-only status temiz; kaynakları değişmedi. Commit/build/
+API/upload/ödeme/push/deploy yok. Tüm dış kabul kapıları geçilmedi; otomatik
+takip tamamlandı sayılmadı.
+
+## 2026-10-15 23:45 TRT — UX-02c A+C mikroders okuyucu migration
+
+Mevcut dirty UX-02b korunarak yeni kalan-UI listesi izlendi. MicroLessonScreen
+null-progress LessonScaffold/StatusPill/ChunkyButton kullanır; objective,
+algı/üretim ve no-mastery görünür; sürüm ve onay sınırı açılır Ders bilgisi'nde.
+Beş faz/özgün instruction metinleri aynı; dört practice disabled, alt Geri dön
+yalnız route'u kapatır. Player/mic/score/history/completion eklenmedi. apple-design
+okunabilirlik/agency/dynamic-type ilkeleri mevcut bileşenlerle uygulandı.
+
+İlk targeted koşularda uzun header320px/1.8× yatay taşma yaptı; kısa Taslak
+etiketiyle düzeltildi. AppBar back yerine lesson_close kullanan test navigasyonu
+güncellendi (reader+map recovery), disabled/no-write assertions korunur.
+Hedefli10 (6mevcut+4yeni) geçti; son ortak runner exit0 full693 (+4), analyze
+temiz5.5sn, format202/0; diff check temiz. Yeni testler metin/faz koruma,
+metadata/no-unlock, alt dönüş/no mastery ve dark/reduced-motion büyük yazı.
+Önceki ezgi migration testleri de full suite'te geçti. Gerçek VoiceOver/TalkBack,
+cihaz, eğitimci içerik onayı ve öğretim etkisi doğrulanmadı. Agora read-only
+status temiz; kaynakları değişmedi. Build/API/upload/ödeme/commit/push/deploy
+yok. Kalan migration/CORE-04c2 ve dış kapılar açık; otomatik takip bitmedi.
+
+## 2026-10-16 05:23 TRT — UX-02d A+C piyano placeholder migration
+
+Mevcut dirty UX-02b/c korunarak kalan migration listesinden ChordPlaceholder
+taşındı: null-progress LessonScaffold, Kapalı header, StatusPill, kısa no-audio/
+mic/score notice, açılır prerecorded→birer birer response akışı. 2/3/4 kartlarda
+altı neutral ChunkyButton onPressed:null; path/nota/rights uydurulmadı.
+Katalog _loadForView eager observer aynı Future'ı UI'ya döndürür; loading
+error/data'dan önce kontrol edilir, pending retry'da eski hata/düğme yok.
+Mounted reload, disposal late failure gözlemi. Katalog schema/import ve
+ürün kapıları değişmedi, player/capture/scorer yok.
+
+apple-design readability/control-state/dynamic-type kontrolüyle mevcut
+bileşenler kullanıldı; yeni motion/dependency yok. İlk targeted compile
+ChunkyButton icon'a eski Icon widget'ını geçirmeyi yakaladı, IconData düzeldi.
+Son hedefli10 (5mevcut+5yeni), full698 (+5), runner exit0; analyze temiz9.6sn,
+format202/0, diff check temiz. Yeni testler closed shell/help/all disabled,
+fast retry/noauto, pending/disposal failure, dark/reduced-motion320px1.8× ve
+tap/label guideline, close/no reload. Fake/asset-metadata testleri gerçek
+piyano/insan sesi/cihaz veya eğitimci kabulü değildir. Agora read-only status
+temiz; kaynakları değişmedi. Build/API/upload/ödeme/commit/push/deploy yok.
+Kalan UI, chord içerik/engine/device/EDU/yayın kapıları açık; takip bitmedi.
+
+## 2026-10-16 10:24 TRT — UX-02e A+C yerel veri taşıma
+
+DataTransferScreen null-progress LessonScaffold/StatusPill/ChunkyButton ve
+live status'a taşındı. Busy guard export load+clipboard ve import confirmation+
+write süresini kapsar; input/iki eylem kilitli. Yeni deneme eski ilgili status'u
+temizler; confirmation cancel input/history'yi korur. Platform/MissingPlugin
+pano hataları safe mesajdır, false success/private text yok. Export load
+bittiğinde disposed ise clipboard yazılmaz. Önceden onaylanmış import leaving
+sonrası repository'de bitebilir; cancellation/rollback garantisi verilmez.
+LocalDataExport non-string exportedAt önce safe date error verir, cast crash
+yok. Schema1, full validation, consent, profile/dedup/conflict/capacity değişmez.
+
+apple-design agency/readability ile ortak UI kullanıldı. İlk targeted compile
+Semantics const ve test import sırasını yakaladı; düzeltildi. Hedefli18 geçti
+(6yeniwidget+1codec dahil); ilk runner yeni mock testin if braces lint'inde
+durdu; düzeltme sonrası runner exit0 full705 (+7), analyze temiz4.4sn,
+format202/0, diff check temiz. Pending/double action, pano failure/retry,
+late dispose/no clipboard, consent cancel/no write, dark/reduced-motion320px
+ve date types regressions. Mock clipboard/storage yalnız kod QA; gerçek
+cihazlar arası veri/pano, voice/device/EDU/pilot/yayın kabulü değil. Önceki dirty
+işler korundu; Agora read-only status temiz, kaynakları değiştirilmedi.
+Build/API/upload/ödeme/commit/push/deploy yok; otomatik takip bitmedi.
+
+## 2026-10-16 16:07 TRT — UX-02f A+C tek ses diagnostic oturumu
+
+Önceki dirty UX-02b/c/d/e korunarak kalan migration listesi izlendi.
+SingleToneSessionScreen null-progress LessonScaffold/StatusPill/ChunkyButton;
+kısa sentetik/puansız C4 ve canlı phase/kalibrasyon görünür; uzun4sn/privacy
+yönergesi açılır yardımda. Calibrate→listen/sing primary yönlendirme; aktif
+fazda yeni attempt gizli, responding finish ve aktif cancel korunur. InputLevelMeter
+yalnız calibrating/responding + InputLevelSource koşulunda. Yeni attempt
+detail expansion'ı temizler. _Step eski görsel kartı kaldırıldı; controller,
+quality/route/DSP/diagnostic/scorer toleransı değişmedi. Yeni verdict/puan/
+history/mastery/progress yok.
+
+apple-design agency/readability/dynamic-type ilkeleriyle mevcut kontroller
+yeniden kullanıldı; yeni motion/dependency yok. İlk mevcut9 hedefli test geçti;
+4 regression eklenince targeted13 geçti. Yeni testler noauto permission/help/
+noprogress, contextual controls+capture meter+cancel, dark/reduced-motion320px
+1.8× permission denial, lesson close pending permission late capture engeli.
+Son ortak runner exit0 full709 (+4), analyze temiz6.9sn, format202/0,
+diff check temiz. Testler fake/sentetik, fiziksel ses/route/cihaz/öğretim pilotu
+kanıtı değildir. Agora read-only status temiz; kaynakları değişmedi. Build,
+API/upload/ödeme/commit/push/deploy yok. Kalan UI/CORE-04c2 ve gerçek BENCH/
+device/EDU/yayın kapıları açık; otomatik takip tamamlandı sayılmadı.
+
+## 2026-10-16 21:07 TRT — UX-02g A+C günlük plan
+
+Kalan UI migration listesine göre DailyPlanScreen null-progress LessonScaffold,
+StatusPill/ChunkyButton'a taşındı. Kısa visible taslak uyarısı + plan_help;
+5/12/15 budget selector, restore/save, gerçek valid round counts/free minutes
+aynı. Done blok Bir tur daha neutral, pending primary; retention routing ve
+exercise dönüşünde refresh/recovery korunur. DailyPlanner/cohort/mastery/
+skor rubriği değiştirilmedi; view/close practice history yazmaz, readiness
+percentage üretilmez. Shell navigation test AppBar back yerine lesson_close.
+
+apple-design readability/agency/dynamic-type kontrolüyle mevcut bileşenler
+yeniden kullanıldı, yeni motion/dependency yok. Mevcut10 plan/recovery testi
+geçti; yeni4 ile targeted14 geçti. Yeni testler shell/help/no-mastery-write,
+completed retention optional neutral action, dark/reduced-motion320px1.8×
+budget15/help/action, close/budget5 preservation. Son runner exit0 full713
+(+4), analyze temiz5.3sn, format202/0, diff check temiz. Fake touch/history
+testleri gerçek cihaz/öğretim pilotu değildir. Önceki dirty işler korundu;
+Agora read-only status temiz, kaynakları değişmedi. Build/API/upload/ödeme/
+commit/push/deploy yok. Kalan UI/CORE-04c2 ve dış acceptance kapıları açık;
+otomatik takip tamamlandı sayılmadı.
+
+## 2026-10-17 02:18 TRT — UX-02h A+C çalışma geçmişi
+
+Kalan UI listesine göre HistoryScreen kartları StatusPill/DataLabel ve neutral
+ChunkyButton ile düzenlendi. Uzun kayıt listesi için lazy ListView/AppBar
+korundu; LessonScaffold'a zorlanmadı. Karşılaştırma yardımı açılır, yerel veri
+uyarısı ve açık silme onayı aynı. apple-design okunabilirlik/agency/büyük yazı
+ilkeleriyle mevcut bileşenler kullanıldı; yeni hareket/dependency yok.
+
+Sunumdaki iki güvenilirlik açığı kapatıldı: beceri artık çakışmasız record cohort
+anahtarında; son3 sonuç createdAt sırasından seçilir, depo sırası yeniden
+yazılmaz. Perception correct/total ve rhythm missed/extra tür/aralık kontrolü
+olmadan trend üretilmez. Desteklenmeyen beceri eksik ritim alanlarından sahte
+0→0→0 üretmez; kart detayı da null/bozuk sayaç göstermez. Fast retry Future
+hatası erken gözlenir; dispose sonrası clear başlatılmaz. Skorer/rubrik ve
+depo şeması aynı; yeni puan/mastery/readiness yok.
+
+Yeni6 regresyon ile hedefli16 geçti: pitch≠rhythm, bozuk/eksik alanlar,
+farklı beceri cohort'u, hızlı tekrar hata, dark/reduced-motion320px1.8× yardım/
+cancel/geri dön ve kronolojik trend/depo sırası. İlk dar ekran testinde lazy
+kartın scroll/layout beklemesi düzeltildi; son hedefli koşum temiz.
+Testler yalnız fake depolarda; gerçek kullanıcı kaydı silinmedi. Son runner
+exit0 full719 (+6), analyze temiz4.8sn, format202/0, diff check temiz.
+Önceki dirty işler korundu; Agora read-only status temiz.
+Build/API/upload/ödeme/commit/push/deploy yok. Kalan UI/CORE-04c2 ve dış
+kabul kapıları açık; otomatik takip tamamlandı sayılmadı.
+
+## 2026-10-17 13:10 TRT — UX-02i A+C ayarlar ve yerel işlem güvenliği
+
+SettingsScreen aynı Scaffold/AppBar/lazy ListView üzerinde A+C kartları,
+StatusPill ve neutral ChunkyButton kullanır. Başlıklar semantic header;
+kısa görünür misafir/gizlilik/mikrofon bilgisi, açılır izin-kulaklık ve saklama
+rehberleri. Startup cleanup uyarısı açılır alanın dışında görünür. Hedef seçme,
+geçmiş/veri taşıma, misafir/abonelik yok ve kanal açıklamaları korundu. Profil
+silme yalnız hedef profilini siler, geçmişi değil; hem rehberde hem onayda açık.
+apple-design okunabilirlik/agency/büyük yazı ilkeleri mevcut bileşenlerin
+kullanımına yön verdi; yeni animasyon/dependency/tema ayarı eklenmedi.
+
+Stateful ekran onay dahil profil silmeyi tek işlemle sınırlar; pending sırada
+hedef değiştirme/silme disabled, hata sonrası retry açık. Kopyalama da busy
+guard kullanır, önce eski başarı temizlenir ve live status gösterilir. Flutter
+OptionalMethodChannel Clipboard.setData eksik platformu sessiz kabul ettiği
+için aynı kanal adı ve JSON codec ile required MethodChannel çağrısı yapıldı.
+PlatformException/MissingPluginException sabit güvenli metin; rapor içeriği
+önceki sanitized LocalErrorLog formatında. Platform yanıtı gerçek pano readback
+veya fiziksel cihaz kabulü değildir. Kopya/silme başlamışsa ekranı terk etme
+işlemi geri almaz; geç tamamlanmada mounted kontrolü UI erişimini engeller.
+
+Yeni7 widget + mevcut17 shell/error-log testleri hedefli24 geçti. Rehberlerin
+salt okunur olması, hata/success/retry, eksik platform, pending double-copy/
+dispose, onay/pending delete/failure retry/cancel, route'lar ve dark/reduced-
+motion320px1.8× doğrulandı. İlk derlemedeki Semantics const ve kanal testindeki
+codec/optional davranışı düzeltildi; son hedefli koşum temiz. Testler fake
+depo/platform; gerçek kullanıcı verisi silinmedi. Son runner exit0 full726
+(+7), analyze temiz4.5sn, format203/0, diff check temiz. Önceki dirty işler korundu; Agora
+read-only status temiz. Build/API/upload/ödeme/commit/push/deploy yok.
+Sıradaki UI Ses laboratuvarı ve Tek ses sonuç örnekleri; CORE-04c2 ve gerçek
+BENCH/device/EDU/yayın kapıları açık, otomatik takip bitmiş sayılmadı.
+
+## 2026-10-18 19:10 TRT — UX-02j A+C ses laboratuvarı
+
+17 Ekim 18:41 TRT heartbeat'i işlendi; çalışma zamanı clock ile 18 Ekim
+olarak doğrulandı. AudioLabScreen null-progress LessonScaffold/StatusPill/
+ChunkyButton'a taşındı. Görünür deneysel/puansız ve sentetik C4 açıklaması,
+açılır kayıt/gizlilik rehberi; kayıt kalitesi ve deneysel frekans kanıtı ayrı
+kartlarda. DataLabel gerçek kayıt metadata'sını gösterir. Active fazlarda
+başlat/referans/kalibrasyon gizli; kayıt bitir ve iptal korunur. InputLevelMeter
+yalnız recording/calibrating + InputLevelSource, nota/puan anlamı yüklenmez.
+Kalibrasyonun mevcut geçici kaydı sildiği, yeni kaydın eskisini değiştirdiği
+açık; mikrofon hem kayıt hem ortam ölçümüyle açılır bilgisi düzeltildi.
+
+apple-design okunabilirlik/agency/büyük yazı ilkeleri mevcut bileşenleri
+yönlendirdi, yeni animasyon/dependency yok. A11y kılavuzu mercan record tone
+üzerinde 3.95 kontrast buldu; yalnız bu ekranın başlat/bitir düğmeleri primary
+tona alındı, kontrast kontrolü geçti. Controller/backend/worker, noise/quality/
+route/rubrik, iptal epoch ve kalibrasyon politikası aynı. Yeni puan/nota
+kararı/history/mastery yok; gerçek cihaz/insan sesi doğrulaması yapılmadı.
+
+Yeni5 + mevcut12 hedefli17 geçti: noauto/help/noprogress, phase/meter/discard,
+close sırasında pending izin→late capture yok, dark/reduced-motion320px1.8×
+izin reddi→mikrofonsuz referans ve explicit silme→geç worker hatası nötr.
+Close testinde asenkron shutdown kuyruğu bir event-loop turu bekletildi.
+Testler fake backend/sentetik kaynak, gerçek kullanıcı verisi silinmedi.
+Son kalite runner exit0 full731 (+5), analyze temiz7.8sn, format203/0,
+diff check temiz. Önceki dirty işler korundu; Agora read-only
+status temiz. Build/API/upload/ödeme/commit/push/deploy yok. Kalan UI Tek ses
+sonuç örnekleri; ardından CORE-04c2. BENCH/device/EDU/yayın kapıları açık;
+otomatik takip tamamlandı sayılmadı.
+
+## 2026-10-18 19:13 TRT — UX-02k A+C tek ses sonuç örnekleri
+
+SingleToneExerciseScreen null-progress LessonScaffold/StatusPill/ChunkyButton
+ve DataLabel kullanır. Örnek hedef/yönerge ve sonuçlar açıkça simülasyon;
+mikrofon kapalı, kişisel başarı/geçmiş/gelişim değildir. Açılır rehber ses
+çalınmadığını/kayıt alınmadığını ve gerçek oturumun ayrı olduğunu açıklar.
+Doğru Söyle düğmesi Doğru ses örneği oldu; puanlar örnek etiketiyle kalır.
+Invalid metni örnek puanlanmadı, nötr notMeasured; yanlış oktav wrongOctave,
+başarı correct ve diğer uyarılar nearMiss tema token'ları. Sabit green/amber
+ve renkli zemin kaldırıldı; iki temada kılavuz kontrastı doğrulandı.
+
+_runScenario single-flight guard eski sonucu/hata durumunu temizler; await
+sonrası mounted kontrolü, sabit nötr hata ve finally unlock sağlar. Geç hata
+UI'ya erişmez; tekrar deneme mümkündür. Skorer/tolerans/senaryo verisi aynı,
+gerçek oturum/capture/quality/worker/depo değişmez. apple-design okunabilirlik/
+agency/büyük yazı ilkeleri mevcut A+C bileşenlerine yön verdi; yeni hareket
+veya dependency yok. Mock test başarısı insan sesi benchmark'ı değildir.
+
+Yeni5 + mevcut19 hedefli24 geçti: noauto/help/noprogress, duplicate pending/
+eski success→error→retry, pending close/late error, tüm7 senaryo dark/reduced-
+motion320px1.8×, iki temada success/octave/invalid için tap/label/contrast.
+Eski noisy/silence testleri büyük düğmelere scroll eder; ilk Semantics const
+ve test sonu handle temizliği düzeltildi. Son runner exit0 full736 (+5),
+analyze temiz4.3sn, format203/0, diff check temiz. Agora read-only status
+temiz, kaynakları değişmedi. Önceki
+dirty işler korundu; build/cihaz/API/upload/ödeme/commit/push/deploy yok.
+Adı listelenen ekran migration'ları tamamlandı; sırada CORE-04c2. Diğer UX
+backlog'u, gerçek BENCH/device/EDU/yayın kapıları açık; otomatik takip bitmedi.
+
+## 2026-10-19 10:12 TRT — CORE-04c2a seçili ezgi oynatma altyapısı
+
+CORE-04c2 önce exclusive player alt paketine ayrıldı; UI c2b'ye kaldı.
+DiagnosticMelodyPracticePlayer sadece play/stop/close sunar, capture/permission
+API'si yok. MelodyPracticePlayback tek bound reference instance'ını kabul eder;
+native mutation kuyruğu hatadan sonra da cleanup'ı çalıştırır. Idle/loading/
+playing/stopping/failed/closed, single-flight, epoch ve completion wake ile
+pending start/stop/close yarışları korunur. Stop completion callback'ini
+beklemez; native start sürüyorsa onun ardından cleanup yapar. Queue başlamadan
+iptal play'i atlar. Eski handle hataları gözlenir, geç callback sonuç yayınlamaz.
+Cleanup hatası sticky fail-closed; yalnız close kaynağı bırakmayı deneyebilir.
+
+SyntheticMelodyPracticePlayer c1 renderer WAV'ını immutable bytes olarak ayrı
+ReferenceClipPlayer'a verir. Capture backend/player paylaşılmaz; existing
+SyntheticMelodyBackend ve MelodySession davranışı değişmez. Completion
+duyma/hafıza/başarı kanıtı veya attempt sayacı değildir. Skor/history/mastery,
+API, kullanıcı kaydı veya yeni ses kaynağı yok. Sınırlı aralık/1–3 tekrar ve
+orijinal frekans/sıra/tempo c1 sözleşmesinde. UI, background/focus handler ve
+route ownership bağlantısı henüz yapılmadı; bu paket mikrofon oturumuyla
+eşzamanlı kullanımın cihazda doğrulandığı iddiası değildir.
+
+Yeni10 coordinator +2 adapter testi ve mevcut26 renderer/session/backend
+regresyonu hedefli38 geçti. Noauto, foreign reference, duplicate, queued/pending
+start stop, completion late error, playback failure/retry, cleanup fail-closed,
+close idempotency ve exact excerpt WAV/immutable bytes testli. Testlerdeki
+background senaryosu UI lifecycle olayı değil controller.stop çağrısıdır.
+Son runner exit0 full748 (+12), analyze temiz11.3sn, format205/0, diff check
+temiz. Önceki dirty işler korundu; Agora read-only status
+temiz. Build/cihaz/API/upload/ödeme/commit/push/deploy yok. Sıradaki hazır iş
+CORE-04c2b ekran/navigation/lifecycle ve büyük yazı testleri. Gerçek BENCH/
+device/EDU/yayın kapıları açık; otomatik takip bitmiş sayılmadı.
+
+## 2026-10-19 15:15 TRT — CORE-04c2b seçili ezgi ekranı ve güvenli devir
+
+MelodyPracticeScreen null-progress A+C shell: başlangıç/bitiş dahil aralığı,
+1–3 tekrar, orijinal sıra/Hz görünümü ve açık manual/sentetik/puansız metin.
+Kayıt/izin/assessment/repository bağı yok, otomatik play yok. Playback sürerken
+seçiciler kilitli; stop/retry ve yardım açık. apple-design okunabilirlik,
+agency ve büyük yazı ilkeleri mevcut bileşenleri yönlendirdi. Header büyük
+yazıda taşıdığı için kısa Puansız etiketi; dropdown'lar genişliğe uyarlanır.
+
+MelodySessionScreen yalnız canStart ve yeni handoff guard ile geçiş açar.
+Session.close tamamlanmadan factory/native child player oluşturulmaz; parent
+route pushReplacement ile kaldırılır. Bu kasıtlıdır: dinlemeden dönüş home/
+önceki sayfayadır, eski kayıt oturumu devam etmez; metin bunu açıklar. Close
+hatası veya pending devirde eski başlat/back devre dışı; stale dispose hiçbir
+yeni player/route oluşturmaz. Child route PopScope hem close hem sistem geri
+için playback.close'u bekler. Pending native load sonrası close tamamlanana
+kadar route bırakılmaz; cleanup hatasında yeniden başlat uyarısı/fail-closed.
+
+WidgetsBinding lifecycle inactive/background durdurur, resume autoplay yapmaz.
+Mobilde AudioSession interruption-begin, becomingNoisy ve devicesChanged
+dinlenir; monitoring hazır olmadan play kapalıdır. Stream hatası monitoring'i
+fail-closed kapatır. Test injection ayrı fake olay stream/player kullanır;
+gerçek plugin/route/focus/cihaz doğrulaması değildir. C1/c2a renderer/queue,
+mevcut ölçüm rubriği, referencePlays, skor/history/mastery değişmedi. Başarı/
+hatalı bölge çıkarımı veya duyma/hafıza kanıtı üretilmez.
+
+Yeni11 + mevcut17 hedefli28 geçti: explicit selection, noauto, locked controls,
+lifecycle/focus/monitoring error, pending native start close/late error, system
+back/failure lock, safe retry, dark/reduced-motion320px1.8×, parent close before
+factory/replacement/failure/disposal ve iki tema a11y. Fake close kuyruğu event
+loop bekletilerek test edilir. Son runner exit0 full759 (+11), analyze temiz
+3.6sn, format207/0, diff check temiz. Önceki dirty işler
+korundu; Agora read-only status temiz. Build/cihaz/API/upload/ödeme/commit/
+push/deploy yok. c2 kod/ekran bağlantısı hazır, gerçek playback/device/EDU
+ve ürün/yayın kabulü açık. Sıradaki onboarding günlük süre seçimi; otomatik
+takip tamamlandı sayılmadı.
+
+## 2026-10-20 — ONB-01 başlangıçta günlük süre seçimi
+
+19 Ekim20:56 TRT heartbeat'i işlendi. GuestOnboardingScreen hedefi draft
+tutar; sonra mevcut DailyBudget 5/12/15 seçeneklerini gösterir. Açık kaydet
+önce preferences schema1'i, sonra chooseGoal profilini yazar. Süreyi
+değiştirmeden devam bütçeyi yazmaz: eski tercih korunur, yoksa mevcut plan
+default12. Settings hedef değişimi ve returning profile aynı; yeni şema,
+hesap/izin/ses/skor/history/mastery yok. Geri dönüş draft süreyi korur;
+yalnız görüntüleme/seçim repository'ye yazmaz.
+
+İki dosya transaction değildir: budget-success/profile-failure halinde süre
+kalır ve mesaj bunu açıklar; retry aynı bütçeyi resave etmez. Busy guard iki
+continue/back/seçicileri kilitler. Budget await sonrası dispose olmuşsa
+profile save başlatılmaz; başlamış dosya yazımı rollback sayılmaz. Hatalar
+fixed/safe, skip de hedef kaydı için retry sunar. apple-design agency/
+readability/büyük yazı ilkeleri mevcut A+C bileşenlerini yönlendirdi. Selected
+AnswerOption fill opaque alphaBlend(theme surface) oldu; diğer state/layout
+aynı, iki tema kontrast kılavuzu geçti. Yeni motion/dependency yok.
+
+Yeni9 widget: üç bütçe save-before-goal, skip-preserve, budget failure→skip,
+partial profile failure→retry/no-resave, pending double/dispose, system back,
+app→gerçek günlük plan seçili5, dark/reduced-motion320px1.8× ve iki tema
+a11y. Mevcut18 shell/a11y de doğrulandı; iki eski onboarding testi yeni
+confirm/skip adımına uyarlandı, Settings testi aynı. İlk lazy-list testinde
+scroll/tall viewport düzeltildi. Son runner exit0 full768 (+9), analyze
+temiz3.7sn, format209/0, diff check temiz. Önceki dirty işler korundu;
+Agora read-only status temiz. Build/cihaz/API/upload/ödeme/commit/push/deploy
+yok. Sıradaki ana sayfa yükleme iskeleti. Gerçek BENCH/device/EDU/yayın
+kapıları açık; otomatik takip tamamlandı sayılmadı.
+
+## 2026-10-20 — HOME-01 ana sayfa yükleme ve eski veri koruması
+
+19 Ekim22:59 UTC heartbeat. Home recommendation/path beklerken durağan
+iskelet, tek live-region etiketi; dekoratif şekiller semantics dışında.
+apple-design okunabilirlik/hareket azaltma ilkeleriyle mevcut tema tokenları
+kullanıldı; shimmer, sahte yüzde/seri/süre/skor veya otomatik işlem yok.
+FutureBuilder eski veriyi tutabildiğinden d yalnız done/no-error halinde
+kullanılır: pending/error sırasında eski seri, beceri yolu ve öneri gizlenir.
+Hata açık retry ile toparlanır; repository/planner/skor/yazma aynı.
+
+Yeni4 widget testi: statik semantik/no-write/no-frame; exercise-return refresh
+pending→error→retry; repository replacement; iki tema320px1.8× reduced-motion
+ve dispose sonrası late error. Hedefli15 geçti. Tam runner exit0 full772
+(+4), analyze temiz5.2sn, format209/0; diff check temiz. Önceki dirty işler
+korundu. Agora mevcut dirty değişikliklerine dokunulmadı. Build/gerçek cihaz/
+API/upload/ödeme/commit/push/deploy yok. Sonraki güvenli iş algı turunda cevap
+karşılaştırması ve tekrar dinleme. Gerçek voice/BENCH/device/EDU/yayın
+kapıları açık; otomatik takip tamamlandı sayılmadı.
+
+## 2026-10-20 — REVIEW-01a algı sonuçlarında soru bazlı karşılaştırma
+
+Kullanıcının devam talebiyle iki mevcut algı modülüne salt-okunur sekiz
+soruluk cevap dökümü eklendi. AnswerComparisonCard başlangıçta kapalı;
+bilinen sentetik örnek, seçilen dokunma cevabı ve doğru cevap gösterir.
+Doğru/farklı seçim/cevap yok metinle ayrılır. Bu öğrencinin içsel ne duyduğu
+veya söylediği hakkında çıkarım değildir; ses kaydı değildir. Ayrıntılar
+yalnız mevcut oturumda; schema/controller/skor/retention/history aynı.
+Yeni tur eylemi dökümün önünde tutuldu. Yeni ses/autoplay/dependency yok.
+
+apple-design readability/agency/reduced-motion ilkeleri: tema tokenları,
+isteğe bağlı disclosure, dar/büyük yazıda alt alta; genişte yan yana.
+İlk testte LayoutBuilder intrinsic ölçümü engelledi; Wrap ile değiştirildi.
+Shell'de bottom boş olduğunda IntrinsicHeight gerekmiyordu ve açılır içerikte
+overflow üretiyordu: bu durumda doğal scroll layout kullanılıyor. Bottom
+eylemli soru düzeni ve diagnostic sözleşmesi korundu. Beş yeni widget testi
+ve genişletilen iki gerçek ekran akışı hedefli7 geçti; açma/kapama player
+çağrısı veya history değişimi üretmiyor. Full runner exit0:777 (+5), analyze
+temiz3.5sn, format211/0; diff check temiz. Kod/widget kanıtı, cihaz QA değil.
+Önceki dirty işler korundu; Agora kaynaklarına dokunulmadı. Build/cihaz/API/
+upload/ödeme/commit/push/deploy yok. REVIEW-01b karşılaştırmalı ses için pending-
+load/stop/close/lifecycle güvenceleri sıradaki iş; ana madde açık. Gerçek
+voice/BENCH/device/EDU/yayın kapıları açık; tüm geliştirme bitti denmedi.
+
+## 2026-10-20 — GROW-01a, ticari üç referans ve plan eşlemesi
+
+Kullanıcı ticari başarılı üç uygulamanın öne çıkan özelliklerini istedi.
+Simply Piano/Simply, Yousician ve Duolingo Music resmî ürün/yardım sayfaları
+araştırıldı. Finansal kanıt kapsamı ayrıldı: Simply2020 tarihsel şirket geliri
+ikincil haber, Yousician2025 şirket ciro/faaliyet kârı finansal sağlayıcı,
+Duolingo2025 SEC toplam gelir/ücretli abone. Bunlar app/modül gelir sıralaması
+veya hangi özelliğin daha çok para kazandırdığının kanıtı değil. Kaynak/tarih,
+hipotez ve kabul kapıları COMMERCIAL_BENCHMARK_2026-10.md'de. F27/F28 eklendi;
+diğer bulgular mevcut backlog işlerine bağlandı, yinelenen modül açılmadı.
+
+Kod: HomeData son7 yerel takvim gününü valid/current-catalog cohort'lardan
+üretir; aynı gün tek, düşük doğru da çalışma. Future timestamp (bugünün ilerisi
+dahil), invalid/mock/synthetic/unverified/eski/unknown cohort dışarıda. Immutable
+gün listesi; RecentPracticeCard tarih+durum metni, tema/Wrap/büyük yazı,
+animasyon yok; d yalnız başarılı read'de gösterilir. apple-design readability/
+reduced-motion ilkeleri kullanıldı. Veri sayacı aktivite, öğrenme başarısı değil;
+streak/planner/scorer/storage/izin/telemetry yok veya aynı.
+
+Yeni4 veri testi +2 iki tema320px1.8× reduced-motion widget; pending regression
+genişletildi. İlk invalid fixture puan taşıdığı için sözleşme reddetti; scores
+notMeasured yapılarak fixture düzeltildi (ürün guard gevşetilmedi). Full runner
+exit0:783 (+6), analyze clean12.8sn, format213/0, diff check clean. Fake/local
+kanıt, cihaz/öğrenme/gelir kabulü değil. Agora değiştirilmedi, önceki dirty
+işler korundu; build/API/ödeme/upload/commit/push/deploy yok. REVIEW-01b sıradaki
+ses işi; GROW-01b hedef/bildirim ve F28 aile işi açık. Tüm ürün bitti denmedi.
+
+## 2026-10-20 — REVIEW-01b karşılaştırmalı sonuç sesi
+
+İki algı sonucu kartında kullanıcı başlatmalı dinle/durdur eklendi; autoplay
+yok. Ortak ReviewPlaybackCoordinator stop→load→play kuyruğu, stale pending
+başlatmayı geçersiz kılma, son istek kazanır, hata sonrası yeniden deneme ve
+close sırasını yönetiyor. Aralık ekranı referans ile dokunarak seçilen dereceyi,
+tiz/pes ekranı referans çiftini sentetik üreticiden çalıyor. Review yalnız
+bitmiş immutable outcome'u okuyor; skor, plays/retention, history ve mastery
+yazmıyor. Arka plan sesi durdurup sonucu koruyor. Route, player close bitmeden
+çıkmıyor; close hatası fail-closed açıklamayla ekranda kalıyor.
+
+apple-design kullanıcı iradesi/okunabilirlik ilkeleri: açık eylem, etkin ses
+üzerinde Durdur, başka örneğe kesilebilir geçiş, metin durumları; yeni dekoratif
+animasyon yok. Yeni4 coordinator +2 route-gate testi; controller ve iki ekran
+akışı genişletildi. Hedefli24 ve full791 (+8) geçti; analyze temiz3.2sn,
+format216/0, diff check temiz. Fake/sentetik kanıt; gerçek hoparlör/audio-focus,
+fiziksel cihaz, VoiceOver/TalkBack ve eğitimci kabulü değil. Agora değişmedi;
+build/API/upload/ödeme/commit/push/deploy yok. Sıradaki güvenli iş GROW-01b;
+bildirim izni/plugin/cihaz kapıları ve tüm yayın kapıları açık.
+
+## 2026-10-20 — GROW-01b gönüllü son 7 gün hedefi
+
+Ana sayfadaki son7 gün kartına hedef yok veya 2/3/4/5 çalışma günü seçimi
+eklendi. İlerleme GROW-01a'nın aynı geçerli/desteklenen cohort günlerinden gelir;
+düşük doğru çalışmadır, demo/invalid/future/unknown değildir. Metin hedefin seri,
+beceri puanı veya sınav sonucu olmadığını, ceza olmadığını ve her an kapatılıp
+değiştirilebildiğini açıklar. Save single-flight; hata önceki hedefi korur ve
+özel hata ayrıntısı göstermez.
+
+Yerel tercih schema v2 günlük süre + nullable hedef taşır; strict v1 günlük
+süre migration'ı var. Günlük süre/hedef bağımsız ve eşzamanlı kayıtlarda
+serialized read-modify-write ile birbirini ezmez. Yeni2 storage +2 widget testi;
+hedefli24 ve full795 (+4) geçti, analyze temiz2.9sn, format217/0, diff temiz.
+Bildirim/izin/plugin/network/hesap/telemetry/ödül/ödeme eklenmedi; native
+hatırlatma ve cihaz QA açık. Agora değişmedi; build/commit/push/deploy yok.
+
+## 2026-10-20 — RETRY-01a yanlışlara hedefli kısa tur
+
+Tiz/pes ve hareketli-do sonuçlarına “Hataları hedefli çalış” eylemi eklendi.
+Yalnız önceki tam turdaki yanlış maddeler, aynı frekans/tonik ve sırayla kısa
+rehberli tura taşınır; normal dinle→cevap→anlık açıklama kullanılır. Kullanıcı
+başlatır, yeni tam tur ayrıca kalır. Ekran Tekrar etiketi ve bunun geçmiş,
+beceri/ustalık veya sınav sonucu olmadığını açıkça gösterir; kısa turda 7/8
+ölçütü gibi anlamsız tam-tur metni gösterilmez.
+
+Controller guided turda retention'ı kapatır ve history yazmaz. Domain round
+`guided` işaretlidir; `toResult` StateError ile fail-closed, böylece ilerideki
+bir caller bu turu kanıta çeviremez. Yeni2 controller testi; iki dar/büyük-yazı
+ekran akışı genişletildi, pitch hedefli tur uçtan uca tamamlandı. Hedefli15,
+full797 (+2), analyze/format ve diff temiz. Sentetik/fake kanıt; cihaz/EDU değil.
+Agora değişmedi; build/commit/push/deploy yok. Sırada ritim/ezgi segment bağı.
+
+## 2026-10-20 — RETRY-01b ritim hata kesiti
+
+Ritim sonucunda erken/geç/eksik/fazla olay varsa “Zor bölümü çalış” eylemi
+sunulur. İlk hata, özgün desendeki komşu referans vuruşlarıyla kısa kesite
+dönüşür; fazla dokunuş bir sonraki beklenen vuruşa bağlanır. Yerel saat sıfıra
+alınır, aralık ve sıra değişmez. Kesit “Hedefli tekrar” ve puansız olarak
+gösterilir; tam desene dönüş açıktır. Guided sonuç history/next-step'e yazılmaz,
+`toResult` da fail-closed reddeder. Yeni2 domain +1 controller testi, mevcut
+320px/1.8× ekran yolu genişletildi. Full800, analyze/format/diff temiz.
+Sentetik klik/fake player; fiziksel zamanlama, öğrenme ve EDU kanıtı değildir.
+Ezgi segmenti açık; Agora değişmedi, commit/push/deploy yok.
+
+## 2026-10-20 — REM-01a hatırlatma sözleşmesi
+
+Günlük saat modeli ve uygulama katmanı izin/schedule/cancel portu eklendi.
+Coordinator explicit opt-in dışında izin istemez, aynı anda tek işlem yürütür,
+native schedule/cancel doğrulanmadan tercihi değiştirmez. Depolama yazımı native
+işlemden sonra düşerse önceki planı yeniden kurmayı veya yeni planı iptal etmeyi
+dener; hiçbir durumda sahte başarı dönmez. Tercih belgesi v3'e çıktı, exact v1
+ve v2 migration korundu; bütçe/hedef/hatırlatma bağımsız ve seri yazılır.
+Üretim fallback unavailable: plugin/izin/UI/alarm yok. Yeni7 coordinator +1
+storage; full808, analyze temiz, format219/0, diff temiz. Agora değişmedi;
+commit/push/deploy yok.
+
+## 2026-10-21 — REM-01b hatırlatma ayarları kabuğu
+
+Ayarlar ekranına çalışma hatırlatması kartı eklendi. Adapter varsa kullanıcı
+saat seçip açıkça etkinleştirir, değiştirebilir veya kapatabilir; izin reddi,
+pending ve hata durumları başarıdan ayrıdır. Üretimde REM-01a unavailable
+adapter kullanıldığı için kart “Kullanılamıyor” der, izin istemez ve eylem
+göstermez. Fake adapter ile enable/disable/denied ve koyu 320px/1.8× testlendi.
+Yeni4; full812, analyze temiz, format221/0, diff temiz. Gerçek plugin/alarm/
+izin/cihaz doğrulaması ve titreşim ayarı açık; Agora/commit/push/deploy yok.
+
+## 2026-10-21 — HAPTIC-01 dokunuş geri bildirimi tercihi
+
+Ayarlar ekranına varsayılan açık, yerel saklanan “Dokunuş geri bildirimi”
+anahtarı eklendi. Tercih belgesi v4'e çıktı; exact v3 migration yeni alanı açık
+başlatır. Ortak inherited notifier mevcut `HapticFeedback` kullanan genel
+buton, cevap seçeneği, beceri yolu ve ritim dokunma yollarını kapatabilir.
+Değişiklik önce diske yazılır, sonra uygulama geneline yayınlanır; yazma
+hatasında önceki değer korunur ve hata görünür. Platform kanal testi kapalıyken
+vibration çağrısı olmadığını, açıkken geri geldiğini doğrular. Yeni3; full815,
+analyze temiz, format222/0, diff temiz. Bu fiziksel cihaz titreşim testi değildir;
+native hatırlatma plugin/alarm/izin/teslimat kapısı açık. Agora/commit/push/
+deploy yok.
+
+## 2026-10-21 — REM-01c native günlük hatırlatma adapter'ı
+
+REM-01a/b sözleşmesi gerçek Android/iOS yerel bildirim adapter'ına bağlandı.
+`flutter_local_notifications` 22.3.2, `flutter_timezone` 5.1.1 ve `timezone`
+0.11.2 sabitlendi. Başlatma izin istemez; yalnız kullanıcının “Saat seç ve aç”
+eylemi Android 13+/iOS iznini ister. Cihaz IANA bölgesiyle bir sonraki yerel
+saat hesaplanır ve günlük tekrar kurulur. Android exact-alarm izni istenmez;
+`inexactAllowWhileIdle`, reboot receiver, desugaring ve tek beyaz durum ikonu
+kullanılır. iOS bildirim merkezi delegate'i bağlıdır. Ret halinde kullanıcı
+uygulamanın bildirim ayarlarını doğrudan açabilir. Coordinator'ın native işlem
+sonrası persist/rollback sınırı değişmedi.
+
+Yeni4 driver/zaman testi +1 coordinator recovery testi; ret widget akışı
+ayarlar eylemiyle genişletildi. Full820, analyze temiz, format224/0, diff temiz.
+Android debug APK 236,7 sn ve iOS simulator debug build 26,2 sn içinde geçti.
+Simulator/build gerçek bildirim teslimatı değildir: fiziksel izin ekranı,
+seçilen saatte teslimat, reboot/DST ve OEM pil kısıtı iOS/Android cihazda açık.
+Push/sunucu/telemetry eklenmedi; Agora/commit/push/deploy yok.
+
+## 2026-10-21 — SHELL-02 mikrofon izin kurtarma
+
+Tek ses, kısa ezgi ve ses laboratuvarında gerçek izin reddi görüldüğünde ortak
+“Mikrofon ayarlarını aç” kartı bağlandı. Kart ekran girişinde izin istemez veya
+ayar açmaz; eylem kullanıcı dokunuşuyla çalışır, eşzamanlı ikinci çağrıyı
+engeller ve platform false/exception sonucunu dürüst hata metnine çevirir.
+Kayıt izni hâlâ mevcut record backend tarafından, yalnız kayıt/kalibrasyon
+eyleminde istenir. Android pasif status okuması bütün kalıcı retleri güvenilir
+ayıramadığı için ayar kurtarması yalnız gerçekleşmiş ret sonrasında sunulur.
+
+MIT `permission_handler` 12.0.3 eklendi. 13.0.2 Android compileSdk37 istediği,
+proje compileSdk36 ve AGP9.0.1 kullandığı için build ile uyumlu 12.0.3'e
+sabitlendi; iOS SPM mikrofon anahtarını mevcut `Info.plist`ten algılar. Yeni4
+widget testi; üç ekranın ret regresyonları genişletildi. Full824, analyze temiz,
+format228/0; Android debug APK ve iOS simulator debug build başarılı. Fiziksel
+izin diyaloğu, kalıcı ret, OS ayar açılışı ve uygulamaya dönüş test edilmedi.
+Agora/commit/push/deploy yok; kirli çalışma ağacı korundu.
+
+## 2026-10-22 — SHELL-03a dürüst başlangıç kontrolü
+
+Yeni öğrencinin Bugün ekranına isteğe bağlı “Başlangıç kontrolü” kartı eklendi.
+Akış yalnız mevcut deterministik/dokunma kanıtlı üç turu kullanır: 200 cent
+tiz/pes, düzenli dörtlük puls ve ilk hareketli-do derece turu. Her tur mevcut
+egzersiz ekranını ve yerel history kaydını kullanır; dönüşte durum yeniden
+okunur. Geçersiz kanıt önce yeniden denenir, denenmemiş tur sonra gelir; üçü de
+geçerliyse ilk zayıf tur pratik odağı olur. Güçlü tek tur mastery veya kalıcılık
+sayılmaz.
+
+Ses üretimi, ezgi, çok sesli duyma ve eğitimci gözlemi gerektiren tüm rota
+becerileri “henüz ölçülemiyor” sayılır. Akış toplu yüzde, başlangıç seviyesi,
+konservatuvar kabulü veya sınava hazır oluş üretmez. History hatasında eski
+öneri gösterilmez; açık retry vardır. Yeni4 domain +3 ekran +1 home entegrasyon
+testi; full832, analyze temiz, format233/0. Fiziksel cihaz/öğrenci testi ve
+eğitimci seviye bantları yapılmadı. Agora/commit/push/deploy yok.
+
+## 2026-10-22 — SHELL-04f güvenli çalışmaya dönüş
+
+Bugün ekranı desteklenen güncel kohortlardan en son tamamlanmış yerel denemeyi
+bulup “Son çalışmaya dön” kartında gösterir. Açık eylem aynı egzersizin yeni
+turunu açar; yarım soru, player, ses veya mikrofon oturumu restore edilmez ve
+otomatik başlatılmaz. Geçersiz güncel sonuç yeniden denenebilir; gelecek tarih,
+eski içerik ve bilinmeyen analizör kanıtı hedef olamaz. Boş geçmişte kart yoktur.
+
+Yeni4 domain +2 home entegrasyon testi; `dart tool/quality_check.dart` exit0:
+full838, analyze temiz, format236/0. Native/audio bağımlılığı değişmediğinden
+build tekrarlanmadı; fiziksel cihaz/offline acceptance açık. Agora/commit/push/
+deploy yok; kirli kullanıcı/ajan ağacı korundu.
+
+## 2026-10-22 — F06a hata sonrası isteğe bağlı kavram tekrarı
+
+Tiz/pes ve ritim sonuçlarında hata varsa kullanıcı ilgili mevcut mikroders metin
+taslağını açabilir. Eylem sonucu değiştirmez, otomatik ses/mikrofon başlatmaz ve
+ders okuması history, skor, mastery veya sonraki adıma yazılmaz. Tiz/pes akışı
+aynı kayıt nesnesini koruduğunu ve player çağrısı eklemediğini; ritim akışı da
+ders girişinde playback olmadığını doğrular.
+
+Mevcut iki widget akışı genişletildi; `dart tool/quality_check.dart` exit0:
+full838, analyze temiz, format236/0. Bu F06'nın yalnız güvenli bağlantı alt
+paketidir: metinler geliştirici taslağı, onaylı ses/eğitmen örneği ve öğretim
+pilot ölçümü yok. Native/audio bağımlılığı değişmedi; build tekrarlanmadı.
+Agora/commit/push/deploy yok.
+
+## 2026-10-22 — F06b tonik/derece kavram tekrarı
+
+Mevcut mikroders kataloğuna hareketli-do “Tonik ve derece” metin taslağı,
+eksiksiz beş faz ve bilinçli boş örnek yuvalarıyla eklendi. Hatalı derece turu
+isteğe bağlı olarak bu okuyucuyu açar. Aynı `ExerciseResult` ve player çağrı
+sayısı korunur; okuma skor/mastery/history veya sonraki adım değildir.
+
+Catalog ve strict codec regresyonlarıyla interval uçtan uca akışı geçti;
+`dart tool/quality_check.dart` exit0: full838, analyze temiz, format236/0.
+Metin eğitimci onaylı değildir; ses örnekleri, gerçek öğretim etkisi ve öğrenci
+pilot kapıları açıktır. Native/audio bağımlılığı değişmedi, build tekrarlanmadı;
+Agora/commit/push/deploy yok.
+
+## 2026-10-22 — GROW-01c haftalık çalışma özeti
+
+Gelişim ekranına seçili hedef rotası ve güncel ölçüm kohortlarıyla sınırlı,
+yerel takvim günlerine göre hesaplanan haftalık çalışma özeti eklendi. Son yedi
+gün; önceki yedi günle yalnız geçerli tur hacmi açısından karşılaştırılır.
+Çalışılan gün, egzersiz bazlı geçerli tur ve tamamlanmamış ölçüm ayrı gösterilir;
+gelecek tarihli, eski kohortlu veya bilinmeyen kanıt yok sayılır. Boş geçmişte
+ilerleme uydurulmaz. Arayüz bunun beceri artışı, hazır oluş veya sınav başarısı
+puanı olmadığını açıkça söyler.
+
+Yeni5 domain +1 widget testi eklendi. `dart tool/quality_check.dart` exit0:
+full844, analyze temiz, format238/0. Native/audio bağımlılığı değişmediğinden
+build tekrarlanmadı. Gerçek cihaz, kullanıcı dili kabulü ve öğretim etkisi
+doğrulaması açıktır. Agora/commit/push/deploy yok; kirli kullanıcı/ajan ağacı
+korundu.
+
+## 2026-10-23 — RETRY-01c deneysel ezgi aday bölümü
+
+Puansız kısa ezgi oturumu, kalite kapısından geçen diagnostic frekans
+segmentlerini mevcut sıralı pitch aligner ile referans frekanslarına bağladı.
+İlk farklı referans için önceki bağlamı koruyan iki seslik sentetik dinleme
+seçimi üretilir. Kullanıcı eylemiyle kayıt oturumu güvenle kapanır, ayrı player
+açılır ve seçim iki tekrar olarak önceden doldurulur; otomatik oynatma yoktur.
+Temiz veya yalnız ekstra aday içeren karşılaştırma hedef uydurmaz.
+
+Bu akış skor, ExerciseResult, history, mastery, retention veya hafıza sonucu
+üretmez. Segment/VAD ve insan sesi doğrulanmadığından arayüz “hata” yerine
+“deneysel aday bölüm” der. Yeni2 suggestion +1 practice widget +1 uçtan uca
+session→practice testi; mevcut session testi alignment sınırını da doğrular.
+`dart tool/quality_check.dart` exit0: full848, analyze temiz, format238/0.
+Native bağımlılık değişmedi; build tekrarlanmadı. Gerçek cihaz playback,
+BENCH/VAD ve eğitimci kabulü açık. Agora/commit/push/deploy yok.
+
+## 2026-10-23 — DATA-03b atomik toplu sonuç içe aktarma
+
+`ResultHistoryRepository` ortak `recordAll` sözleşmesi kazandı. Bellek ve dosya
+adapter'ları bütün giriş grubunu aynı attempt-id duplicate/conflict/kapasite
+kurallarıyla önce planlar. Dosya adapter'ı kaydedilecek sonuçları tek
+`JsonFileStore` temp+rename işlemiyle uygular; depolama yazımı başarısızsa eski
+belge korunur ve batch'in kısmi öneki görünmez. Kapasiteye sığmayan öğeler yine
+açık `storageFull` sayılır; sessiz silme yapılmaz.
+
+Pano içe aktarma artık bu batch yolunu kullanır. UI depolama hatasında önceki
+“eklenenler korunur” belirsizliği yerine bu gruptan hiçbir sonucun eklenmediğini
+söyler. Yeni2 memory/file parametrik batch +1 file failure +1 widget failure
+testi; mevcut import raporu regresyonu geçti. `dart tool/quality_check.dart`
+exit0: full852, analyze temiz, format238/0. Ses/native bağımlılığı değişmedi,
+build tekrarlanmadı. Gerçek cihaz panosu, hesap/outbox/backend/senkron ve consent
+açıktır; Agora/commit/push/deploy yok.
+
+## 2026-10-23 — SHELL-04g ana ekran ön plan yenilemesi
+
+Today consumer'ı Flutter lifecycle gözlemcisine bağlandı. Yalnız
+`paused`/`hidden`/`detached` sonrasındaki ilk `resumed` yerel geçmişi yeniden
+okur; izin paneli gibi `inactive` kesintisi ve ardışık `resumed` olayları yeni
+okuma üretmez. Yenileme beklerken önceki öneri ve beceri yolu gizlenir; hiçbir
+egzersiz, player veya mikrofon otomatik başlatılmaz.
+
+İki widget testi tek-yenileme/idempotency ile stale önerinin bekleme boyunca
+gizlenmesini doğruladı. `dart tool/quality_check.dart` exit0: full854, analyze
+temiz, format238/0. Native/audio bağımlılığı değişmedi; build tekrarlanmadı.
+Fiziksel iOS/Android lifecycle/offline kabulü açıktır; commit/push/deploy yok.
+
+## 2026-10-23 — SHELL-04h ortak yerel consumer yenilemesi
+
+SHELL-04g lifecycle sınırı ortak `ForegroundRefreshState` tabanına taşındı ve
+Today'e ek olarak günlük plan, beceri haritası ve çalışma geçmişine uygulandı.
+Yardımcı yalnız gerçek arka plan işaretinden sonraki ilk `resumed` olayında
+ekranın yerel read future'ını değiştirir; `inactive`, yinelenen `resumed`, rota,
+yazma, player ve mikrofon davranışı üretmez. Her consumer kendi mevcut
+fail-closed loading görünümünü kullanır; stale plan/rapor/geçmiş eyleme açık
+kalmaz.
+
+Plan, harita ve geçmiş için üç yeni widget regresyonu eklendi; Today'in iki
+önceki lifecycle testi ortak tabanı doğrulamaya devam ediyor.
+`dart tool/quality_check.dart` exit0: full857, analyze temiz, format239/0.
+Native/audio bağımlılığı değişmedi; build tekrarlanmadı. Fiziksel cihaz ve
+offline depolama kabulü açık; commit/push/deploy yok.
+
+## 2026-10-24 — SHELL-04i bağımlılık değişimi güvenliği
+
+Günlük plan, beceri haritası ve çalışma geçmişi `didUpdateWidget` sınırında
+repository/hedef/tercih değişimini algılıyor. Yeni dependency verildiğinde eski
+projection görünür tutulmadan mevcut fail-closed loading future'ı kurulur.
+Plan tercih repository'si değişirse önceki cihaz bütçesi taşınmaz; varsayılan
+değerden yeni repository tercihi yeniden okunur. Yazma, silme, rota veya medya
+başlatma eklenmedi.
+
+Üç widget testi, yüklemesi bekleyen yeni repository karşısında eski plan,
+beceri raporu ve denemelerin görünmediğini doğruladı.
+`dart tool/quality_check.dart` exit0: full860, analyze temiz, format239/0.
+Native/audio bağımlılığı değişmedi; build tekrarlanmadı. Bu hesap/sync kanıtı
+değildir; fiziksel cihaz/offline kabulü açık, commit/push/deploy yok.
+
+## 2026-10-24 — DATA-03c taşınabilir çalışma tercihleri
+
+Yerel pano export şeması v2 oldu. Günlük çalışma süresi ve gönüllü haftalık
+hedef, strict `PortablePracticePreferences` alanıyla dışa/içe aktarılır; v1
+belgeleri preferences olmadan okunmaya devam eder. Hatırlatma saati/bildirim
+izni ve titreşim cihaz bağlamına ait olduğundan belgeye girmez. File preference
+adapter'ı iki taşınabilir alanı tek atomik update ile uygular ve cihaz-özel
+alanları korur.
+
+Sonuç batch'i önce mevcut DATA-03b atomik sınırından geçer, ardından tercihler
+ayrı store'a yazılır. İkinci yazım düşerse UI sonuçların işlendiğini ama
+tercihlerin kaydedilemediğini açıkça söyler; tüm belge için sahte atomiklik
+iddiası yoktur. Yeni1 codec/migration +1 file preservation +1 widget uçtan uca
+testi; `dart tool/quality_check.dart` exit0: full863, analyze temiz,
+format239/0. Ses/native bağımlılığı değişmedi, build tekrarlanmadı. Gerçek iki
+cihaz pano, hesap/outbox/backend/sync açık; commit/push/deploy yok.
+
+## 2026-10-25 — DATA-03d çalışan görünümde tercih yenilemesi
+
+Başarılı taşınabilir tercih yazımı artık app-scope revision sinyali yayınlıyor.
+Bugün consumer'ı günlük süre ve haftalık hedefi yeniden okuyor; Home widget'ı,
+Navigator ve seçili alt sekme değiştirilmediği için kullanıcı bağlamı korunuyor.
+Her okuma generation ile kapılı: import öncesi başlamış yavaş bir okuma yeni
+değerleri sonradan ezemez. Başarısız tercih yazımı revision yayınlamaz.
+
+Mevcut import testi callback'in tam bir kez çalıştığını doğruluyor; yeni widget
+testi 5→15 dakika ve 2→4 gün değişimini, Pratik sekmesinin import revision'ında
+seçili kalmasını kapsıyor. `dart tool/quality_check.dart` exit0: full864,
+analyze temiz, format239/0. Native/audio bağımlılığı değişmedi, build
+tekrarlanmadı. Gerçek iki cihaz pano, fiziksel lifecycle, hesap/backend/sync
+açık; commit/push/deploy yok.
+
+## 2026-10-25 — SHELL-04j Today tercih kaynağı değişimi
+
+Today yalnız revision sayısını değil `PracticePreferencesRepository` kimliğini
+de dependency olarak izliyor. AppServices altında store aynı revision ile
+değiştirildiğinde günlük süre ve haftalık hedef yeni kaynaktan yeniden okunur.
+Kaynak kaldırılırsa güvenli 12 dakika/null hedef varsayılanına döner. Her kaynak
+değişimi generation artırdığı için eski store'un geç daily/weekly future'ları
+yeni projection'ı değiştiremez.
+
+Yeni widget testi eski store okumalarını bekletiyor, yeni store'u bağlıyor ve
+15 dakika/4 gün görünümünü doğruladıktan sonra eski 5 dakika/2 gün sonuçlarını
+tamamlayarak görünümün geri düşmediğini kanıtlıyor. `dart tool/quality_check.dart`
+exit0: full865, analyze temiz, format239/0. Native/audio değişmedi; gerçek
+cihaz/offline, hesap/sync kabulü açık; commit/push/deploy yok.
+
+## 2026-10-25 — SHELL-04k bekleyen tercih yazımı izolasyonu
+
+Haftalık hedef kaydı artık başladığı preference store ve load generation ile
+bağlıdır. Store değiştiğinde eski pending göstergesi/hata temizlenir ve yeni
+kaynak okunur. Eski save daha sonra başarıyla veya hatayla tamamlansa bile yeni
+store'un seçimini, loading durumunu ya da hata metnini yayınlayamaz; depolar
+arasında iptal/senkron taklidi yapılmaz.
+
+Yeni adversarial widget testi eski store save'ini bekletip yeni store'un 4 gün
+hedefini bağlar, ardından eski save'i kontrollü hatayla tamamlar; yeni seçim ve
+nötr hata durumu korunur. Disk alanı sınırı nedeniyle yalnız üretilmiş Flutter
+build/cache çıktıları `flutter clean` ile temizlendi ve kilitli bağımlılıklar
+yeniden kuruldu; kaynak/kullanıcı dosyası silinmedi. `dart tool/quality_check.dart`
+exit0: full866, analyze temiz, format239/0. Gerçek cihaz/offline ve hesap/sync
+kabulü açık; commit/push/deploy yok.
+
+## 2026-10-25 — SHELL-04l yeni tercih kaynağı bekleme sınırı
+
+Today, `PracticePreferencesRepository` kimliği değiştiği anda önceki kaynağın
+günlük bütçesini ve haftalık hedefini artık yeni kullanıcı/projection verisi
+gibi göstermiyor. Yeni store okumaları tamamlanana kadar güvenli 12 dakika ve
+hedefsiz yerel varsayılan kullanılıyor; aynı store içindeki revision yenilemesi
+bu sıfırlamayı yapmadığı için import sırasında gereksiz titreşim oluşmuyor.
+
+Yeni adversarial widget testi önce 5 dakika/2 gün değerlerini gösteriyor, sonra
+okumaları bekleyen yeni store'u bağlayıp eski değerlerin hemen kaybolduğunu ve
+yeni 15 dakika/4 gün tamamlandığında yayınlandığını kanıtlıyor. Geç eski okumalar
+generation kapısında kalmaya devam ediyor. Hedefli 6 test ve sınırlı
+paralellikle tam 867 test geçti; analyze temiz, format239/0. Varsayılan yüksek
+paralellikteki ilk full-suite koşusu kaynak baskısı altında var olan zamanlama
+testlerini düşürdü; `--concurrency=4` tam suite exit0 verdi. Gerçek
+cihaz/offline ve hesap/sync kabulü açık; commit/push/deploy yok.
+
+## 2026-10-26 — SHELL-04m tercih okuma hatası kabul matrisi
+
+Yeni preference store bağlandıktan sonra alan okumalarının birbirinden bağımsız
+ve fail-closed kaldığı adversarial widget testiyle sabitlendi. Eski store önce
+5 dakika/2 gün gösteriyor; yeni store'da günlük bütçe 15 dakika olarak gelirken
+haftalık hedef okuması kontrollü hata veriyor. UI 15 dakikayı yayınlıyor, eski
+2 günlük hedefi geri getirmiyor, yeni bir hedef uydurmuyor ve async hatayı
+widget katmanına sızdırmadan nötr “güvenli varsayılanlar kullanılıyor” uyarısı
+gösteriyor. Uyarı yalnız güncel load generation'ından yayınlanabiliyor.
+
+Hedefli 7 test ve sınırlı paralellikle tam 868 test geçti; analyze temiz,
+format239/0. Audio/native bağımlılığı eklenmedi; mevcut fail-closed sözleşmenin
+hata kolu görünür ve testli hale getirildi. Gerçek
+cihaz/offline ve hesap/sync kabulü açık; commit/push/deploy yok.
+
+## 2026-10-26 — SHELL-04n tercih okuma retry recovery
+
+Today'deki güncel tercih okuma uyarısı artık açık “Tercihleri yeniden yükle”
+eylemi sunuyor. Otomatik ağ/arka plan retry yapılmıyor. Kullanıcı eylemi bağlı
+repository için yeni load generation başlatıyor; eski değerleri geri getirmiyor
+ve başka store'a yazmıyor. Başarılı tekrar okumada yeni haftalık hedef görünür,
+uyarı ve retry eylemi kalkar. Haftalık hedef save hatası aynı görünür hata
+alanını kullanmaya devam eder ancak read-retry eylemi sunmaz.
+
+Yeni widget testi ilk yeni-store hedef okumasını düşürüp retry eylemini
+doğruluyor; ikinci okumada 4 günlük hedefin yayınlandığını ve uyarının
+temizlendiğini kanıtlıyor. Hedefli 10 test ve sınırlı paralellikle tam 869 test
+geçti; analyze temiz, format239/0. Audio/native bağımlılığı değişmedi. Gerçek
+cihaz/offline ve hesap/sync kabulü açık; commit/push/deploy yok.
+
+## 2026-10-26 — SHELL-04o tercih yükleme/yazma kapısı
+
+Today preference okumaları artık ortak ve generation-bound bir pending durumu
+taşıyor. Yeni repository veya açık retry iki bağımsız alan okumasını başlatıyor;
+ikisi de tamamlanana kadar haftalık hedef chip'leri pasif ve “Haftalık hedef
+yükleniyor…” durumu görünür. `_setWeeklyGoal` da UI dışı çağrı ihtimaline karşı
+aynı kapıyı denetliyor. Okumalar başarı veya görünür hata ile sonuçlanınca kapı
+açılıyor; eski generation tamamlamaları yeni görünümü değiştiremiyor.
+
+Mevcut replacement-store testi pending durumda chip'in kapalı olduğunu ve yeni
+15 dakika/4 gün değerleri geldikten sonra tekrar açıldığını doğrulayacak biçimde
+güçlendirildi. Hedefli 10 ve tam 869 test geçti; analyze temiz, format239/0.
+Audio/native bağımlılığı değişmedi. Gerçek cihaz/offline ve hesap/sync kabulü
+açık; commit/push/deploy yok.
+
+## 2026-10-26 — REL-08a sınırlı paralel ortak kalite kapısı
+
+Önceki tam suite koşularında makinenin varsayılan yüksek paralelliği altında
+var olan zamanlama testleri kaynak baskısıyla kararsızlaşabildiği için ortak
+`dart tool/quality_check.dart` test adımı artık açıkça `--concurrency 4`
+kullanıyor. CLI planı ve varsayılan argv testi bu sınırı doğruluyor; fetch,
+build, upload, deploy veya hosted CI davranışı eklenmedi.
+
+Hedefli runner testleri 10/10 geçti. Ardından ortak kalite komutu baştan sona
+exit0 verdi: format239/0, analyze temiz, full869. Bu yalnız yerel kod kapısıdır;
+gerçek cihaz, mikrofon/insan sesi, eğitimci pilotu ve mağaza kabulü açık.
+Commit/push/deploy yok.
+
+## 2026-10-26 — UI-01b iOS koyu ve renklendirilmiş ikon varyantları
+
+Mevcut Harmonia nota/dalga işareti değiştirilmeden ikon üreticisi iOS modern
+tek-boyut asset catalog'una geçirildi. Varsayılan 1024 px kaynak opak; koyu
+varyant Apple'ın sistem arka planı için saydam ve marka sarısı vurgulu;
+renklendirilmiş varyant saydam gri tonlu işaret olarak üretiliyor. Artık
+atanmayan eski iPhone/iPad boyut dosyaları kaldırıldı; Xcode bunları 1024 px
+kaynaktan üretir. Silinen dosyalar üretilmiş eski varyantlardı, git geçmişinden
+geri alınabilir.
+
+Dört asset testi catalog slotlarını/dosyalarını, boyutları, varsayılan alfa,
+koyu/tinted saydamlığını ve tinted gri ton sözleşmesini doğruluyor. Xcode 27
+`actool` iPhone+iPad simulator catalog'unu uyarısız derledi. Ortak kalite
+kapısı exit0: full873, analyze temiz, format240/0. Tam simulator build bilinen
+Flutter `debug_unpack_ios` lipo yanlış-negatifiyle ikon derlemesinden önce
+durdu; fiziksel iOS, sistem tint görünümü ve mağaza tasarım kabulü açık.
+Commit/push/deploy yok.
+
+## 2026-10-27 — CONS-01a incelenmiş piyano kayıt manifesti
+
+Kullanıcının ileride ekleyeceği hazır 2/3/4 sesli gerçek piyano WAV'ları için
+uygulama akışından bağımsız strict domain manifesti eklendi. Sözleşme exact
+schema/kind/codec/source alanları; 2/3/4 ile eşleşen tek klasörlü portable yol;
+aynı sayıda farklı ve alttan üste MIDI hedefi; SHA-256; mono/stereo, 8–48 kHz,
+100 ms–10 sn metadata bütçesi; hak ve ayrı nota etiketi inceleme referansı
+zorunlu tutuyor. Kimlik/yol/hash tekrarları ve bilinmeyen alan/tip coercion
+reddediliyor. Liste ve nota hedefleri immutable snapshot.
+
+10 yeni test round-trip, immutability, cardinality/range/order, traversal ve
+yanlış klasör, hash/review alanları, audio bounds, duplicate, exact schema ve
+bozuk tip/boş-aşırı manifest kollarını kapsıyor. Hedefli test ve analyze temiz.
+Gerçek WAV, byte/header/hash adapter'ı, akort/nota/hak doğrulaması, player,
+mikrofon, skor ve UI açılmadı; placeholder kapalı. Ortak kalite kapısı exit0:
+full883, analyze temiz, format242/0. Commit/push/deploy yok.
+
+## 2026-10-27 — CONS-01b salt-okunur piyano WAV loader
+
+CONS-01a manifest girişlerini açıkça seçilmiş yerel kökten okuyan güvenli
+adapter eklendi. Kök/yol tipi, ara ve final symlink, kök dışına kaçış, byte
+bütçesi ve okuma boyunca uzunluk değişimi fail-closed. Hash eşleşmesinden sonra
+bounded RIFF chunk parser yalnız PCM16 mono/stereo kabul ediyor; gerçek sample
+rate, channel ve frame sayısı manifestle exact karşılaştırılıyor. Sonuç daha
+sonraki player için defensive byte kopyası sunuyor, kendisi oynatma yapmıyor.
+
+12 yeni test mono/stereo başarı, defensive copy, eksik kök/dosya, hash,
+header metadata mismatch, bozuk RIFF/format/truncation, byte budget, symlink,
+directory masquerade, sequential manifest failure ve özel path sızıntısını
+kapsıyor. Hedefli12/full895 geçti; analyze temiz, format244/0. Tüm WAV'lar test
+tarafından sentetik sıfır PCM olarak geçici klasörde üretildi; gerçek piyano,
+nota/tını/hak, cihaz/player/UI/skor kanıtı değildir. Commit/push/deploy yok.
+
+## 2026-10-27 — CONS-01c piyano referans oturum kapısı
+
+Bir reviewed 2/3/4 ses kaydı ve loader'dan gelecek defensive WAV snapshot'ı
+için `ChordReferenceSession` eklendi. Otomatik çalma yok; explicit referans
+isteği native olarak tamamen bitip player stop ve bounded recall delay
+tamamlanmadan sıralı öğrenci cevabı hazır olmaz. Duplicate play bastırılıyor;
+stop, background ve route/focus kesintisi epoch'u iptal ederek geç completion'ı
+etkisiz bırakıyor ve otomatik resume yapmıyor. Cleanup hatası fail-closed;
+close stop/release sırasını tek kez serialize ediyor.
+
+10 fake-player testi autoplay yokluğu ve phase kapısı, defensive byte, input
+bounds, duplicate, queued-start cancel, route kesintisi, recall cancel,
+retryable start error, cleanup fail-closed ve pending-start close yarışlarını
+kapsıyor. Koordinatör mikrofon, capture, segment/alignment, skor, history veya
+mastery sahibi değil; placeholder'a bağlanmadı. Gerçek piyano QA, production
+player/UI ve CONS-02 açık. Ortak kalite kapısı exit0: full905, analyze temiz,
+format246/0. Commit/push/deploy yok.
+
+## 2026-10-27 — CONS-02a sıralı akor cevap diagnostic matcher
+
+Reviewed 2/3/4 piyano kaydındaki MIDI+A4 hedeflerini mevcut target-independent
+monofonik segment kanıtıyla exact low→high sırada karşılaştıran saf domain
+adapter eklendi. Existing bounded sequence alignment eksik, fazla/mükerrer,
+yanlış pitch ve yanlış oktavı koruyor; aynı mutlak hedef notaları farklı sırada
+gözlenirse ayrıca `reorderedTargetCandidates` veriliyor. Segment zamanları
+nominal sıraya çevrildiği için timing veya akustik onset iddiası yok.
+
+10 sentetik frame testi 2/3/4 exact, reverse order, missing, extra/duplicate,
+octave, no-response, invalid, discarded/provenance, A4 tuning ve tolerance
+kapılarını kapsıyor. Sonuç yalnız `diagnosticCandidateMatch`; ExerciseResult,
+skor/history/mastery/hafıza değildir. Production capture/UI, gerçek insan sesi,
+VAD/BENCH, any-order ve cihaz QA açık. Ortak kalite kapısı exit0: full915,
+analyze temiz, format248/0. Commit/push/deploy yok.
+
+## 2026-10-28 — CONS-02b any-order akor set matcher
+
+`ChordResponseMatcher` protokolün explicit `ResponseOrder` değerini taşır ve
+`anyOrder` için immutable set özeti üretir. En fazla dört reviewed hedefte 2^N
+state DP her adayı yalnız bir hedefe atayabilir; exact mutlak pitch öncelikli,
+aynı pitch-class yanlış oktav ikinci kanıttır. Kalan hedef/adayı eksik/fazla
+olarak bırakır; ilgisiz pitch keyfî substitution yapılmaz. Exact sıra alignment
+ve reorder açıklaması her valid karşılaştırmada korunur.
+
+6 ek test reverse any-order, unrelated missing+extra, wrong octave, duplicate,
+iki komşu hedefte tek adayın yeniden kullanımını engelleme ve no-response set
+sayımını kapsıyor; matcher suite16. Bu da yalnız diagnostic kanıttır; gerçek
+capture, VAD/BENCH, skor/history/mastery ve cihaz QA açık. Ortak kalite kapısı
+exit0: full921, analyze temiz, format248/0. Commit/push/deploy yok.
+
+## 2026-10-28 — CONS-01d piyano replay ve recall sınav politikası
+
+`ChordReferenceSession` artık `ExerciseMode.learning/recallExam`, completed
+playback sayacı ve explicit replay kotası taşıyor. Sayaç yalnız native playback
+callback'i başarıyla tamamlanınca artıyor; queued cancel, route/background veya
+start failure kota tüketmiyor. Replay başladığında önceki response-ready durumu
+kapanıyor; yeni playback+stop+recall tamamlanmadan geri açılmıyor. Learning
+1–10 limit, recall exam tek dinleme ve gizli hedef. `PianoChordReference` aynı
+recall invariant'ını protocol oluşmadan doğruluyor.
+
+3 yeni session testiyle session suite13; session+reference hedefli20 geçti.
+Sayaç duyma/öğrenme kanıtı, skor/history/mastery değil. Gerçek player/UI/event,
+piyano QA ve cihaz lifecycle açık. Ortak kalite kapısı exit0: full924, analyze
+temiz, format248/0. Commit/push/deploy yok.
+
+## 2026-10-28 — CONS-01e loader→oturum composition sınırı
+
+`ChordReferenceSessionComposer`, tek `LoadedChordRecording` içindeki reviewed
+metadata ve defensive WAV snapshot'ını fresh `ReferenceClipPlayer` ile tek
+`ChordReferenceSession`'a bağlar. Mode/recall/replay inputları player tahsisinden
+önce ortak validation'dan geçer. Her create bağımsız player ister; başarıdan
+sonra stop/close sahipliği session'dadır. Oluşturma autoplay, mikrofon, skor,
+history/mastery veya placeholder availability başlatmaz.
+
+5 test metadata+byte binding/autoplay yokluğu, recall tek dinleme+hedef gizleme,
+invalid policy'de sıfır player tahsisi, factory failure ve iki session'ın ayrı
+kaynak sahipliğini kapsıyor. Byte tokenları/fake player gerçek WAV, piyano veya
+cihaz kanıtı değildir. Production player/UI/capture, gerçek kayıt QA ve
+BENCH/VAD/route kapıları açık. Ortak kalite kapısı exit0: full929, analyze
+temiz, format250/0. Commit/push/deploy yok.
+
+## 2026-10-28 — CONS-02c referans→sıralı cevap capture kapısı
+
+`ChordResponseCaptureSession`, reviewed referans playback'i ile öğrencinin tek
+sürekli monofonik cevap kaydını aynı yaşam döngüsünde kapıladı. Mikrofon izni
+ilk referanstan önce istenir; tam playback+stop+recall tamamlanmadan capture
+başlamaz. Replay readiness'i geri kapatır. Stop sonrası metadata ve PCM exact
+eşleşir; backend-owned kayıt silinip yalnız immutable ephemeral snapshot kalır.
+
+10 fake test autoplay/auto-capture yokluğu, permission-first/denial, readiness,
+snapshot+discard, replay, invalid metadata, interruption, pending start cancel,
+cleanup fail-closed ve idempotent ownership'i kapsıyor. Worker/quality/matcher,
+nota kararı, skor/history/mastery ve UI bağlanmadı. Mock PCM gerçek mikrofon,
+insan sesi veya cihaz kanıtı değildir. Ortak kalite kapısı exit0: full939,
+analyze temiz, format252/0. Commit/push/deploy yok.
+
+## 2026-10-28 — CONS-02d kalite kapılı cevap diagnostic zinciri
+
+`ChordResponseCapture` reviewed kayıt metadata'sı ve capture öncesi route
+snapshot'ını taşıyor. Yeni `ChordResponseDiagnosticAnalyzer`, mevcut
+`CaptureQualityAssessor` ile aynı route/sample-rate'e bağlı noise-floor
+kalibrasyonunu zorunlu kılıyor. Yalnız usable kalite bounded worker →
+target-independent segmenter → exact/any-order matcher zincirine giriyor.
+Worker'ın sample metadata veya provenance kaynağını değiştirmesi fail-closed.
+
+7 test missing/wrong-route calibration, exact ve reverse any-order sentetik
+cevap, sessizlik, worker failure ve provenance promotion kollarını kapsıyor.
+Mock/sentetik tonlar insan sesi, VAD, cihaz route'u veya öğrenme kanıtı değil;
+candidate match skor/history/mastery/AI girdisi yapılmıyor. Ortak kalite kapısı
+exit0: full946, analyze temiz, format254/0. Commit/push/deploy yok.
+
+## 2026-10-29 — TRAINER-01 kulak eğitimi ikizi + Koro Atölyesi (yeni giriş noktası)
+
+**Kullanıcı isteği:** Arkadaşın yaptığı kulak eğitimi uygulamasının ekran kaydı (7 dk) incelenip aynı özellik/sayfa/akışla ikizinin kurulması; tek sesli ve 2/3/4 sesli koro eğitimi için ayrı kategori (ses aralığı testi Harmonia çekirdek perde tespitiyle, ritim/ezgi tekrarı, aksak ritim). iOS hedefli. Kullanıcı uyurken açık sorular için “en makul cevabı seç” yetkisi verdi.
+
+### Uygulananlar (`lib/trainer/`)
+
+- **Giriş:** `lib/main.dart` artık `TrainerApp`'i açar. Eski `HarmoniaApp` ve tüm testleri dokunulmadan duruyor; koro ekranları eski modülleri yeniden kullanıyor.
+- **Alan modeli:** `domain/music.dart` (12 perde, solfej/harf, 12 aralık + şarkı kancası, 9 akor, 11 dizi, 9 yürüyüş), `domain/trainers.dart` (5 eğitmen, `SoundFactory`: nota/aralık [çıkan/inen/karışık]/akor/dizi/yürüyüş [kök/çevrim], kulak sıfırlama kümesi), `domain/curriculum.dart` (videodaki yapı: giriş → dersler → kontrol noktaları → final; akor 26, dizi 25, aralık 42, nota 32, yürüyüş 17 düğüm — taslak, eğitimci onaysız).
+- **Ses:** `audio/synth.dart` additive sentez (piyano/gitar/çello/klarnet/trompet/sinüs), 22.05 kHz mono PCM16, tepe 0.8; lisanslı/kayıtlı örnek yok. `audio/trainer_audio.dart` `JustAudioClipPlayer` üzerinden çalar; hata quiz'i kırmaz.
+- **Quiz motoru:** `quiz/quiz.dart` (tanı / evet-hayır / “bunu bul” soru tipleri, tek öğeli havuzda tanı sorusu üretmez), `quiz/quiz_view.dart` (dinle → cevapla → yeşil/kırmızı çerçeve → “Kulağın sıfırlanıyor…”, süre sınırı, ilk deneme puanlanır, ipucu karşılaştırma kartı, “İpuçları gizlensin mi?”, çıkış onayı, isteğe bağlı piyano klavyesiyle cevap).
+- **Öğren yolu:** `learn/path_screen.dart` (zaman çizelgesi, kilit/başla/yıldız/TEKRAR, kontrol noktasıyla test olup atlama), `learn/lesson_flow.dart` (giriş slaytları, kavram/duy [her notadan]/kanca kartları, hızlı kontrol, “Kilitlendi”, ders tamamlandı, pratik, sonuç), `learn/session_end.dart` (doğruluk halkası, oturum kartı, öğe kırılımı, XP, günlük seri kutlaması).
+- **Pratik:** `practice/practice_setup.dart` eğitmen başına ayar (öğe seçimi, dizi ön ayarları, yön, kök/çevrim, oktav, süre sınırı, referans Do) cihazda hatırlanır.
+- **Sekmeler:** Oyna (selamlama, seri, hafta şeridi, bugünün oturumu, kaldığın yerden devam, beceri ızgarası + Koro kartı, Öğren/Pratik alt sayfası), İstatistik (3 adımda açılır; 7 gün grafiği, eğitmen listesi, öğe ısı haritası, eğilim, en güçlü/çalışılmalı), Sıralama (haftalık XP ve seviye; sahte oyuncu listesi yok), Ayarlar (gösterim, transpozisyon, ses, klavye, ipuçları, bildirim 19:00, bilgi sayfaları, veriyi sil).
+- **Onboarding (30 adım, adım kalıcı):** karşılama, 3 tanıtım, anket (enstrüman/seviye/hedef/deneyim/odak/engel/dakika/hedefler), 5 örnek deneme (ipucu ve “dert etme” sayfaları), plan oluşturma animasyonu, kişisel plan (en zayıf alan örnek cevaplardan), kayıt ekranı, ücretsiz beta ekranı, 6 adımlı kurulum (gösterim, ses tercihleri, seviye kontrolü → ilk kontrol noktası testleriyle atlama), bugünkü oturum.
+- **Koro Atölyesi (`koro/`):** ses aralığı testi (`range_test.dart`: `PluginAudioLabBackend` + `IsolateRecordingPitchWorker`; kalite kapısı: periodik sinyal, periodicFrameRatio ≥ 0.35, dağılım ≤ 80 cent, aksi hâlde “ölçülemedi” — değer uydurulmaz; tiz ≤ pes ise sonuç kaydedilmez; olası parti yalnız taslak öneri), dinle-söyle / ezgi / ritim tekrarı (mevcut deneysel ekranlar), aksak ritim (5/8, 7/8×2, 9/8, 10/8 taslak desenleri mevcut ritim taklidi motorunda), “Kaç ses duyuyorsun?” 2/3/4 ses algı alıştırması, 2/3/4 sesli piyano tekrarı **kapalı** (kayıt bekleniyor).
+- **Kalıcılık:** `state/trainer_store.dart` tek JSON (`ear_trainer`), seri yazma kuyruğu, bozuk alanlarda varsayılana dönüş, tümünü sil.
+
+### Videodan bilinçli sapmalar
+
+- Ad/marka Harmonia kaldı (başka bir yayındaki uygulamanın adı/ikonu kopyalanmadı); arayüz Türkçe.
+- Abonelik/ödeme ekranları yerine “Beta boyunca ücretsiz” ekranı: ödeme alınmaz, StoreKit yok (AGENTS: canlı ödeme ayrı yetki).
+- Uydurma kullanıcı yorumu, “200k+” ve “4.8 yıldız” gibi doğrulanamayan iddialar konmadı; tanıtım grafikleri “gösterim amaçlı” etiketli.
+- Apple/Google/e-posta girişi sunucu olmadığı için “yakında” sayfası açar; misafir olarak devam edilir. ATT (izleme) istemi yok.
+- Ligler: sunucu yokken yalnız kendi haftalık XP'n ve seviye; başka oyuncu gösterilmez.
+
+### Doğrulama
+
+- Yeni testler: `test/trainer/trainer_domain_test.dart`, `trainer_store_test.dart`, `trainer_app_test.dart` (tam onboarding yürüyüşü, adım kalıcılığı, alt sayfa → yol/pratik, pratik quiz → sonuç → seri, giriş dersi, koro, sıfırlama; her adımda layout/build hatası testi düşürür). Tam paket: **978 geçti, 1 atlandı** (`screenshot_tour_test.dart` yalnız `--dart-define=TOUR_DIR=...` ile 43 ekranın PNG turunu üretir). `flutter analyze` temiz, format 0 değişiklik.
+- iOS: `xcodebuild … -sdk iphonesimulator ARCHS=arm64 ONLY_ACTIVE_ARCH=YES` **BUILD SUCCEEDED**. `flutter build ios --simulator` bu makinede eski lipo kontrolüyle düşüyor: Homebrew Flutter yeniden **3.44.4** (log'daki 3.47.7 değil). Simülatör açılamadı: CoreSimulatorService `loadAllBundles` assert'iyle her boot'ta çöküyor, Simulator.app bulunamıyor, disk %98 dolu. Bu yüzden **simülatörde/cihazda elle gezinti, ses çıkışı ve mikrofonla ses aralığı ölçümü yapılmadı**; görsel kontrol gerçek fontlu widget render'ıyla yapıldı.
+
+### Açık kalanlar
+
+- Cihazda ses kalitesi/gecikme, mikrofon ses aralığı eşiklerinin insan sesiyle benchmark'ı, eğitimci içerik onayı (dersler, şarkı kancaları, aksak desenler), hesap/senkron, gerçek abonelik, canlı ligler.
+- 2/3/4 sesli tekrar kullanıcı piyano kayıtları gelene kadar kapalı.
+
+## 2026-10-29 — CONS-02e akor oturumu ortam kalibrasyonu
+
+`ChordResponseCaptureSession` artık açık kullanıcı eylemiyle ortam sessizliği
+kalibrasyonu yapıyor. Aynı serialized backend kuyruğunda önce eski kayıt
+siliniyor; izin alınarak route snapshot'ı tutuluyor; 1.5–5 saniyelik capture
+sonrası metadata/PCM exact eşleşmesi doğrulanıyor; native kayıt silindikten
+sonra yalnız bellekte `NoiseFloorCalibration` üretiliyor. Gürültü/aktivite,
+izin reddi, metadata uyumsuzluğu ve interruption skor değil tarafsız retry.
+Başarılı kalibrasyon referans playback boyunca korunuyor; cancel,
+interruption ve close ile siliniyor. Diagnostic analyzer route/rate/age'i yine
+bağımsız doğruluyor.
+
+6 yeni fake test eklendi. Tam paket 984 geçti, opt-in ekran turu 1 atlandı;
+`flutter analyze` temiz, format temiz. Fake PCM/route gerçek mikrofon, oda,
+piyano audibility, insan sesi, VAD veya öğretim kanıtı değildir. Placeholder
+kapalı; gerçek kayıt QA, production UI/player ve cihaz benchmark kapıları açık.
+Commit/push/deploy yapılmadı.
+
+## 2026-10-29 — CONS-02f uçtan uca akor deneme coordinator'ı
+
+Yeni `ChordResponseAttemptCoordinator`, tek reviewed akor denemesinin
+kalibrasyon→referans→sıralı monofonik cevap→quality/worker/segment/matcher
+akışını birleştiriyor. Ürün seviyesinde usable kalibrasyon olmadan referans veya
+cevap açılamıyor. Stop yalnız tam immutable capture oluştuysa analize geçiyor.
+Sessiz/güvensiz kalite `qualityRetry`, worker sorunu `analysisUnavailable`,
+geçerli karşılaştırma `diagnosticAvailable`; hiçbiri otomatik skor/history/
+mastery/AI yan etkisi üretmiyor. Capture identity+epoch sayesinde pending
+worker sonucu cancel, replay, interruption veya close sonrasında yayımlanmıyor.
+Coordinator session kaynaklarının idempotent kapanışını sahipleniyor.
+
+7 yeni fake/sentetik test eklendi. Tam paket 991 geçti, opt-in ekran turu 1
+atlandı; `flutter analyze`, format ve `git diff --check` temiz. Bunlar gerçek
+mikrofon, piyano audibility, insan sesi, VAD, hafıza veya öğretim kanıtı değil.
+Placeholder kapalı; gerçek kayıt QA, production player/UI/result copy ve cihaz
+benchmark kapıları açık. Commit/push/deploy yapılmadı.
+
+### 2026-10-29 sabah — simülatör onarımı ve cihaz doğrulaması (TRAINER-01b)
+
+- **Ortam:** CoreSimulatorService çökmesi (`loadAllBundles` içinde plist okunamıyor) disk boş alanı 8,5 → 19 GB çıkınca kendiliğinden geçti; Xcode 27 kurulumu imza doğrulamasından geçti (Simulator.app yerine `DeviceHub.app`). Kullanıcı onayıyla Homebrew Flutter 3.44.4 → **3.47.8**; `flutter pub get` pubspec.lock'u güncelledi. `flutter run` iPhone 18 Pro (iOS 27) simülatöründe derlenip çalıştı; lipo engeli kapandı.
+- **Simülatörde elle doğrulanan:** karşılama + ilk anket adımları, onboarding adımının cihazdaki JSON'a kalıcı yazılması, ana sayfa, eğitmen alt sayfası, pratik ayarı, aralık quiz'i (süre sayacı, dalga animasyonu ses çalarken hareket ediyor, ipucu karşılaştırma sayfası, çıkış onayı), Koro Atölyesi, ses aralığı testi: iOS mikrofon izni (Türkçe açıklama) → 3 sn kayıt → izolatta çekirdek analiz → kalite kapısı “Ölçülemedi — sonuç sayılmadı” (odada şarkı söyleyen yoktu; değer uydurulmadı). Sentezlenen klip cihazda 22,05 kHz mono PCM16, beklenen sürede (aralık 2,15 sn) üretiliyor ve oynatıcıya veriliyor.
+- **Düzeltmeler:** (1) Çıkış onay penceresi açıkken soru süresi işliyordu → sayaç duraklıyor, “Devam et” ile kaldığı yerden sürüyor (regresyon testi eklendi). (2) InkSparkle dokunma efekti gradyan butonları pasif gibi soldururdu → InkRipple + beyaz/yumuşak splash.
+- **Sınırlar:** Ses çıkışı kulakla dinlenmedi (oturum sesi duyamaz; yalnız dosya/oynatıcı yolu doğrulandı). Giriş seviyesi çubuğu kayıt sırasında hareket etmedi — sessiz oda mı, simülatörde amplitude akışı mı belirsiz; gerçek cihazda bakılmalı. Analiz aşaması simülatörde ~5–6 sn sürdü. Gerçek iPhone, insan sesiyle ses aralığı ölçümü ve onboarding'in tamamının cihazda elle gezilmesi yapılmadı (onboarding'in tamamı widget testiyle doğrulanıyor).
+- **Doğrulama:** `dart tool/quality_check.dart` → format/analyze temiz, **992 test geçti, 1 atlandı**.
+

@@ -469,3 +469,593 @@ unsupported rate fails without resampling. Pitch checks use generated tones
 and diagnostic YIN, NOT human voice holdout accuracy or real device timing.
 16 targeted tests include unchanged synthetic backend/session lifecycle tests.
 No piano recording added; no score, hint attribution, mic, UI or player started.
+
+## UX-02b — Melody lesson UI migration (2026-10-15)
+
+4 new fake widgets: no diagnostic progress/percentage + contextual action
+tones through calibration/response; help policy opens without permission;
+lesson close returns to source and asynchronously closes backend; 320px/1.8×
+dark/reduced-motion help and neutral uncalibrated retry. Existing8 tests also
+cover permission, quality, mock provenance/details, pending permission disposal,
+background/cancel and tap-label-contrast guideline checks. UI evidence is not
+physical device/VoiceOver/TalkBack or teaching acceptance. No real audio used.
+
+## UX-02c — Micro-lesson reader UI (2026-10-15)
+
+4 added widgets: five original phase instructions/no progress or completion;
+explicit metadata disclosure cannot unlock practice; return leaves skill map
+unmeasured/history empty; 320px/1.8× dark/reduced-motion expanded metadata and
+all phases/back action usable. Existing6 tests keep draft/dimension/no-mastery,
+disabled actions, map binding/no-write, narrow layout and tap/contrast checks.
+Reader has no audio/permission or scorer capability; tests do not constitute
+educator content sign-off, learner mastery or physical-device/reader QA.
+
+## UX-02d — Chord placeholder UI/retry (2026-10-16)
+
+5 added widgets: closed shell/no progress/help + all six actions disabled;
+immediate retry failure visible/no auto retry/private diagnostics; pending
+retry hides old error/cards and late failure after disposal; 320px/1.8× dark/
+reduced-motion help with tap/label guidelines; close returns with one catalog
+read. Existing5 tests retain bundled pending manifest, home navigation,
+narrow layout, recovery and late success. No actual piano/voice/device,
+content permission or educator claim; audio/mic/scoring remain absent.
+
+## UX-02e — Local transfer UI/error ownership (2026-10-16)
+
+6 added widgets: local shell/no progress/no automatic copy; clipboard failure
+replaces success/no private text/retry; pending export locks input/actions and
+rejects double invoke; leaving before load completes prevents clipboard write;
+confirmation locks actions/double invoke and cancel preserves text/history;
+320px/1.8× dark/reduced-motion malformed import stays neutral. Codec regression
+rejects null/number/bool/list/object exportedAt via safe date reason. Existing
+export/import/dedup/confirmation/invalid/narrow/guideline tests rerun. Targeted18
+use fake storage/platform clipboard only, not real device migration or audio QA.
+
+## UX-02f — Single-tone lesson UI (2026-10-16)
+
+4 added fake widgets: diagnostic shell/no progress/automatic permission and
+help disclosure; contextual calibration/start/finish/cancel with meter visible
+only while capturing; dark/reduced-motion320px/1.8× permission denial neutral;
+close during pending permission cannot start late capture and closes backend.
+Existing2 full/uncalibrated session +2 meter +5 a11y tests also run (targeted13).
+Reference/capture/quality/diagnostic pipeline remains unscored. Fake/synthetic
+tests do not establish real mic, route, VoiceOver/TalkBack or educator acceptance.
+
+## UX-02g — Daily plan A+C widgets (2026-10-16)
+
+4 added widgets: draft shell/help/no skill percentage or history write;
+completed retention offers neutral optional round with retention route intact;
+320px/1.8× dark/reduced-motion budget15/help/start action usable; close preserves
+budget5 preference and empty practice history. Existing7 plan+3 recovery tests
+retain progress-on-return, due checks, free minutes, unknown/failed history,
+budget restore, pending/disposal/retry and tap/contrast checks (targeted14).
+Synthetic touch results/fake repositories only, not learner efficacy/device QA.
+
+## UX-02h — History UI and truthful trends (2026-10-17)
+
+6 added widget regressions: pitch cannot become zero rhythm errors; missing,
+wrong-type/negative rhythm and incomplete/out-of-range perception counts stay
+unknown without null/cast failure; different skills cannot merge a cohort;
+immediate load failure/repeated manual retry has no unhandled error; 320px1.8×
+dark/reduced-motion help/cancel/return preserves records; out-of-order dates
+produce chronological trend without rewriting storage. Existing10 history/
+content-state tests rerun, targeted16 passed. Fake repositories only; actual
+user data was not deleted and no mic/voice/device/educator acceptance inferred.
+Final quality runner exit0: full719 (+6), analysis clean (4.8s), format202/0;
+git diff --check clean. No build, physical device or voice test in this package.
+
+## UX-02i — Settings action safety and A+C widgets (2026-10-17)
+
+7 added fake widgets: grouped/disclosed help does not mutate/copy; required
+platform report copy handles success→error, missing handler and explicit retry
+without private text; pending duplicate copy/late error after disposal safe;
+profile delete confirmation/cancel/pending duplicate/failure/retry; leaving
+unconfirmed dialog performs no delete; history/data-transfer routes remain
+reachable; dark/reduced-motion320px1.8× help/account/about usable. Existing17
+shell/error-log tests retain goal change/onboarding, cleanup warning visibility
+and sanitized report format (targeted24 passed). No real profile/record deletion,
+clipboard readback, microphone/device/VoiceOver/teaching acceptance inferred.
+Final quality runner exit0: full726 (+7), analysis clean (4.5s), format203/0;
+git diff --check clean. No build or physical device test in this package.
+
+## UX-02j — Audio lab lesson presentation (2026-10-18)
+
+5 added fake widgets: unscored/no-progress shell and help start no audio;
+contextual controls/meter/capture→stop→discard; lesson close during pending
+permission prevents late start and eventually closes backend; dark/reduced-
+motion320px1.8× denied mic permits reference without another permission request;
+explicit delete during analysis consumes late worker error with no stale result.
+Existing6 lab +1 calibration +5 a11y tests rerun (targeted17 passed), retaining
+background cancellation, inactive permission exception, quality/metadata/source
+limits. Contrast guideline initially rejected coral (3.95); record/finish use
+primary tone and guidelines pass. Fake/synthetic only; no actual mic/route/
+speaker/headphone/voice holdout/VoiceOver/educator acceptance inferred.
+Final quality runner exit0: full731 (+5), analysis clean (7.8s), format203/0;
+git diff --check clean. No build or physical device test in this package.
+
+## UX-02k — Mock single-tone gallery (2026-10-18)
+
+5 added widgets: explicit simulation/help/no automatic analysis/no progress;
+single-flight pending and stale-success reset on error with safe explicit retry;
+close consumes late analyzer error; all7 mock outcomes fit dark/reduced-motion
+320px1.8×, invalid uses neutral token/no numeric score; success/octave/invalid
+meet tap/label/contrast guidelines in both themes. Existing6 gallery +13 shell
+tests rerun (targeted24 passed), retaining octave warning and invalid≠zero.
+Only canned mock results/control fakes; no audio, microphone, voice accuracy,
+device/VoiceOver or teaching/release acceptance inferred. Scorer unchanged.
+Final quality runner exit0: full736 (+5), analysis clean (4.3s), format203/0;
+git diff --check clean. No build or physical device test in this package.
+
+## CORE-04c2a — Exclusive reference-only playback (2026-10-19)
+
+10 coordinator tests: no autoplay/busy exclusion, bound-reference rejection,
+cancel queued start, stop pending native load then consume late handle error,
+stop unending completion without resume, load failure cleanup/retry, completion
+failure + failed cleanup locks restart, natural completion cleanup failure,
+pending-start close/idempotency/no late notifications, failed close retained.
+2 adapter tests verify exact c1 WAV/immutable bytes/stop/close and player load
+failure without a single-tone fallback. Existing26 renderer/session/backend
+tests rerun (targeted38 passed). All are fakes/synthetic PCM. The background
+case invokes controller.stop, not a wired lifecycle event: c2b still must test
+navigation/foreground-background/large text and separate capture ownership.
+No microphone, physical speaker/device/latency, human voice or teaching proof.
+Final quality runner exit0: full748 (+12), analysis clean (11.3s), format205/0;
+git diff --check clean. No build or physical device test in this package.
+
+## CORE-04c2b — Rehearsal widgets and route handoff (2026-10-19)
+
+11 new widgets +17 existing melody/a11y tests (targeted28 passed). Explicit
+range/repeat preserves Hz, no autoplay/progress/counters, controls lock during
+play; lifecycle pause/resume + injected focus stop without resume; monitoring
+stream failure fail-closed; pending load close/late completion error; system
+back awaits close and failure holds route; safe retry; dark/reduced-motion
+320px1.8× help/selectors/stop; parent close before fresh player/replacement,
+parent close failure and dispose-before-close completion; two-theme tap/label/
+contrast guidelines. Initial header overflow corrected with short Puansız
+counter. Async native queue tests explicitly settle one event-loop turn.
+Fake players/capture/event streams only: mobile AudioSession wiring is code,
+not evidence of actual native focus/route delivery. No physical mic/device,
+playback latency, human voice, VoiceOver or educator/learning acceptance.
+Final quality runner exit0: full759 (+11), analysis clean (3.6s), format207/0;
+git diff --check clean. No build or physical device test in this package.
+
+## ONB-01 — Guest duration setup (2026-10-20)
+
+9 added widgets: each budget/save-before-goal/noauto writes; skip preserves
+prior budget; budget failure safely skips; partial profile failure retains
+budget/retry no-resave; pending locks/double invoke/dispose no late profile;
+system back preserves draft; actual app→daily plan selected5/empty history;
+dark/reduced-motion320px1.8×; two-theme tap/label/contrast. Existing18 shell/
+a11y passed. Selected AnswerOption opaque blend corrected transparent-fill
+contrast failure. Fake/in-memory only, not real migration/device/VoiceOver/
+learning evidence. Runner exit0 full768 (+9), analysis clean3.7s, format209/0,
+git diff --check clean. No build/physical device test in this package.
+
+## HOME-01 — Static home skeleton/current evidence (2026-10-20)
+
+4 added widget tests: pending static semantics/no fake actions/no frame/no
+writes; refresh hides old path through failure then explicit retry; replacement
+repository cannot expose old loaded path; both themes320px1.8× reduced-motion
+and safe late error after disposal. Targeted home recovery/tabs15 passed.
+Full quality runner exit0:772 (+4), analysis clean5.2s, format209/0, diff check
+clean. Fake/in-memory only; no audio algorithm changes, real recording,
+physical device, native screen-reader or educator acceptance. Static feedback
+uses apple-design readability/reduced-motion principles, not simulated progress.
+
+## REVIEW-01a — Read-only answer comparison (2026-10-20)
+
+5 new widget tests: correct/different/null-answer card disclosure and collapse;
+both themes320px1.8× reduced-motion; wide side-by-side plus semantics labels.
+Existing interval/high-low flow tests now assert eight cards mapped to selected
+answers, correct/wrong distinctions, no player calls or history mutation on
+opening a card, and retained history summary. Targeted7 passed. Initial expanded
+card failed intrinsic measurement/overflow; Wrap plus natural result scrolling
+fixed it. Full runner exit0:777 (+5), analyze clean3.5s, format211/0, diff clean.
+Fakes/synthetic references only; no physical playback, native screen-reader,
+microphone, voice or learning acceptance. REVIEW-01b comparative audio not enabled.
+
+## GROW-01a — Local practice consistency (2026-10-20)
+
+4 added data tests: unique days despite repeats/zero correct, local month/week
+boundary and future timestamps, invalid/demo/unknown/old cohort exclusion, empty
+custom catalog and HomeData projection. 2 added widgets: both themes320px1.8×,
+reduced-motion, explicit activity-not-skill labels, date/status text, no scheduled
+animation. Existing home pending test also asserts no recent_practice card.
+Invalid fixture initially carried scored metrics; fixed fixture, not contract.
+Full quality runner exit0:783 (+6), analyze clean12.8s, format213/0, diff clean.
+No sound engine change or real device/learning/retention/revenue experiment.
+
+## REVIEW-01b — Comparative result playback (2026-10-20)
+
+4 coordinator tests cover explicit start only, loading→playing→idle, latest
+request during a pending native load, recoverable stop/load failure, cancel,
+close and detached callbacks. Interval/high-low controller tests confirm review
+is unavailable before a finished outcome and cannot mutate outcome identity,
+plays/retention evidence or the recorded history; lifecycle pause interrupts
+audio while preserving the completed result. Existing two screen flows now
+exercise reference/selected controls and history invariance. 2 route tests
+cover active replay cleanup before pop and fail-closed player-close failure.
+
+Targeted24 passed. Full runner exit0:791 (+8), analyze clean3.2s, format216/0,
+diff clean. Playback bytes are synthetic and players are fakes; this proves
+ordering/state/UI contracts, not that a physical device produced audible,
+undistorted or correctly routed sound. iOS/Android speaker, headphones,
+interruptions/audio focus, VoiceOver/TalkBack and educator acceptance remain
+open device/human gates.
+
+## GROW-01b — Local voluntary practice goal (2026-10-20)
+
+No audio pipeline or scoring change. 2 storage tests cover independent field
+preservation/disable and concurrent writes; strict codec test covers v1 budget
+migration plus invalid v2 goal rejection. 2 home widget tests cover select,
+change, disable, single-flight pending, failure rollback and private-error
+redaction. Existing home/card/accessibility flows remain green. Full runner
+exit0:795 (+4), analyze clean2.9s, format217/0, diff clean. This is local habit
+UI evidence only, not real notification, retention, learning or revenue proof.
+
+## RETRY-01a — Exact-mistake guided perception round (2026-10-20)
+
+2 controller tests complete a full recorded round, derive the exact wrong-item
+subset, finish the guided subset and verify history remains at one entry.
+Retention is disabled and direct `toResult` conversion throws. Existing pitch
+and interval screen tests at 320px/1.8× cover action, short counter and compact
+label; pitch also completes all four misses and verifies no full-round threshold
+or history write. Targeted15 and full797 pass; analyze/format/diff clean.
+References remain synthetic and playback fake; no human learning/device proof.
+
+## RETRY-01b — Guided rhythm excerpt (2026-10-20)
+
+Two domain tests verify exact source-index/onset extraction around a missing
+beat, no suggestion for a clean result, and fail-closed result conversion. One
+controller test records the full attempt, renders the expected rebased excerpt,
+finishes it and confirms history remains at one entry with no next-step. The
+existing narrow/large-text widget test enters guided mode without overflow.
+Full runner: 800 tests, analysis clean, format217/0. Synthetic click bytes and
+fake players do not validate speaker timing, touch latency or teaching effect.
+
+## REM-01a — Reminder boundary (2026-10-20)
+
+This package does not touch audio. Seven coordinator tests cover explicit
+permission, denied/unavailable abstention, schedule/cancel ordering, native and
+storage failure, rollback, single-flight and unavailable production fallback.
+One storage test covers independent reminder replacement/disable; codec tests
+cover strict v1/v2→v3 migration and invalid/partial times. Full808 passes. No
+real notification, OS permission prompt, alarm delivery or device QA occurred.
+
+## REM-01b — Reminder settings shell (2026-10-21)
+
+No audio path changed. Four widget tests cover honest unavailable production
+state, explicit enable/disable with persisted time, denied permission without
+false success, and dark 320px/1.8× layout. Full812 passes. Tests use an injected
+fake scheduler; no OS prompt, delivered notification or physical device proof.
+
+## HAPTIC-01 — Haptic preference gate (2026-10-21)
+
+No audio path changed. Preference codec/storage and settings tests cover the
+default-on value, v3→v4 migration and save-before-publish behavior. A mocked
+Flutter platform channel verifies that disabled controls suppress the current
+vibration request while preserving the action, and enabled controls request it
+again. Full815 passes; analysis clean, format222/0. This is not proof of motor
+behavior on a physical iOS/Android device and does not implement notifications.
+
+## REM-01c — Native local reminder adapter (2026-10-21)
+
+No audio path or score changed. Five new/expanded tests cover non-prompting
+permission inspection, explicit denial, unavailable initialization,
+schedule/cancel/settings delegation and next-day local wall-clock calculation.
+Full820 passes; analysis clean, format224/0. Android debug and iOS simulator
+debug builds pass. No physical device received a notification, so permission,
+delivery timing, reboot/DST and OEM background behavior remain unverified.
+
+## SHELL-02 — Microphone denial recovery (2026-10-21)
+
+No analyzer, threshold, recording ownership or score changed. The three real
+capture entry screens expose a shared app-settings action only after their
+existing backend reports permission denial. Four widget tests cover no
+automatic launch, explicit success, single-flight and false/exception failure;
+screen regressions prove the action is present on denial. Full824 passes,
+analysis clean, format228/0; Android debug and iOS simulator builds pass.
+Simulator/fake coverage is not physical microphone permission QA: permanent
+denial, OS settings navigation, resume and re-record must be checked on both
+platforms.
+
+## SHELL-03a — Starting check evidence boundary (2026-10-22)
+
+No microphone, pitch engine or audio threshold changed. The starting check
+reuses three existing touch-source measured exercises and their exact cohorts;
+it does not convert synthetic playback into voice evidence. Invalid rounds are
+retry states, not zero grades. Full832 passes, analysis clean, format233/0.
+Voice range, melody memory and polyphonic hearing remain unknown until their
+separate benchmark/device/content gates pass.
+
+## SHELL-04f — Safe return without media restore (2026-10-22)
+
+No audio engine, capture route, threshold or score changed. The home action is
+derived only from completed local results matching a current cohort and opens a
+fresh exercise route after an explicit tap. Tests assert stale/future evidence
+cannot select it and empty history invents nothing. Player state, a partial
+question, microphone ownership and recorded audio are never serialized or
+restored. Full838 passes, analysis clean, format236/0; real offline/device
+behavior remains an acceptance gate.
+
+## F06a — Error-to-concept navigation (2026-10-22)
+
+No audio renderer, score or capture path changed. Expanded pitch and rhythm
+widget flows open the matching draft text lesson only after explicit user
+action and assert the fake player receives no extra call. Pitch history retains
+the exact recorded result object. Reading cannot create lesson completion or
+mastery evidence. Full838 passes, analysis clean, format236/0. Approved
+examples, real playback and teaching efficacy remain external F06 gates.
+
+## F06b — Tonic/degree concept navigation (2026-10-22)
+
+The interval result opens the new movable-do draft lesson only after an
+explicit tap. Its widget flow asserts no additional fake-player call and the
+exact history result remains unchanged after returning. Catalog/codec tests
+keep the five ordered phases, draft approval state and empty audio-example
+slots. No sound file, threshold or scorer changed. Full838 passes; approved
+examples, terminology review and teaching pilot remain external gates.
+
+## GROW-01c — Weekly practice report evidence boundary (2026-10-22)
+
+No audio engine, detector, threshold, renderer or scorer changed. The weekly
+report is a read-only projection over completed local results matching the
+selected goal and each exercise's current measurement cohort. It uses the
+current seven local calendar days and the preceding seven, excludes future and
+stale evidence, and reports invalid current measurements separately from valid
+round volume. It does not infer pitch, rhythm or melody improvement from
+activity. Five domain tests and one widget test were added; full844 passes,
+analysis is clean and format is 238/0. These tests are not physical-device,
+microphone, learner-language or teaching-effect evidence.
+
+## RETRY-01c — Diagnostic melody candidate review (2026-10-23)
+
+Quality-gated diagnostic pitch segments now feed the existing exact-order
+symbolic aligner using nominal event times; recorded segment boundaries do not
+become timing evidence. A clean comparison or an extra-only response yields no
+review target. The first non-correct step with a reference index may preselect
+that note plus one adjacent reference for two unscored synthetic repetitions.
+Playback starts only after an explicit tap and uses a fresh player after the
+capture session closes.
+
+No threshold, detector, VAD, score, history or mastery rule changed. Full848,
+analysis clean, format238/0. Synthetic PCM, fake players and mock provenance do
+not prove human-voice segmentation, audible device playback, memory learning or
+teaching effect; BENCH/VAD/device/educator gates remain open.
+
+## DATA-03b — Atomic local result batch (2026-10-23)
+
+No audio file, capture, detector, threshold, score or playback path changed.
+Audio-free clipboard result summaries now enter history through one planned
+batch and one atomic file replacement. Existing attempt-id duplicate/conflict
+and explicit-capacity rules remain unchanged; a storage write failure exposes
+no imported prefix. Full852 passes, analysis is clean and format is 238/0.
+This is local persistence evidence only, not real cross-device clipboard QA,
+cloud synchronization, upload consent or recovery from physical storage loss.
+
+## SHELL-04g — Today foreground refresh (2026-10-23)
+
+Two widget tests verify that an `inactive` interruption does not reload, one
+real background→foreground transition reloads exactly once, repeated `resumed`
+is idempotent, and stale recommendation/actions disappear while the replacement
+read is pending. Full854 passes, analysis clean, format238/0. No capture,
+playback, score or auto-resume path changed. Physical iOS/Android lifecycle,
+offline storage and interruption testing remain open.
+
+## SHELL-04i — Dependency replacement fail-closed tests (2026-10-24)
+
+Three widget tests replace the live history repository under daily plan, skill
+map and history. Each screen immediately drops the old projection, exposes its
+existing loading state and renders only the new repository result. Full860
+passes, analysis clean, format239/0. No capture, playback, score, history write
+or account synchronization path changed; physical lifecycle/offline acceptance
+remains open.
+
+## DATA-03c — Portable practice preferences (2026-10-24)
+
+Export schema v2 adds only daily budget and weekly goal; schema v1 remains
+readable. Reminder schedule/permission and haptics are intentionally absent and
+a file-adapter test proves they survive an imported portable snapshot. One
+widget test covers explicit confirmation and application. Full863 passes,
+analysis clean, format239/0. No audio, capture, detector or score data is moved;
+physical cross-device clipboard and cloud sync remain open.
+
+## DATA-03d — Live portable-preference refresh (2026-10-25)
+
+One widget regression changes portable preferences while the Practice tab is
+selected, increments the app-scoped revision, and verifies that the tab remains
+selected before Today exposes the new 15-minute budget and four-day goal. The
+import regression also verifies one refresh notification after a successful
+preference write. Full864 passes, analysis clean, format239/0. No capture,
+playback, detector, score or audio file changed; physical cross-device and
+background/lifecycle acceptance remain open.
+
+## SHELL-04j — Today preference-source replacement (2026-10-25)
+
+A widget test holds daily/weekly reads from the old preference store, replaces
+the store at the same revision, observes the new 15-minute/four-day values, and
+then completes the old reads. Generation gating keeps the new projection
+unchanged. Full865 passes, analysis clean, format239/0. No audio path changed;
+physical offline/lifecycle and account-sync acceptance remain open.
+
+## SHELL-04k — Pending preference-write isolation (2026-10-25)
+
+One adversarial widget test starts a weekly-goal save against the old store,
+replaces the store, loads the new four-day goal, and then lets the old save
+fail. The old completion cannot publish selection, pending state or error into
+the new projection. Full866 passes, analysis clean, format239/0. No audio path
+changed; physical offline/lifecycle and account-sync acceptance remain open.
+
+## SHELL-04h — Shared local-view foreground boundary (2026-10-23)
+
+Daily plan, skill map and history now share Today's lifecycle boundary. Three
+new widget tests prove each consumer discards its stale projection and performs
+one guarded local read after background→foreground; the two Today tests still
+cover `inactive` and repeated-`resumed` idempotency. Full857 passes, analysis
+clean, format239/0. The helper cannot start capture/playback, navigate or write
+history. Physical-device lifecycle and offline-file acceptance remain open.
+
+## SHELL-04l — Hide stale preferences while replacement reads (2026-10-25)
+
+One adversarial widget test replaces a visible five-minute/two-day preference
+store with a store whose reads are pending. Today immediately exposes the safe
+12-minute/no-goal projection, then publishes the new 15-minute/four-day values
+when both reads complete. Full867 passes, analysis clean, format239/0. No audio
+path changed; physical offline/lifecycle and account-sync acceptance remain
+open.
+
+## SHELL-04m — Partial preference-read failure (2026-10-26)
+
+One adversarial widget test replaces visible five-minute/two-day preferences,
+resolves the new budget as 15 minutes and fails the new weekly-goal read. The
+successful field publishes independently, the old goal stays hidden and no
+async exception reaches the widget; a neutral safe-default warning is visible.
+Full868 passes, analysis clean, format239/0. No audio path changed; physical
+offline/lifecycle and account-sync acceptance remain open.
+
+## SHELL-04n — Explicit preference-read retry (2026-10-26)
+
+One widget test fails the first weekly-goal read on a replacement store,
+verifies the visible manual retry, then returns the four-day goal on the second
+read. The warning and retry disappear after recovery; no automatic retry or
+cross-store write occurs. Targeted10 and full869 pass, analysis clean,
+format239/0. No audio path changed; physical offline/lifecycle and account-sync
+acceptance remain open.
+
+## SHELL-04o — Preference read/write gate (2026-10-26)
+
+The replacement-store widget regression now verifies that weekly-goal choices
+are disabled and a loading status is visible while both preference reads are
+pending. Controls reopen only after the new 15-minute/four-day values resolve.
+Targeted10 and full869 pass, analysis clean, format239/0. No audio path changed;
+physical offline/lifecycle and account-sync acceptance remain open.
+
+## REL-08a — Bounded full-suite runner (2026-10-26)
+
+The shared local quality command now invokes Flutter tests with explicit
+concurrency 4 instead of inheriting a machine-dependent default. Runner tests
+verify the printed plan and immutable argv; the complete command passed
+format239/0, clean analysis and full869. No audio threshold, fixture, native
+route or scoring behavior changed. This is automation stability, not physical
+microphone/voice/device acceptance.
+
+## UI-01b — iOS appearance icon assets (2026-10-26)
+
+Four non-audio asset tests verify the three universal 1024 px AppIcon slots,
+opaque default artwork, transparent dark/tinted backgrounds and grayscale-only
+tinted artwork. Xcode 27 actool compiled the iPhone/iPad simulator catalog with
+no warning. Full873 passes, analysis clean, format240/0. No audio source,
+threshold, score, native route or recording behavior changed.
+
+## CONS-01a — Reviewed chord manifest contract (2026-10-27)
+
+Ten domain tests cover future prerecorded 2/3/4-note piano metadata: strict
+version/kind/PCM16-WAV/user-recorded source, exact voice folder, ascending MIDI
+targets, hash, sample-rate/channel/duration bounds, rights and independent
+label-review references, immutable snapshots and duplicate rejection. No WAV
+was added or read. Manifest declarations are not acoustic, license, device or
+teacher verification and cannot enable the placeholder, playback or scoring.
+Targeted10 and full883 pass; analysis clean, format242/0.
+
+## CONS-01b — Read-only reviewed WAV loader (2026-10-27)
+
+Twelve infrastructure tests use temporary synthetic zero-PCM files only.
+They cover mono/stereo RIFF PCM16 header matching, hash, defensive bytes,
+missing/unsafe paths, symlinks, byte budget, malformed/truncated format,
+sequential fail-fast and private-path redaction. Targeted12/full895 pass;
+analysis clean, format244/0. Header/hash success is not piano-note, tuning,
+timbre, rights, device or teaching verification; no player/scorer/UI runs.
+
+## CONS-01c — Chord reference session gate (2026-10-27)
+
+Ten application tests use a fake clip player and controlled delay. They prove
+no autoplay, full-playback plus recall gating, defensive byte ownership,
+bounded inputs, duplicate-play suppression, cancellation before a queued native
+start, route interruption without resume, cancellation during recall, redacted
+retryable start failure, fail-closed cleanup and serialized idempotent close.
+The tiny byte arrays are player test tokens, not WAVs or piano fixtures. No
+microphone, pitch decision, score, history, real recording, physical route or
+teaching outcome is exercised. Targeted10/full905 pass; analysis clean,
+format246/0.
+
+## CONS-02a — Sequential chord response diagnostic matcher (2026-10-27)
+
+Ten domain tests feed controlled synthetic segmentation frames into reviewed
+2/3/4-note targets. They cover exact order, the same absolute notes reversed,
+missing, extra, repeated-with-observed-silence, wrong octave, neutral empty
+response, invalid segmentation abstention, discarded-frame/provenance retention,
+declared A4 tuning and tolerance bounds. Synthetic candidates are not piano or
+human-voice fixtures. No microphone, VAD, timing, memory score, history or
+mastery path runs; physical/device and labeled-human benchmark gates remain.
+Targeted10/full915 pass; analysis clean, format248/0.
+
+## CONS-02b — Any-order chord set comparison (2026-10-28)
+
+Six additional matcher tests cover reverse-order acceptance only in any-order
+mode, unrelated pitch as missing plus extra, wrong-octave consumption, duplicate
+extra evidence, ambiguous adjacent targets without candidate reuse, and neutral
+no-response target counts. Exact-order alignment remains visible in every valid
+comparison. All inputs are controlled synthetic segment traces; no real voice,
+microphone, piano, VAD, timing, memory, score or device behavior is validated.
+Matcher suite16/full921 pass; analysis clean, format248/0.
+
+## CONS-01d — Chord replay and recall policy (2026-10-28)
+
+Three added application tests plus the existing reference-domain bounds verify
+learning replay through exactly its completed-play quota, response-readiness
+revocation during replay, recall-exam single listen and hidden target, invalid
+mode/quota rejection, and no quota consumption for cancellation/start failure.
+The fake player callback is not measured audibility. No real piano, microphone,
+learner response, score, history, mastery or physical lifecycle is validated.
+Targeted session+reference20/full924 pass; analysis clean, format248/0.
+
+## CONS-01e — Reviewed recording/session composition (2026-10-28)
+
+Five app-layer tests verify that one loaded recording's metadata and defensive
+bytes reach one session without autoplay, recall-exam policy remains hidden and
+single-listen, invalid policy allocates no player, construction failure creates
+no session, and concurrent sessions own distinct players. Tiny byte tokens and
+fake players are not WAV playback or device evidence. No production audio,
+microphone, response, score, history, real piano or route behavior runs.
+Targeted composer+session18/full929 pass; analysis clean, format250/0.
+
+## CONS-02c — Sequential chord response capture gate (2026-10-28)
+
+Ten application tests prove no automatic action, permission-before-reference,
+permission denial, full playback/recall gating, immutable PCM snapshot plus
+native discard, replay gate revocation, invalid metadata abstention, focus
+interruption, pending-start cancellation serialization, cleanup fail-closed and
+idempotent resource ownership. Inputs use fake players/backends and mock PCM;
+they do not validate a microphone, voice, note, VAD, quality, route or learner.
+No worker, matcher, score, history or mastery path runs. Full939 passes;
+analysis clean, format252/0.
+
+## CONS-02d — Quality-gated chord diagnostic pipeline (2026-10-28)
+
+Seven application tests cover missing and wrong-route calibration before DSP,
+usable synthetic exact comparison, reverse any-order comparison, silent neutral
+rejection, worker failure and provenance-promotion rejection. Capture tests also
+verify the snapshot records an explicit unknown route when no probe exists.
+Synthetic tones/noise and fake workers are not human voice, VAD, physical route
+or learning evidence. A candidate match is not persisted or scored. Full946
+passes; analysis clean, format254/0.
+
+## CONS-02e — Chord session room calibration (2026-10-29)
+
+Six application tests cover an explicit permission→reported route→bounded room
+capture→PCM snapshot→native discard calibration, noisy neutral retry,
+permission denial, metadata mismatch, interruption without auto-resume and
+permission/calibration reuse across reference playback. All PCM and routes are
+fake-controlled; these tests do not establish microphone behavior, actual room
+noise, piano audibility, human voice quality, VAD or teaching validity. Full984
+passes with one opt-in screenshot tour skipped; analysis clean.
+
+## CONS-02f — End-to-end chord attempt coordinator (2026-10-29)
+
+Seven application tests cover calibration-gated reference playback, complete
+stop→analysis candidate flow, silent neutral retry with zero worker calls,
+worker-unavailable separation, pending-result invalidation on cancel, idempotent
+close during analysis and tolerance preflight. The test path uses fake playback,
+route and PCM plus synthetic tones; it is not physical-device, piano audibility,
+human voice, VAD, memory or teaching evidence. Full991 passes with one opt-in
+screenshot tour skipped; analysis and diff checks are clean.
