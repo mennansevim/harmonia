@@ -2065,3 +2065,44 @@ doğruluyor. İlgili 19 test ve tam 1004 test geçti; 1 opt-in ekran turu atland
 kanıt gerçek telefon, insan sesi, audibility, VAD/BENCH veya öğretim kabulü
 değildir. Commit/push/deploy yapılmadı.
 
+## 2026-10-29 — E2E-01 simülatörde uçtan uca kullanıcı yolculukları
+
+**Kullanıcı isteği:** Uygulamayı gerçek kullanıcı kullanıyormuş gibi test etmek;
+seçenekler arasından otomatik E2E kurulumu seçildi.
+
+`integration_test` (SDK) dev dependency eklendi. `integration_test/app_journeys_test.dart`
+`TrainerApp()`'i `main()` ile aynı varsayılanlarla açar (`FileTrainerPersistence`,
+`FileResultHistory`, gerçek `TrainerAudio`, gerçek hatırlatma platformu,
+`liveAudio: true`). Her test önce uygulama destek dizinindeki `.json` depolarını
+siler; soğuk yeniden başlatma yeni anahtarlı `TrainerApp` ile modellenir ve
+durum diskten yeniden okunur. Bekleme gerçek zamanlıdır, her adımda framework
+istisnası testi düşürür.
+
+Yolculuklar: (1) yeni koro üyesi 8 adımlı onboarding'i bitirir, Bugün/Koro/
+İlerleme/Ayarlar sekmelerini gezer, yeniden açılışta karşılama yerine ana
+sayfaya gelir; (2) onboarding ortasında çıkan kullanıcı aynı adıma döner;
+(3) bugünkü ders tanıtımı tamamlanır, ilerleme diskte kalır; (4) serbest perde
+pratiği gerçek ses çalarak 8 soruyu bitirir, tekrar sayısı ve seri diskte;
+(5) Koro'da aralık testi girişi (başlatılmadan) ve kaç ses alıştırması;
+(6) verileri sil karşılamaya döner ve yeniden açılışta da öyle kalır.
+
+`tool/quality_check.dart` format adımı `integration_test`'i de okur (test
+güncellendi); E2E koşusu cihaz gerektirdiği için runner'a eklenmedi.
+`docs/ci/README.md` E2E-01 bölümü komutu ve sınırları anlatır.
+
+### Doğrulama
+
+- `flutter test integration_test -d <iPhone 17 Pro, iOS 27 simülatörü>`: **6/6 geçti** (1 dk 22 sn).
+- `dart tool/quality_check.dart`: format/analyze temiz, **1004 test geçti**, 1 opt-in ekran turu atlandı.
+
+### Sınırlar
+
+Mikrofon açılmaz (aralık testi/“Söyle” başlatılmaz), bildirim izni sistem
+penceresine dokunulmaz (hatırlatma atlanır), çalan ses kulakla doğrulanmaz,
+quiz cevapları sabit stratejiyle verilir. Simülatör testi gerçek telefon,
+insan sesi, öğretim veya kullanıcı pilotu kapısı değildir.
+
+Ortam notu: `/opt/homebrew/Caskroom/flutter/3.47.8/flutter` sembolik bağı
+3.44.4 SDK checkout'una gidiyor; `flutter pub get` `integration_test`'in SDK
+sabitlemeleri yüzünden `matcher`/`meta`/`test_api`/`vm_service` lock
+sürümlerini bir alt sürüme indirdi. Commit/push/deploy yapılmadı.

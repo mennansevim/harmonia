@@ -1,9 +1,11 @@
 # Harmonia — Current Roadmap
 
-**Tarih:** 2026-10-29 (son güncelleme: TRAINER-04b isteğe bağlı pitch “Söyle” UI bağlantısı)
+**Tarih:** 2026-10-29 (son güncelleme: E2E-01 simülatör kullanıcı yolculuğu testleri)
 **Durum:** Faz 1 — güvenilirlik sözleşmeleri, yerel kayıt laboratuvarı, deneysel DSP/worker, kalibrasyon/kalite kapısı ve misafir uygulama kabuğu kod-test seviyesinde. Tek ses skor ekranı hâlâ simülasyon; fiziksel cihaz, insan sesi benchmark'ı, eğitimci içerik onayı ve öğretim pilotu kapıları açık. **Hiçbir modül cihazda/pilotta doğrulanmış veya yayında değil.**
 **Sahip:** Mennan Sevim  
 **Platform:** Flutter mobil uygulama; ileride web ve öğretmen paneli
+
+**2026-10-29 — E2E-01:** `integration_test/app_journeys_test.dart` ile uygulama gerçek kullanıcı gibi, production kablolamasıyla (dosya depolama, gerçek ses çalma, eklentiler) simülatörde uçtan uca test ediliyor: onboarding + sekmeler + soğuk yeniden başlatma, yarım onboarding'e dönüş, bugünkü ders + kalıcılık, 8 soruluk perde pratiği sonuna kadar, Koro aralık girişi + kaç ses, verileri sil. iPhone 17 Pro (iOS 27) simülatöründe **6/6 geçti** (~1 dk 22 sn). Komut: `flutter test integration_test -d <id>`; `quality_check` yalnız formatını kontrol ediyor (1004 kod testi + analyze/format temiz). Mikrofon, bildirim izni sistem penceresi, duyulan ses, gerçek telefon ve insan kullanıcı kapsam dışı; cihaz/pilot kapıları açık.
 
 **2026-10-29 — TRAINER-03 (ADR-034):** Ders yolu, quiz, ders akışı, müfredat sırası/metinleri, oturum sonu ve istatistik ekranları da Harmonia'ya özgü yeniden yazıldı (Basamak/Ara durak/Konser provası; Dinle → Söyle → Ayırt et; dinleme diski). Referans uygulamadan kalan metin/düzen yok; tür ortak.
 

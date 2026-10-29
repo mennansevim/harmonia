@@ -23,6 +23,7 @@ List<QualityStep> qualityPlan({bool fetchDependencies = false}) =>
         'lib',
         'test',
         'tool',
+        'integration_test',
       ]),
       QualityStep('Static analysis', 'flutter', ['analyze', '--no-pub']),
       QualityStep('Code tests (not device QA)', 'flutter', [

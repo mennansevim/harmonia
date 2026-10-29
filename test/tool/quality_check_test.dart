@@ -31,7 +31,12 @@ void main() {
     expect(plan.map((s) => s.executable), ['dart', 'flutter', 'flutter']);
     expect(
       plan.first.arguments,
-      containsAll(['--output=none', '--set-exit-if-changed', 'tool']),
+      containsAll([
+        '--output=none',
+        '--set-exit-if-changed',
+        'tool',
+        'integration_test',
+      ]),
     );
     expect(plan[1].arguments, ['analyze', '--no-pub']);
     expect(plan.last.arguments, [
