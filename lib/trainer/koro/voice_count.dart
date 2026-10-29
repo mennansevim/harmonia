@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../app/scope.dart';
 import '../domain/trainers.dart';
+import '../quiz/quiz_view.dart';
 import '../ui/kit.dart';
 
 /// Builds a close-voiced choir-like chord of [voices] notes (2–4) inside
@@ -117,10 +118,9 @@ class _VoiceCountScreenState extends State<VoiceCountScreen> {
       );
     }
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: FeedbackFrame(
-        state: _frame,
-        child: SafeArea(
+      backgroundColor: TC.canvas,
+      body: Builder(
+        builder: (context) => SafeArea(
           child: Column(
             children: [
               TopBar(
@@ -128,15 +128,12 @@ class _VoiceCountScreenState extends State<VoiceCountScreen> {
                 progress: (_index + (_picked == null ? 0 : 1)) / widget.length,
                 progressColor: TC.koro,
                 counter: '${_index + 1} / ${widget.length}',
-                shadow: true,
               ),
               const Spacer(),
-              WaveView(
-                playing: TrainerScope.of(context).audio.playing,
+              ListenDisc(
                 color: TC.koro,
-                label: 'AKORU TEKRARLA',
+                playing: TrainerScope.of(context).audio.playing,
                 onTap: _picked == null ? _play : null,
-                height: 200,
               ),
               const Spacer(),
               Text(

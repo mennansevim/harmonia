@@ -339,3 +339,11 @@ değildir ve geç kalan eski async okumalar generation kapısıyla elenir.
 
 **Sınırlar:** Parti yalnız çalma register'ını değiştirir; skor/tolerans/rubrik değişmez. Ses aralığı testindeki parti önerisi taslaktır; "partim olarak kaydet" kullanıcının seçimidir. Ders/quiz mekaniği (öğren-pratik, tanı/evet-hayır/bul soru tipleri, kontrol noktası) türün yaygın kalıplarıdır ama hâlâ referansa işlevsel olarak yakındır; mağaza öncesi ek farklılaşma ve referans sahibinin onayı ayrıca değerlendirilmelidir. Hukuki uygunluk görüşü değildir.
 
+## ADR-034 — Ders, quiz ve müfredatta referanstan tam ayrışma
+
+**Tarih:** 2026-10-29 · **Durum:** kabul (kullanıcı: "arkadaşımla ileride sorun yaşarsak diye benzerlik olmasın")
+
+**Karar:** ADR-033'te kalan işlevsel benzerlikler de değiştirildi. Müfredat el yazımı düğüm listeleri yerine Harmonia'nın kendi koro odaklı sırasıyla üretilen "Basamak" merdiveni (her basamak bir yeni öğe + karışık tekrar, üç basamakta bir "Ara durak", bölge/yön çalışmaları, "Konser provası"). Şarkı kancaları ve öznel "his" metinleri kaldırıldı; yerlerine solfej örnekleri ve teori formülleri (yarım ses sayısı, T/Y adımları, akor yapısı) geldi. Ders akışı Dinle → Söyle (ölçülmez) → Ayırt et. Quiz: dinleme diski ve süre halkası, yalnız sorunun seçenekleri, soru başına kanıt şeridi, satır içi karşılaştırma; dalga animasyonu, kulak sıfırlama sesi, ekran çerçevesi geri bildirimi, ipucu gizleme sorusu kaldırıldı. Yol ekranı + Öğren/Pratik penceresi tek Beceri sayfasında birleşti. Oturum sonu tek kanıt kartı; seri kutlama penceresi yok. Beceri istatistiği ısı haritası/eğilim yerine zayıftan güçlüye tablo.
+
+**Sınırlar:** Kulak eğitiminin genel türü (nota/aralık/akor/dizi/kadans tanıma, puan, seri) bu kategorideki tüm uygulamalarda ortaktır ve kimsenin özel ifadesi değildir; kod, metin, görsel düzen ve ders sırası artık Harmonia'ya özgüdür. Hukuki görüş değildir.
+

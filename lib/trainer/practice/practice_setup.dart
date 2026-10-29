@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../app/scope.dart';
 import '../domain/music.dart';
 import '../domain/trainers.dart';
-import '../learn/path_screen.dart';
 import '../learn/session_end.dart';
 import '../quiz/quiz.dart';
 import '../quiz/quiz_view.dart';
@@ -147,14 +146,26 @@ class _PracticeSetupScreenState extends State<PracticeSetupScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            TopBar(
-              title: kind.title,
-              titleIcon: TrainerBadge(
-                color: color,
-                icon: trainerIcon(kind),
-                size: 32,
+            Padding(
+              padding: const EdgeInsets.fromLTRB(8, 4, 16, 0),
+              child: Row(
+                children: [
+                  IconButton(
+                    tooltip: 'Geri',
+                    onPressed: () => Navigator.of(context).maybePop(),
+                    icon: const Icon(Icons.arrow_back_rounded, color: TC.ink),
+                  ),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('Serbest çalışma', style: TT.h3),
+                        Text(kind.title, style: TT.small),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-              shadow: true,
             ),
             Expanded(
               child: ListView(
@@ -256,39 +267,7 @@ class _PracticeSetupScreenState extends State<PracticeSetupScreen> {
                       style: TT.small,
                     ),
                   ],
-                  const SizedBox(height: 18),
-                  AppCard(
-                    color: soft(color),
-                    onTap: () => Navigator.of(context).push(
-                      MaterialPageRoute<void>(
-                        builder: (_) => PathScreen(trainer: kind),
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        TrainerBadge(
-                          color: color,
-                          icon: Icons.menu_book_rounded,
-                          size: 40,
-                        ),
-                        const SizedBox(width: 12),
-                        const Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Hatırlatma lazım mı?', style: TT.title),
-                              Text(
-                                'Önce her birinin nasıl duyulduğunu öğren',
-                                style: TT.small,
-                              ),
-                            ],
-                          ),
-                        ),
-                        Icon(Icons.chevron_right_rounded, color: color),
-                      ],
-                    ),
-                  ),
-                  const _Section('OKTAV (KÖK)'),
+                  const _Section('BÖLGE'),
                   Segmented<Register>(
                     color: color,
                     values: Register.values,
@@ -296,7 +275,7 @@ class _PracticeSetupScreenState extends State<PracticeSetupScreen> {
                     label: (r) => r.label,
                     onChanged: (r) => setState(() => _register = r),
                   ),
-                  const _Section('SÜRE SINIRI'),
+                  const _Section('SORU BAŞINA SÜRE'),
                   Segmented<int?>(
                     joined: true,
                     color: color,
@@ -327,12 +306,11 @@ class _PracticeSetupScreenState extends State<PracticeSetupScreen> {
                 ],
               ),
             ),
-            Container(
-              color: Colors.white,
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
               child: BigButton(
                 key: const Key('practice_now'),
-                label: 'Pratiğe başla',
+                label: 'Başlat',
                 icon: Icons.play_arrow_rounded,
                 color: color,
                 onPressed: _items.length >= 2 ? _start : null,
@@ -385,18 +363,9 @@ class _Chip extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 14),
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: selected ? color : Colors.white,
-          borderRadius: BorderRadius.circular(14),
+          color: selected ? soft(color) : Colors.white,
+          borderRadius: BorderRadius.circular(12),
           border: Border.all(color: selected ? color : TC.line, width: 1.5),
-          boxShadow: selected
-              ? [
-                  BoxShadow(
-                    color: color.withValues(alpha: 0.25),
-                    blurRadius: 8,
-                    offset: const Offset(0, 3),
-                  ),
-                ]
-              : null,
         ),
         child: FittedBox(
           fit: BoxFit.scaleDown,
@@ -405,7 +374,7 @@ class _Chip extends StatelessWidget {
             style: TextStyle(
               fontWeight: FontWeight.w600,
               fontSize: 15,
-              color: selected ? Colors.white : TC.ink,
+              color: selected ? color : TC.ink,
             ),
           ),
         ),

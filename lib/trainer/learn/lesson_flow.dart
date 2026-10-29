@@ -1,30 +1,43 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import '../../application/single_tone_session.dart';
+import '../../domain/models/measurement_provenance.dart';
 import '../app/scope.dart';
 import '../domain/curriculum.dart';
 import '../domain/music.dart';
 import '../domain/trainers.dart';
 import '../quiz/quiz.dart';
 import '../quiz/quiz_view.dart';
+import '../sing/trainer_pitch_sing_mobile.dart';
+import '../sing/trainer_pitch_sing_session.dart';
 import '../ui/kit.dart';
 import 'session_end.dart';
 
-/// Runs one node of a trainer path end to end and pops with `true` when the
-/// node was completed.
+/// Harmonia lesson: Dinle (meet each new sound) → Söyle (sing it back,
+/// self-paced and unmeasured) → Ayırt et (scored listening practice).
+/// Gates skip straight to the scored part; the intro only reads.
 class LessonFlow extends StatefulWidget {
-  const LessonFlow({super.key, required this.node, this.random});
+  const LessonFlow({
+    super.key,
+    required this.node,
+    this.random,
+    this.pitchSingSessionFactory,
+  });
   final LessonNode node;
   final math.Random? random;
+  final TrainerPitchSingSession Function(TrainerPitchSingTarget target)?
+  pitchSingSessionFactory;
 
   @override
   State<LessonFlow> createState() => _LessonFlowState();
 }
 
-enum _Step { start, slides, quickCheck, lockedIn, complete, practice, result }
+enum _Step { overview, listen, sing, practice, result }
 
-class _LessonFlowState extends State<LessonFlow> {
+class _LessonFlowState extends State<LessonFlow> with WidgetsBindingObserver {
   late final math.Random _random = widget.random ?? math.Random();
   late final QuizGenerator _gen = QuizGenerator(
     QuizConfig.forNode(
@@ -33,391 +46,358 @@ class _LessonFlowState extends State<LessonFlow> {
     ),
     random: _random,
   );
-  _Step _step = _Step.start;
-  int _slide = 0;
-  late final List<Widget Function()> _slides = _buildSlides();
-  late final List<QuizQuestion> _check;
+  _Step _step = _Step.overview;
+  int _page = 0;
+  int _root = 0;
   QuizSummary? _summary;
   bool _passed = false;
+  TrainerPitchSingSession? _singSession;
+  String? _singItem;
+  int _singGeneration = 0;
+  bool _singUnavailable = false;
 
   LessonNode get node => widget.node;
   TrainerKind get kind => node.trainer;
   Color get color => trainerColor(kind);
   TrainerPath get path => trainerPaths[kind]!;
+  bool get _intro => node.kind == NodeKind.intro;
+
+  /// Listen pages: intro slides, one page per new item, or one comparison.
+  int get _pageCount => _intro
+      ? path.introSlides.length
+      : node.newItems.isEmpty
+      ? 1
+      : node.newItems.length;
 
   @override
   void initState() {
     super.initState();
-    final focus = node.newItems.isEmpty ? node.items : node.newItems;
-    _check = focus.isEmpty
-        ? const []
-        : [
-            for (var i = 0; i < (kind == TrainerKind.scale ? 4 : 3); i++)
-              kind == TrainerKind.scale
-                  ? _gen.find(target: focus[i % focus.length], choices: 2)
-                  : _gen.yesNo(target: focus[i % focus.length]),
-          ];
-    if (node.kind == NodeKind.intro) _step = _Step.slides;
+    WidgetsBinding.instance.addObserver(this);
+    if (_intro) _step = _Step.listen;
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state != AppLifecycleState.resumed) {
+      final session = _singSession;
+      if (session != null) unawaited(session.cancel());
+    }
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    final session = _singSession;
+    session?.removeListener(_singChanged);
+    if (session != null) unawaited(_closeAndDispose(session));
+    super.dispose();
   }
 
   void _finishNode(double accuracy) {
     final store = TrainerScope.of(context).store;
     _passed = store.completeNode(node, accuracy);
-    // Reading the intro slides alone is not a finished practice session.
-    if (node.kind != NodeKind.intro) store.recordSession();
+    // Reading the intro alone is not a finished practice session.
+    if (!_intro) store.recordSession();
   }
 
-  // ---------------- slides ----------------
-
-  List<Widget Function()> _buildSlides() {
-    if (node.kind == NodeKind.intro) {
-      return [
-        for (final s in path.introSlides)
-          () => _infoSlide(s.title, s.body, s.bullets, s.highlight),
-        () => _readySlide('Hazırsın', switch (kind) {
-          TrainerKind.interval =>
-            'Sıçramayı dinle, karışımı dinle ve şarkı kancalarına yaslan. Aralıklarla tek tek tanışma zamanı.',
-          TrainerKind.scale =>
-            'Merdiveni duy, evle karşılaştır ve renk notasını ara. Dizilerle tek tek tanışma zamanı.',
-          _ => 'Dinle, karşılaştır, hatırla. Şimdi ilk derse geçme zamanı.',
-        }),
-      ];
+  void _forward() {
+    switch (_step) {
+      case _Step.overview:
+        setState(() => _step = node.isGate ? _Step.practice : _Step.listen);
+      case _Step.listen:
+        if (_page < _pageCount - 1) {
+          setState(() => _page++);
+        } else if (_intro) {
+          _finishNode(1);
+          Navigator.of(context).pop(true);
+        } else {
+          setState(() => _step = _Step.sing);
+        }
+      case _Step.sing:
+        _releaseSingSession();
+        setState(() => _step = _Step.practice);
+      case _Step.practice || _Step.result:
+        break;
     }
-    final focus = node.newItems;
-    if (focus.isEmpty) {
-      return [() => _compareSlide()];
-    }
-    return [
-      for (final item in focus) ...[
-        () => _conceptSlide(item),
-        () => _hearSlide(item),
-        if (kind == TrainerKind.interval) () => _hookSlide(item),
-      ],
-    ];
   }
-
-  Widget _iconBox(IconData icon) => Container(
-    width: 50,
-    height: 50,
-    decoration: BoxDecoration(
-      color: soft(color),
-      borderRadius: BorderRadius.circular(14),
-    ),
-    child: Icon(icon, color: color),
-  );
-
-  Widget _infoSlide(
-    String title,
-    String body,
-    List<String> bullets,
-    List<String>? highlight,
-  ) => ListView(
-    padding: const EdgeInsets.fromLTRB(20, 32, 20, 20),
-    children: [
-      Text(title, textAlign: TextAlign.center, style: TT.h3),
-      const SizedBox(height: 10),
-      Text(body, textAlign: TextAlign.center, style: TT.body),
-      const SizedBox(height: 22),
-      Center(child: _iconBox(Icons.explore_outlined)),
-      const SizedBox(height: 22),
-      for (final b in bullets)
-        BulletCard(b, color: color, highlight: highlight),
-    ],
-  );
-
-  Widget _readySlide(String title, String body) => Padding(
-    padding: const EdgeInsets.all(28),
-    child: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        _iconBox(Icons.check_rounded),
-        const SizedBox(height: 18),
-        Text(title, style: TT.h3),
-        const SizedBox(height: 10),
-        Text(body, textAlign: TextAlign.center, style: TT.body),
-      ],
-    ),
-  );
 
   String _label(String id, {bool long = true}) {
     final store = TrainerScope.of(context).store;
     return itemLabel(kind, id, notation: store.notation, long: long);
   }
 
-  List<String> _bullets(String item) => switch (kind) {
-    TrainerKind.pitch => [
-      '${_label(item)} notasını içinden söyle; rengini ezberle.',
-      'Ayırt ederken hesap yapma, hisse güven.',
-      'Yeni nota eklendikçe öncekilerle karşılaştır.',
-    ],
-    TrainerKind.interval => [
-      '${Intervals.byId(item).semitones} yarım ses genişliğinde.',
-      Intervals.byId(item).feel,
-      'Kanca: ${Intervals.byId(item).hook}.',
-    ],
-    TrainerKind.chord => [
-      Chords.byId(item).feel,
-      '${Chords.byId(item).tones.length} sesli bir akor.',
-      'Önce bütün hissi dinle, sonra notaları.',
-    ],
-    TrainerKind.scale => [
-      Scales.byId(item).feel,
-      '${Scales.byId(item).steps.length} notalı bir dizi.',
-      if (Scales.byId(item).color != null)
-        'Renk notası merdivende vurgulanır.'
-      else
-        'Tüm dereceler eşit derecede önemli.',
-    ],
-    TrainerKind.progression => [
-      Progressions.byId(item).feel,
-      'Bas notanın yolunu takip et.',
-      '${Progressions.byId(item).chords.length} akorlu kalıp.',
-    ],
-  };
-
-  Widget _conceptSlide(String item) => ListView(
-    padding: const EdgeInsets.fromLTRB(20, 32, 20, 20),
-    children: [
-      Text(_label(item), textAlign: TextAlign.center, style: TT.h3),
-      const SizedBox(height: 10),
-      Text(itemFeel(kind, item), textAlign: TextAlign.center, style: TT.body),
-      const SizedBox(height: 22),
-      Center(child: _iconBox(Icons.track_changes_rounded)),
-      const SizedBox(height: 22),
-      for (final b in _bullets(item)) BulletCard(b, color: color),
-    ],
-  );
-
-  int _root = 0;
-
-  SoundSpec _demo(String item, {bool learn = true}) {
+  SoundSpec _demo(String item) {
     final f = SoundFactory(_random);
-    final r = Register.medium.rootC + _root;
+    final requested = node.registers.first;
+    final base =
+        (TrainerScope.of(context).store.part?.fit(requested) ?? requested)
+            .rootC;
+    final r = base + _root;
     return switch (kind) {
-      TrainerKind.pitch => f.note(Register.medium.rootC + int.parse(item)),
-      TrainerKind.interval => f.interval(item, rootMidi: r, learn: learn),
-      TrainerKind.chord => f.chord(item, rootMidi: r, arpeggiate: learn),
+      TrainerKind.pitch => f.note(base + int.parse(item)),
+      TrainerKind.interval => f.interval(item, rootMidi: r, learn: true),
+      TrainerKind.chord => f.chord(item, rootMidi: r, arpeggiate: true),
       TrainerKind.scale => f.scale(item, root: r),
       TrainerKind.progression => f.progression(item, keyRoot: r - 12),
     };
   }
 
-  Widget _hearSlide(String item) {
-    final audio = TrainerScope.of(context).audio;
-    final store = TrainerScope.of(context).store;
-    return StatefulBuilder(
-      builder: (context, setLocal) => ListView(
-        padding: const EdgeInsets.fromLTRB(20, 28, 20, 20),
-        children: [
-          Text(
-            '${_label(item)} sesini duy',
-            textAlign: TextAlign.center,
-            style: TT.h3,
-          ),
-          const SizedBox(height: 10),
-          Text(
-            switch (kind) {
-              TrainerKind.interval =>
-                'Pes nota, tiz nota, sonra ikisi birlikte. İki notanın nasıl kaynaştığına dikkat et.',
-              TrainerKind.scale =>
-                'Merdivenin ev notasının üzerinden tırmanışını dinle.',
-              TrainerKind.chord => 'Önce notalar tek tek, sonra akor birlikte.',
-              _ => 'Dinle ve sesin rengini aklında tut.',
-            },
-            textAlign: TextAlign.center,
-            style: TT.body,
-          ),
-          const SizedBox(height: 22),
-          Container(
-            padding: const EdgeInsets.all(18),
-            decoration: BoxDecoration(
-              color: soft(color).withValues(alpha: 0.7),
-              borderRadius: BorderRadius.circular(18),
-              border: Border.all(
-                color: color.withValues(alpha: 0.4),
-                width: 1.5,
+  void _play(String item) => TrainerScope.of(context).audio.play(_demo(item));
+
+  void _singChanged() {
+    if (mounted) setState(() {});
+  }
+
+  TrainerPitchSingTarget _singTarget(String item) {
+    final store = TrainerScope.read(context).store;
+    return TrainerPitchSingTarget.forNode(
+      node: node,
+      itemId: item,
+      register: node.registers.first,
+      voice: store.part,
+      timbre: store.timbre,
+    );
+  }
+
+  Future<TrainerPitchSingSession?> _sessionFor(String item) async {
+    final current = _singSession;
+    if (current != null && _singItem == item) return current;
+    final generation = ++_singGeneration;
+    current?.removeListener(_singChanged);
+    if (mounted) {
+      setState(() {
+        _singSession = null;
+        _singItem = item;
+        _singUnavailable = false;
+      });
+    }
+    if (current != null) await _closeAndDispose(current);
+    if (!mounted || generation != _singGeneration) return null;
+    final factory =
+        widget.pitchSingSessionFactory ?? createMobileTrainerPitchSingSession;
+    late final TrainerPitchSingSession session;
+    try {
+      session = factory(_singTarget(item));
+    } catch (_) {
+      if (mounted && generation == _singGeneration) {
+        setState(() => _singUnavailable = true);
+      }
+      return null;
+    }
+    session.addListener(_singChanged);
+    setState(() => _singSession = session);
+    return session;
+  }
+
+  Future<void> _calibrateSing(String item) async {
+    final session = await _sessionFor(item);
+    if (session != null) await session.calibrate();
+  }
+
+  Future<void> _startSing(String item) async {
+    final session = await _sessionFor(item);
+    if (session != null) await session.startAttempt();
+  }
+
+  void _releaseSingSession() {
+    ++_singGeneration;
+    final session = _singSession;
+    session?.removeListener(_singChanged);
+    _singSession = null;
+    _singItem = null;
+    _singUnavailable = false;
+    if (session != null) unawaited(_closeAndDispose(session));
+  }
+
+  Future<void> _closeAndDispose(TrainerPitchSingSession session) async {
+    try {
+      await session.close();
+    } finally {
+      session.dispose();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => switch (_step) {
+    _Step.practice => QuizView(
+      key: const ValueKey('practice'),
+      title: node.isGate ? node.title : 'Ayırt et · ${node.title}',
+      color: color,
+      questions: node.isGate ? _gen.session() : _gen.lessonPractice(node),
+      showCounter: true,
+      forceHints: !node.isGate,
+      onExit: () => Navigator.of(context).pop(false),
+      onFinished: (summary) {
+        _summary = summary;
+        _finishNode(summary.accuracy);
+        setState(() => _step = _Step.result);
+      },
+    ),
+    _Step.result => SessionEnd(
+      node: node,
+      summary: _summary!,
+      passed: _passed,
+      onDone: () => Navigator.of(context).pop(_passed),
+    ),
+    _ => _frame(),
+  };
+
+  Widget _frame() {
+    final (body, button) = switch (_step) {
+      _Step.overview => (_overview(), node.isGate ? 'Teste başla' : 'Başla'),
+      _Step.listen => (
+        _intro
+            ? _introPage(path.introSlides[_page])
+            : node.newItems.isEmpty
+            ? _comparePage()
+            : _meetPage(node.newItems[_page]),
+        _intro && _page == _pageCount - 1 ? 'Tamam' : 'İleri',
+      ),
+      _ => (_singPage(), 'Ayırt etmeye geç'),
+    };
+    return Scaffold(
+      backgroundColor: TC.canvas,
+      body: SafeArea(
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 8, 16, 0),
+              child: Row(
+                children: [
+                  IconButton(
+                    tooltip: 'Geri',
+                    onPressed: () => Navigator.of(context).pop(false),
+                    icon: const Icon(Icons.close_rounded, color: TC.body),
+                  ),
+                  Expanded(
+                    child: Text(
+                      kind.title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TT.title,
+                    ),
+                  ),
+                  if (!_intro && !node.isGate) _phaseDots(),
+                ],
               ),
             ),
-            child: Column(
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(_label(item), style: TT.title),
-                          const SizedBox(height: 4),
-                          Text(
-                            switch (kind) {
-                              TrainerKind.interval =>
-                                '${item.toUpperCase()} · ${Intervals.byId(item).semitones} YARIM SES',
-                              TrainerKind.scale =>
-                                '${Scales.byId(item).steps.length} NOTA',
-                              TrainerKind.chord =>
-                                '${Chords.byId(item).tones.length} SES',
-                              _ => 'DİNLE',
-                            },
-                            style: TextStyle(
-                              color: color,
-                              fontWeight: FontWeight.w800,
-                              fontSize: 11.5,
-                              letterSpacing: 1,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    IconButton.filled(
-                      key: const Key('lesson_play'),
-                      tooltip: 'Çal',
-                      style: IconButton.styleFrom(
-                        backgroundColor: color,
-                        fixedSize: const Size(52, 52),
-                      ),
-                      onPressed: () => audio.play(_demo(item)),
-                      icon: const Icon(Icons.play_arrow_rounded, size: 30),
-                    ),
-                  ],
+            Expanded(
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 220),
+                child: KeyedSubtree(
+                  key: ValueKey('$_step-$_page'),
+                  child: body,
                 ),
-                if (kind == TrainerKind.scale) ...[
-                  const SizedBox(height: 16),
-                  ScaleLadder(scale: Scales.byId(item), color: color),
-                ],
-              ],
+              ),
             ),
-          ),
-          if (kind != TrainerKind.pitch) ...[
-            const SizedBox(height: 20),
-            const Text(
-              'HERHANGİ BİR NOTADAN DİNLE',
-              textAlign: TextAlign.center,
-              style: TT.caps,
-            ),
-            const SizedBox(height: 12),
-            Wrap(
-              alignment: WrapAlignment.center,
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                for (final pc in PitchClass.whiteKeys)
-                  ChoiceChip(
-                    label: Text(
-                      PitchClass.name(pc, store.notation).toUpperCase(),
-                    ),
-                    selected: _root == pc,
-                    showCheckmark: false,
-                    selectedColor: color,
-                    labelStyle: TextStyle(
-                      color: _root == pc ? Colors.white : color,
-                      fontWeight: FontWeight.w800,
-                      fontSize: 12,
-                    ),
-                    side: BorderSide(color: color.withValues(alpha: 0.4)),
-                    backgroundColor: soft(color),
-                    shape: const StadiumBorder(),
-                    onSelected: (_) {
-                      setLocal(() => _root = pc);
-                      audio.play(_demo(item));
-                    },
-                  ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            const Text(
-              'Aynı kalıp, farklı başlangıç notası. Birkaçına dokun, tanıdık gelince devam et.',
-              textAlign: TextAlign.center,
-              style: TT.small,
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+              child: BigButton(
+                key: const Key('lesson_next'),
+                label: button,
+                color: color,
+                onPressed: _forward,
+              ),
             ),
           ],
-        ],
+        ),
       ),
     );
   }
 
-  Widget _hookSlide(String item) {
-    final iv = Intervals.byId(item);
-    final audio = TrainerScope.of(context).audio;
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(20, 28, 20, 20),
+  /// Dinle · Söyle · Ayırt et, current phase highlighted.
+  Widget _phaseDots() {
+    final active = switch (_step) {
+      _Step.overview => -1,
+      _Step.listen => 0,
+      _Step.sing => 1,
+      _ => 2,
+    };
+    return Row(
       children: [
-        Text(
-          '${iv.name} için bir kanca: ${iv.hook}.',
-          textAlign: TextAlign.center,
-          style: TT.body.copyWith(color: TC.ink),
-        ),
-        const SizedBox(height: 22),
-        AppCard(
-          color: const Color(0xFFF7F7FC),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text('BÖYLE HATIRLA', style: TT.caps),
-              const SizedBox(height: 4),
-              Text(iv.hook, style: TT.title),
-              const SizedBox(height: 18),
-              SizedBox(
-                height: 110,
-                child: CustomPaint(
-                  size: Size.infinite,
-                  painter: _LeapPainter(iv.semitones, color),
-                ),
-              ),
-              const SizedBox(height: 12),
-              Align(
-                alignment: Alignment.centerRight,
-                child: FilledButton.icon(
-                  style: FilledButton.styleFrom(backgroundColor: color),
-                  onPressed: () => audio.play(
-                    SoundFactory(_random).interval(item, rootMidi: 60),
-                  ),
-                  icon: const Icon(Icons.play_arrow_rounded),
-                  label: const Text('ÇAL'),
-                ),
-              ),
-            ],
+        for (var i = 0; i < 3; i++)
+          Container(
+            margin: const EdgeInsets.only(left: 4),
+            width: i == active ? 18 : 8,
+            height: 8,
+            decoration: BoxDecoration(
+              color: i <= active ? color : TC.line,
+              borderRadius: BorderRadius.circular(4),
+            ),
           ),
-        ),
       ],
     );
   }
 
-  Widget _compareSlide() {
-    final audio = TrainerScope.of(context).audio;
-    final items = node.items;
+  Widget _overview() {
+    final stage =
+        path.nodes
+            .where(
+              (n) =>
+                  n.kind == NodeKind.checkpoint &&
+                  path.indexOf(n.id) < path.indexOf(node.id),
+            )
+            .length +
+        1;
+    final steps = node.isGate
+        ? [
+            (
+              Icons.fact_check_outlined,
+              'Ayırt et',
+              node.kind == NodeKind.finalExam
+                  ? '20 soru · %80 ile tamamlanır'
+                  : '12 soru · %80 ile önceki dersler de tamamlanır',
+            ),
+          ]
+        : [
+            (
+              Icons.hearing_rounded,
+              'Dinle',
+              node.newItems.isEmpty
+                  ? 'Bildiklerini yan yana çal'
+                  : 'Yeni ${kind.unitWord}: ${node.newItems.map((i) => _label(i, long: false)).join(', ')}',
+            ),
+            (
+              Icons.mic_none_rounded,
+              'Söyle',
+              'Duyduğunu sesli tekrar et · ölçülmez',
+            ),
+            (
+              Icons.fact_check_outlined,
+              'Ayırt et',
+              '${node.items.length} seçenekli kısa tur',
+            ),
+          ];
     return ListView(
-      padding: const EdgeInsets.fromLTRB(20, 28, 20, 20),
+      padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
       children: [
-        Text(
-          node.title.replaceFirst(RegExp(r'^\d+\. '), ''),
-          textAlign: TextAlign.center,
-          style: TT.h3,
-        ),
-        const SizedBox(height: 10),
-        Text(
-          'Her birini çal, sonra farkı dinle. ${node.subtitle}',
-          textAlign: TextAlign.center,
-          style: TT.body,
-        ),
-        const SizedBox(height: 22),
-        for (final item in items)
+        Text(switch (node.kind) {
+          NodeKind.checkpoint => 'ARA DURAK',
+          NodeKind.finalExam => 'KONSER PROVASI',
+          _ => 'BASAMAK $stage',
+        }, style: TT.caps.copyWith(color: color)),
+        const SizedBox(height: 4),
+        Text(node.title, style: TT.h2),
+        const SizedBox(height: 6),
+        Text(node.subtitle, style: TT.body),
+        const SizedBox(height: 24),
+        for (final (icon, title, body) in steps)
           Padding(
             padding: const EdgeInsets.only(bottom: 10),
             child: AppCard(
-              onTap: () => audio.play(_demo(item, learn: false)),
               child: Row(
                 children: [
+                  Icon(icon, color: color),
+                  const SizedBox(width: 14),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(_label(item), style: TT.title),
-                        const SizedBox(height: 2),
-                        Text(itemFeel(kind, item), style: TT.small),
+                        Text(title, style: TT.title),
+                        Text(body, style: TT.small),
                       ],
                     ),
                   ),
-                  Icon(Icons.play_circle_fill_rounded, color: color, size: 36),
                 ],
               ),
             ),
@@ -426,355 +406,358 @@ class _LessonFlowState extends State<LessonFlow> {
     );
   }
 
-  // ---------------- navigation ----------------
-
-  void _nextSlide() {
-    if (_slide < _slides.length - 1) {
-      setState(() => _slide++);
-      return;
-    }
-    if (node.kind == NodeKind.intro) {
-      _finishNode(1);
-      Navigator.of(context).pop(true);
-      return;
-    }
-    setState(() => _step = _Step.quickCheck);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return switch (_step) {
-      _Step.start => _startScreen(),
-      _Step.slides => _slidesScreen(),
-      _Step.quickCheck => QuizView(
-        key: const ValueKey('quick'),
-        title: node.title,
-        color: color,
-        questions: _check,
-        record: false,
-        forceHints: true,
-        showCounter: false,
-        quickCheckLabel: 'KISA YOKLAMA',
-        onExit: () => Navigator.of(context).pop(false),
-        onFinished: (_) => setState(() => _step = _Step.lockedIn),
-      ),
-      _Step.lockedIn => _lockedIn(),
-      _Step.complete => _lessonComplete(),
-      _Step.practice => QuizView(
-        key: const ValueKey('practice'),
-        title: node.isGate ? node.title : 'Pratik',
-        color: node.isGate ? color : TC.magenta,
-        questions: node.isGate ? _gen.session() : _gen.lessonPractice(node),
-        showCounter: node.isGate,
-        onExit: () => Navigator.of(context).pop(false),
-        onFinished: (summary) {
-          _summary = summary;
-          _finishNode(summary.accuracy);
-          setState(() => _step = _Step.result);
-        },
-      ),
-      _Step.result => SessionEnd(
-        node: node,
-        summary: _summary!,
-        passed: _passed,
-        onDone: () => Navigator.of(context).pop(_passed),
-      ),
-    };
-  }
-
-  Widget _startScreen() {
-    final gate = node.isGate;
-    final unit =
-        path.nodes
-            .where(
-              (n) => n.isGate && path.indexOf(n.id) < path.indexOf(node.id),
-            )
-            .length +
-        1;
-    final lessonsInUnit = _unitSize(unit);
-    final indexInUnit = _indexInUnit();
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: Column(
-          children: [
-            TopBar(
-              title: gate ? node.title : 'Öğren',
-              shadow: true,
-              onBack: () => Navigator.of(context).pop(false),
-            ),
-            if (!gate) _stepper(learn: true),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Tag(switch (node.kind) {
-                      NodeKind.checkpoint => 'KONTROL NOKTASI',
-                      NodeKind.finalExam => 'FİNAL SINAVI',
-                      _ when node.newItems.isEmpty => 'YENİ KARŞILAŞTIRMA',
-                      _ => 'YENİ ${kind.unitWord.toUpperCase()}',
-                    }, color: TC.primary),
-                    const SizedBox(height: 16),
-                    TrainerBadge(
-                      color: gate ? color : TC.primary,
-                      icon: gate ? Icons.flag_rounded : trainerIcon(kind),
-                      size: 72,
-                    ),
-                    const SizedBox(height: 18),
-                    Text(node.title, textAlign: TextAlign.center, style: TT.h2),
-                    const SizedBox(height: 8),
-                    Text(
-                      node.subtitle,
-                      textAlign: TextAlign.center,
-                      style: TT.body,
-                    ),
-                    if (gate) ...[
-                      const SizedBox(height: 16),
-                      Text(
-                        node.kind == NodeKind.finalExam
-                            ? '20 soru · %80 ile geçersin'
-                            : '12 soru · %80 ile geçersin; geçersen önceki dersleri atlarsın',
-                        textAlign: TextAlign.center,
-                        style: TT.small,
-                      ),
-                    ] else ...[
-                      const SizedBox(height: 16),
-                      Text(
-                        'Ünite $unit · Ders $indexInUnit / $lessonsInUnit',
-                        style: TT.small,
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-              child: BigButton(
-                label: gate ? 'Teste başla' : 'Derse başla',
-                chevron: true,
-                color: gate ? color : TC.primary,
-                onPressed: () => setState(
-                  () => _step = gate ? _Step.practice : _Step.slides,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  int _unitSize(int unit) {
-    var u = 1;
-    var count = 0;
-    for (final n in path.nodes) {
-      if (n.kind == NodeKind.intro) continue;
-      if (n.isGate) {
-        if (u == unit) return count;
-        u++;
-        count = 0;
-      } else {
-        count++;
-      }
-    }
-    return count;
-  }
-
-  int _indexInUnit() {
-    var count = 0;
-    for (final n in path.nodes) {
-      if (n.kind == NodeKind.intro) continue;
-      if (n.isGate) {
-        count = 0;
-        continue;
-      }
-      count++;
-      if (n.id == node.id) return count;
-    }
-    return count;
-  }
-
-  Widget _stepper({required bool learn}) => Padding(
-    padding: const EdgeInsets.fromLTRB(40, 4, 40, 8),
-    child: Row(
-      children: [
-        _dot('Öğren', true),
-        Expanded(child: Container(height: 2, color: TC.line)),
-        _dot('Pratik', !learn),
-      ],
-    ),
-  );
-
-  Widget _dot(String label, bool active) => Column(
+  Widget _introPage(IntroSlide s) => ListView(
+    padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
     children: [
-      Container(
-        width: 18,
-        height: 18,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: active ? Colors.white : const Color(0xFFE4E3EF),
-          border: Border.all(
-            color: active ? TC.primary : const Color(0xFFE4E3EF),
-            width: 4,
-          ),
-        ),
-      ),
+      Text('${_page + 1} / $_pageCount', style: TT.caps.copyWith(color: color)),
       const SizedBox(height: 4),
-      Text(
-        label,
-        style: TextStyle(
-          fontSize: 10.5,
-          fontWeight: FontWeight.w700,
-          color: active ? TC.primary : TC.muted,
-        ),
-      ),
+      Text(s.title, style: TT.h2),
+      const SizedBox(height: 8),
+      Text(s.body, style: TT.body),
+      const SizedBox(height: 20),
+      for (final b in s.bullets)
+        BulletCard(b, color: color, highlight: s.highlight),
     ],
   );
 
-  Widget _slidesScreen() {
-    final isIntro = node.kind == NodeKind.intro;
-    final last = _slide == _slides.length - 1;
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: Column(
+  List<(String, String)> _facts(String item) => switch (kind) {
+    TrainerKind.pitch => [
+      ('Yeri', '${_label('0')}\'ya göre ${int.parse(item)} yarım ses yukarıda'),
+    ],
+    TrainerKind.interval => [
+      ('Genişlik', '${Intervals.byId(item).semitones} yarım ses'),
+      ('Solfej örneği', Intervals.byId(item).anchor),
+    ],
+    TrainerKind.chord => [('Ses sayısı', '${Chords.byId(item).tones.length}')],
+    TrainerKind.scale => [('Nota sayısı', '${Scales.byId(item).steps.length}')],
+    TrainerKind.progression => [
+      ('Akor sayısı', '${Progressions.byId(item).chords.length}'),
+    ],
+  };
+
+  Widget _meetPage(String item) {
+    final store = TrainerScope.of(context).store;
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
+      children: [
+        Text(
+          'DİNLE · ${_page + 1} / $_pageCount',
+          style: TT.caps.copyWith(color: color),
+        ),
+        const SizedBox(height: 4),
+        Text(_label(item), style: TT.h2),
+        const SizedBox(height: 6),
+        Text(itemFeel(kind, item), style: TT.body),
+        const SizedBox(height: 18),
+        AppCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              for (final (k, v) in _facts(item))
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Row(
+                    children: [
+                      SizedBox(width: 110, child: Text(k, style: TT.small)),
+                      Expanded(child: Text(v, style: TT.title)),
+                    ],
+                  ),
+                ),
+              if (kind == TrainerKind.scale) ...[
+                const SizedBox(height: 6),
+                ScaleLadder(scale: Scales.byId(item), color: color),
+              ],
+            ],
+          ),
+        ),
+        const SizedBox(height: 18),
+        Row(
           children: [
-            TopBar(
-              title: node.title,
-              progress: (_slide + 1) / (_slides.length + (isIntro ? 0 : 3)),
-              progressColor: color,
-              onBack: () {
-                if (_slide > 0) {
-                  setState(() => _slide--);
-                } else {
-                  Navigator.of(context).pop(false);
-                }
-              },
-            ),
             Expanded(
-              child: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 280),
-                child: KeyedSubtree(
-                  key: ValueKey(_slide),
-                  child: _slides[_slide](),
+              child: FilledButton.icon(
+                key: const Key('lesson_play'),
+                style: FilledButton.styleFrom(
+                  backgroundColor: color,
+                  minimumSize: const Size.fromHeight(50),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
+                onPressed: () => _play(item),
+                icon: const Icon(Icons.play_arrow_rounded),
+                label: const Text('Çal'),
+              ),
+            ),
+            if (kind != TrainerKind.pitch) ...[
+              const SizedBox(width: 10),
+              Expanded(
+                child: OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: color,
+                    minimumSize: const Size.fromHeight(50),
+                    side: BorderSide(color: color),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                  onPressed: () {
+                    setState(() => _root = _random.nextInt(12) - 5);
+                    _play(item);
+                  },
+                  icon: const Icon(Icons.shuffle_rounded),
+                  label: const Text('Başka yerden'),
                 ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-              child: BigButton(
-                key: const Key('lesson_next'),
-                label: isIntro && last ? 'Tamam' : 'İleri',
-                color: kind == TrainerKind.pitch ? TC.primary : color,
-                onPressed: _nextSlide,
-              ),
-            ),
+            ],
           ],
         ),
-      ),
+        if (store.part != null) ...[
+          const SizedBox(height: 10),
+          Text(
+            '${store.part!.title} aralığında çalınıyor.',
+            textAlign: TextAlign.center,
+            style: TT.small,
+          ),
+        ],
+      ],
     );
   }
 
-  Widget _lockedIn() => Scaffold(
-    backgroundColor: Colors.white,
-    body: SafeArea(
-      child: Column(
-        children: [
-          TopBar(title: node.title, progress: 0.92, progressColor: color),
-          Expanded(
-            child: _readySlide(
-              'Yerine oturdu',
-              node.newItems.isEmpty
-                  ? 'Farkı duydun. Şimdi pratikte pekiştirelim.'
-                  : '${node.newItems.map((i) => _label(i)).join(', ')} artık kulağında. Bu senin yeni işaret noktan.',
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-            child: BigButton(
-              label: 'Devam',
-              color: kind == TrainerKind.pitch ? TC.primary : color,
-              onPressed: () => setState(() => _step = _Step.complete),
-            ),
-          ),
-        ],
+  Widget _comparePage() => ListView(
+    padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
+    children: [
+      Text('DİNLE · YAN YANA', style: TT.caps.copyWith(color: color)),
+      const SizedBox(height: 4),
+      Text(node.title.replaceFirst(RegExp(r'^\d+\. '), ''), style: TT.h2),
+      const SizedBox(height: 6),
+      const Text(
+        'Her birini çal; aradaki farkı tek cümleyle kendine söyle.',
+        style: TT.body,
       ),
-    ),
-  );
-
-  Widget _lessonComplete() => Scaffold(
-    backgroundColor: Colors.white,
-    body: SafeArea(
-      child: Column(
-        children: [
-          TopBar(
-            title: 'Öğren',
-            shadow: true,
-            onBack: () => Navigator.of(context).pop(false),
-          ),
-          _stepper(learn: false),
-          Expanded(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+      const SizedBox(height: 18),
+      for (final item in node.items)
+        Padding(
+          padding: const EdgeInsets.only(bottom: 10),
+          child: AppCard(
+            onTap: () => _play(item),
+            child: Row(
               children: [
-                const Tag('DERS TAMAMLANDI', color: TC.primary),
-                const SizedBox(height: 16),
-                TrainerBadge(color: color, icon: trainerIcon(kind), size: 76),
-                const SizedBox(height: 18),
-                Text(kind.title, style: TT.h2),
-                const SizedBox(height: 6),
-                Text(node.title, style: TT.small),
+                Icon(Icons.play_circle_outline_rounded, color: color, size: 30),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(_label(item), style: TT.title),
+                      Text(itemFeel(kind, item), style: TT.small),
+                    ],
+                  ),
+                ),
               ],
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-            child: BigButton(
-              label: 'Devam et',
-              chevron: true,
-              color: color,
-              onPressed: () => setState(() => _step = _Step.practice),
-            ),
-          ),
-        ],
-      ),
-    ),
-  );
-}
-
-class _LeapPainter extends CustomPainter {
-  _LeapPainter(this.semitones, this.color);
-  final int semitones;
-  final Color color;
-  @override
-  void paint(Canvas canvas, Size size) {
-    final y1 = size.height * 0.75;
-    final y2 = size.height * (0.75 - 0.55 * semitones / 12);
-    final a = Offset(size.width * 0.28, y1);
-    final b = Offset(size.width * 0.68, y2);
-    canvas.drawLine(
-      a,
-      b,
-      Paint()
-        ..color = color.withValues(alpha: 0.5)
-        ..strokeWidth = 4,
-    );
-    for (final p in [a, b]) {
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(
-          Rect.fromCenter(center: p, width: 70, height: 30),
-          const Radius.circular(15),
         ),
-        Paint()..color = color,
-      );
+    ],
+  );
+
+  String _singPhaseLabel(TrainerPitchSingSession session) =>
+      switch (session.phase) {
+        SingleToneSessionPhase.idle =>
+          session.calibration?.isUsable == true
+              ? 'Hazır · referansı dinleyip söyleyebilirsin'
+              : 'Önce birkaç saniye sessiz kalıp ortamı ölç',
+        SingleToneSessionPhase.calibrating => 'Ortam sesi ölçülüyor…',
+        SingleToneSessionPhase.preparing => 'Mikrofon hazırlanıyor…',
+        SingleToneSessionPhase.referencePlaying => 'Dinle · henüz söyleme',
+        SingleToneSessionPhase.waiting => 'Hazırlan…',
+        SingleToneSessionPhase.responding => 'Şimdi söyle',
+        SingleToneSessionPhase.assessing => 'Kayıt kalitesi kontrol ediliyor…',
+        SingleToneSessionPhase.analyzing => 'Ses adayı inceleniyor…',
+        SingleToneSessionPhase.finished => _singOutcomeLabel(session),
+        SingleToneSessionPhase.closed => 'Oturum kapandı',
+      };
+
+  String _singOutcomeLabel(TrainerPitchSingSession session) {
+    final outcome = session.diagnosticOutcome;
+    if (outcome == null) return 'Yeni bir deneme yapabilirsin';
+    if (outcome.needsRetry) {
+      return switch (outcome.retryReason!) {
+        SessionRetryReason.calibrationRequired => 'Ortam ölçümünü yenile',
+        SessionRetryReason.permissionDenied =>
+          'Mikrofon izni verilmedi · istersen bu adımı geç',
+        SessionRetryReason.routeUnsupported =>
+          'Bu ses yolu ölçüm için uygun değil · kulaklıkla tekrar dene',
+        SessionRetryReason.interrupted => 'Deneme kesildi · sonuç sayılmadı',
+        SessionRetryReason.captureFailed => 'Kayıt alınamadı · sonuç sayılmadı',
+        SessionRetryReason.quality =>
+          'Ses yeterince ayrışmadı · sonuç sayılmadı',
+        SessionRetryReason.analysisFailed =>
+          'Ses analizi tamamlanamadı · sonuç sayılmadı',
+      };
     }
+    final deviation = outcome.deviation;
+    if (deviation == null) return 'Kararlı bir ses adayı bulunamadı';
+    final cents = deviation.absoluteCents.round();
+    final sign = cents > 0 ? '+' : '';
+    return 'Tanısal fark: $sign$cents sent · puan değil';
   }
 
-  @override
-  bool shouldRepaint(_LeapPainter old) => old.semitones != semitones;
+  String _sourceLabel(MeasurementSource source) => switch (source) {
+    MeasurementSource.microphone => 'Mikrofon kaydı',
+    MeasurementSource.mock => 'Test kaynağı',
+    MeasurementSource.synthetic => 'Sentetik kaynak',
+    MeasurementSource.touch => 'Dokunma',
+    MeasurementSource.unverified => 'Doğrulanmamış kaynak',
+  };
+
+  bool _singActive(TrainerPitchSingSession session) => const {
+    SingleToneSessionPhase.calibrating,
+    SingleToneSessionPhase.preparing,
+    SingleToneSessionPhase.referencePlaying,
+    SingleToneSessionPhase.waiting,
+    SingleToneSessionPhase.responding,
+    SingleToneSessionPhase.assessing,
+    SingleToneSessionPhase.analyzing,
+  }.contains(session.phase);
+
+  Widget _pitchDiagnostic(String item) {
+    final session = _singItem == item ? _singSession : null;
+    final active = session != null && _singActive(session);
+    final calibrated = session?.calibration?.isUsable == true;
+    final outcome = session?.diagnosticOutcome;
+    return AppCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.mic_none_rounded, color: color),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text('İsteğe bağlı ses kontrolü', style: TT.title),
+              ),
+              const Text('PUANSIZ', style: TT.caps),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            session == null
+                ? _singUnavailable
+                      ? 'Ses kontrolü bu cihazda başlatılamadı · istersen adımı geç'
+                      : 'Mikrofon yalnız sen başlatırsan açılır. Bu kontrol ders sonucunu değiştirmez.'
+                : _singPhaseLabel(session),
+            key: const Key('sing_diagnostic_status'),
+            style: TT.small,
+            semanticsLabel: session == null
+                ? _singUnavailable
+                      ? 'İsteğe bağlı ses kontrolü kullanılamıyor'
+                      : 'İsteğe bağlı ses kontrolü hazır'
+                : _singPhaseLabel(session),
+          ),
+          if (outcome?.evidence != null) ...[
+            const SizedBox(height: 6),
+            Text(
+              'Kaynak: ${_sourceLabel(outcome!.evidence!.provenance.source)}',
+              key: const Key('sing_diagnostic_source'),
+              style: TT.small,
+            ),
+          ],
+          const SizedBox(height: 12),
+          if (active)
+            OutlinedButton.icon(
+              key: const Key('sing_cancel'),
+              onPressed: () => session.cancel(),
+              icon: const Icon(Icons.stop_circle_outlined),
+              label: const Text('Durdur'),
+            )
+          else if (!calibrated)
+            OutlinedButton.icon(
+              key: const Key('sing_calibrate'),
+              onPressed: () => _calibrateSing(item),
+              icon: const Icon(Icons.tune_rounded),
+              label: const Text('Ortamı ölç ve hazırla'),
+            )
+          else
+            FilledButton.icon(
+              key: const Key('sing_start'),
+              style: FilledButton.styleFrom(backgroundColor: color),
+              onPressed: () => _startSing(item),
+              icon: const Icon(Icons.mic_rounded),
+              label: Text(outcome == null ? 'Dinle ve söyle' : 'Tekrar dene'),
+            ),
+        ],
+      ),
+    );
+  }
+
+  /// Singing back stays optional and unscored. Only pitch lessons may expose
+  /// the calibrated diagnostic; every other trainer remains self-guided.
+  Widget _singPage() {
+    final focus = node.newItems.isEmpty ? node.items : node.newItems;
+    final diagnosticItem = _singItem ?? focus.first;
+    final diagnosticAvailable =
+        kind == TrainerKind.pitch && TrainerScope.of(context).liveAudio;
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
+      children: [
+        Text('SÖYLE', style: TT.caps.copyWith(color: color)),
+        const SizedBox(height: 4),
+        const Text('Duy, sonra kendi sesinle tekrar et', style: TT.h2),
+        const SizedBox(height: 6),
+        Text(switch (kind) {
+          TrainerKind.interval => 'İki notayı sırayla, la-la diye söyle.',
+          TrainerKind.chord ||
+          TrainerKind.progression => 'Akorun en pes sesini mırıldan.',
+          TrainerKind.scale => 'Diziyi notaların adlarıyla yukarı çık.',
+          TrainerKind.pitch => 'Notayı adıyla birlikte uzatarak söyle.',
+        }, style: TT.body),
+        const SizedBox(height: 18),
+        for (final item in focus)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 10),
+            child: AppCard(
+              onTap: () => _play(item),
+              child: Row(
+                children: [
+                  Icon(Icons.volume_up_outlined, color: color),
+                  const SizedBox(width: 12),
+                  Expanded(child: Text(_label(item), style: TT.title)),
+                  const Text('Çal', style: TT.small),
+                ],
+              ),
+            ),
+          ),
+        const SizedBox(height: 8),
+        if (diagnosticAvailable) ...[
+          if (focus.length > 1)
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final item in focus)
+                  ChoiceChip(
+                    key: Key('sing_item_$item'),
+                    selected: diagnosticItem == item,
+                    label: Text(_label(item, long: false)),
+                    onSelected: (_) {
+                      if (item == diagnosticItem) return;
+                      _releaseSingSession();
+                      setState(() => _singItem = item);
+                    },
+                  ),
+              ],
+            ),
+          if (focus.length > 1) const SizedBox(height: 12),
+          _pitchDiagnostic(diagnosticItem),
+          const SizedBox(height: 12),
+        ],
+        const Text(
+          'Bu adım puanlanmaz ve ilerlemeye yazılmaz; kulak ile ses arasında bağ kurmak içindir.',
+          style: TT.small,
+        ),
+      ],
+    );
+  }
 }
 
 /// Dots on a 12-step ladder; the colour note is highlighted.
@@ -799,16 +782,6 @@ class ScaleLadder extends StatelessWidget {
                 color: color.withValues(alpha: 0.4),
               ),
             ),
-            for (var i = 0; i <= 12; i++)
-              Positioned(
-                left: i * step - (i == 12 ? 1 : 0),
-                top: 6,
-                child: Container(
-                  width: 1,
-                  height: 12,
-                  color: color.withValues(alpha: 0.3),
-                ),
-              ),
             for (var i = 0; i < scale.steps.length; i++)
               Positioned(
                 left: scale.steps[i] * step - (scale.color == i ? 7 : 4),
@@ -822,15 +795,6 @@ class ScaleLadder extends StatelessWidget {
                   ),
                 ),
               ),
-            Positioned(
-              right: 0,
-              top: 8,
-              child: Container(
-                width: 8,
-                height: 8,
-                decoration: BoxDecoration(shape: BoxShape.circle, color: color),
-              ),
-            ),
             const Positioned(
               left: 0,
               bottom: 0,

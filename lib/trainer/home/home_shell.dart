@@ -13,7 +13,7 @@ import '../settings/settings_tab.dart';
 import '../state/trainer_store.dart';
 import '../stats/stats_tab.dart';
 import '../ui/kit.dart';
-import 'trainer_sheet.dart';
+import '../learn/skill_screen.dart';
 
 class HomeShell extends StatefulWidget {
   const HomeShell({super.key});
@@ -549,7 +549,7 @@ class _SkillRow extends StatelessWidget {
       child: AppCard(
         key: Key('skill_${kind.id}'),
         padding: const EdgeInsets.all(14),
-        onTap: () => openTrainerSheet(context, kind),
+        onTap: () => openSkill(context, kind),
         child: Row(
           children: [
             TrainerBadge(color: color, icon: trainerIcon(kind), size: 42),

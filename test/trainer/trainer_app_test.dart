@@ -129,18 +129,14 @@ void main() {
     await settle(tester);
 
     await tapKey(tester, 'skill_interval');
-    expect(find.text('Bugün nasıl çalışalım?'), findsOneWidget);
-    await tapKey(tester, 'sheet_learn');
-    // First visit explains checkpoints.
-    expect(find.text('Bildiğin yerleri atla'), findsOneWidget);
-    await tester.tap(find.text('Anladım'));
-    await settle(tester);
-    expect(find.text('Giriş: Aralık Eğitimi'), findsOneWidget);
-    await tester.tap(find.bySemanticsLabel('Geri').first);
+    expect(find.text('BASAMAK 1'), findsOneWidget);
+    expect(find.text('Başlarken'), findsOneWidget);
+    expect(find.text('Sıradaki: Başlarken'), findsOneWidget);
+    await tester.tap(find.byTooltip('Geri').first);
     await settle(tester);
 
     await tapKey(tester, 'skill_chord');
-    await tapKey(tester, 'sheet_practice');
+    await tapKey(tester, 'skill_free');
     expect(find.text('AKORLAR'), findsOneWidget);
     expect(find.byKey(const Key('practice_now')), findsOneWidget);
   });
@@ -154,7 +150,7 @@ void main() {
     await settle(tester);
 
     await tapKey(tester, 'skill_pitch');
-    await tapKey(tester, 'sheet_practice');
+    await tapKey(tester, 'skill_free');
     await tapKey(tester, 'practice_now');
     // Pool is Do + Sol by default; answer every question with "Do".
     for (var q = 0; q < 8; q++) {
@@ -171,21 +167,14 @@ void main() {
         await tester.tap(find.bySemanticsLabel('Sol').first);
         await settle(tester, 400);
       }
-      if (find.text('İpuçları gizlensin mi?').evaluate().isNotEmpty) {
-        await tester.tap(find.text('Kalsın'));
-        await settle(tester, 400);
-      }
       await settle(tester, 2400);
     }
-    expect(find.byKey(const Key('session_results')), findsOneWidget);
+    expect(find.byKey(const Key('session_done')), findsOneWidget);
     expect(store.trainerReps(TrainerKind.pitch), 8);
-    await tapKey(tester, 'session_results');
-    expect(find.text('Çalışma bitti'), findsOneWidget);
+    expect(find.text('Serbest çalışma bitti'), findsOneWidget);
+    // The day streak is shown inline, no celebration modal.
+    expect(find.text('1 gün üst üste çalıştın'), findsOneWidget);
     await tapKey(tester, 'session_done');
-    // First activity of the day celebrates the streak.
-    expect(find.text('1 gün üst üste!'), findsOneWidget);
-    await tester.tap(find.text('Devam et'));
-    await settle(tester);
     expect(store.streak, 1);
   });
 
@@ -197,9 +186,9 @@ void main() {
     await tester.pumpWidget(app(store));
     await settle(tester);
     await tapKey(tester, 'skill_pitch');
-    await tapKey(tester, 'sheet_practice');
+    await tapKey(tester, 'skill_free');
     await tapKey(tester, 'practice_now');
-    await tester.tap(find.bySemanticsLabel('Geri').first);
+    await tester.tap(find.byTooltip('Geri').first);
     await settle(tester);
     expect(find.text('Pratik bitsin mi?'), findsOneWidget);
     await settle(tester, 20000); // longer than the 15 s limit
@@ -209,7 +198,7 @@ void main() {
     expect(find.text('1 / 8'), findsOneWidget);
     expect(store.trainerReps(TrainerKind.pitch), 0);
     // Leave cleanly so no timers outlive the test.
-    await tester.tap(find.bySemanticsLabel('Geri').first);
+    await tester.tap(find.byTooltip('Geri').first);
     await settle(tester);
     await tester.tap(find.text('Oturumu bitir'));
     await settle(tester, 1500);
@@ -223,14 +212,17 @@ void main() {
     await tester.pumpWidget(app(store));
     await settle(tester);
     await tapKey(tester, 'today_begin');
-    final intro = trainerPaths[TrainerKind.pitch]!.nodes.first;
-    expect(find.text(intro.title), findsWidgets);
-    while (find.byKey(const Key('lesson_next')).evaluate().isNotEmpty) {
+    final path = trainerPaths[TrainerKind.pitch]!;
+    final intro = path.nodes.first;
+    expect(find.text(path.introSlides.first.title), findsOneWidget);
+    while (find.byKey(const Key('lesson_next')).evaluate().isNotEmpty &&
+        !store.isComplete(intro.id)) {
       await tapKey(tester, 'lesson_next');
     }
     expect(store.isComplete(intro.id), isTrue);
-    // Today's session continues with lesson 1.
-    expect(find.text('Derse başla'), findsOneWidget);
+    // Today's session continues with lesson 1's overview.
+    expect(find.text(path.nodes[1].title), findsOneWidget);
+    expect(find.text('BASAMAK 1'), findsOneWidget);
   });
 
   testWidgets('choir hub lists the workshop and opens the voice-count drill', (

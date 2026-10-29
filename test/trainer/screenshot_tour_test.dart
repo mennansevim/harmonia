@@ -122,38 +122,30 @@ void main() {
     await shot('home');
 
     await tap(key('skill_interval'));
-    await shot('trainer_sheet');
-    await tap(key('sheet_learn'));
-    await tap(find.text('Anladım'));
-    await shot('interval_path');
-    await tap(find.text('Giriş: Aralık Eğitimi'));
-    await shot('lesson_slide');
+    await shot('skill_interval');
+    await tap(key('skill_next'));
+    await shot('intro_slide');
     await tap(key('lesson_next'));
     await tap(key('lesson_next'));
+    await tap(key('skill_next'));
+    await shot('lesson_overview');
     await tap(key('lesson_next'));
+    await shot('lesson_listen');
     await tap(key('lesson_next'));
-    await tap(find.text('1. Oktav (P8)'));
-    await shot('lesson_start');
-    await tap(find.text('Derse başla'));
-    await tap(key('lesson_next'));
-    await shot('lesson_hear');
-    await tap(key('lesson_next'));
-    await shot('lesson_hook');
+    await shot('lesson_sing');
     await tap(key('lesson_next'), ms: 1200);
-    await shot('quick_check_yes_no');
-    await tap(find.bySemanticsLabel('Evet'), ms: 1200);
-    await shot('quick_check_feedback');
+    await shot('lesson_practice');
     // Leave the lesson.
     final nav = tester.state<NavigatorState>(find.byType(Navigator).first);
     nav.popUntil((r) => r.isFirst);
     await tester.pump(const Duration(seconds: 1));
 
     await tap(key('skill_pitch'));
-    await tap(key('sheet_practice'));
+    await tap(key('skill_free'));
     await shot('practice_setup_pitch');
     await tap(key('practice_now'), ms: 400);
     await shot('quiz_identify_playing');
-    await tap(find.bySemanticsLabel('Do'), ms: 300);
+    await tap(find.bySemanticsLabel('Sol'), ms: 300);
     await shot('quiz_feedback');
     nav.popUntil((r) => r.isFirst);
     await tester.pump(const Duration(seconds: 3));

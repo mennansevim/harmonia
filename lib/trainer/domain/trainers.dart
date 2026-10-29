@@ -207,12 +207,6 @@ class SoundFactory {
     return moved;
   }
 
-  /// "Resetting your ear": a quick random cluster that clears tonal memory.
-  SoundSpec earReset() => SoundSpec([
-    for (var i = 0; i < 4; i++)
-      ToneEvent(i * 0.11, 0.12, [55 + random.nextInt(24)]),
-  ]);
-
   SoundSpec item(
     TrainerKind kind,
     String itemId, {
@@ -260,9 +254,9 @@ String itemLabel(
 };
 
 String itemFeel(TrainerKind kind, String id) => switch (kind) {
-  TrainerKind.pitch => 'Bu notanın rengini ezberle.',
+  TrainerKind.pitch => 'Do\'ya göre yerini düşün, sonra adını söyle.',
   TrainerKind.interval =>
-    '${Intervals.byId(id).feel} Düşün: ${Intervals.byId(id).hook}.',
+    '${Intervals.byId(id).feel} Örnek: ${Intervals.byId(id).anchor}.',
   TrainerKind.chord => Chords.byId(id).feel,
   TrainerKind.scale => Scales.byId(id).feel,
   TrainerKind.progression => Progressions.byId(id).feel,

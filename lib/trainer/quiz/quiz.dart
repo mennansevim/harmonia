@@ -191,22 +191,20 @@ class QuizGenerator {
     return out;
   }
 
-  /// A lesson's practice block: alternate yes/no and find on the new items,
-  /// then identify among the whole pool when it has several items.
+  /// A lesson's "Ayırt et" block: mostly naming from the whole pool, every
+  /// third question a pick-the-sound on a new item. Single-item pools
+  /// alternate find and yes/no.
   List<QuizQuestion> lessonPractice(LessonNode node) {
     final focus = node.newItems.isEmpty ? node.items : node.newItems;
     final out = <QuizQuestion>[];
     for (var i = 0; i < config.length; i++) {
       final target = focus[random.nextInt(focus.length)];
-      if (i < 3) {
-        out.add(yesNo(target: target));
-      } else if (i < 6 || config.pool.length == 1) {
+      if (config.pool.length == 1) {
         out.add(
-          find(
-            target: target,
-            choices: config.trainer == TrainerKind.scale ? 2 : 4,
-          ),
+          i.isEven ? find(target: target, choices: 3) : yesNo(target: target),
         );
+      } else if (i % 3 == 2) {
+        out.add(find(target: target, choices: 3));
       } else {
         out.add(identify());
       }

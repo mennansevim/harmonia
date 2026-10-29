@@ -90,13 +90,20 @@ enum VoicePart {
         };
 }
 
+/// [anchor] is a solfège example, [feel] a factual description.
 class IntervalType {
-  const IntervalType(this.id, this.semitones, this.name, this.feel, this.hook);
+  const IntervalType(
+    this.id,
+    this.semitones,
+    this.name,
+    this.feel,
+    this.anchor,
+  );
   final String id;
   final int semitones;
   final String name;
   final String feel;
-  final String hook;
+  final String anchor;
 }
 
 abstract final class Intervals {
@@ -105,85 +112,85 @@ abstract final class Intervals {
       'm2',
       1,
       'Küçük 2\'li',
-      'Yarım ses. Gerilimli, sürtünen.',
-      'Jaws (Denizkızı) teması',
+      'Bir yarım ses; iki komşu tuş.',
+      'Mi → Fa',
     ),
     IntervalType(
       'M2',
       2,
       'Büyük 2\'li',
-      'Tam ses. Adım atar gibi.',
-      '"İyi ki doğdun" girişi',
+      'Bir tam ses; dizinin olağan adımı.',
+      'Do → Re',
     ),
     IntervalType(
       'm3',
       3,
       'Küçük 3\'lü',
-      'Hüzünlü, karanlık.',
-      'Greensleeves girişi',
+      'Üç yarım ses; minör akorun alt aralığı.',
+      'La → Do',
     ),
     IntervalType(
       'M3',
       4,
       'Büyük 3\'lü',
-      'Parlak, mutlu. Majör akorun sesi.',
-      '"Oh When the Saints" girişi',
+      'Dört yarım ses; majör akorun alt aralığı.',
+      'Do → Mi',
     ),
     IntervalType(
       'P4',
       5,
       'Tam 4\'lü',
-      'Açık, güçlü.',
-      '"Here Comes the Bride" girişi',
+      'Beş yarım ses; dominantdan tonik\'e çıkış.',
+      'Sol → Do',
     ),
     IntervalType(
       'A4',
       6,
       'Artık 4\'lü',
-      'Triton. Kararsız, şeytani.',
-      'The Simpsons teması',
+      'Altı yarım ses; oktavı tam ikiye böler.',
+      'Fa → Si',
     ),
     IntervalType(
       'P5',
       7,
       'Tam 5\'li',
-      'Güçlü, boş. Sağlam bir sütun.',
-      '"Twinkle Twinkle" ve Star Wars teması',
+      'Yedi yarım ses; akort ederken duyulan boşluk.',
+      'Do → Sol',
     ),
     IntervalType(
       'm6',
       8,
       'Küçük 6\'lı',
-      'Duygusal, romantik.',
-      'The Entertainer girişi',
+      'Sekiz yarım ses; büyük 3\'lünün çevrimi.',
+      'Mi → Do',
     ),
     IntervalType(
       'M6',
       9,
       'Büyük 6\'lı',
-      'Tatlı, pastoral.',
-      '"My Bonnie" girişi',
+      'Dokuz yarım ses; küçük 3\'lünün çevrimi.',
+      'Do → La',
     ),
     IntervalType(
       'm7',
       10,
       'Küçük 7\'li',
-      'Bluesy, funky esneme.',
-      'Star Trek (orijinal) teması',
+      'On yarım ses; dominant 7\'li akorun dış sesleri.',
+      'Sol → Fa',
     ),
     IntervalType(
       'M7',
       11,
       'Büyük 7\'li',
-      'Rüya gibi, gergin esneme.',
-      '"Take On Me" nakaratı',
+      'On bir yarım ses; oktavın bir yarım ses altı.',
+      'Do → Si',
     ),
     IntervalType(
       'P8',
       12,
       'Oktav',
-      'Aynı nota, daha tiz. Saf ve açık.',
-      '"Somewhere Over the Rainbow" girişi',
+      'On iki yarım ses; aynı notanın üst kopyası.',
+      'Do → Do',
     ),
   ];
   static IntervalType byId(String id) => all.firstWhere((i) => i.id == id);
@@ -202,53 +209,69 @@ class ChordQuality {
 
 abstract final class Chords {
   static const all = [
-    ChordQuality('maj', 'maj', 'Majör üçlü', 'Mutlu, parlak, dengeli.', [
-      0,
-      4,
-      7,
-    ]),
-    ChordQuality('min', 'min', 'Minör üçlü', 'Hüzünlü, ciddi.', [0, 3, 7]),
-    ChordQuality('dim', 'dim', 'Eksik üçlü', 'Gergin, ürkütücü, kararsız.', [
-      0,
-      3,
-      6,
-    ]),
-    ChordQuality('aug', 'aug', 'Artık üçlü', 'Rüya gibi, havada, çözülmemiş.', [
-      0,
-      4,
-      8,
-    ]),
-    ChordQuality('maj7', 'maj7', 'Majör 7\'li', 'Caz, tatlı, nostaljik.', [
-      0,
-      4,
-      7,
-      11,
-    ]),
-    ChordQuality('min7', 'min7', 'Minör 7\'li', 'Yumuşak, serin, rahat.', [
-      0,
-      3,
-      7,
-      10,
-    ]),
+    ChordQuality(
+      'maj',
+      'maj',
+      'Majör üçlü',
+      'Kök, büyük 3\'lü, tam 5\'li (Do-Mi-Sol).',
+      [0, 4, 7],
+    ),
+    ChordQuality(
+      'min',
+      'min',
+      'Minör üçlü',
+      'Kök, küçük 3\'lü, tam 5\'li (La-Do-Mi).',
+      [0, 3, 7],
+    ),
+    ChordQuality(
+      'dim',
+      'dim',
+      'Eksik üçlü',
+      'Üst üste iki küçük 3\'lü (Si-Re-Fa).',
+      [0, 3, 6],
+    ),
+    ChordQuality(
+      'aug',
+      'aug',
+      'Artık üçlü',
+      'Üst üste iki büyük 3\'lü (Do-Mi-Sol♯).',
+      [0, 4, 8],
+    ),
+    ChordQuality(
+      'maj7',
+      'maj7',
+      'Majör 7\'li',
+      'Majör üçlü ve büyük 7\'li (Do-Mi-Sol-Si).',
+      [0, 4, 7, 11],
+    ),
+    ChordQuality(
+      'min7',
+      'min7',
+      'Minör 7\'li',
+      'Minör üçlü ve küçük 7\'li (Re-Fa-La-Do).',
+      [0, 3, 7, 10],
+    ),
     ChordQuality(
       'dom7',
       'dom7',
       'Dominant 7\'li',
-      'Bluesy, gerilimli, güçlü.',
+      'Majör üçlü ve küçük 7\'li (Sol-Si-Re-Fa).',
       [0, 4, 7, 10],
     ),
-    ChordQuality('hdim7', 'hdim7', 'Yarım eksik 7\'li', 'Karanlık, gizemli.', [
-      0,
-      3,
-      6,
-      10,
-    ]),
-    ChordQuality('dim7', 'dim7', 'Eksik 7\'li', 'Korku filmi, simetrik.', [
-      0,
-      3,
-      6,
-      9,
-    ]),
+    ChordQuality(
+      'hdim7',
+      'hdim7',
+      'Yarım eksik 7\'li',
+      'Eksik üçlü ve küçük 7\'li (Si-Re-Fa-La).',
+      [0, 3, 6, 10],
+    ),
+    ChordQuality(
+      'dim7',
+      'dim7',
+      'Eksik 7\'li',
+      'Dört küçük 3\'lü; sesler eşit aralıklı.',
+      [0, 3, 6, 9],
+    ),
   ];
   static ChordQuality byId(String id) => all.firstWhere((c) => c.id == id);
 }
@@ -268,7 +291,7 @@ class ScaleType {
 
 abstract final class Scales {
   static const all = [
-    ScaleType('major', 'Majör', 'Parlak, mutlu, çözülmüş. Do-re-mi sesi.', [
+    ScaleType('major', 'Majör', 'T T Y T T T Y · Do\'dan beyaz tuşlar.', [
       0,
       2,
       4,
@@ -280,27 +303,25 @@ abstract final class Scales {
     ScaleType(
       'natural_minor',
       'Doğal minör',
-      'Karanlık ve hüzünlü. Majörün üzgün hâli.',
+      'T Y T T Y T T · La\'dan beyaz tuşlar.',
       [0, 2, 3, 5, 7, 8, 10],
       color: 2,
     ),
     ScaleType(
       'harmonic_minor',
       'Armonik minör',
-      'Yükseltilmiş 7. derece ile dramatik.',
+      'Doğal minör, 7. derece yarım ses tiz.',
       [0, 2, 3, 5, 7, 8, 11],
       color: 6,
     ),
-    ScaleType('melodic_minor', 'Melodik minör', 'En akıcı minör dizi.', [
-      0,
-      2,
-      3,
-      5,
-      7,
-      9,
-      11,
-    ], color: 5),
-    ScaleType('dorian', 'Dorian', 'Daha parlak 6. dereceli minör.', [
+    ScaleType(
+      'melodic_minor',
+      'Melodik minör',
+      'Doğal minör, 6. ve 7. derece tiz.',
+      [0, 2, 3, 5, 7, 9, 11],
+      color: 5,
+    ),
+    ScaleType('dorian', 'Dorian', 'T Y T T T Y T · Re\'den beyaz tuşlar.', [
       0,
       2,
       3,
@@ -309,7 +330,7 @@ abstract final class Scales {
       9,
       10,
     ], color: 5),
-    ScaleType('phrygian', 'Frigyen', 'En karanlık mod. Pes 2. derece.', [
+    ScaleType('phrygian', 'Frigyen', 'Y T T T Y T T · Mi\'den beyaz tuşlar.', [
       0,
       1,
       3,
@@ -318,7 +339,7 @@ abstract final class Scales {
       8,
       10,
     ], color: 1),
-    ScaleType('lydian', 'Lidyen', 'Rüya gibi yükseltilmiş 4. dereceli majör.', [
+    ScaleType('lydian', 'Lidyen', 'T T T Y T T Y · Fa\'dan beyaz tuşlar.', [
       0,
       2,
       4,
@@ -327,28 +348,26 @@ abstract final class Scales {
       9,
       11,
     ], color: 3),
-    ScaleType('mixolydian', 'Miksolidyen', 'Pes 7. dereceli majör.', [
-      0,
-      2,
-      4,
-      5,
-      7,
-      9,
-      10,
-    ], color: 6),
+    ScaleType(
+      'mixolydian',
+      'Miksolidyen',
+      'T T Y T T Y T · Sol\'den beyaz tuşlar.',
+      [0, 2, 4, 5, 7, 9, 10],
+      color: 6,
+    ),
     ScaleType(
       'pentatonic_major',
       'Majör pentatonik',
-      'Her zaman uyan beş nota.',
+      'Majörden 4. ve 7. derece çıkarılmış beş ses.',
       [0, 2, 4, 7, 9],
     ),
     ScaleType(
       'pentatonic_minor',
       'Minör pentatonik',
-      'Rock ve bluesun beygiri.',
+      'Minörden 2. ve 6. derece çıkarılmış beş ses.',
       [0, 3, 5, 7, 10],
     ),
-    ScaleType('blues', 'Blues', 'Minör pentatonik artı blue nota.', [
+    ScaleType('blues', 'Blues', 'Minör pentatonik ve artık 4\'lü.', [
       0,
       3,
       5,
@@ -378,54 +397,55 @@ abstract final class Progressions {
       (5, 'maj'),
       (7, 'maj'),
       (0, 'maj'),
-    ], 'Klasik kadans. Eve döner.'),
+    ], 'Tonik, alt dominant, dominant, tonik.'),
     Progression('I-V-vi-IV', 'I-V-vi-IV', false, [
       (0, 'maj'),
       (7, 'maj'),
       (9, 'min'),
       (5, 'maj'),
-    ], 'Pop dizisi. Sayısız şarkının iskeleti.'),
+    ], 'Dominanttan 6. derecenin minörüne iner.'),
     Progression('I-vi-IV-V', 'I-vi-IV-V', false, [
       (0, 'maj'),
       (9, 'min'),
       (5, 'maj'),
       (7, 'maj'),
-    ], '50\'ler doo-wop dizisi.'),
-    Progression('I-iii-IV-V', 'I-iii-IV-V', false, [
-      (0, 'maj'),
-      (4, 'min'),
-      (5, 'maj'),
-      (7, 'maj'),
-    ], 'Yumuşak yükselen merdiven.'),
+    ], 'Tonikten 6. dereceye, sonra kadansa.'),
+    Progression(
+      'I-iii-IV-V',
+      'I-iii-IV-V',
+      false,
+      [(0, 'maj'), (4, 'min'), (5, 'maj'), (7, 'maj')],
+      '3. derece üzerinden basamak basamak yükselir.',
+    ),
     Progression('vi-IV-I-V', 'vi-IV-I-V', false, [
       (9, 'min'),
       (5, 'maj'),
       (0, 'maj'),
       (7, 'maj'),
-    ], 'Minörden başlayan pop dizisi.'),
+    ], '6. derecenin minörüyle başlar.'),
     Progression('i-VI-III-VII', 'i-VI-III-VII', true, [
       (0, 'min'),
       (8, 'maj'),
       (3, 'maj'),
       (10, 'maj'),
-    ], 'Destansı minör dizi.'),
+    ], 'Minör tonikten majör akorlara iner.'),
     Progression('i-iv-i-V', 'i-iv-i-V', true, [
       (0, 'min'),
       (5, 'min'),
       (0, 'min'),
       (7, 'maj'),
-    ], 'Armonik minör kadansı.'),
+    ], 'Minör kadans; majör dominant tonik\'e çeker.'),
     Progression('ii-V-I', 'ii-V-I', false, [
       (2, 'min7'),
       (7, 'dom7'),
       (0, 'maj7'),
-    ], 'Cazın temel kadansı.'),
+    ], '2. derece, dominant 7\'li, majör 7\'li tonik.'),
     Progression('I-IV-I-V', 'I-IV-I-V', false, [
       (0, 'maj'),
       (5, 'maj'),
       (0, 'maj'),
       (7, 'maj'),
-    ], 'Halk ve blues kökenli gidiş.'),
+    ], 'Tonik ile alt dominant arasında gidip gelir.'),
   ];
   static Progression byId(String id) => all.firstWhere((p) => p.id == id);
 }

@@ -1244,3 +1244,38 @@ Analysis snapshots capture identity and an epoch; cancel, replay, interruption
 or close invalidates pending worker completion so stale evidence cannot surface.
 Quality retry, unavailable analysis and candidate diagnostic are separate
 states. The coordinator owns no persistence, score, mastery or AI side effect.
+
+## TRAINER-04a — Optional pitch production composition (2026-10-29)
+
+`TrainerPitchSingTarget` is the immutable bridge from one pitch lesson item to
+its sounding register, MIDI, frequency, timbre and local-synth content version.
+It rejects cross-lesson items, non-pitch trainers and registers not declared by
+the lesson; lower choir parts map the requested register before MIDI binding.
+Displayed instrument transposition does not silently transpose the sounding
+reference.
+
+`TrainerPitchSingSession` owns a dedicated generated-reference player plus one
+capture backend and delegates the answer lifecycle to `SingleToneSessionController`.
+The player and capture are stopped/closed together, while their playback paths
+remain separate so the microphone backend's default C4 cannot replace the
+lesson target. The facade exposes diagnostic outcome only and has no dependency
+on TrainerStore, result history or curriculum completion. It therefore cannot
+score, pass, persist, unlock or claim learning. UI wiring and physical BENCH/VAD
+acceptance remain separate gates.
+
+## TRAINER-04b — Pitch lesson UI ownership (2026-10-29)
+
+`LessonFlow` may create one `TrainerPitchSingSession` only for a pitch lesson
+and only after an explicit calibration action. The production factory binds a
+fresh plugin capture backend, clip player and isolate worker; tests inject the
+same facade with fakes. Merely entering “Söyle” performs no native operation.
+The lesson owns listener registration, lifecycle cancellation, close and
+dispose. Backgrounding cancels without resuming; moving to “Ayırt et” closes
+the diagnostic session while navigation remains immediately available.
+
+The state projection is intentionally lossy: phase, neutral retry reason,
+actual provenance and signed cents only. It contains no pass threshold and no
+write path to `TrainerStore`, result history, mastery, completion or unlocks.
+Factory construction failure is a neutral, skippable availability state. This
+preserves agency and keeps UI implementation evidence separate from physical
+device, human-voice/VAD and teaching acceptance.

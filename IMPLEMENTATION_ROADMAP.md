@@ -200,6 +200,23 @@ kalibrasyon olmadan referans/cevap başlatmaz. Pending analiz sırasında
 cancel/replay/close eski sonucu yayımlayamaz; quality retry ile worker
 unavailable ayrıdır. Candidate evidence hâlâ skor/history/mastery/AI değildir.
 
+**2026-10-29 — TRAINER-04a:** Pitch eğitmeni “Söyle” adımının ilk güvenli
+composition dilimi eklendi. `TrainerPitchSingTarget` yalnız pitch lesson içindeki
+item ve izinli register'ı kabul eder; seçilen alt koro partisini sounding
+register'a uygular ve tını sürümlü sentetik hedef üretir. Ayrı reference player
+ile mevcut SESSION-01 kalibrasyon/kalite/isolate zinciri tek sahipli session'da
+buluşur. Puan, node completion, store/history/mastery/unlock yazımı yoktur.
+UI bağlantısı ve gerçek BENCH/VAD/cihaz kabulü TRAINER-04b/dış kapıdır.
+
+**2026-10-29 — TRAINER-04b:** Pitch lesson “Söyle” sayfası 04a session'ını
+production mobile factory veya test injection ile compose eder. Girişte izin,
+playback veya capture yoktur; ortam ölçümü ve deneme ayrı açık eylemlerdir.
+Durumlar dinle/hazırlan/söyle/kalite/analiz olarak görünür; sonuç yalnız kaynak
+etiketli sent diagnostic'idir ve “puan değil” der. Skip her zaman açıktır.
+Background/route/çıkış cancel eder, resume autoplay yapmaz; factory unavailable
+nötr ve atlanabilir. Store/history/mastery/completion/unlock bağlantısı yoktur.
+TRAINER-04c ancak BENCH/VAD/cihaz kanıtıyla skor politikasını değerlendirebilir.
+
 **2026-10-28 — CONS-01d:** `ChordReferenceSession` öğrenme/recall modunu ve
 1–10 completed-play kotasını taşır. Sayaç native completion sonrası artar;
 cancel/route/background/start failure tüketmez. Replay response-ready kapısını

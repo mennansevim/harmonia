@@ -77,17 +77,14 @@ void main() {
       }
     });
 
-    test('lesson counts stay stable', () {
-      expect(trainerPaths[TrainerKind.chord]!.lessonCount, 26);
-      expect(trainerPaths[TrainerKind.scale]!.lessonCount, 25);
-      expect(
-        trainerPaths[TrainerKind.pitch]!.lessonCount,
-        greaterThanOrEqualTo(30),
-      );
-      expect(
-        trainerPaths[TrainerKind.interval]!.lessonCount,
-        greaterThanOrEqualTo(40),
-      );
+    test('every ladder has stages, gates and a final rehearsal', () {
+      for (final path in trainerPaths.values) {
+        final gates = path.nodes.where((n) => n.kind == NodeKind.checkpoint);
+        expect(path.lessonCount, greaterThan(15), reason: '${path.trainer}');
+        expect(gates.length, greaterThanOrEqualTo(2));
+        final introduced = {for (final n in path.nodes) ...n.newItems};
+        expect(introduced, path.trainer.allItems.toSet());
+      }
     });
   });
 

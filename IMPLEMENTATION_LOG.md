@@ -2006,3 +2006,62 @@ benchmark kapıları açık. Commit/push/deploy yapılmadı.
 
 **Sınırlar:** Ders/quiz mekaniği tür standardı olsa da işlevsel olarak referansa yakın kalıyor. Cihazda elle inceleme, gerçek iPhone ve insan sesiyle ölçüm hâlâ yapılmadı. Hukuki görüş değildir; yayın öncesi referans sahibinin onayı önerilir.
 
+## 2026-10-29 — TRAINER-03 ders/quiz/müfredatta tam ayrışma (ADR-034)
+
+**Kullanıcı isteği:** Arkadaşın uygulamasıyla ileride sorun yaşamamak için benzerlik kalmasın.
+
+**Kod:**
+- `domain/curriculum.dart` baştan yazıldı: `_ladder` üreticisi; beş beceri için Harmonia sırası (ör. aralıklar M2 → m2 → M3 → m3 → P5 → P4 → P8 …), kendi tanıtım metinleri. Ders sayıları artık 20–32.
+- `domain/music.dart`: aralık `hook` → `anchor` (solfej örneği); tüm açıklamalar teori formülü.
+- `learn/lesson_flow.dart` baştan: Dinle (öğe kartı, Çal / Başka yerden, partiye göre bölge) → Söyle (kayıt/puan yok) → Ayırt et. Hızlı kontrol/kilitlendi ekranları kaldırıldı.
+- `quiz/quiz_view.dart` baştan: `ListenDisc`, kanıt şeridi, iki sütun seçenek butonları, A/B/C ses satırları, satır içi karşılaştırma; `QuizGenerator.lessonPractice` yeni karışım (çoğunlukla adlandırma, her üçüncü soru "hangisi").
+- `learn/skill_screen.dart` (yeni) — `path_screen.dart` ve `home/trainer_sheet.dart` silindi.
+- `learn/session_end.dart` tek kart; `maybeCelebrateStreak` kaldırıldı. `practice/practice_setup.dart` "Serbest çalışma" başlığı. İstatistik: beceri listesi çubuklu, beceri ekranı tablo. `kit.dart`: `WaveView`, `FeedbackFrame` silindi; `TrainerBadge` düz.
+
+**Test:** uygulama/domain/tur testleri yeni akışa göre güncellendi; `dart tool/quality_check.dart`: format+analyze temiz, 993 test geçti, 1 atlandı. Ekran turu yeniden üretilip gözle incelendi.
+
+**Sınırlar:** Simülatörde elle gezinti bu tur yapılmadı. Hukuki görüş değildir.
+
+## 2026-10-29 — TRAINER-04a puansız pitch “Söyle” session composition
+
+Yeni `TrainerPitchSingTarget`, yalnız pitch lesson içindeki item/register
+çiftini kabul ediyor; seçili tenor/bas partisini sounding register'a indiriyor
+ve MIDI/Hz/tını sürümünü immutable tutuyor. `TrainerPitchSingSession`, Harmonia
+trainer synth referansını mikrofon backend'inden ayrı owned player ile çalıyor;
+cevabı mevcut `SingleToneSessionController` kalibrasyon, route, capture quality,
+worker ve stale-result kapılarından geçiriyor. Fake kaynağı microphone'a
+yükseltmiyor. Cancel/close kaynakları güvenle kapatıyor; close idempotent.
+
+Bu sınıf TrainerStore'a erişmiyor ve score, accuracy, pass, lesson completion,
+history, mastery veya unlock üretmiyor. 7 yeni test; ilgili hedefli 22 ve tam
+1000 test geçti, 1 opt-in ekran turu atlandı. `flutter analyze --no-pub`, format
+ve `git diff --check` temiz. Testlerdeki sentetik/fake PCM gerçek insan sesi,
+VAD, fiziksel route, audibility veya öğretim kanıtı değildir. UI bağlantısı
+TRAINER-04b olarak açık. Commit/push/deploy yapılmadı.
+
+## 2026-10-29 — TRAINER-04b isteğe bağlı pitch “Söyle” UI
+
+`LessonFlow` pitch derslerinde TRAINER-04a session'ını compose ediyor. Sayfaya
+girmek mikrofon izni, playback veya capture başlatmıyor. “Ortamı ölç ve hazırla”
+ve “Dinle ve söyle” ayrı açık eylemler; ana “Ayırt etmeye geç” eylemi her zaman
+erişilebilir. UI kalibrasyon, referans, hazırlık, cevap, kalite ve analiz
+durumlarını ayrı gösteriyor. Çıktı kaynak etiketi ve signed sent farkı taşıyor,
+“puan değil” diyor; başarı/başarısızlık üretmiyor.
+
+Production composition `PluginAudioLabBackend` + ayrı `JustAudioClipPlayer` +
+`IsolateRecordingPitchWorker`; construction hiçbir native işlem başlatmıyor.
+Background/çıkış denemeyi cancel/close ediyor, resume autoplay yapmıyor. Session
+factory hatası nötr unavailable metniyle atlanabiliyor. Diğer trainer türleri ve
+`liveAudio=false` test/preview bu kontrolü göstermiyor. TrainerStore/history/
+mastery/completion/unlock yazımı yok. Ders playback register'ı da node'un gerçek
+register'ı ve seçili koro partisiyle aynı sounding hedefe getirildi.
+
+Apple-design ilkeleri doğrultusunda kullanıcı ajansı, anlık/durum bazlı geri
+bildirim, özgül eylem adları ve hareket yerine sakin state değişimi korundu.
+4 widget testi girişte izin olmaması, uçtan uca fake diagnostic, kaynak etiketi,
+puansızlık, liveAudio kapısı, factory failure ve background cancel/no-resume'u
+doğruluyor. İlgili 19 test ve tam 1004 test geçti; 1 opt-in ekran turu atlandı.
+`flutter analyze --no-pub`, format ve `git diff --check` temiz. Fake/sentetik
+kanıt gerçek telefon, insan sesi, audibility, VAD/BENCH veya öğretim kabulü
+değildir. Commit/push/deploy yapılmadı.
+

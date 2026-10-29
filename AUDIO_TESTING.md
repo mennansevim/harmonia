@@ -1059,3 +1059,37 @@ close during analysis and tolerance preflight. The test path uses fake playback,
 route and PCM plus synthetic tones; it is not physical-device, piano audibility,
 human voice, VAD, memory or teaching evidence. Full991 passes with one opt-in
 screenshot tour skipped; analysis and diff checks are clean.
+
+## TRAINER-04a — Optional pitch “Söyle” session boundary (2026-10-29)
+
+`TrainerPitchSingTarget` rejects non-pitch lessons, intro nodes, foreign items
+and registers. It preserves the sounding MIDI/Hz after choir-part register
+mapping and versions the local trainer synth/timbre. `TrainerPitchSingSession`
+renders that one-note reference into immutable WAV bytes, plays it through a
+dedicated owned player and delegates microphone capture to the existing
+SESSION-01 calibration/quality/worker state machine. Capture provenance is
+preserved; fake evidence is never promoted to microphone.
+
+Seven tests cover target binding, lower-part mapping, invalid scope, dedicated
+reference playback, diagnostic provenance/deviation, neutral silence retry,
+cancelled playback and idempotent dual-resource close. Full suite: 1000 passed,
+one opt-in screenshot tour skipped; static analysis, formatting and diff check
+clean. This is not physical playback, human-voice/VAD, route, learning or score
+evidence. No trainer UI/store/history/mastery wiring is enabled.
+
+## TRAINER-04b — Pitch lesson diagnostic UI wiring (2026-10-29)
+
+The pitch lesson exposes no microphone action on entry. Calibration and the
+listen→respond attempt each require an explicit tap; the scored listening step
+remains skippable throughout. UI states distinguish calibration, playback,
+response, quality and analysis. Diagnostic output shows its actual provenance
+and signed cents with explicit no-score language. It never writes the trainer
+store, result history, mastery, lesson completion or unlock state.
+
+Four widget tests cover no permission on entry, fake end-to-end calibration and
+attempt, provenance text, zero progress mutation, `liveAudio=false`, neutral
+factory failure and lifecycle pause cancellation without auto-resume. Together
+with the session and trainer integration tests, 19 targeted tests pass. Full
+suite: 1004 passed, one opt-in screenshot tour skipped; analysis, formatting
+and diff checks clean. Fake PCM/player/route evidence is not physical playback,
+human voice, VAD, audibility, device-route or teaching validation.

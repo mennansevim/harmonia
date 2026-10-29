@@ -9,10 +9,11 @@ import '../domain/trainers.dart';
 import '../ui/kit.dart';
 import 'quiz.dart';
 
-enum _Phase { answering, feedback, resetting }
+enum _Phase { answering, review, done }
 
-/// Runs a list of questions with the trainer's listen → answer → feedback →
-/// ear-reset rhythm. First attempts are scored; retries only teach.
+/// Harmonia question runner: one listening disc, only the question's own
+/// options, a per-question evidence strip and an inline comparison panel
+/// after a miss. First attempts are scored; retries only teach.
 class QuizView extends StatefulWidget {
   const QuizView({
     super.key,
@@ -24,11 +25,8 @@ class QuizView extends StatefulWidget {
     this.timeLimitSeconds,
     this.allowRetry = true,
     this.showCounter = true,
-    this.quickCheckLabel,
     this.onExit,
     this.forceHints = false,
-    this.showSkip = false,
-    this.onSkip,
   });
 
   final String title;
@@ -41,15 +39,10 @@ class QuizView extends StatefulWidget {
   final int? timeLimitSeconds;
   final bool allowRetry;
   final bool showCounter;
-
-  /// "KISA YOKLAMA" header for lesson checks.
-  final String? quickCheckLabel;
   final VoidCallback? onExit;
 
   /// Lessons always explain a miss, regardless of the hints preference.
   final bool forceHints;
-  final bool showSkip;
-  final VoidCallback? onSkip;
 
   @override
   State<QuizView> createState() => _QuizViewState();
@@ -58,27 +51,28 @@ class QuizView extends StatefulWidget {
 class _QuizViewState extends State<QuizView> {
   int _index = 0;
   _Phase _phase = _Phase.answering;
-  bool? _frame;
   String _status = '';
   final _records = <AnswerRecord>[];
+  final List<bool?> _strip = [];
   bool _firstAttempt = true;
   final Set<String> _wrongPicks = {};
   final Set<int> _wrongSounds = {};
   String? _correctPick;
+  String? _reviewChoice;
   int? _selectedSound;
-  int? _activeSound;
   Timer? _countdown;
   int? _secondsLeft;
-  int _hintSheets = 0;
   bool _disposed = false;
 
   QuizQuestion get _q => widget.questions[_index];
   Color get _color => widget.color ?? trainerColor(_q.trainer);
   TrainerScope get _scope => TrainerScope.of(context);
+  bool get _last => _index == widget.questions.length - 1;
 
   @override
   void initState() {
     super.initState();
+    _strip.addAll(List<bool?>.filled(widget.questions.length, null));
     WidgetsBinding.instance.addPostFrameCallback((_) => _startQuestion());
   }
 
@@ -93,13 +87,12 @@ class _QuizViewState extends State<QuizView> {
     if (_disposed) return;
     setState(() {
       _phase = _Phase.answering;
-      _frame = null;
       _firstAttempt = true;
       _wrongPicks.clear();
       _wrongSounds.clear();
       _correctPick = null;
+      _reviewChoice = null;
       _selectedSound = null;
-      _activeSound = null;
       _status = _defaultPrompt;
     });
     if (_q.type != QuestionType.find) _scope.audio.play(_q.sound);
@@ -108,8 +101,8 @@ class _QuizViewState extends State<QuizView> {
 
   String get _defaultPrompt => switch (_q.type) {
     QuestionType.identify => _q.trainer.question,
-    QuestionType.yesNo => 'Evet mi, hayır mı?',
-    QuestionType.find => 'Dinlemek için her birine dokun',
+    QuestionType.yesNo => 'Duyduğun bu mu?',
+    QuestionType.find => 'Seslerden hangisi?',
   };
 
   void _startTimer() {
@@ -139,10 +132,9 @@ class _QuizViewState extends State<QuizView> {
   void _timeout() {
     _record(false, null);
     setState(() {
-      _frame = false;
       _status = 'Süre doldu';
       _correctPick = _q.answer;
-      _phase = _Phase.feedback;
+      _phase = _Phase.done;
     });
     _advanceSoon();
   }
@@ -151,6 +143,7 @@ class _QuizViewState extends State<QuizView> {
     if (!_firstAttempt) return;
     _firstAttempt = false;
     _records.add(AnswerRecord(_q, correct, chosen: chosen));
+    _strip[_index] = correct;
     if (widget.record) {
       final key = _q.type == QuestionType.yesNo ? _q.target : _q.answer;
       _scope.store.recordAnswer(_q.trainer, key, correct);
@@ -159,31 +152,30 @@ class _QuizViewState extends State<QuizView> {
 
   bool get _hintsOn => widget.forceHints || _scope.store.hints;
 
-  Future<void> _wrong(String? chosen) async {
+  void _wrong(String? chosen) {
     final wasFirst = _firstAttempt;
     _record(false, chosen);
-    setState(() {
-      _frame = false;
-      if (chosen != null) _wrongPicks.add(chosen);
-    });
+    if (chosen != null) _wrongPicks.add(chosen);
     if (_hintsOn && wasFirst) {
       _countdown?.cancel();
-      setState(() => _phase = _Phase.feedback);
-      await _showHint(chosen);
-      if (_disposed) return;
-      _goReset();
+      setState(() {
+        _phase = _Phase.review;
+        _reviewChoice = chosen;
+        _correctPick = _q.type == QuestionType.find ? _q.answer : null;
+        _status = 'Karşılaştır';
+      });
       return;
     }
     if (widget.allowRetry && wasFirst && _q.type == QuestionType.identify) {
       setState(() => _status = 'Bir daha dinle');
       return;
     }
+    _countdown?.cancel();
     setState(() {
       _status = 'Olmadı';
       _correctPick = _q.answer;
-      _phase = _Phase.feedback;
+      _phase = _Phase.done;
     });
-    _countdown?.cancel();
     _advanceSoon();
   }
 
@@ -191,66 +183,42 @@ class _QuizViewState extends State<QuizView> {
     _record(true, chosen);
     _countdown?.cancel();
     setState(() {
-      _frame = true;
       _correctPick = chosen ?? _q.answer;
-      _phase = _Phase.feedback;
-      _status = switch (_q.type) {
-        QuestionType.find => 'Doğru ses!',
-        _ => _records.last.correct ? 'Tam isabet!' : 'Doğru!',
-      };
+      _phase = _Phase.done;
+      _status = _records.last.correct ? 'Tam isabet!' : 'Doğru!';
     });
     _advanceSoon();
   }
 
   void _advanceSoon() {
     Future<void>.delayed(const Duration(milliseconds: 900), () {
-      if (!_disposed) _goReset();
+      if (!_disposed) _next();
     });
   }
 
-  void _goReset() {
-    if (_index == widget.questions.length - 1) {
+  void _next() {
+    if (_last) {
       widget.onFinished(QuizSummary(List.of(_records)));
       return;
     }
-    setState(() {
-      _phase = _Phase.resetting;
-      _frame = null;
-      _status = 'Kulağını dinlendir...';
-    });
-    _scope.audio.play(SoundFactory(_rand).earReset());
-    Future<void>.delayed(const Duration(milliseconds: 1300), () {
-      if (_disposed) return;
-      setState(() => _index++);
-      _startQuestion();
-    });
+    setState(() => _index++);
+    _startQuestion();
   }
 
   static final _rand = math.Random();
 
   void _pick(String item) {
     if (_phase != _Phase.answering || _wrongPicks.contains(item)) return;
-    if (item == _q.answer) {
-      _right(item);
-    } else {
-      _wrong(item);
-    }
+    item == _q.answer ? _right(item) : _wrong(item);
   }
 
   void _yesNo(bool yes) {
     if (_phase != _Phase.answering) return;
-    if (yes == _q.isMatch) {
-      _right(null);
-    } else {
-      _wrong(yes ? _q.target : null);
-    }
+    yes == _q.isMatch ? _right(null) : _wrong(yes ? _q.target : null);
   }
 
   void _playSound(int i) {
-    setState(() {
-      _activeSound = i;
-      _selectedSound = _wrongSounds.contains(i) ? _selectedSound : i;
-    });
+    setState(() => _selectedSound = _wrongSounds.contains(i) ? null : i);
     _scope.audio.play(_q.sounds[i]);
   }
 
@@ -266,116 +234,15 @@ class _QuizViewState extends State<QuizView> {
     }
   }
 
-  Future<void> _showHint(String? chosen) async {
-    _hintSheets++;
+  String _label(String id, {bool long = false}) {
     final store = _scope.store;
-    final notation = store.notation;
-    String label(String id) => itemLabel(
+    return itemLabel(
       _q.trainer,
       id,
-      notation: notation,
+      notation: store.notation,
       transposition: store.transposition,
-      long: true,
+      long: long,
     );
-    final played = _q.type == QuestionType.yesNo ? _q.answer : _q.answer;
-    final target = _q.type == QuestionType.yesNo ? _q.target : _q.answer;
-    final yesNoMatch = _q.type == QuestionType.yesNo && _q.isMatch;
-    final heard = _q.type == QuestionType.yesNo ? played : (chosen ?? played);
-    await showTrainerSheet<void>(
-      context,
-      dismissible: false,
-      (context) => Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Text(
-            _q.type == QuestionType.yesNo ? 'Tam değil' : 'Az kaldı!',
-            textAlign: TextAlign.center,
-            style: TT.h3,
-          ),
-          const SizedBox(height: 6),
-          Text(
-            _q.type == QuestionType.yesNo
-                ? (yesNoMatch
-                      ? 'Hedefle aynıydı, yani cevap Evet olmalıydı. Tekrar dinlemek için dokun.'
-                      : 'Farklı bir ${_q.trainer.unitWord}ydı, yani cevap Hayır olmalıydı. Karşılaştırmak için dokun.')
-                : 'Farkı duymak için kartlara dokun. Bir dahakine olacak.',
-            textAlign: TextAlign.center,
-            style: TT.small,
-          ),
-          const SizedBox(height: 14),
-          if (!yesNoMatch)
-            _CompareCard(
-              caption: _q.type == QuestionType.yesNo ? 'Duyduğun' : 'Seçtiğin',
-              title: label(heard),
-              body: itemFeel(_q.trainer, heard),
-              good: false,
-              onPlay: () => _scope.audio.play(
-                SoundFactory(_rand).item(_q.trainer, heard),
-              ),
-            ),
-          _CompareCard(
-            caption: _q.type == QuestionType.yesNo ? 'Hedef' : 'Doğru cevap',
-            title: label(target),
-            body: itemFeel(_q.trainer, target),
-            good: true,
-            onPlay: () =>
-                _scope.audio.play(SoundFactory(_rand).item(_q.trainer, target)),
-          ),
-          const SizedBox(height: 8),
-          BigButton(
-            label: _index == widget.questions.length - 1
-                ? 'Devam'
-                : 'Sonraki soru',
-            color: TC.primary,
-            onPressed: () => Navigator.pop(context),
-          ),
-        ],
-      ),
-    );
-    if (!mounted ||
-        widget.forceHints ||
-        store.hintsPromptShown ||
-        _hintSheets < 2) {
-      return;
-    }
-    store.hintsPromptShown = true;
-    store.save();
-    final hide = await showTrainerSheet<bool>(
-      context,
-      (context) => Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          const Text(
-            '💡',
-            textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 40),
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            'İpuçları gizlensin mi?',
-            textAlign: TextAlign.center,
-            style: TT.h3,
-          ),
-          const SizedBox(height: 6),
-          const Text(
-            'Bu cevap kartlarını kapatmak ister misin? Ayarlar\'dan istediğin zaman yeniden açabilirsin.',
-            textAlign: TextAlign.center,
-            style: TT.small,
-          ),
-          const SizedBox(height: 16),
-          BigButton(
-            label: 'İpuçlarını gizle',
-            color: TC.primary,
-            onPressed: () => Navigator.pop(context, true),
-          ),
-          TextLink('Kalsın', onTap: () => Navigator.pop(context, false)),
-        ],
-      ),
-    );
-    if (hide == true) {
-      store.hints = false;
-      store.save();
-    }
   }
 
   Future<void> _exit() async {
@@ -385,8 +252,7 @@ class _QuizViewState extends State<QuizView> {
     final ok = await confirmDialog(
       context,
       title: 'Pratik bitsin mi?',
-      message:
-          'Bu oturumu bitirmek istediğine emin misin? İlerlemen kaydedilmeyecek.',
+      message: 'Bu turdaki cevaplar sonuç olarak sayılmaz.',
       cancel: 'Devam et',
       confirm: 'Oturumu bitir',
     );
@@ -404,72 +270,91 @@ class _QuizViewState extends State<QuizView> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    final total = widget.questions.length;
-    return PopScope(
-      canPop: false,
-      onPopInvokedWithResult: (didPop, _) {
-        if (!didPop) _exit();
-      },
-      child: Scaffold(
-        backgroundColor: Colors.white,
-        body: FeedbackFrame(
-          state: _frame,
-          child: SafeArea(
-            child: Column(
-              children: [
-                TopBar(
-                  title: widget.title,
-                  onBack: _exit,
-                  progress:
-                      (_index + (_phase == _Phase.answering ? 0 : 1)) / total,
-                  progressColor: _color,
-                  counter: widget.showCounter ? '${_index + 1} / $total' : null,
-                  shadow: true,
+  Widget build(BuildContext context) => PopScope(
+    canPop: false,
+    onPopInvokedWithResult: (didPop, _) {
+      if (!didPop) _exit();
+    },
+    child: Scaffold(
+      backgroundColor: TC.canvas,
+      body: SafeArea(
+        child: Column(
+          children: [
+            _header(),
+            Expanded(
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 200),
+                child: KeyedSubtree(
+                  key: ValueKey(_index),
+                  child: switch (_q.type) {
+                    QuestionType.identify => _identify(),
+                    QuestionType.yesNo => _yesNoBody(),
+                    QuestionType.find => _findBody(),
+                  },
                 ),
-                Expanded(child: _body()),
-              ],
+              ),
             ),
-          ),
+          ],
         ),
       ),
-    );
-  }
+    ),
+  );
 
-  Widget _body() => switch (_q.type) {
-    QuestionType.identify => _identify(),
-    QuestionType.yesNo => _yesNoBody(),
-    QuestionType.find => _findBody(),
-  };
+  Widget _header() => Padding(
+    padding: const EdgeInsets.fromLTRB(12, 8, 16, 4),
+    child: Row(
+      children: [
+        IconButton(
+          tooltip: 'Geri',
+          onPressed: _exit,
+          icon: const Icon(Icons.close_rounded, color: TC.body),
+        ),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                widget.title,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TT.title,
+              ),
+              const SizedBox(height: 6),
+              _EvidenceStrip(results: _strip, current: _index, color: _color),
+            ],
+          ),
+        ),
+        if (widget.showCounter) ...[
+          const SizedBox(width: 12),
+          Text(
+            '${_index + 1} / ${widget.questions.length}',
+            style: TT.small.copyWith(fontWeight: FontWeight.w700),
+          ),
+        ],
+      ],
+    ),
+  );
 
-  Widget _statusLine() {
-    final text =
-        _secondsLeft != null &&
-            _phase == _Phase.answering &&
-            _status == _defaultPrompt
-        ? '${_secondsLeft}sn'
-        : _status;
-    final colored = _status == 'Tam isabet!';
+  Widget _statusText() {
+    final good = _phase == _Phase.done && _strip[_index] == true;
     return Semantics(
       liveRegion: true,
       child: Text(
-        text,
+        _status,
         key: const Key('quiz_status'),
         textAlign: TextAlign.center,
-        style: TextStyle(
-          fontSize: 15,
-          fontWeight: FontWeight.w800,
-          color: colored ? _color : TC.ink,
-        ),
+        style: TT.h3.copyWith(color: good ? TC.green : TC.ink),
       ),
     );
   }
 
-  Widget _wave({double height = 200}) => WaveView(
-    playing: _scope.audio.playing,
+  Widget _disc() => ListenDisc(
     color: _color,
-    height: height,
-    label: _q.trainer.replayLabel,
+    playing: _scope.audio.playing,
+    timeFraction: _secondsLeft == null || widget.timeLimitSeconds == null
+        ? null
+        : _secondsLeft! / widget.timeLimitSeconds!,
+    secondsLeft: _phase == _Phase.answering ? _secondsLeft : null,
     onTap: _phase == _Phase.answering
         ? () => _scope.audio.play(_q.sound)
         : null,
@@ -483,14 +368,16 @@ class _QuizViewState extends State<QuizView> {
         store.transposition == 0;
     return Column(
       children: [
-        const Spacer(),
-        _wave(height: 220),
-        const Spacer(),
-        _statusLine(),
         const SizedBox(height: 18),
+        _statusText(),
+        const Spacer(),
+        _disc(),
+        const Spacer(),
         Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-          child: usePiano
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
+          child: _phase == _Phase.review
+              ? _review(target: _q.answer, heard: _reviewChoice)
+              : usePiano
               ? PianoAnswer(
                   enabled: {for (final o in _q.options) int.parse(o)},
                   correct: _correctPick == null
@@ -502,18 +389,12 @@ class _QuizViewState extends State<QuizView> {
                       ? (pc) => _pick('$pc')
                       : null,
                 )
-              : _AnswerGrid(
-                  trainer: _q.trainer,
-                  pool: _q.options,
+              : _Options(
+                  options: _q.options,
                   correct: _correctPick,
                   wrong: _wrongPicks,
-                  resetting: _phase == _Phase.resetting,
-                  label: (id) => itemLabel(
-                    _q.trainer,
-                    id,
-                    notation: store.notation,
-                    transposition: store.transposition,
-                  ),
+                  color: _color,
+                  label: _label,
                   onTap: _phase == _Phase.answering ? _pick : null,
                 ),
         ),
@@ -521,79 +402,68 @@ class _QuizViewState extends State<QuizView> {
     );
   }
 
-  Widget _targetHeader(String caps, String? suffix) {
-    final store = _scope.store;
-    return Column(
-      children: [
-        if (widget.quickCheckLabel != null) ...[
-          Text(widget.quickCheckLabel!, style: TT.caps),
-          const SizedBox(height: 18),
-        ],
-        Text(caps, style: TT.caps),
-        const SizedBox(height: 10),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 12),
-          decoration: BoxDecoration(
-            color: soft(_color),
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(
-              color: _color.withValues(alpha: 0.35),
-              width: 1.5,
-            ),
-          ),
-          child: Text(
-            itemLabel(
-              _q.trainer,
-              _q.target,
-              notation: store.notation,
-              transposition: store.transposition,
-              long: true,
-            ),
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.w600,
-              color: _color,
-            ),
-          ),
-        ),
-        if (suffix != null) ...[
-          const SizedBox(height: 10),
-          Text(suffix, style: TT.caps),
-        ],
-      ],
-    );
-  }
+  Widget _targetChip() => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+    decoration: BoxDecoration(
+      color: soft(_color),
+      borderRadius: BorderRadius.circular(30),
+    ),
+    child: Text(
+      _label(_q.target, long: true),
+      style: TextStyle(
+        fontSize: 20,
+        fontWeight: FontWeight.w800,
+        color: _color,
+      ),
+    ),
+  );
 
   Widget _yesNoBody() => Column(
     children: [
-      const SizedBox(height: 24),
-      _targetHeader('BU', '...${_q.trainer.unitWord.toUpperCase()} MI?'),
+      const SizedBox(height: 18),
+      _statusText(),
+      const SizedBox(height: 12),
+      _targetChip(),
       const Spacer(),
-      _wave(height: 170),
+      _disc(),
       const Spacer(),
-      _statusLine(),
-      const SizedBox(height: 16),
       Padding(
-        padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-        child: Row(
-          children: [
-            Expanded(
-              child: _YesNoButton(
-                yes: true,
-                enabled: _phase == _Phase.answering,
-                onTap: () => _yesNo(true),
+        padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
+        child: _phase == _Phase.review
+            ? _review(target: _q.target, heard: _q.answer)
+            : Row(
+                children: [
+                  Expanded(
+                    child: Semantics(
+                      label: 'Evet',
+                      button: true,
+                      excludeSemantics: true,
+                      child: BigButton(
+                        label: 'Evet, bu',
+                        color: TC.green,
+                        onPressed: _phase == _Phase.answering
+                            ? () => _yesNo(true)
+                            : null,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Semantics(
+                      label: 'Hayır',
+                      button: true,
+                      excludeSemantics: true,
+                      child: BigButton(
+                        label: 'Hayır, değil',
+                        color: TC.coral,
+                        onPressed: _phase == _Phase.answering
+                            ? () => _yesNo(false)
+                            : null,
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _YesNoButton(
-                yes: false,
-                enabled: _phase == _Phase.answering,
-                onTap: () => _yesNo(false),
-              ),
-            ),
-          ],
-        ),
       ),
     ],
   );
@@ -602,161 +472,284 @@ class _QuizViewState extends State<QuizView> {
     final n = _q.sounds.length;
     return Column(
       children: [
-        const SizedBox(height: 24),
+        const SizedBox(height: 18),
+        _statusText(),
+        const SizedBox(height: 12),
+        _targetChip(),
         const Spacer(),
-        _targetHeader('BU ${_q.trainer.unitWord.toUpperCase()}YI BUL', null),
-        const Spacer(),
-        _statusLine(),
-        const SizedBox(height: 16),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Wrap(
-            spacing: 12,
-            runSpacing: 12,
+          child: Column(
             children: [
               for (var i = 0; i < n; i++)
-                LayoutBuilder(
-                  builder: (context, c) => SizedBox(
-                    width: (MediaQuery.sizeOf(context).width - 44) / 2,
-                    child: _SoundButton(
-                      index: i,
-                      color: _color,
-                      selected: _selectedSound == i,
-                      playing: _activeSound == i,
-                      audioPlaying: _scope.audio.playing,
-                      wrong: _wrongSounds.contains(i),
-                      correct:
-                          _correctPick != null &&
-                          _phase != _Phase.resetting &&
-                          i == _q.correctIndex &&
-                          _frame == true,
-                      resetting: _phase == _Phase.resetting,
-                      onTap: _phase == _Phase.answering
-                          ? () => _playSound(i)
-                          : null,
-                    ),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: _SoundRow(
+                    letter: String.fromCharCode(65 + i),
+                    color: _color,
+                    selected: _selectedSound == i,
+                    wrong: _wrongSounds.contains(i),
+                    correct:
+                        _correctPick != null &&
+                        i == _q.correctIndex &&
+                        _phase != _Phase.answering,
+                    onTap: _phase == _Phase.answering
+                        ? () => _playSound(i)
+                        : null,
                   ),
                 ),
             ],
           ),
         ),
-        const SizedBox(height: 20),
+        const Spacer(),
         Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-          child: BigButton(
-            label: 'Gönder',
-            color: _color,
-            onPressed: _selectedSound != null && _phase == _Phase.answering
-                ? _submitFind
-                : null,
-          ),
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
+          child: _phase == _Phase.review
+              ? _review(target: _q.answer, heard: _reviewChoice)
+              : BigButton(
+                  label: 'Bu ses',
+                  color: _color,
+                  onPressed:
+                      _selectedSound != null && _phase == _Phase.answering
+                      ? _submitFind
+                      : null,
+                ),
         ),
       ],
     );
   }
-}
 
-class _AnswerGrid extends StatelessWidget {
-  const _AnswerGrid({
-    required this.trainer,
-    required this.pool,
-    required this.correct,
-    required this.wrong,
-    required this.resetting,
-    required this.label,
-    required this.onTap,
-  });
-  final TrainerKind trainer;
-  final List<String> pool;
-  final String? correct;
-  final Set<String> wrong;
-  final bool resetting;
-  final String Function(String) label;
-  final ValueChanged<String>? onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final items = trainer.allItems;
-    final columns = switch (trainer) {
-      TrainerKind.pitch || TrainerKind.interval => 4,
-      TrainerKind.scale => 2,
-      _ => 3,
-    };
-    final tall = trainer == TrainerKind.progression;
-    return LayoutBuilder(
-      builder: (context, c) {
-        const gap = 10.0;
-        final w = (c.maxWidth - gap * (columns - 1)) / columns;
-        return Wrap(
-          spacing: gap,
-          runSpacing: gap,
-          children: [
-            for (final id in items)
-              SizedBox(
-                width: w,
-                height: tall ? 66 : (columns == 2 ? 44 : 52),
-                child: _AnswerCell(
-                  text: label(id),
-                  active: pool.contains(id),
-                  correct: correct == id,
-                  wrong: wrong.contains(id),
-                  resetting: resetting && pool.contains(id),
-                  compact: columns == 2,
-                  onTap: onTap == null || !pool.contains(id)
-                      ? null
-                      : () => onTap!(id),
+  /// Inline comparison after a first miss: play both, then move on.
+  Widget _review({required String target, String? heard}) {
+    final showHeard = heard != null && heard != target;
+    void play(String id) =>
+        _scope.audio.play(SoundFactory(_rand).item(_q.trainer, id));
+    return Container(
+      key: const Key('quiz_review'),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: TC.line),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              if (showHeard) ...[
+                Expanded(
+                  child: _PlayPill(
+                    caption: 'SENİN CEVABIN',
+                    text: _label(heard, long: true),
+                    color: TC.coral,
+                    onTap: () => play(heard),
+                  ),
+                ),
+                const SizedBox(width: 10),
+              ],
+              Expanded(
+                child: _PlayPill(
+                  caption: 'DOĞRUSU',
+                  text: _label(target, long: true),
+                  color: TC.green,
+                  onTap: () => play(target),
                 ),
               ),
-          ],
-        );
-      },
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(itemFeel(_q.trainer, target), style: TT.small),
+          const SizedBox(height: 12),
+          BigButton(label: _last ? 'Devam' : 'Sonraki soru', onPressed: _next),
+        ],
+      ),
     );
   }
 }
 
-class _AnswerCell extends StatelessWidget {
-  const _AnswerCell({
-    required this.text,
-    required this.active,
+/// One dot per question: grey = to come, outlined = now, green/coral = result.
+class _EvidenceStrip extends StatelessWidget {
+  const _EvidenceStrip({
+    required this.results,
+    required this.current,
+    required this.color,
+  });
+  final List<bool?> results;
+  final int current;
+  final Color color;
+  @override
+  Widget build(BuildContext context) => Row(
+    children: [
+      for (var i = 0; i < results.length; i++)
+        Expanded(
+          child: Container(
+            height: 6,
+            margin: const EdgeInsets.symmetric(horizontal: 1.5),
+            decoration: BoxDecoration(
+              color: switch (results[i]) {
+                true => TC.green,
+                false => TC.coral,
+                null => i == current ? color.withValues(alpha: 0.35) : TC.line,
+              },
+              borderRadius: BorderRadius.circular(3),
+            ),
+          ),
+        ),
+    ],
+  );
+}
+
+/// Large round listen button; an optional ring shows the time left.
+class ListenDisc extends StatelessWidget {
+  const ListenDisc({
+    super.key,
+    required this.color,
+    required this.playing,
+    required this.onTap,
+    this.timeFraction,
+    this.secondsLeft,
+  });
+  final Color color;
+  final ValueNotifier<bool> playing;
+  final VoidCallback? onTap;
+  final double? timeFraction;
+  final int? secondsLeft;
+  @override
+  Widget build(BuildContext context) => Semantics(
+    button: true,
+    label: 'Tekrar dinle',
+    child: GestureDetector(
+      onTap: onTap,
+      child: ValueListenableBuilder<bool>(
+        valueListenable: playing,
+        builder: (context, isPlaying, _) => Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              width: 172,
+              height: 172,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  SizedBox.expand(
+                    child: CircularProgressIndicator(
+                      value: timeFraction ?? 1,
+                      strokeWidth: 6,
+                      color: timeFraction == null ? TC.line : color,
+                      backgroundColor: TC.line,
+                    ),
+                  ),
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 220),
+                    width: isPlaying ? 140 : 128,
+                    height: isPlaying ? 140 : 128,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: isPlaying ? color : soft(color),
+                    ),
+                    child: Icon(
+                      isPlaying
+                          ? Icons.graphic_eq_rounded
+                          : Icons.replay_rounded,
+                      size: 48,
+                      color: isPlaying ? Colors.white : color,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              secondsLeft != null ? '$secondsLeft sn' : 'Tekrar dinle',
+              style: TT.small.copyWith(fontWeight: FontWeight.w700),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+/// Only the question's options, as chunky two-column buttons.
+class _Options extends StatelessWidget {
+  const _Options({
+    required this.options,
     required this.correct,
     required this.wrong,
-    required this.resetting,
-    required this.compact,
+    required this.color,
+    required this.label,
+    required this.onTap,
+  });
+  final List<String> options;
+  final String? correct;
+  final Set<String> wrong;
+  final Color color;
+  final String Function(String) label;
+  final ValueChanged<String>? onTap;
+
+  @override
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, c) {
+      final cols = options.length > 6 ? 3 : 2;
+      const gap = 10.0;
+      final w = (c.maxWidth - gap * (cols - 1)) / cols;
+      return Wrap(
+        spacing: gap,
+        runSpacing: gap,
+        children: [
+          for (final id in options)
+            SizedBox(
+              width: w,
+              child: _OptionButton(
+                text: label(id),
+                color: color,
+                state: correct == id
+                    ? true
+                    : wrong.contains(id)
+                    ? false
+                    : null,
+                onTap: onTap == null || wrong.contains(id)
+                    ? null
+                    : () => onTap!(id),
+              ),
+            ),
+        ],
+      );
+    },
+  );
+}
+
+class _OptionButton extends StatelessWidget {
+  const _OptionButton({
+    required this.text,
+    required this.color,
+    required this.state,
     required this.onTap,
   });
   final String text;
-  final bool active;
-  final bool correct;
-  final bool wrong;
-  final bool resetting;
-  final bool compact;
+  final Color color;
+  final bool? state;
   final VoidCallback? onTap;
-
   @override
   Widget build(BuildContext context) {
-    final bg = correct
-        ? TC.green
-        : wrong
-        ? const Color(0xFFFDE5E1)
-        : resetting
-        ? const Color(0xFFF0EFF8)
-        : Colors.white;
-    final border = correct
-        ? TC.green
-        : wrong
-        ? TC.red
-        : active
-        ? TC.line
-        : Colors.transparent;
-    final fg = correct
-        ? Colors.white
-        : wrong
-        ? TC.red
-        : active
-        ? TC.ink
-        : TC.faint;
+    final fill = switch (state) {
+      true => TC.green,
+      false => const Color(0xFFFDE5E1),
+      null => Colors.white,
+    };
+    final edge = switch (state) {
+      true => const Color(0xFF137A52),
+      false => TC.coral,
+      null => TC.line,
+    };
+    final fg = switch (state) {
+      true => Colors.white,
+      false => TC.coral,
+      null => TC.ink,
+    };
     return Semantics(
-      button: active,
+      button: true,
       enabled: onTap != null,
       label: text,
       excludeSemantics: true,
@@ -768,21 +761,27 @@ class _AnswerCell extends StatelessWidget {
                 onTap!();
               },
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 160),
+          duration: const Duration(milliseconds: 150),
+          height: 56,
           alignment: Alignment.center,
-          padding: const EdgeInsets.symmetric(horizontal: 4),
+          padding: const EdgeInsets.symmetric(horizontal: 8),
           decoration: BoxDecoration(
-            color: active ? bg : Colors.transparent,
-            borderRadius: BorderRadius.circular(compact ? 22 : 14),
-            border: Border.all(color: border, width: 1.4),
+            color: fill,
+            borderRadius: BorderRadius.circular(14),
+            border: Border(
+              left: BorderSide(color: edge),
+              top: BorderSide(color: edge),
+              right: BorderSide(color: edge),
+              bottom: BorderSide(color: edge, width: 4),
+            ),
           ),
           child: FittedBox(
             fit: BoxFit.scaleDown,
             child: Text(
               text,
               style: TextStyle(
-                fontSize: 16,
-                fontWeight: active ? FontWeight.w600 : FontWeight.w500,
+                fontSize: 17,
+                fontWeight: FontWeight.w800,
                 color: fg,
               ),
             ),
@@ -793,245 +792,115 @@ class _AnswerCell extends StatelessWidget {
   }
 }
 
-class _YesNoButton extends StatelessWidget {
-  const _YesNoButton({
-    required this.yes,
-    required this.enabled,
-    required this.onTap,
-  });
-  final bool yes;
-  final bool enabled;
-  final VoidCallback onTap;
-  @override
-  Widget build(BuildContext context) {
-    final color = yes ? TC.green : TC.red;
-    return Semantics(
-      button: true,
-      enabled: enabled,
-      label: yes ? 'Evet' : 'Hayır',
-      excludeSemantics: true,
-      child: GestureDetector(
-        onTap: enabled
-            ? () {
-                tapHaptic();
-                onTap();
-              }
-            : null,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 160),
-          height: 72,
-          decoration: BoxDecoration(
-            color: enabled ? soft(color) : const Color(0xFFF0EFF8),
-            borderRadius: BorderRadius.circular(18),
-            border: Border.all(
-              color: enabled ? color.withValues(alpha: 0.35) : TC.line,
-              width: 1.5,
-            ),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                width: 26,
-                height: 26,
-                decoration: BoxDecoration(
-                  color: enabled ? color : TC.faint,
-                  borderRadius: BorderRadius.circular(7),
-                ),
-                child: Icon(
-                  yes ? Icons.check_rounded : Icons.close_rounded,
-                  size: 18,
-                  color: Colors.white,
-                ),
-              ),
-              const SizedBox(width: 10),
-              Text(
-                yes ? 'Evet' : 'Hayır',
-                style: TextStyle(
-                  fontWeight: FontWeight.w700,
-                  fontSize: 16,
-                  color: enabled
-                      ? (yes ? const Color(0xFF137A52) : TC.red)
-                      : TC.muted,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _SoundButton extends StatelessWidget {
-  const _SoundButton({
-    required this.index,
+class _SoundRow extends StatelessWidget {
+  const _SoundRow({
+    required this.letter,
     required this.color,
     required this.selected,
-    required this.playing,
-    required this.audioPlaying,
     required this.wrong,
     required this.correct,
-    required this.resetting,
     required this.onTap,
   });
-  final int index;
+  final String letter;
   final Color color;
   final bool selected;
-  final bool playing;
-  final ValueNotifier<bool> audioPlaying;
   final bool wrong;
   final bool correct;
-  final bool resetting;
   final VoidCallback? onTap;
-
   @override
   Widget build(BuildContext context) {
-    final fill = correct
+    final accent = correct
         ? TC.green
+        : wrong
+        ? TC.coral
         : selected
         ? color
-        : wrong
-        ? const Color(0xFFFDE5E1)
-        : resetting
-        ? const Color(0xFFF0EFF8)
-        : Colors.white;
-    final fg = correct || selected ? Colors.white : (wrong ? TC.red : TC.muted);
+        : TC.line;
     return Semantics(
       button: true,
-      label: 'Ses ${index + 1}',
+      label: 'Ses $letter',
       selected: selected,
       excludeSemantics: true,
-      child: GestureDetector(
-        onTap: onTap == null
-            ? null
-            : () {
-                tapHaptic();
-                onTap!();
-              },
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 160),
-          height: 72,
-          decoration: BoxDecoration(
-            color: fill,
-            borderRadius: BorderRadius.circular(18),
-            border: Border.all(
-              color: correct
-                  ? TC.green
-                  : selected
-                  ? color
-                  : wrong
-                  ? TC.red
-                  : TC.line,
-              width: 1.5,
-            ),
-            boxShadow: selected
-                ? [
-                    BoxShadow(
-                      color: color.withValues(alpha: 0.25),
-                      blurRadius: 0,
-                      spreadRadius: 5,
-                    ),
-                  ]
-                : null,
-          ),
-          child: ValueListenableBuilder<bool>(
-            valueListenable: audioPlaying,
-            builder: (context, isPlaying, _) => Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  playing && isPlaying
-                      ? Icons.volume_up_rounded
-                      : Icons.volume_up_outlined,
-                  color: fg,
+      child: AppCard(
+        onTap: onTap,
+        border: accent == TC.line ? null : accent,
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        child: Row(
+          children: [
+            Container(
+              width: 34,
+              height: 34,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: accent == TC.line ? soft(color) : accent,
+                shape: BoxShape.circle,
+              ),
+              child: Text(
+                letter,
+                style: TextStyle(
+                  fontWeight: FontWeight.w900,
+                  color: accent == TC.line ? color : Colors.white,
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  '${index + 1}',
-                  style: TextStyle(
-                    color: fg,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ],
+              ),
             ),
-          ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                selected ? 'Seçili · tekrar dinlemek için dokun' : 'Dinle',
+                style: TT.title,
+              ),
+            ),
+            Icon(Icons.play_circle_outline_rounded, color: color),
+          ],
         ),
       ),
     );
   }
 }
 
-class _CompareCard extends StatelessWidget {
-  const _CompareCard({
+class _PlayPill extends StatelessWidget {
+  const _PlayPill({
     required this.caption,
-    required this.title,
-    required this.body,
-    required this.good,
-    required this.onPlay,
+    required this.text,
+    required this.color,
+    required this.onTap,
   });
   final String caption;
-  final String title;
-  final String body;
-  final bool good;
-  final VoidCallback onPlay;
+  final String text;
+  final Color color;
+  final VoidCallback onTap;
   @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.only(bottom: 10),
-    child: Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: TC.line, width: 1.5),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 32,
-            height: 32,
-            decoration: BoxDecoration(
-              color: good ? const Color(0xFFDDF6EC) : const Color(0xFFFDE5E1),
-              borderRadius: BorderRadius.circular(9),
+  Widget build(BuildContext context) => Material(
+    color: soft(color),
+    borderRadius: BorderRadius.circular(14),
+    child: InkWell(
+      borderRadius: BorderRadius.circular(14),
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.all(10),
+        child: Row(
+          children: [
+            Icon(Icons.play_arrow_rounded, color: color),
+            const SizedBox(width: 6),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    caption,
+                    style: TT.caps.copyWith(color: color, fontSize: 10),
+                  ),
+                  Text(
+                    text,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TT.title,
+                  ),
+                ],
+              ),
             ),
-            child: Icon(
-              good ? Icons.check_rounded : Icons.close_rounded,
-              color: good ? const Color(0xFF137A52) : TC.red,
-              size: 20,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  caption,
-                  style: const TextStyle(fontSize: 11, color: TC.muted),
-                ),
-                Text(title, style: TT.title),
-                const SizedBox(height: 2),
-                Text(
-                  body,
-                  style: const TextStyle(fontSize: 12.5, color: TC.body),
-                ),
-              ],
-            ),
-          ),
-          IconButton.filledTonal(
-            tooltip: 'Dinle',
-            onPressed: onPlay,
-            style: IconButton.styleFrom(
-              backgroundColor: const Color(0xFFF0EFF8),
-            ),
-            icon: const Icon(
-              Icons.volume_up_outlined,
-              size: 20,
-              color: TC.body,
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     ),
   );

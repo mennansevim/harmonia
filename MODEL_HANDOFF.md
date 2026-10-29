@@ -44,7 +44,7 @@ sample hakları varsayılmadı; Harmonia'ya kopyalanmadı.
 
 ## 2c. 2026-10-29 — TRAINER-02 farklılaşma
 
-Referans uygulamaya benzerlik bilinçli olarak azaltıldı (ADR-033): Harmonia paleti ve buton/kart dili, Bugün/Koro/İlerleme/Ayarlar sekmeleri, 8 adımlı koro onboarding'i, `VoicePart` ile partiye göre çalma, yerel koro seviyesi. Lig, istatistik kilidi, kullanıcı adı/topluluk ve 30 adımlı akış kaldırıldı. Yeni ekranlarda referans uygulamanın metnini/düzenini geri getirme. Sıradaki farklılaşma adayı: cevabı dokunmak yerine söyleyerek verme (kalite kapılı, ayrı kaynak etiketiyle).
+Referans uygulamaya benzerlik bilinçli olarak azaltıldı (ADR-033): Harmonia paleti ve buton/kart dili, Bugün/Koro/İlerleme/Ayarlar sekmeleri, 8 adımlı koro onboarding'i, `VoicePart` ile partiye göre çalma, yerel koro seviyesi. Lig, istatistik kilidi, kullanıcı adı/topluluk ve 30 adımlı akış kaldırıldı. Yeni ekranlarda referans uygulamanın metnini/düzenini geri getirme. TRAINER-03 (ADR-034) ile ders/quiz/müfredat da yeniden yazıldı: `_ladder` müfredatı, Dinle → Söyle → Ayırt et, `ListenDisc` quiz, `SkillScreen`. Sıradaki doğal adım: Söyle adımını kalite kapılı mikrofonla isteğe bağlı ölçmek (ayrı kaynak etiketiyle).
 
 ## 2b. 2026-10-29 güncellemesi — yeni ana deneyim (TRAINER-01)
 
@@ -1054,3 +1054,28 @@ Seven tests bring the full suite to 991 passed plus one opt-in screenshot tour
 skipped; analysis/diff clean. Keep placeholder disabled until real recordings
 and joint note/timbre/rights QA. Production player/UI, BENCH/VAD and physical
 device routes remain open. No commit, push or deployment.
+
+**2026-10-29 — TRAINER-04a handoff:** Added
+`lib/trainer/sing/trainer_pitch_sing_session.dart` without touching the dirty
+TRAINER-03 screen rewrite. It maps only a valid pitch lesson item/register and
+optional choir part to immutable MIDI/Hz, renders the selected trainer timbre,
+plays through a dedicated owned clip player and reuses SESSION-01 for calibrated
+quality-gated capture. It exposes only unscored diagnostic evidence and cannot
+write TrainerStore/history/mastery/completion/unlocks. Seven tests bring the
+full suite to 1000 passed plus one opt-in screenshot tour skipped; analyze,
+format and diff checks are clean. Next UI work may compose this into the pitch
+lesson “Söyle” page, but must retain optional skip/retry, source labeling and
+no-score language; real phone/human BENCH/VAD gates remain open. No commit,
+push or deployment.
+
+**2026-10-29 — TRAINER-04b handoff:** The pitch lesson “Söyle” page now owns
+the optional TRAINER-04a diagnostic. Entry never requests permission or starts
+audio; calibration and listen/respond are explicit, and “Ayırt etmeye geç”
+always remains available. The screen shows phase, actual source and signed
+cents with no-score copy. Pause/background cancels and resume never autoplays;
+leaving closes+disposes the session. Factory failure is neutral/skippable,
+non-pitch lessons and `liveAudio=false` stay self-guided. Four widget tests plus
+the related session/app tests pass; full suite 1004 + one opt-in screenshot
+skip, analyze/format/diff clean. Do not add a pass threshold or progress write
+until real-phone human BENCH/VAD and educator acceptance exist. No commit, push
+or deployment.

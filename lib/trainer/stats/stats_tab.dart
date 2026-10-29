@@ -234,7 +234,7 @@ class _Unlocked extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 20),
-        const Text('EĞİTMENE GÖRE', style: TT.caps),
+        const Text('BECERİLER · İLK DENEME DOĞRULUĞU', style: TT.caps),
         const SizedBox(height: 10),
         _TrainerList(store: store),
       ],
@@ -246,42 +246,60 @@ class _TrainerList extends StatelessWidget {
   const _TrainerList({required this.store});
   final TrainerStore store;
   @override
-  Widget build(BuildContext context) => Column(
-    children: [
-      for (final k in TrainerKind.values)
-        Padding(
-          padding: const EdgeInsets.only(bottom: 10),
-          child: AppCard(
+  Widget build(BuildContext context) => AppCard(
+    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+    child: Column(
+      children: [
+        for (final k in TrainerKind.values)
+          InkWell(
             key: Key('stats_${k.id}'),
             onTap: () => Navigator.of(context).push(
               MaterialPageRoute<void>(
                 builder: (_) => TrainerStatsScreen(trainer: k),
               ),
             ),
-            child: Row(
-              children: [
-                TrainerBadge(
-                  color: trainerColor(k),
-                  icon: trainerIcon(k),
-                  size: 40,
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(k.title, style: TT.title),
-                      Text(_bestLine(store, k), style: TT.small),
-                    ],
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              child: Row(
+                children: [
+                  Icon(trainerIcon(k), color: trainerColor(k)),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(k.shortTitle, style: TT.title),
+                            ),
+                            Text(
+                              _accuracy(store, k) == null
+                                  ? '—'
+                                  : '%${(_accuracy(store, k)! * 100).round()}',
+                              style: TT.title.copyWith(color: trainerColor(k)),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        ProgressBar(
+                          value: _accuracy(store, k) ?? 0,
+                          color: trainerColor(k),
+                          height: 6,
+                        ),
+                        const SizedBox(height: 4),
+                        Text(_bestLine(store, k), style: TT.small),
+                      ],
+                    ),
                   ),
-                ),
-                _Ring(value: _accuracy(store, k), color: trainerColor(k)),
-                const Icon(Icons.chevron_right_rounded, color: TC.faint),
-              ],
+                  const SizedBox(width: 6),
+                  const Icon(Icons.chevron_right_rounded, color: TC.faint),
+                ],
+              ),
             ),
           ),
-        ),
-    ],
+      ],
+    ),
   );
 }
 
@@ -309,35 +327,8 @@ String _bestLine(TrainerStore store, TrainerKind k) {
   return '$reps tekrar$bestLabel';
 }
 
-class _Ring extends StatelessWidget {
-  const _Ring({required this.value, required this.color});
-  final double? value;
-  final Color color;
-  @override
-  Widget build(BuildContext context) => SizedBox(
-    width: 40,
-    height: 40,
-    child: Stack(
-      alignment: Alignment.center,
-      children: [
-        SizedBox.expand(
-          child: CircularProgressIndicator(
-            value: value ?? 0,
-            strokeWidth: 3.5,
-            color: color,
-            backgroundColor: const Color(0xFFF0EFF8),
-          ),
-        ),
-        Text(
-          value == null ? '–' : '${(value! * 100).round()}',
-          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800),
-        ),
-      ],
-    ),
-  );
-}
-
-/// Mastery trend, per-item heat map, strongest and weakest item.
+/// Per-skill evidence table: every item with first-attempt accuracy and
+/// attempt count, weakest first. Local listening answers only.
 class TrainerStatsScreen extends StatelessWidget {
   const TrainerStatsScreen({super.key, required this.trainer});
   final TrainerKind trainer;
@@ -346,150 +337,118 @@ class TrainerStatsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final store = TrainerScope.of(context).store;
     final color = trainerColor(trainer);
-    final acc = _accuracy(store, trainer);
-    final trend = store.trend(trainer);
-    final firstHalf = trend.take(7).whereType<double>().toList();
-    final secondHalf = trend.skip(7).whereType<double>().toList();
-    double? avg(List<double> v) =>
-        v.isEmpty ? null : v.reduce((a, b) => a + b) / v.length;
-    final delta = avg(firstHalf) != null && avg(secondHalf) != null
-        ? ((avg(secondHalf)! - avg(firstHalf)!) * 100).round()
-        : null;
-    final items = store.itemStats(trainer);
-    final tested = items.entries.where((e) => e.value.attempts > 0).toList()
-      ..sort((a, b) => b.value.accuracy!.compareTo(a.value.accuracy!));
-    String label(String id) => itemLabel(
-      trainer,
-      id,
-      notation: store.notation,
-      transposition: store.transposition,
-    );
+    final stats = store.itemStats(trainer);
+    final rows = [for (final id in trainer.allItems) (id, stats[id])]
+      ..sort((a, b) {
+        final x = a.$2?.accuracy;
+        final y = b.$2?.accuracy;
+        if (x == null) return y == null ? 0 : 1;
+        if (y == null) return -1;
+        return x.compareTo(y);
+      });
+    final attempts = stats.values.fold(0, (n, s) => n + s.attempts);
+    final correct = stats.values.fold(0, (n, s) => n + s.correct);
+    final week = store.trend(trainer, span: 7).whereType<double>().toList();
     return Scaffold(
       backgroundColor: TC.canvas,
       body: SafeArea(
-        child: Column(
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(8, 4, 16, 32),
           children: [
-            TopBar(
-              title: trainer.title,
-              titleIcon: TrainerBadge(
-                color: color,
-                icon: trainerIcon(trainer),
-                size: 32,
-              ),
-              shadow: true,
+            Row(
+              children: [
+                IconButton(
+                  tooltip: 'Geri',
+                  onPressed: () => Navigator.of(context).maybePop(),
+                  icon: const Icon(Icons.arrow_back_rounded, color: TC.ink),
+                ),
+                Expanded(child: Text(trainer.title, style: TT.h3)),
+              ],
             ),
-            Expanded(
-              child: ListView(
-                padding: const EdgeInsets.all(16),
+            Padding(
+              padding: const EdgeInsets.only(left: 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   AppCard(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    child: Row(
                       children: [
-                        Row(
-                          children: [
-                            const Expanded(
-                              child: Text('Doğruluk eğilimi', style: TT.title),
-                            ),
-                            if (delta != null)
-                              Text(
-                                '${delta >= 0 ? '▲' : '▼'} %${delta.abs()}',
-                                style: TextStyle(
-                                  color: delta >= 0
-                                      ? const Color(0xFF137A52)
-                                      : TC.red,
-                                  fontWeight: FontWeight.w800,
-                                ),
-                              ),
-                          ],
+                        _Figure(
+                          attempts == 0
+                              ? '—'
+                              : '%${(correct * 100 / attempts).round()}',
+                          'doğruluk',
+                          color,
                         ),
-                        const SizedBox(height: 6),
-                        Text.rich(
-                          TextSpan(
-                            children: [
-                              TextSpan(
-                                text: acc == null
-                                    ? '—'
-                                    : '${(acc * 100).round()}%',
-                                style: TT.h1,
-                              ),
-                              const TextSpan(text: '  toplam', style: TT.small),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        SizedBox(
-                          height: 110,
-                          child: CustomPaint(
-                            size: Size.infinite,
-                            painter: _TrendPainter(trend, color),
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        const Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text('2 hafta önce', style: TT.small),
-                            Text('bugün', style: TT.small),
-                          ],
+                        _Figure('$attempts', 'cevap', TC.ink),
+                        _Figure(
+                          week.isEmpty ? '—' : '%${(week.last * 100).round()}',
+                          'son gün',
+                          TC.ink,
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 14),
+                  const SizedBox(height: 20),
+                  const Text('ÖĞE BAZINDA · ZAYIFTAN GÜÇLÜYE', style: TT.caps),
+                  const SizedBox(height: 8),
                   AppCard(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 6,
+                    ),
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Row(
-                          children: [
-                            Expanded(
-                              child: Text('Öğeye göre', style: TT.title),
+                        for (final (id, st) in rows)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            child: Row(
+                              children: [
+                                SizedBox(
+                                  width: 96,
+                                  child: Text(
+                                    itemLabel(
+                                      trainer,
+                                      id,
+                                      notation: store.notation,
+                                      long: true,
+                                    ),
+                                    style: TT.title.copyWith(
+                                      color: st == null ? TC.muted : TC.ink,
+                                    ),
+                                  ),
+                                ),
+                                Expanded(
+                                  child: ProgressBar(
+                                    value: st?.accuracy ?? 0,
+                                    color: (st?.accuracy ?? 0) >= 0.8
+                                        ? TC.green
+                                        : color,
+                                    height: 8,
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                                SizedBox(
+                                  width: 44,
+                                  child: Text(
+                                    st == null
+                                        ? '—'
+                                        : '${st.correct}/${st.attempts}',
+                                    textAlign: TextAlign.right,
+                                    style: TT.small.copyWith(
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
-                            _Legend(Color(0xFF22C55E), 'Güçlü'),
-                            _Legend(Color(0xFFEAB308), 'İdare'),
-                            _Legend(TC.red, 'Zayıf'),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                        Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
-                          children: [
-                            for (final id in trainer.allItems)
-                              _HeatChip(label: label(id), stat: items[id]),
-                          ],
-                        ),
+                          ),
                       ],
                     ),
-                  ),
-                  const SizedBox(height: 14),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _Extreme(
-                          caption: 'EN GÜÇLÜ',
-                          color: const Color(0xFF137A52),
-                          text: tested.isEmpty
-                              ? '—'
-                              : '${label(tested.first.key)} · %${(tested.first.value.accuracy! * 100).round()}',
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: _Extreme(
-                          caption: 'ÇALIŞILMALI',
-                          color: TC.red,
-                          text: tested.length < 2
-                              ? '—'
-                              : '${label(tested.last.key)} · %${(tested.last.value.accuracy! * 100).round()}',
-                        ),
-                      ),
-                    ],
                   ),
                   const SizedBox(height: 14),
                   const Text(
-                    'Bu sayılar yalnız bu cihazdaki dinleme cevaplarından hesaplanır; sınav ya da eğitimci değerlendirmesi değildir.',
+                    'Yalnız bu cihazdaki dinleme cevapları; sınav ya da eğitimci değerlendirmesi değildir.',
                     style: TT.small,
                   ),
                 ],
@@ -502,154 +461,25 @@ class TrainerStatsScreen extends StatelessWidget {
   }
 }
 
-class _Legend extends StatelessWidget {
-  const _Legend(this.color, this.label);
-  final Color color;
+class _Figure extends StatelessWidget {
+  const _Figure(this.value, this.label, this.color);
+  final String value;
   final String label;
-  @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.only(left: 8),
-    child: Row(
-      children: [
-        Container(
-          width: 7,
-          height: 7,
-          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-        ),
-        const SizedBox(width: 4),
-        Text(label, style: const TextStyle(fontSize: 11, color: TC.muted)),
-      ],
-    ),
-  );
-}
-
-class _HeatChip extends StatelessWidget {
-  const _HeatChip({required this.label, required this.stat});
-  final String label;
-  final ItemStat? stat;
-  @override
-  Widget build(BuildContext context) {
-    final a = stat?.accuracy;
-    final (bg, fg) = a == null
-        ? (const Color(0xFFF0EFF8), TC.faint)
-        : a >= 0.8
-        ? (const Color(0xFFDDF6EC), const Color(0xFF137A52))
-        : a >= 0.5
-        ? (const Color(0xFFFEF9C3), const Color(0xFF854D0E))
-        : (const Color(0xFFFDE5E1), TC.red);
-    return Container(
-      width: 70,
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      decoration: BoxDecoration(
-        color: bg,
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Column(
-        children: [
-          Text(
-            label,
-            style: TextStyle(
-              fontWeight: FontWeight.w700,
-              fontSize: 12,
-              color: fg,
-            ),
-          ),
-          Text(
-            a == null ? '—' : '%${(a * 100).round()}',
-            style: TextStyle(fontSize: 11, color: fg),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _Extreme extends StatelessWidget {
-  const _Extreme({
-    required this.caption,
-    required this.color,
-    required this.text,
-  });
-  final String caption;
   final Color color;
-  final String text;
   @override
-  Widget build(BuildContext context) => AppCard(
+  Widget build(BuildContext context) => Expanded(
     child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(caption, style: TT.caps.copyWith(color: color)),
-        const SizedBox(height: 4),
-        Text(text, style: TT.title),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.w800,
+            color: color,
+          ),
+        ),
+        Text(label, style: TT.small),
       ],
     ),
   );
-}
-
-class _TrendPainter extends CustomPainter {
-  _TrendPainter(this.values, this.color);
-  final List<double?> values;
-  final Color color;
-  @override
-  void paint(Canvas canvas, Size size) {
-    final points = <Offset>[];
-    for (var i = 0; i < values.length; i++) {
-      final v = values[i];
-      if (v == null) continue;
-      points.add(
-        Offset(size.width * i / (values.length - 1), size.height * (1 - v)),
-      );
-    }
-    final grid = Paint()
-      ..color = TC.line
-      ..strokeWidth = 1;
-    canvas.drawLine(
-      Offset(0, size.height),
-      Offset(size.width, size.height),
-      grid,
-    );
-    if (points.isEmpty) {
-      final tp = TextPainter(
-        text: const TextSpan(text: 'Henüz veri yok', style: TT.small),
-        textDirection: TextDirection.ltr,
-      )..layout();
-      tp.paint(
-        canvas,
-        Offset((size.width - tp.width) / 2, (size.height - tp.height) / 2),
-      );
-      return;
-    }
-    final path = Path()..moveTo(points.first.dx, points.first.dy);
-    for (var i = 1; i < points.length; i++) {
-      final p0 = points[i - 1];
-      final p1 = points[i];
-      final mid = (p0.dx + p1.dx) / 2;
-      path.cubicTo(mid, p0.dy, mid, p1.dy, p1.dx, p1.dy);
-    }
-    final fill = Path.from(path)
-      ..lineTo(points.last.dx, size.height)
-      ..lineTo(points.first.dx, size.height)
-      ..close();
-    canvas.drawPath(
-      fill,
-      Paint()
-        ..shader = LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [color.withValues(alpha: 0.25), color.withValues(alpha: 0)],
-        ).createShader(Offset.zero & size),
-    );
-    canvas.drawPath(
-      path,
-      Paint()
-        ..color = color
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 3
-        ..strokeCap = StrokeCap.round,
-    );
-    canvas.drawCircle(points.last, 5, Paint()..color = color);
-  }
-
-  @override
-  bool shouldRepaint(_TrendPainter old) => true;
 }
