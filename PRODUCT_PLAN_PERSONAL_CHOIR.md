@@ -106,7 +106,7 @@ burada yalnız değişen/eklenen işler var.
 |---|---|---|---|
 | CHOIR-D0 | Şef görüşmeleri (K1), mevcut iş akışı haritası, “bir ödevde kaç kayıt dinleyebilirsin” sorusu | D | Görüşme notu; ilk sürüm kapsamı onaylı |
 | CHOIR-ADR | Backend, web paneli, veri bölgesi, saklama süresi, silme | Ka | ADR-036 |
-| CHOIR-M1 | Saf Dart domain: `Choir`, `ChoirMember` (rol + `VoicePart`), `Invite`, `ReferenceAsset` (kaynak/hak beyanı), `Assignment` (parti hedefi, son tarih), `Submission` (durum makinesi: taslak → gönderildi → dinlendi → geri bildirildi / tekrar istendi), `Feedback` (yazılı + hazır etiketler) | K | Backend'den bağımsız, JSON round-trip ve durum geçişleri testli; sunucu olmadan yazılabilir |
+| CHOIR-M1 ✅ 2026-10-30 | Saf Dart domain: `Choir`, `ChoirMember` (rol + `VoicePart`), `Invite`, `ReferenceAsset` (kaynak/hak beyanı), `Assignment` (parti hedefi, son tarih), `Submission` (durum makinesi: taslak → gönderildi → dinlendi → geri bildirildi / tekrar istendi), `Feedback` (yazılı + hazır etiketler) | K | Backend'den bağımsız, JSON round-trip ve durum geçişleri testli; sunucu olmadan yazılabilir |
 
 #### C1 — Koro ve ödev yönetimi (Aralık–Ocak, ~6 hafta, ilk pilot)
 
@@ -137,7 +137,7 @@ Android'de kayıt/yükleme; hukuk metinleri yayında.
 
 | ID | İş | Tür | Kabul / sınır |
 |---|---|---|---|
-| MIDI-01 | Saf Dart SMF (tip 0/1) okuyucu: track/kanal, tempo haritası, ölçü işareti, nota olayları | K | Bozuk/çok büyük dosya güvenli reddedilir; fixture testleri |
+| MIDI-01 ✅ 2026-10-30 | Saf Dart SMF (tip 0/1) okuyucu: track/kanal, tempo haritası, ölçü işareti, nota olayları | K | Bozuk/çok büyük dosya güvenli reddedilir; fixture testleri |
 | MIDI-02 | Parti eşleme: şef track/kanalı S/A/T/B'ye atar (otomatik tahmin yalnız öneri) | K | Yanlış eşleme şef düzeltir |
 | MIDI-03 | Seslendirme: önce mevcut additive sentez; SoundFont yalnız lisansı net bir SF2 ile (ADR) | K/Ka | Lisansı belirsiz ses dağıtılmaz |
 | MIDI-04 | Mixer: kendi parti öne, diğerleri kıs/sustur, solo, metronom | K | Tek saatli render (piyano mix altyapısındaki yaklaşım) |
@@ -222,10 +222,17 @@ hukuk, cihaz) takvimi belirler.
 
 ## 9. Hemen başlanabilecek işler (kullanıcı kararı gerektirmeyen)
 
-1. **IA-01 + ONB-03** — Personal'ı herkes için ana kimlik yapan sekme ve
+1. ✅ **IA-01 + ONB-03** — Personal'ı herkes için ana kimlik yapan sekme ve
    onboarding değişikliği.
-2. **CHOIR-M1** — koro domain modeli ve durum makinesi, saf Dart + test.
-3. **MIDI-01** — SMF okuyucu spike'ı, saf Dart + fixture testleri.
+2. ✅ **CHOIR-M1** — `lib/choir/domain/` (koro, üye, davet, referans + hak
+   beyanı, ödev, teslim durum makinesi, geri bildirim etiketleri, parti
+   takibi), 16 test.
+3. ✅ **MIDI-01** — `lib/choir/midi/smf_reader.dart` (tip 0/1, tempo
+   haritası, ölçü başları, sınırlı güvensiz girdi), 10 test.
 
-Sunucu, hesap, upload, web yayını, ödeme ve şef görüşmeleri K1–K6
-kararlarını bekler.
+Kararsız yapılabilecek kod işleri bitti. Sıradakiler kullanıcı kararı veya
+dış iş ister: şef görüşmeleri (K1), backend ADR'si (K2/CHOIR-ADR), web
+paneli (K3), reşit olmayan koristler (K4), ödeme kanalı (K5), pilot koro
+(K6). MIDI-02–05 (parti eşleme, seslendirme, mixer, döngü/tempo) kod olarak
+yazılabilir ama gerçek bir koro MIDI'si ve SF2 lisans kararı (MIDI-03)
+olmadan doğrulanamaz.

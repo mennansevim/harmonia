@@ -44,7 +44,7 @@ sample hakları varsayılmadı; Harmonia'ya kopyalanmadı.
 
 ## 2d. 2026-10-30 — ADR-035 Personal / Choir
 
-Plan: `PRODUCT_PLAN_PERSONAL_CHOIR.md`. Personal herkes içindir; eski “Koro” sekmesi **Ses** sekmesi (Ses Atölyesi, `KoroHub` sınıf adı korunuyor). Onboarding kişisel dille; aralık adımı atlanabilir; `focus` için `voice` id'si. Koro modülü (davet, ödev, kayıt gönderme, şef web paneli) yok ve sunucu/hesap/upload gerektirdiği için kullanıcı kararlarını (K1–K6) bekliyor. Kararsız başlanabilecek sonraki kod: CHOIR-M1 domain, MIDI-01 okuyucu.
+Plan: `PRODUCT_PLAN_PERSONAL_CHOIR.md`. Personal herkes içindir; eski “Koro” sekmesi **Ses** sekmesi (Ses Atölyesi, `KoroHub` sınıf adı korunuyor). Onboarding kişisel dille; aralık adımı atlanabilir; `focus` için `voice` id'si. Koro modülü (davet, ödev, kayıt gönderme, şef web paneli) yok ve sunucu/hesap/upload gerektirdiği için kullanıcı kararlarını (K1–K6) bekliyor. CHOIR-M1 (`lib/choir/domain/`) ve MIDI-01 (`lib/choir/midi/smf_reader.dart`) saf Dart + testli, hiçbir ekrana bağlı değil. Kararsız yapılabilecek kod bitti; sonraki adım K1–K6 kullanıcı kararları.
 
 ## 2c. 2026-10-29 — TRAINER-02 farklılaşma
 

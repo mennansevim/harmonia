@@ -2207,3 +2207,24 @@ Nefes metni ve ritmi EDU-01 onayı bekliyor. Commit/push yapılmadı.
 
 Rol yalnız kaydedilir, içerik/akış değiştirmez. Koro modülü, sunucu, davet ve şef paneli yok. Store şeması değişmedi; eski `focus: ["koro"]` zararsızca yok sayılır. Gerçek cihaz ve kullanıcı kabulü açık.
 
+## 2026-10-30 — CHOIR-M1 koro domain + MIDI-01 SMF okuyucu
+
+**Kullanıcı isteği:** “Bitene kadar devam et” — plan §9'daki kararsız kod işleri.
+
+### Uygulananlar
+
+- `lib/choir/domain/choir_json.dart`: katı okuyucular (eksik/yanlış tip/boş id/UTC olmayan zaman/bilinmeyen enum → `FormatException`).
+- `choir.dart`: `Choir`, `ChoirRole`, `ChoirPart` (SATB; divisi yok), `ChoirMember` (şef partisiz, `withPart`), `Invite` (≥6 karakter, mutlaka süreli, `maxUses` null = ortak kod; `check` önceliği iptal → süre → kota; `redeem`/`revoke`).
+- `assignment.dart`: `ReferenceAsset` (audio/midi, parti veya tüm koro, `RightsDeclaration`; `unknown` paylaşılamaz), `Assignment` (parti tekilleştirme + SATB sırası, tekil referans, son tarih > oluşturma, kayıt sınırı 10–600 sn; `publishProblems` eksik/başka koro/hak beyansız dosyayı adlandırır; `isLate`).
+- `submission.dart`: `SubmissionStatus` durum makinesi, `Submission.start` (yalnız atanmış partideki aynı koro koristi), `attachRecording` (sınır kontrolü), `clearRecording`, `submit`, idempotent `markListened`, `review` (dinlemeyi içerir; metin veya etiket zorunlu; yalnız aynı koronun şefi), `retake` (deneme +1, eski geri bildirim korunur, kayıt referansı düşer). Puan alanı yok. `FeedbackTag.personalArea` BRIDGE-01 için şef etiketi → Personal alanı. `assignmentProgress`: parti başına koristi, gönderilmedi, değerlendirme bekliyor, kabul, tekrar; taslak gönderilmedi sayılır.
+- `lib/choir/midi/smf_reader.dart`: `readSmf` + `SmfLimits` (4 MB, 64 track, 200k olay). Tip 0/1, PPQ; tip 2 ve SMPTE reddedilir. Running status, vel-0 note-off, FIFO eşleştirme, başıboş note-off yok sayılır, asılı notalar track sonunda kapatılıp sayılır. Tempo/ölçü işareti normalize (tick 0 varsayılanları, aynı tick'te son kazanır). `secondsAt`, `lengthSeconds`, `measureStarts` (ara değişim yeni ölçü başlatır; en çok 10.000), `measureAt`. Track adı UTF-8.
+
+### Doğrulama
+
+- `test/choir/choir_domain_test.dart` 16 test, `test/choir/smf_reader_test.dart` 10 test (fixture baytları test içinde yazılıyor; üçüncü taraf MIDI kopyalanmadı).
+- `dart tool/quality_check.dart`: format → analyze → **1039 test geçti**, 1 opt-in atlandı.
+
+### Sınırlar
+
+Hiçbiri UI'ya, depolamaya veya sunucuya bağlı değil. Gerçek koro MIDI dosyası, notasyon yazılımı çıktıları (Sibelius/MuseScore/Finale) ve seslendirme denenmedi. Divisi, MusicXML, tip 2 ve SMPTE yok. Davet kodu üretimi/güvenliği ve yetki kuralları sunucu ADR'sine kalır.
+
