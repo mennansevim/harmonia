@@ -272,6 +272,29 @@ void main() {
     expect(find.text('2 / 10'), findsOneWidget);
   });
 
+  testWidgets('progress and settings speak to every learner, not only '
+      'choir singers', (tester) async {
+    final store = memoryStore({
+      'onboardingDone': true,
+      'setupDone': true,
+      'voicePart': 'alto',
+    });
+    await store.load();
+    await tester.pumpWidget(app(store));
+    await settle(tester);
+    await tapKey(tester, 'tab_2');
+    expect(find.text('Çırak için 500 XP · bu hafta 0 XP'), findsOneWidget);
+    // Two-letter day names, as on the Bugün week bar.
+    for (final day in ['Pt', 'Sa', 'Ça', 'Pe', 'Cu', 'Ct', 'Pz']) {
+      expect(find.text(day), findsOneWidget);
+    }
+    await tapKey(tester, 'tab_3');
+    expect(find.text('SES'), findsOneWidget);
+    expect(find.text('KORO'), findsNothing);
+    expect(find.text('Çalışma aralığı: Alto'), findsOneWidget);
+    expect(find.text('Çalışma aralığım'), findsOneWidget);
+  });
+
   testWidgets('settings reset returns to the welcome screen', (tester) async {
     final store = memoryStore({'onboardingDone': true, 'setupDone': true});
     await store.load();

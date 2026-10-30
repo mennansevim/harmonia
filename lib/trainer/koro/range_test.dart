@@ -244,7 +244,7 @@ class _RangeTestScreenState extends State<RangeTestScreen> {
           emoji: '🎤',
           title: 'Ses aralığını bul',
           body:
-              'Önce en pes, sonra en tiz rahat sesini "aa" ile 3 saniye tut. Harmonia\'nın ses tespit çekirdeği her kaydın temsilî perdesini ölçer.\n\nKayıtlar cihazdan çıkmaz ve analizden sonra silinir. Sonuç deneyseldir; partini koro şefin belirler.',
+              'Önce en pes, sonra en tiz rahat sesini "aa" ile 3 saniye tut. Harmonia\'nın ses tespit çekirdeği her kaydın temsilî perdesini ölçer.\n\nKayıtlar cihazdan çıkmaz ve analizden sonra silinir. Sonuç deneyseldir; ses tipini bir eğitmen ya da koro şefi belirler.',
           button: 'Başla',
           onPressed: _start,
         );
@@ -346,7 +346,7 @@ class _RangeTestScreenState extends State<RangeTestScreen> {
                   Text(part?.title ?? 'Belirsiz', style: TT.h3),
                   const SizedBox(height: 4),
                   const Text(
-                    'Yalnız ölçülen iki uç notaya dayanır. Ses rengi, geçiş bölgeleri ve rahat tessitura ölçülmedi; parti kararını koro şefi verir.',
+                    'Yalnız ölçülen iki uç notaya dayanır. Ses rengi, geçiş bölgeleri ve rahat tessitura ölçülmedi; ses tipi kararını eğitmen ya da koro şefi verir.',
                     style: TT.small,
                   ),
                 ],
@@ -361,7 +361,7 @@ class _RangeTestScreenState extends State<RangeTestScreen> {
                   store.save();
                 }),
                 icon: const Icon(Icons.how_to_reg_outlined),
-                label: Text('${part.title} partisinde çalış'),
+                label: Text('${part.title} aralığında çalış'),
               ),
               const SizedBox(height: 12),
             ],

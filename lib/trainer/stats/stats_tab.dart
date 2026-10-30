@@ -38,13 +38,15 @@ class StatsTab extends StatelessWidget {
   }
 }
 
-/// Choir ladder derived from total XP (10 per correct answer, 2 per try).
-const choirLevels = [
+/// Practice ladder derived from total XP (10 per correct answer, 2 per
+/// try). Role-neutral apprentice → master names: Personal is for everyone
+/// (ADR-035), not only choir singers.
+const practiceLevels = [
   (0, 'Dinleyici', Icons.hearing_rounded),
-  (500, 'Korist', Icons.mic_none_rounded),
-  (1500, 'Partisyon lideri', Icons.record_voice_over_rounded),
-  (4000, 'Solist', Icons.star_outline_rounded),
-  (8000, 'Şef yardımcısı', Icons.queue_music_rounded),
+  (500, 'Çırak', Icons.mic_none_rounded),
+  (1500, 'Kalfa', Icons.record_voice_over_rounded),
+  (4000, 'Usta', Icons.star_outline_rounded),
+  (8000, 'Üstat', Icons.queue_music_rounded),
   (15000, 'Maestro', Icons.workspace_premium_outlined),
 ];
 
@@ -55,11 +57,11 @@ class _LevelCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final xp = store.xp;
     var i = 0;
-    while (i + 1 < choirLevels.length && xp >= choirLevels[i + 1].$1) {
+    while (i + 1 < practiceLevels.length && xp >= practiceLevels[i + 1].$1) {
       i++;
     }
-    final level = choirLevels[i];
-    final next = i + 1 < choirLevels.length ? choirLevels[i + 1] : null;
+    final level = practiceLevels[i];
+    final next = i + 1 < practiceLevels.length ? practiceLevels[i + 1] : null;
     final progress = next == null
         ? 1.0
         : (xp - level.$1) / (next.$1 - level.$1);
@@ -178,7 +180,7 @@ class _Unlocked extends StatelessWidget {
       for (final d in week) store.days[dayKey(d)]?.questions ?? 0,
     ];
     final peak = counts.fold(1, math.max);
-    const labels = ['P', 'S', 'Ç', 'P', 'C', 'C', 'P'];
+    const labels = ['Pt', 'Sa', 'Ça', 'Pe', 'Cu', 'Ct', 'Pz'];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [

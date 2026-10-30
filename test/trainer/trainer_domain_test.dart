@@ -86,6 +86,33 @@ void main() {
         expect(introduced, path.trainer.allItems.toSet());
       }
     });
+
+    test('personal lesson copy does not assume choir membership', () {
+      final copy = [
+        for (final path in trainerPaths.values) ...[
+          for (final node in path.nodes) ...[node.title, node.subtitle],
+          for (final slide in path.introSlides) ...[
+            slide.title,
+            slide.body,
+            ...slide.bullets,
+            ...?slide.highlight,
+          ],
+        ],
+      ].join('\n');
+
+      expect(
+        copy,
+        isNot(contains(RegExp(r'\bkoro(?:da|nun)?\b', caseSensitive: false))),
+      );
+      expect(
+        copy,
+        isNot(
+          contains(
+            RegExp(r'\bparti(?:ler|nin|yle|si)?\b', caseSensitive: false),
+          ),
+        ),
+      );
+    });
   });
 
   group('sound and synthesis', () {

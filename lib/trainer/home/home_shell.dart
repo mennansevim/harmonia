@@ -299,7 +299,7 @@ Future<void> showVoicePartSheet(BuildContext context) {
     (sheet) => Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const Text('Hangi partide söylüyorsun?', style: TT.h3),
+        const Text('Sesin hangi aralığa yakın?', style: TT.h3),
         const SizedBox(height: 6),
         const Text(
           'Tenor ve bas seçilince dersler bir oktav pesten çalar. '
@@ -575,7 +575,7 @@ class _PartLink extends StatelessWidget {
             Icon(Icons.mic_none_rounded, size: 17, color: Colors.white),
             SizedBox(width: 5),
             Text(
-              'Partini seç',
+              'Ses aralığını seç',
               style: TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.w800,

@@ -1,11 +1,22 @@
 # Harmonia — Current Roadmap
 
-**Tarih:** 2026-10-29 (son güncelleme: E2E-01 simülatör kullanıcı yolculuğu testleri)
+**Tarih:** 2026-10-30 (son güncelleme: AUDIO-01 referans motor sözleşmesi)
 **Durum:** Faz 1 — güvenilirlik sözleşmeleri, yerel kayıt laboratuvarı, deneysel DSP/worker, kalibrasyon/kalite kapısı ve misafir uygulama kabuğu kod-test seviyesinde. Tek ses skor ekranı hâlâ simülasyon; fiziksel cihaz, insan sesi benchmark'ı, eğitimci içerik onayı ve öğretim pilotu kapıları açık. **Hiçbir modül cihazda/pilotta doğrulanmış veya yayında değil.**
 **Sahip:** Mennan Sevim  
 **Platform:** Flutter mobil uygulama; ileride web ve öğretmen paneli
 
+**2026-10-30 — AUDIO-01 kod kapısı:** Fixture manifesti → hash/header/sample
+rate/count doğrulaması → PCM16 decode → hedef bağımsız pitch frame zinciri tek
+entegrasyon sözleşmesinde sabitlendi. 256 örnekli kısa WAV dosya kapılarını
+geçse bile `insufficientData` kalıyor ve Hz uydurmuyor; C4/C5 fixture'ları WAV
+header saatini koruyup ayrı oktavlar olarak çıkıyor, C5→C4 karşılaştırması
+`octaveOffset: 1` ve yaklaşık +1200 sent. İki yeni sentetik fixture testi var;
+lisanslı/etiketli insan kaydı, VAD, mikrofon, cihaz veya öğrenci başarısı kanıtı
+değil. **1043 test geçti**, 1 opt-in ekran turu atlandı; analyze/format temiz.
+
 **2026-10-30 — DESIGN-02 (tasarım devri uygulandı):** `design-exports/harmonia-design-handoff.zip` taslağı mevcut trainer bileşenleriyle uygulandı. Bugün: gradyan rota kartı + süreye göre adımlar (HOME-02: ≤3 dk yalnız ders, ≤5 dk 1 dk nefes + ders, daha uzun 2 dk nefes + ders + Koro). Yeni `BreathScreen` (PREP-01): görsel/haptik, mikrofonsuz, duraklatılabilir, arka planda durur; yalnız günün adımını işaretler, seri/XP/mastery'ye yazmaz; 4/2/6 ritmi taslak, eğitimci onayı yok. Ders sonu (RESULT-02): skor kartı + ÖLÇÜLDÜ/ÖLÇÜLMEDİ/DENEYSEL kanıt kartları + açılır ayrıntı; “Yanlışları tekrar et” (RETRY-02a) karışan seslerle 3 yeni örnek sorar, `record:false`. Ertesi gün kalıcılık kontrolü yok. Ayarlar › Üyelik önizlemesi fiyatsız ve satın alma düğmesi kapalı (taslaktaki 249/799 TL kullanılmadı). Sekmeler korunuyor. 1012 test, analyze/format temiz; iOS 26.5 simülatöründe Bugün ve Nefes elle, sonuç/üyelik ekran turuyla görüldü. Gerçek telefon, kullanıcı ve eğitimci kabulü açık.
+
+**2026-10-30 — IA-01b Personal dil ve iddia tutarlılığı:** Ekran turunda bulunan koro dili temizlendi: İlerleme seviyeleri rol-nötr (Dinleyici → Çırak → Kalfa → Usta → Üstat → Maestro; eşikler aynı), son 7 gün iki harfli gün adlarıyla (Bugün çubuğuyla aynı), Ayarlar “SES” bölümü / “Çalışma aralığım” / “Çalışma aralığı: Alto”, nota gösterimi “Solfej (Do Re Mi)” (♭ işareti hem anlamsızdı hem test fontunda kare çıkıyordu), Premium özelliğinden “Koro” çıkarıldı. SATB seçimi uygulamanın ölçmediği bir “ses tipi” değil yalnız çalışma aralığı olarak sunuluyor; aralık testinin eğitmen/şef kararının yerini almadığı korunuyor. Personal pitch/aralık/akor/yürüyüş müfredatı koro üyeliği veya parti seçimini varsaymıyor; çok ses sonucu gelecekteki piyano kayıtlarını doğru adlandırıyor. Domain testi bu sınırı, widget testi İlerleme/Ayarlar dilini koruyor. **1041 test geçti**, 1 opt-in ekran turu atlandı; analyze/format temiz. Ses motoru, SATB sınıflandırması, gerçek cihaz ve eğitimci kabulü değişmedi.
 
 **2026-10-30 — CHOIR-M1 + MIDI-01 (kod, UI/sunucu yok):** `lib/choir/domain/`: `Choir`, `ChoirMember` (şefin partisi olamaz), süreli `Invite` (kişisel/ortak kod, iptal > süre > kota önceliği), `ReferenceAsset` + `RightsDeclaration` (hakkı `unknown` dosya ödeve konamaz), `Assignment` (SATB sırası, kayıt sınırı 10–600 sn, varsayılan 120), `Submission` durum makinesi (taslak → gönderildi → dinlendi → kabul / tekrar iste → yeniden kayıt; puan alanı yok; yalnız aynı koronun şefi değerlendirir), `Feedback` (metin veya etiket zorunlu; etiketin Personal alanı şefin yargısıdır), parti bazlı nötr takip (taslak = gönderilmedi; parti değiştiren koristin eski kaydı sayılmaz). Katı UTC JSON. `lib/choir/midi/smf_reader.dart`: SMF tip 0/1, PPQ bölümü; running status, vel-0 note-off, FIFO çakışan nota, asılı nota sayımı, tempo haritası → saniye, ölçü işareti → ölçü başları; SysEx/kontrol/bilinmeyen chunk atlanır; tip 2, SMPTE, bozuk/kesik/sınır aşan dosya `MidiFormatException`. Fixture'lar testte üretiliyor, dış dosya kopyalanmadı. 26 yeni test; tam paket 1039 geçti, analyze/format temiz. Bağlı ekran, sunucu, gerçek koro MIDI'si ve seslendirme yok.
 
@@ -609,7 +620,7 @@ push ayrı yetki ister.
 - [x] SESSION-02: açılışta yetim geçici ses dizini temizliği; hata ayarlarda görünür.
 - [x] CORE-02a: ritim taklit modu (ilk dokunuş çapası, vuruş zaman çizelgesi). Eğitimci desen onayı ve cihaz dokunma ölçümü açık; count-in modu CAL-03'e bağlı.
 - [x] SHELL-01: Aurora token'ları, misafir hedef seçimi, home, ayarlar/yardım/gizlilik/abonelik/hesap, yerel profil. Kullanıcı testi (UXR-01) açık.
-- [ ] AUDIO-01: referans motorun kısa buffer/oktav testlerini ve fixture sözleşmesini çıkar.
+- [x] AUDIO-01: fixture manifest/hash/header kapısından pitch frame'e kısa buffer ve oktav sözleşmesi; kısa veri Hz uydurmaz, ham oktav korunur. Sentetik kod testi; gerçek insan/cihaz benchmark'ı BENCH-01/CAL-02'de açık.
 - [ ] AUDIO-02: gerçek mikrofon + frame pipeline; ölçülmeyen timing/memory değerlerini sonuçta gösterme.
 - [ ] AUDIO-03: gerçek VisualFeedbackFrame ile seçili ses efektini Flutter'da bağla.
 - [ ] AUDIO-04: 3/4 referans playback + sıralı nota segment/alignment spike; **CONS-02a reviewed-target diagnostic matcher kod-testli**, gerçek fixture/insan sesi/cihaz değerlendirmesi açık.

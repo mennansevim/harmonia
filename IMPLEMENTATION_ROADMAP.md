@@ -870,3 +870,23 @@ not mid-question/media-session persistence: no player, audio or microphone is
 restored or auto-started. New4 domain +2 integration tests; full838, analysis
 clean, format236/0. The remaining SHELL-04 offline/consumer and real-device
 acceptance matrix stays open.
+
+### 2026-10-30 — IA-01b Personal dil ve iddia tutarlılığı
+
+ADR-035'in Personal ana kimliği kalan öğrenci metinlerine uygulandı. Ders
+müfredatı koro üyeliği veya parti seçimi varsaymaz; SATB seçimi, uygulamanın
+ölçmediği bir “ses tipi” iddiası yerine yalnız çalışma aralığı olarak görünür.
+İlerleme unvanları rol bağımsızdır ve gelecekteki çok ses içeriği piyano
+kayıtları olarak adlandırılır. Domain regresyonu Personal ders metninde
+`koro/parti` varsayımını; widget regresyonu İlerleme/Ayarlar dilini korur.
+Full1041 + 1 koşullu skip, analyze/format temiz. Eğitimci içerik kabulü,
+gerçek ses sınıflandırması ve cihaz QA kapsam dışıdır.
+
+### 2026-10-30 — AUDIO-01 referans motor fixture sözleşmesi
+
+Manifest/hash/header/sample-clock kapısından geçen sentetik PCM16 fixture,
+hedef bağımsız pitch frame çekirdeğine bağlandı. Kısa buffer açıkça yetersiz
+kalır; aynı pitch class'ın C4/C5 örnekleri mutlak oktavı korur ve hedefe
+katlanmaz. İki entegrasyon regresyonu; full1043 + 1 koşullu skip,
+analyze/format temiz. Bu kod kapısı BENCH-01 insan holdout'u, VAD-01 veya
+CAL-02 fiziksel cihaz kabulünün yerine geçmez.

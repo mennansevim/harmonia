@@ -178,7 +178,7 @@ List<_Stage> _one(List<(String, String)> rows) => [
 ];
 
 final Map<TrainerKind, TrainerPath> trainerPaths = {
-  // Notes in the order a choir tunes: tonic, triad, then scale steps,
+  // Notes in a tonal ear-training order: tonic, triad, then scale steps,
   // leading tone, and the chromatic notes last.
   TrainerKind.pitch: _ladder(
     TrainerKind.pitch,
@@ -213,7 +213,7 @@ final Map<TrainerKind, TrainerPath> trainerPaths = {
       IntroSlide(
         'Notayı adıyla tanımak',
         'Burada bir sesi duyup hangi nota olduğunu söylemeyi çalışırsın. '
-            'Koroda tonu bulmanın ve partisyonu okurken sesi önceden duymanın temeli budur.',
+            'Ezgiyi okumadan önce zihninde duymanın ve doğru sesten başlamanın temeli budur.',
         [
           'Her basamak tek bir yeni nota ekler.',
           'Önce dinlersin, sonra kendi sesinle söylersin, sonra ayırt edersin.',
@@ -224,7 +224,7 @@ final Map<TrainerKind, TrainerPath> trainerPaths = {
         'Doğru dinleme',
         'Her notayı Do\'ya göre düşün: ne kadar yukarıda?',
         [
-          'Partini seçtiysen sesler senin aralığında çalar.',
+          'Ses aralığını seçtiysen sesler senin aralığında çalar.',
           'Yanlış cevaptan sonra iki sesi yan yana dinle.',
           'Kısa ve her gün çalışmak en iyi sonucu verir.',
         ],
@@ -240,9 +240,9 @@ final Map<TrainerKind, TrainerPath> trainerPaths = {
       ('m2', 'Yarım ses; yeden ve geçişlerde.'),
       ('M3', 'Majör akorun alt aralığı.'),
       ('m3', 'Minör akorun alt aralığı.'),
-      ('P5', 'Partiler arası en sağlam uyum.'),
+      ('P5', 'Çok sesli müzikte en sağlam uyumlardan biri.'),
       ('P4', 'Girişlerde sık duyulan sıçrama.'),
-      ('P8', 'Kadın ve erkek seslerin aynı notası.'),
+      ('P8', 'Farklı bölgelerde aynı nota adı.'),
       ('M6', 'Küçük 3\'lünün çevrimi.'),
       ('m6', 'Büyük 3\'lünün çevrimi.'),
       ('m7', 'Dominant akorun dış sesleri.'),
@@ -269,8 +269,8 @@ final Map<TrainerKind, TrainerPath> trainerPaths = {
     const [
       IntroSlide(
         'İki ses arasındaki mesafe',
-        'Aralık, iki notanın arasındaki uzaklıktır. Koroda doğru girişin ve '
-            'diğer partiyle uyumun anahtarıdır.',
+        'Aralık, iki notanın arasındaki uzaklıktır. Ezgiyi doğru kurmanın ve '
+            'çok sesli müzikte diğer seslerle uyumun anahtarıdır.',
         [
           'Mesafeler yarım ses sayısıyla anlatılır.',
           'Her aralık için bir solfej örneği verilir (ör. Do → Mi).',
@@ -291,7 +291,7 @@ final Map<TrainerKind, TrainerPath> trainerPaths = {
   TrainerKind.chord: _ladder(
     TrainerKind.chord,
     [
-      const _Stage(['maj', 'min'], 'Koro repertuvarının iki temel rengi.'),
+      const _Stage(['maj', 'min'], 'Tonal repertuvarın iki temel rengi.'),
       ..._one([
         ('dom7', 'Çözülmek isteyen dört sesli akor.'),
         ('dim', 'İki küçük 3\'lüden oluşan dar akor.'),
@@ -312,8 +312,8 @@ final Map<TrainerKind, TrainerPath> trainerPaths = {
     const [
       IntroSlide(
         'Akorun niteliği',
-        'Birlikte çalan seslerin oluşturduğu türü tanırsın. Dört partinin '
-            'birlikte ne kurduğunu duymak, kendi sesini doğru yere oturtmayı kolaylaştırır.',
+        'Birlikte çalan seslerin oluşturduğu türü tanırsın. Akorun içindeki '
+            'seslerin görevini duymak, kendi sesini doğru yere oturtmayı kolaylaştırır.',
         [
           'Her akor türü bir formülle anlatılır (ör. kök + büyük 3\'lü + tam 5\'li).',
           'Dinlerken önce sesler tek tek, sonra birlikte çalar.',
@@ -378,7 +378,7 @@ final Map<TrainerKind, TrainerPath> trainerPaths = {
       IntroSlide(
         'Akorların sırası',
         'Bir eserin armonisi akorların belirli sıralarla ilerlemesidir. '
-            'Bas partisinin yolu çoğu zaman bu sırayı ele verir.',
+            'En pes sesin yolu çoğu zaman bu sırayı ele verir.',
         [
           'Dereceler Roma rakamıyla yazılır: büyük harf majör, küçük harf minör.',
           'Dinlerken en pes sesi takip et.',

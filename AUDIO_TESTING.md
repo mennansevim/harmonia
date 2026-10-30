@@ -1093,3 +1093,22 @@ with the session and trainer integration tests, 19 targeted tests pass. Full
 suite: 1004 passed, one opt-in screenshot tour skipped; analysis, formatting
 and diff checks clean. Fake PCM/player/route evidence is not physical playback,
 human voice, VAD, audibility, device-route or teaching validation.
+
+## IA-01b — Personal metin ve iddia düzeltmesi (2026-10-30)
+
+Öğrenci arayüzündeki SATB seçimi “ses tipi” yerine “çalışma aralığı” olarak
+adlandırıldı; gelecekteki çok ses içeriği “piyano kayıtları” diye düzeltildi.
+Bu paket hiçbir audio adapter, synth, capture, worker, kalite eşiği, pitch
+kararı veya skoru değiştirmez. Full1041 + 1 koşullu skip ve temiz analiz yalnız
+kod doğrulamasıdır; gerçek ses aralığı/ses tipi, cihaz ve eğitimci kabulü
+sağlamaz.
+
+## AUDIO-01 — Referans motor fixture sözleşmesi (2026-10-30)
+
+Yeni entegrasyon testi fixture manifesti ve loader üzerinden gerçek WAV
+header saatini pitch frame çekirdeğine taşır. 256 örnekli sentetik A4
+`insufficientData` döndürür ve Hz üretmez. Sentetik C4/C5 dosyaları kendi
+hedeflerinde 5 sent içinde kalır; C5'in C4'e göre `octaveOffset` değeri +1 ve
+mutlak farkı yaklaşık +1200 senttir. Full1043 + 1 koşullu skip; analyze/format
+temiz. Sentetik tonlar gerçek piyano/insan sesi, VAD, mikrofon, cihaz veya
+öğrenme doğrulaması değildir.

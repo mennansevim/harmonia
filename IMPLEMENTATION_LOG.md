@@ -2228,3 +2228,27 @@ Rol yalnız kaydedilir, içerik/akış değiştirmez. Koro modülü, sunucu, dav
 
 Hiçbiri UI'ya, depolamaya veya sunucuya bağlı değil. Gerçek koro MIDI dosyası, notasyon yazılımı çıktıları (Sibelius/MuseScore/Finale) ve seslendirme denenmedi. Divisi, MusicXML, tip 2 ve SMPTE yok. Davet kodu üretimi/güvenliği ve yetki kuralları sunucu ADR'sine kalır.
 
+## 2026-10-30 — IA-01b Personal dil ve iddia tutarlılığı
+
+- `stats_tab.dart`: `choirLevels` → `practiceLevels`, adlar Dinleyici/Çırak/Kalfa/Usta/Üstat/Maestro (XP eşikleri değişmedi); 7 gün etiketleri `Pt Sa Ça Pe Cu Ct Pz`.
+- `settings_tab.dart`: profil “Çalışma aralığı: <aralık>”, bölüm “SES”, satır “Çalışma aralığım”, “Solfej (Do Re Mi)”. SATB seçimi bir ses tipi ölçümü gibi sunulmuyor.
+- `membership_screen.dart`: Premium maddesi “Konservatuvar hazırlık programları” (koro ayrı modül, ADR-035).
+- `home_shell.dart`: seçim sayfası “Sesin hangi aralığa yakın?”, bağlantı “Ses aralığını seç”; `range_test.dart` eğitmen/şefin ses tipi kararının yerini almadığını açık tutuyor.
+- `curriculum.dart`: Personal pitch/aralık/akor/yürüyüş açıklamaları koro üyeliği veya parti seçimi varsaymıyor. `voice_count.dart` beklenen içeriği doğru biçimde çok sesli piyano kaydı olarak adlandırıyor.
+- Yeni widget testi İlerleme/Ayarlar dilini; yeni domain testi tüm Personal ders düğümü ve giriş metinlerinde koro/parti varsayımının geri gelmemesini doğruluyor. `dart tool/quality_check.dart` → **1041 test geçti**, 1 opt-in atlandı; analyze/format temiz. Ekran turu önceki dilim kapsamında elle incelendi. Bu paket ses motoru, skor, depolama veya rota davranışını değiştirmez; gerçek cihaz/eğitimci kabulü yok.
+
+## 2026-10-30 — AUDIO-01 referans motor fixture sözleşmesi
+
+- `reference_engine_contract_test.dart`: sentetik WAV önce gerçek fixture
+  manifesti, SHA-256, RIFF/PCM16 header, sample-rate ve sample-count kapılarından
+  geçiyor; doğrudan test çekirdeğine enjekte edilmiyor.
+- 256 örnekli A4 fixture dosya doğrulamasını geçse bile frame motorunda
+  `insufficientData` kalıyor; frekans veya başarı uydurmuyor.
+- C4 ve C5 fixture'ları aynı header saatinden analiz ediliyor. Her biri kendi
+  mutlak hedefinde 5 sent içinde kalırken C5, C4'e karşı +1 oktav ve yaklaşık
+  +1200 sent olarak korunuyor; hedefe octave-fold yapılmıyor.
+- `dart tool/quality_check.dart`: format/analyze temiz, **1043 test geçti**,
+  1 opt-in ekran turu atlandı. Fixture'lar testte üretilen sentetik tonlardır;
+  gerçek insan sesi, VAD, mikrofon, cihaz, lisans veya pedagojik başarı kanıtı
+  değildir. BENCH-01/CAL-02/VAD-01 kapıları açık.
+

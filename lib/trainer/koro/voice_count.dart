@@ -99,7 +99,7 @@ class _VoiceCountScreenState extends State<VoiceCountScreen> {
                       Text('$_correct / ${widget.length}', style: TT.h1),
                       const SizedBox(height: 6),
                       const Text(
-                        'Ses sayısını doğru duydun. Çok sesli koro kayıtları eklendiğinde her sesi tek tek tekrar etme çalışması açılacak.',
+                        'Ses sayısını doğru duydun. Çok sesli piyano kayıtları eklendiğinde her sesi tek tek tekrar etme çalışması açılacak.',
                         textAlign: TextAlign.center,
                         style: TT.body,
                       ),

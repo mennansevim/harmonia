@@ -46,6 +46,18 @@ sample hakları varsayılmadı; Harmonia'ya kopyalanmadı.
 
 Plan: `PRODUCT_PLAN_PERSONAL_CHOIR.md`. Personal herkes içindir; eski “Koro” sekmesi **Ses** sekmesi (Ses Atölyesi, `KoroHub` sınıf adı korunuyor). Onboarding kişisel dille; aralık adımı atlanabilir; `focus` için `voice` id'si. Koro modülü (davet, ödev, kayıt gönderme, şef web paneli) yok ve sunucu/hesap/upload gerektirdiği için kullanıcı kararlarını (K1–K6) bekliyor. CHOIR-M1 (`lib/choir/domain/`) ve MIDI-01 (`lib/choir/midi/smf_reader.dart`) saf Dart + testli, hiçbir ekrana bağlı değil. Kararsız yapılabilecek kod bitti; sonraki adım K1–K6 kullanıcı kararları.
 
+IA-01b ile kalan Personal metinleri rol bağımsızlaştırıldı: SATB seçimi yalnız
+“çalışma aralığı”dır; uygulama bunu ses tipi veya koro partisi kararı diye
+sunmaz. Personal ders metinlerinde koro/parti varsayımı domain testiyle
+engellenir. Onboarding'deki “Bir koroda söylüyorum” ve “Koro şefi” seçenekleri
+bilinçli olarak kalır; bunlar gerçek rol seçenekleridir. Full1041 + 1 skip,
+analyze/format temiz; ses motoru veya cihaz kabulü değildir.
+
+AUDIO-01 kod kapısı da kapandı: `reference_engine_contract_test.dart` manifest
+ve loader'dan geçen sentetik PCM16 ile kısa buffer'ın Hz uydurmadığını ve
+C4/C5 mutlak oktavının korunduğunu doğrular. Full1043 + 1 skip. Bu BENCH-01,
+VAD-01 veya CAL-02'nin yerine geçmez; gerçek kayıt/cihaz skoru açma.
+
 ## 2c. 2026-10-29 — TRAINER-02 farklılaşma
 
 Referans uygulamaya benzerlik bilinçli olarak azaltıldı (ADR-033): Harmonia paleti ve buton/kart dili, Bugün/Koro/İlerleme/Ayarlar sekmeleri, 8 adımlı koro onboarding'i, `VoicePart` ile partiye göre çalma, yerel koro seviyesi. Lig, istatistik kilidi, kullanıcı adı/topluluk ve 30 adımlı akış kaldırıldı. Yeni ekranlarda referans uygulamanın metnini/düzenini geri getirme. TRAINER-03 (ADR-034) ile ders/quiz/müfredat da yeniden yazıldı: `_ladder` müfredatı, Dinle → Söyle → Ayırt et, `ListenDisc` quiz, `SkillScreen`. Sıradaki doğal adım: Söyle adımını kalite kapılı mikrofonla isteğe bağlı ölçmek (ayrı kaynak etiketiyle).

@@ -87,7 +87,7 @@ class SettingsTab extends StatelessWidget {
                             Text(
                               store.part == null
                                   ? 'Harmonia'
-                                  : '${store.part!.title} partisi',
+                                  : 'Çalışma aralığı: ${store.part!.title}',
                               style: TT.title,
                             ),
                             const Text(
@@ -100,12 +100,12 @@ class SettingsTab extends StatelessWidget {
                     ],
                   ),
                 ),
-                const _Caption('KORO'),
+                const _Caption('SES'),
                 _Group([
                   _Item(
                     key: const Key('settings_part'),
                     icon: Icons.mic_none_rounded,
-                    title: 'Partim',
+                    title: 'Çalışma aralığım',
                     value: store.part?.title ?? 'Seçilmedi',
                     onTap: () => showVoicePartSheet(context),
                   ),
@@ -122,7 +122,7 @@ class SettingsTab extends StatelessWidget {
                     icon: Icons.music_note_outlined,
                     title: 'Nota gösterimi',
                     value: store.notation == NoteNotation.solfege
-                        ? 'Solfej (♭)'
+                        ? 'Solfej (Do Re Mi)'
                         : 'Harf (C D E)',
                     onTap: () => _pick<NoteNotation>(
                       context,

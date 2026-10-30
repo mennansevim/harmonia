@@ -82,7 +82,7 @@ class _MembershipScreenState extends State<MembershipScreen> {
                           ? const [
                               'Süreye göre kişisel günlük rota',
                               'Ayrıntılı hata tekrarı ve haftalık rapor',
-                              'Koro ve konservatuvar hazırlık programları',
+                              'Konservatuvar hazırlık programları',
                             ]
                           : const [
                               'Premium’daki her şey',
