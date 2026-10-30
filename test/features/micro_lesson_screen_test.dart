@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/application/result_history.dart';
-import 'package:harmonia/domain/content/draft_micro_lessons.dart';
-import 'package:harmonia/domain/learning/micro_lesson.dart';
-import 'package:harmonia/domain/learning/skill_graph.dart';
-import 'package:harmonia/domain/models/learner_profile.dart';
-import 'package:harmonia/features/learning/micro_lesson_screen.dart';
-import 'package:harmonia/features/skill_map/skill_map_screen.dart';
-import 'package:harmonia/features/common/ui/harmonia_ui.dart';
-import 'package:harmonia/app/theme/harmonia_theme.dart';
+import 'package:resonia/application/result_history.dart';
+import 'package:resonia/domain/content/draft_micro_lessons.dart';
+import 'package:resonia/domain/learning/micro_lesson.dart';
+import 'package:resonia/domain/learning/skill_graph.dart';
+import 'package:resonia/domain/models/learner_profile.dart';
+import 'package:resonia/features/learning/micro_lesson_screen.dart';
+import 'package:resonia/features/skill_map/skill_map_screen.dart';
+import 'package:resonia/features/common/ui/resonia_ui.dart';
+import 'package:resonia/app/theme/resonia_theme.dart';
 
 Future<void> _tap(WidgetTester tester, String key) async {
   await tester.scrollUntilVisible(find.byKey(Key(key)), 200);
@@ -96,7 +96,7 @@ void main() {
       addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
       await tester.pumpWidget(
         MaterialApp(
-          theme: HarmoniaTheme.dark(),
+          theme: ResoniaTheme.dark(),
           builder: (context, child) => MediaQuery(
             data: MediaQuery.of(context).copyWith(disableAnimations: true),
             child: child!,

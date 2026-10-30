@@ -2,9 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/application/result_history.dart';
-import 'package:harmonia/domain/models/learner_profile.dart';
-import 'package:harmonia/features/daily_plan/daily_plan_screen.dart';
+import 'package:resonia/application/result_history.dart';
+import 'package:resonia/domain/models/learner_profile.dart';
+import 'package:resonia/features/daily_plan/daily_plan_screen.dart';
 
 class _History extends InMemoryResultHistory {
   int loads = 0;

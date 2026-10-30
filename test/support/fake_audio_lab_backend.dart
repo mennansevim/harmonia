@@ -1,7 +1,7 @@
 import 'dart:async';
-import 'package:harmonia/domain/audio/audio_capture.dart';
-import 'package:harmonia/domain/audio/capture_quality.dart';
-import 'package:harmonia/domain/models/measurement_provenance.dart';
+import 'package:resonia/domain/audio/audio_capture.dart';
+import 'package:resonia/domain/audio/capture_quality.dart';
+import 'package:resonia/domain/models/measurement_provenance.dart';
 
 class FakeAudioLabBackend implements AudioLabBackend, AudioRecordingReader {
   Completer<CapturedAudioSamples>? readGate;

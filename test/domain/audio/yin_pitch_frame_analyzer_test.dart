@@ -1,8 +1,8 @@
 import 'dart:math' as math;
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/domain/audio/pitch_deviation.dart';
-import 'package:harmonia/domain/audio/yin_pitch_frame_analyzer.dart';
+import 'package:resonia/domain/audio/pitch_deviation.dart';
+import 'package:resonia/domain/audio/yin_pitch_frame_analyzer.dart';
 
 List<double> tone(
   int count,

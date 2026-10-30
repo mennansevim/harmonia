@@ -46,7 +46,7 @@ class PluginAudioLabBackend
       throw UnsupportedError('Mobile audio lab only');
     }
     _directory = await (await getTemporaryDirectory()).createTemp(
-      'harmonia-audio-lab-',
+      'resonia-audio-lab-',
     );
     _recorder = AudioRecorder();
     _player = AudioPlayer(handleInterruptions: false);

@@ -1,8 +1,8 @@
-# Harmonia — Uygulama kaydı
+# Resonia — Uygulama kaydı
 
 ## 2026-10-11 — İlk güvenilirlik paketi, REL-01–05
 
-**Kullanıcı isteği:** Ayrıntılı roadmap ve uygulamaya başlama. Çalışma Harmonia klasöründe yapıldı; Agora kaynakları değiştirilmedi. Git commit/push/PR, dış yayın, ödeme veya canlı API bağlantısı yapılmadı.
+**Kullanıcı isteği:** Ayrıntılı roadmap ve uygulamaya başlama. Çalışma Resonia klasöründe yapıldı; Agora kaynakları değiştirilmedi. Git commit/push/PR, dış yayın, ödeme veya canlı API bağlantısı yapılmadı.
 
 ### Uygulananlar
 
@@ -120,7 +120,7 @@ Startup orphan temp temizliği, kapatma hatasının UI'ya aktarılması ve isola
 
 **Netleşen kullanıcı isteği:** Tek ses dosyaları gibi klasörden 2/3/4 sesli hazır piyano kayıtları çalınacak, öğrenci tekrar edecek. Sesler gelince birlikte incelenecek; şimdi yalnız placeholder. Önceki live/mix varsayımı ana akıştan çıkarıldı; mix kodu alternatif olarak korundu.
 
-**İnceleme:** Agora `src/PitchTest/lib/audioPlayer.ts` `/sounds/piano/{noteName}.wav` fetch/decode/cache yapıyor. Preload hatayı yutuyor, play missing file'da throw; Harmonia placeholder'da eksik kaynak başarıya dönüşmüyor. Agora kaynakları/41 WAV değiştirilmedi/kopyalanmadı. Harmonia tek ses ekranı mock, lab C4 sentetik olarak ayrı kaldı.
+**İnceleme:** Agora `src/PitchTest/lib/audioPlayer.ts` `/sounds/piano/{noteName}.wav` fetch/decode/cache yapıyor. Preload hatayı yutuyor, play missing file'da throw; Resonia placeholder'da eksik kaynak başarıya dönüşmüyor. Agora kaynakları/41 WAV değiştirilmedi/kopyalanmadı. Resonia tek ses ekranı mock, lab C4 sentetik olarak ayrı kaldı.
 
 **Uygulama:** assets/audio/piano/chords/{2,3,4}-notes README klasörleri; bundled catalog.json üç null-file/null-target/null-rights awaiting_recording slot'u. Strict immutable domain catalog, asset repository, loading/error/retry/disposal-safe `ChordPlaceholderScreen`; home app bar entry, dinle/tekrar disabled. Permission/player/capture/scorer yok; boş/sentetik WAV yaratılmadı. Pubspec yalnız JSON asset içerir. Ready/path/etiket ekleyerek bu placeholder schema sessiz açılmaz; reviewed içerik şeması sonraki iş.
 
@@ -178,7 +178,7 @@ korundu; yeni commit/push/deployment/API/upload yapılmadı. Agora değiştirilm
 
 **CAL-01 (AUD-DEV-05 kod alt paketi):** `capture_quality.dart` — route politikası (hoparlörde tek ses sıralı, ritim her zaman ölçülmüş gecikme, hoparlörde rehberli koro yok, inferred/unknown route doğrulanmamış), kalibrasyonun route/rate/yaş bağlaması, noise-floor (medyan/burst), kayıt kalite kapısı ve `LatencyCalibration.notMeasured()` varsayılanı. `AudioRouteProbe` + audio_session eşlemesi (iOS reported, Android inferred; deneysel API). Lab: “Ortam sessizliğini ölç (2 sn)”, kalibrasyon klibi silinir; cevap analizinde kalite raporu + route açıklaması. Eşikler ADR-021'de benchmark öncesi hipotez olarak kayıtlı.
 
-**SHELL-01:** Aurora tema token'ları ve `HarmoniaResultColors` (yanlış oktav ≠ başarı rengi, geçersiz = nötr; kontrast testli), light/dark. `AppShellController` + `ProfileRepository` + atomik `JsonFileStore`/`FileProfileRepository`. Hedef seçimi (hesap yok), home (Deneysel/Simülasyon/Kayıt bekleniyor/Henüz yok etiketleri), ayarlar: hedef değiştir, mikrofon yardımı, gizlilik, “satın alma yok” abonelik metni, misafir hesap ve onaylı yerel profil silme; bozuk profil için yeniden dene/açık yeniden başla. Simülasyon tek ses ekranındaki kısayollar home'a taşındı; ekranın kendisi değişmedi.
+**SHELL-01:** Aurora tema token'ları ve `ResoniaResultColors` (yanlış oktav ≠ başarı rengi, geçersiz = nötr; kontrast testli), light/dark. `AppShellController` + `ProfileRepository` + atomik `JsonFileStore`/`FileProfileRepository`. Hedef seçimi (hesap yok), home (Deneysel/Simülasyon/Kayıt bekleniyor/Henüz yok etiketleri), ayarlar: hedef değiştir, mikrofon yardımı, gizlilik, “satın alma yok” abonelik metni, misafir hesap ve onaylı yerel profil silme; bozuk profil için yeniden dene/açık yeniden başla. Simülasyon tek ses ekranındaki kısayollar home'a taşındı; ekranın kendisi değişmedi.
 
 **Doğrulama:** `flutter test --no-pub`: **299 test geçti (+51: CAL-01 31, SHELL-01 20)**. `flutter analyze --no-pub` temiz. Format **85 dosya/0 değişiklik**. `flutter build ios --simulator --debug --no-pub` başarılı. Eski app testleri yeni kabuğa göre güncellendi (tek ses demo ekranı doğrudan; piyano placeholder home'dan). Testler sentetik/fake/widget; fiziksel mikrofon/route, Android build, ekran okuyucu ve kullanıcı testi yapılmadı.
 
@@ -204,7 +204,7 @@ korundu; yeni commit/push/deployment/API/upload yapılmadı. Agora değiştirilm
 
 **Hata düzeltmesi:** geçmiş ekranında `setState(() => _entries = …)` Future döndürüyordu; widget testi yakaladı, blok gövdeye çevrildi.
 
-**SESSION-02:** `OrphanAudioCleaner` açılışta, ses ekranları oluşmadan çalışır; temp kökünde yalnız `harmonia-audio-lab-*`/`harmonia-clip-*` dizinleri, içlerinde yalnız `recording.wav`/`reference.wav`/`clip.wav` silinir, dizin boşsa kaldırılır; symlink izlenmez, beklenmeyen içerik korunup raporlanır. Başarısızlık ayarlarda anlaşılır uyarı olarak görünür.
+**SESSION-02:** `OrphanAudioCleaner` açılışta, ses ekranları oluşmadan çalışır; temp kökünde yalnız `resonia-audio-lab-*`/`resonia-clip-*` dizinleri, içlerinde yalnız `recording.wav`/`reference.wav`/`clip.wav` silinir, dizin boşsa kaldırılır; symlink izlenmez, beklenmeyen içerik korunup raporlanır. Başarısızlık ayarlarda anlaşılır uyarı olarak görünür.
 
 **Doğrulama:** **363 test (+25: CORE-05 19, SESSION-02 6)**; analyze temiz; format 109/0. Gerçek cihazda kill sonrası temizlik ve büyük geçmiş dosyası performansı ölçülmedi. Export ve hesap/sync yok. Commit/push/ödeme/API/upload yok.
 
@@ -441,7 +441,7 @@ runner/CI taslağı (dış CI etkinleştirme değil); ardından LEARN-02 mikrode
 Git/roadmap/log/testing/devir/mimari/kararlar ve pubspec/analysis ayarları
 okundu; mevcut kullanıcı/ajan dirty değişiklikleri korundu. Yeni standalone
 tool/quality_check.dart + 10 test + docs/ci/README.md; AGENTS ortak komutu aldı.
-Runner script root Harmonia guard ile cwd'den bağımsız; immutable argv/process
+Runner script root Resonia guard ile cwd'den bağımsız; immutable argv/process
 spawn (shell string yok), read-only lib/test/tool format → no-pub analyze →
 full test. İlk tool exit aynen korunur; ProcessException 127, otomatik SDK kurma
 yok. --plan hiçbir step çalıştırmaz; --fetch explicit pub get --enforce-lockfile.
@@ -450,7 +450,7 @@ implicit pub/build hooks başlamasını önler; dart run tavsiye edilmez.
 
 **Doğrulama:** Son gerçek `dart tool/quality_check.dart` pipeline exit 0:
 **529 test geçti (+10)**, analyze temiz (2.8 sn), **153 dosya/0 format değişikliği**.
-CLI plan alternatif temp cwd'de ve read-only Agora cwd'de Harmonia'ya bağlı;
+CLI plan alternatif temp cwd'de ve read-only Agora cwd'de Resonia'ya bağlı;
 unknown option, plan/no-fetch/locked-fetch, immutable snapshots, sequential
 success, her stepte fail-fast exit, missing executable, unexpected failure
 ve yanlış repo adı testli. İlk koşuda CLI testi Platform.resolvedExecutable'ı
@@ -724,22 +724,22 @@ Kullanıcı "canlıya çıkış için geliştirme açıkları" sordu; dış kap�
 uygulandı ve RELEASE_READINESS.md yazıldı (iç beta / Core / ücretli yayın
 açıkları, tür: kod/karar/dış). Bu oturum yeniden başlarken otomatik ajanın
 SHELL-04b/c/d ve REL-06a işleri ağaçta bulundu, korundu.
-- **REL-09:** `lib/app/app_channel.dart` (`--dart-define=HARMONIA_CHANNEL=dev|beta`,
+- **REL-09:** `lib/app/app_channel.dart` (`--dart-define=RESONIA_CHANNEL=dev|beta`,
   bilinmeyen değer hata); beta'da ses laboratuvarı, simülasyon ve piyano
   placeholder gizli; Ayarlar → Hakkında kanal. Android label/iOS CFBundleName
-  "Harmonia"; release imzalama `android/key.properties` (yoksa uyarı + debug,
+  "Resonia"; release imzalama `android/key.properties` (yoksa uyarı + debug,
   mağazaya yüklenemez); keystore dosyaları gitignore. iOS
   `PrivacyInfo.xcprivacy` (tracking yok, toplanan veri yok, FileTimestamp
   C617.1) Xcode projesine eklendi ve paket içinde doğrulandı. pubspec açıklaması.
 - **OPS-01a:** `LocalErrorLog` (bellekte ≤50, mesaj metni tutulmaz; tür + ilk
-  `package:harmonia` konumu, dakika hassasiyeti) + `installGlobalErrorHandlers`
+  `package:resonia` konumu, dakika hassasiyeti) + `installGlobalErrorHandlers`
   (FlutterError/PlatformDispatcher; release'te sakin placeholder). Ayarlar →
   "Uygulama hataları" yalnız hata varsa; rapor panoya kopyalanır, gönderim yok.
 
 **Doğrulama:** ortak runner exit 0: **626 test**, analyze temiz, 185/0 format
 (otomatik ajanın paketleri dahil; bu paket 7 test ekledi: kanal 3, hata 4).
-`flutter build ios --simulator --debug --dart-define=HARMONIA_CHANNEL=beta`
-başarılı, PrivacyInfo paket içinde, CFBundleName Harmonia. `flutter build apk
+`flutter build ios --simulator --debug --dart-define=RESONIA_CHANNEL=beta`
+başarılı, PrivacyInfo paket içinde, CFBundleName Resonia. `flutter build apk
 --debug` başarılı (Gradle CMake 3.22.1 kurdu). Gerçek cihaz/emülatör çalıştırma,
 release imzalı build, mağaza yüklemesi yapılmadı. Commit yok.
 
@@ -1751,7 +1751,7 @@ Commit/push/deploy yok.
 
 ## 2026-10-26 — UI-01b iOS koyu ve renklendirilmiş ikon varyantları
 
-Mevcut Harmonia nota/dalga işareti değiştirilmeden ikon üreticisi iOS modern
+Mevcut Resonia nota/dalga işareti değiştirilmeden ikon üreticisi iOS modern
 tek-boyut asset catalog'una geçirildi. Varsayılan 1024 px kaynak opak; koyu
 varyant Apple'ın sistem arka planı için saydam ve marka sarısı vurgulu;
 renklendirilmiş varyant saydam gri tonlu işaret olarak üretiliyor. Artık
@@ -1912,11 +1912,11 @@ exit0: full946, analyze temiz, format254/0. Commit/push/deploy yok.
 
 ## 2026-10-29 — TRAINER-01 kulak eğitimi ikizi + Koro Atölyesi (yeni giriş noktası)
 
-**Kullanıcı isteği:** Arkadaşın yaptığı kulak eğitimi uygulamasının ekran kaydı (7 dk) incelenip aynı özellik/sayfa/akışla ikizinin kurulması; tek sesli ve 2/3/4 sesli koro eğitimi için ayrı kategori (ses aralığı testi Harmonia çekirdek perde tespitiyle, ritim/ezgi tekrarı, aksak ritim). iOS hedefli. Kullanıcı uyurken açık sorular için “en makul cevabı seç” yetkisi verdi.
+**Kullanıcı isteği:** Arkadaşın yaptığı kulak eğitimi uygulamasının ekran kaydı (7 dk) incelenip aynı özellik/sayfa/akışla ikizinin kurulması; tek sesli ve 2/3/4 sesli koro eğitimi için ayrı kategori (ses aralığı testi Resonia çekirdek perde tespitiyle, ritim/ezgi tekrarı, aksak ritim). iOS hedefli. Kullanıcı uyurken açık sorular için “en makul cevabı seç” yetkisi verdi.
 
 ### Uygulananlar (`lib/trainer/`)
 
-- **Giriş:** `lib/main.dart` artık `TrainerApp`'i açar. Eski `HarmoniaApp` ve tüm testleri dokunulmadan duruyor; koro ekranları eski modülleri yeniden kullanıyor.
+- **Giriş:** `lib/main.dart` artık `TrainerApp`'i açar. Eski `ResoniaApp` ve tüm testleri dokunulmadan duruyor; koro ekranları eski modülleri yeniden kullanıyor.
 - **Alan modeli:** `domain/music.dart` (12 perde, solfej/harf, 12 aralık + şarkı kancası, 9 akor, 11 dizi, 9 yürüyüş), `domain/trainers.dart` (5 eğitmen, `SoundFactory`: nota/aralık [çıkan/inen/karışık]/akor/dizi/yürüyüş [kök/çevrim], kulak sıfırlama kümesi), `domain/curriculum.dart` (videodaki yapı: giriş → dersler → kontrol noktaları → final; akor 26, dizi 25, aralık 42, nota 32, yürüyüş 17 düğüm — taslak, eğitimci onaysız).
 - **Ses:** `audio/synth.dart` additive sentez (piyano/gitar/çello/klarnet/trompet/sinüs), 22.05 kHz mono PCM16, tepe 0.8; lisanslı/kayıtlı örnek yok. `audio/trainer_audio.dart` `JustAudioClipPlayer` üzerinden çalar; hata quiz'i kırmaz.
 - **Quiz motoru:** `quiz/quiz.dart` (tanı / evet-hayır / “bunu bul” soru tipleri, tek öğeli havuzda tanı sorusu üretmez), `quiz/quiz_view.dart` (dinle → cevapla → yeşil/kırmızı çerçeve → “Kulağın sıfırlanıyor…”, süre sınırı, ilk deneme puanlanır, ipucu karşılaştırma kartı, “İpuçları gizlensin mi?”, çıkış onayı, isteğe bağlı piyano klavyesiyle cevap).
@@ -1929,7 +1929,7 @@ exit0: full946, analyze temiz, format254/0. Commit/push/deploy yok.
 
 ### Videodan bilinçli sapmalar
 
-- Ad/marka Harmonia kaldı (başka bir yayındaki uygulamanın adı/ikonu kopyalanmadı); arayüz Türkçe.
+- Ad/marka Resonia kaldı (başka bir yayındaki uygulamanın adı/ikonu kopyalanmadı); arayüz Türkçe.
 - Abonelik/ödeme ekranları yerine “Beta boyunca ücretsiz” ekranı: ödeme alınmaz, StoreKit yok (AGENTS: canlı ödeme ayrı yetki).
 - Uydurma kullanıcı yorumu, “200k+” ve “4.8 yıldız” gibi doğrulanamayan iddialar konmadı; tanıtım grafikleri “gösterim amaçlı” etiketli.
 - Apple/Google/e-posta girişi sunucu olmadığı için “yakında” sayfası açar; misafir olarak devam edilir. ATT (izleme) istemi yok.
@@ -1994,7 +1994,7 @@ benchmark kapıları açık. Commit/push/deploy yapılmadı.
 **Kullanıcı isteği:** Kopya ifadelerini değiştirmek, tasarımı ve özellikleri farklılaştırmak (mağaza/kopya riski).
 
 **Kod:**
-- `ui/kit.dart`: renk token'ları anlamsal adlara geçti (`TC.primary`, `koro`, `sun`, `coral`, `teal`, `magenta`, `amber`, `sky`); Harmonia indigo paleti, lavanta zemin, yeni beceri ikonları; `BigButton` alt kenarlı basılan buton; `AppCard` gölge yerine ince çizgi.
+- `ui/kit.dart`: renk token'ları anlamsal adlara geçti (`TC.primary`, `koro`, `sun`, `coral`, `teal`, `magenta`, `amber`, `sky`); Resonia indigo paleti, lavanta zemin, yeni beceri ikonları; `BigButton` alt kenarlı basılan buton; `AppCard` gölge yerine ince çizgi.
 - `home/home_shell.dart`: sekmeler Bugün / Koro / İlerleme / Ayarlar; yeni Bugün sayfası (tarih başlığı, güneş seri çipi, parti çipi, haftalık çubuk, iki adımlı "Günün planı" = kulak dersi + koro adımı, ilerleme çubuklu beceri listesi); `showVoicePartSheet`.
 - `onboarding/onboarding_flow.dart`: 8 adımlı yeni akış; `samples.dart` ve `level_check.dart` kaldırıldı. Adım kalıcılığı korunuyor.
 - `stats/stats_tab.dart`: İlerleme sekmesi; kilit kaldırıldı; koro temalı seviye kartı (Dinleyici → Maestro, yalnız yerel XP). `stats/ranks_tab.dart` silindi; store'da `leagueJoined` yerine `voicePart`.
@@ -2011,7 +2011,7 @@ benchmark kapıları açık. Commit/push/deploy yapılmadı.
 **Kullanıcı isteği:** Arkadaşın uygulamasıyla ileride sorun yaşamamak için benzerlik kalmasın.
 
 **Kod:**
-- `domain/curriculum.dart` baştan yazıldı: `_ladder` üreticisi; beş beceri için Harmonia sırası (ör. aralıklar M2 → m2 → M3 → m3 → P5 → P4 → P8 …), kendi tanıtım metinleri. Ders sayıları artık 20–32.
+- `domain/curriculum.dart` baştan yazıldı: `_ladder` üreticisi; beş beceri için Resonia sırası (ör. aralıklar M2 → m2 → M3 → m3 → P5 → P4 → P8 …), kendi tanıtım metinleri. Ders sayıları artık 20–32.
 - `domain/music.dart`: aralık `hook` → `anchor` (solfej örneği); tüm açıklamalar teori formülü.
 - `learn/lesson_flow.dart` baştan: Dinle (öğe kartı, Çal / Başka yerden, partiye göre bölge) → Söyle (kayıt/puan yok) → Ayırt et. Hızlı kontrol/kilitlendi ekranları kaldırıldı.
 - `quiz/quiz_view.dart` baştan: `ListenDisc`, kanıt şeridi, iki sütun seçenek butonları, A/B/C ses satırları, satır içi karşılaştırma; `QuizGenerator.lessonPractice` yeni karışım (çoğunlukla adlandırma, her üçüncü soru "hangisi").
@@ -2026,7 +2026,7 @@ benchmark kapıları açık. Commit/push/deploy yapılmadı.
 
 Yeni `TrainerPitchSingTarget`, yalnız pitch lesson içindeki item/register
 çiftini kabul ediyor; seçili tenor/bas partisini sounding register'a indiriyor
-ve MIDI/Hz/tını sürümünü immutable tutuyor. `TrainerPitchSingSession`, Harmonia
+ve MIDI/Hz/tını sürümünü immutable tutuyor. `TrainerPitchSingSession`, Resonia
 trainer synth referansını mikrofon backend'inden ayrı owned player ile çalıyor;
 cevabı mevcut `SingleToneSessionController` kalibrasyon, route, capture quality,
 worker ve stale-result kapılarından geçiriyor. Fake kaynağı microphone'a
@@ -2257,7 +2257,7 @@ Hiçbiri UI'ya, depolamaya veya sunucuya bağlı değil. Gerçek koro MIDI dosya
 - Domain: `AssignmentPiece` (solfej/sözlü, ölçü aralığı, yazılı bölüm, eşlik), `ReferenceAsset.trackParts`, `Submission.pieceId/takeKind/sentLate`, `Feedback.marks/voiceNoteId`, `FeedbackTag.breathLeak`, `ChoirResource`.
 - MIDI: `midi_section.dart` (parti adı önerisi, ölçü penceresi), `part_renderer.dart` (tek saatli parti miksi, tempo yeniden render, ön sayım, metronom; dalga tablosu sentezi, örnek ses yok).
 - Ses: `take_engine.dart`, `plugin_take_engine.dart` (kayıt + eşlik aynı anda; iOS'ta A2DP, hands-free kapalı), `take_controller.dart`, `wav_io.dart`.
-- Veri: `choir_store.dart` (cihazda JSON + medya, okunamayan veriyi ezmez), `choir_bundle.dart` (`.harmonia` zip; manifest, hash, kimlik deseni, aşamalı kurulum).
+- Veri: `choir_store.dart` (cihazda JSON + medya, okunamayan veriyi ezmez), `choir_bundle.dart` (`.resonia` zip; manifest, hash, kimlik deseni, aşamalı kurulum).
 - Arayüz: `lib/choir/app/`; sekme (rol korist/şef ya da koro varsa), Ayarlar girişi, Bugün son tarih kartı, Verilerimi sil koroyu da siler. TR/EN.
 - Simülatörde yakalanan hata: `Isolate.run` closure'ı store'u yakalıyordu, kayıt başlamıyordu; işler üst düzey fonksiyonlara alındı, regresyon testi eklendi. Birim testleri bunu fake render yüzünden görmemişti.
 - Gözden geçirmede düzeltildi: tekrar kaydedilen kaydın eski dosyası iki tarafta da siliniyor.

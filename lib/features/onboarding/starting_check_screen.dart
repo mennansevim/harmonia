@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
-import '../../app/theme/harmonia_theme.dart';
+import '../../app/theme/resonia_theme.dart';
 import '../../application/result_history.dart';
 import '../../domain/learning/measured_exercise.dart';
 import '../../domain/learning/skill_graph.dart';
 import '../../domain/learning/starting_check.dart';
 import '../../domain/models/learner_profile.dart';
 import '../common/content_status_panel.dart';
-import '../common/ui/harmonia_ui.dart';
+import '../common/ui/resonia_ui.dart';
 import '../learning/exercise_launcher.dart';
 
 class StartingCheckScreen extends StatefulWidget {
@@ -93,13 +93,13 @@ class _StartingCheckScreenState extends State<StartingCheckScreen> {
           }
           final summary = snapshot.data!;
           return ListView(
-            padding: const EdgeInsets.all(HarmoniaSpacing.lg),
+            padding: const EdgeInsets.all(ResoniaSpacing.lg),
             children: [
               const Align(
                 alignment: AlignmentDirectional.centerStart,
                 child: StatusPill('Taslak · 3 kısa tur'),
               ),
-              const SizedBox(height: HarmoniaSpacing.md),
+              const SizedBox(height: ResoniaSpacing.md),
               Text(
                 summary.isComplete
                     ? 'Başlangıç görünümün hazır'
@@ -109,16 +109,16 @@ class _StartingCheckScreenState extends State<StartingCheckScreen> {
               const Text(
                 'Bu kontrol yalnız dokunmayla güvenilir ölçebildiğimiz üç alanı kullanır. Konservatuvar seviyesi, ses aralığı veya sınava hazır olma puanı değildir.',
               ),
-              const SizedBox(height: HarmoniaSpacing.lg),
+              const SizedBox(height: ResoniaSpacing.lg),
               for (final (index, item) in summary.items.indexed) ...[
                 _CheckItemCard(index: index, item: item),
-                const SizedBox(height: HarmoniaSpacing.sm),
+                const SizedBox(height: ResoniaSpacing.sm),
               ],
               Text(
                 '${summary.completedCount}/${summary.items.length} geçerli tur · ${summary.unknownSkillCount} beceri henüz bu uygulamada ölçülemiyor.',
                 key: const Key('starting_check_progress'),
               ),
-              const SizedBox(height: HarmoniaSpacing.lg),
+              const SizedBox(height: ResoniaSpacing.lg),
               if (summary.next case final next?)
                 ChunkyButton(
                   key: const Key('starting_check_next'),
@@ -132,7 +132,7 @@ class _StartingCheckScreenState extends State<StartingCheckScreen> {
                 const Card(
                   key: Key('starting_check_complete'),
                   child: Padding(
-                    padding: EdgeInsets.all(HarmoniaSpacing.md),
+                    padding: EdgeInsets.all(ResoniaSpacing.md),
                     child: Text(
                       'Bu üç turda ek tekrar önerisi çıkmadı. Ölçemediğimiz ses üretimi, ezgi ve çok sesli duyma alanları bilinmiyor; günlük rotadan devam edebilirsin.',
                     ),

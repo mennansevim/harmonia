@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
-import '../../app/theme/harmonia_theme.dart';
+import '../../app/theme/resonia_theme.dart';
 import '../../application/result_history.dart';
 import '../../domain/models/exercise.dart';
 import '../../domain/models/exercise_result.dart';
 import '../../domain/models/measurement_provenance.dart';
 import '../common/content_status_panel.dart';
 import '../common/foreground_refresh_state.dart';
-import '../common/ui/harmonia_ui.dart';
+import '../common/ui/resonia_ui.dart';
 
 /// Local attempt history. Comparisons only inside one cohort (exercise,
 /// skill, difficulty, mode, content, scoring and analyzer version); fewer than
@@ -146,7 +146,7 @@ class _HistoryScreenState extends ForegroundRefreshState<HistoryScreen> {
                   );
                 }
                 return ListView(
-                  padding: const EdgeInsets.all(HarmoniaSpacing.lg),
+                  padding: const EdgeInsets.all(ResoniaSpacing.lg),
                   children: [
                     _CohortSummary(entries: snapshot.data!),
                     ExpansionTile(
@@ -159,13 +159,13 @@ class _HistoryScreenState extends ForegroundRefreshState<HistoryScreen> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: HarmoniaSpacing.md),
+                    const SizedBox(height: ResoniaSpacing.md),
                     for (final e in entries)
                       _EntryTile(
                         entry: e,
                         onDelete: () => _delete(e.attemptId),
                       ),
-                    const SizedBox(height: HarmoniaSpacing.sm),
+                    const SizedBox(height: ResoniaSpacing.sm),
                     ChunkyButton(
                       key: const Key('history_back'),
                       label: 'Geri dön',
@@ -208,19 +208,19 @@ class _CohortSummary extends StatelessWidget {
     return Card(
       key: const Key('history_summary'),
       child: Padding(
-        padding: const EdgeInsets.all(HarmoniaSpacing.md),
+        padding: const EdgeInsets.all(ResoniaSpacing.md),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const StatusPill('Karşılaştırılabilir kanıt'),
-            const SizedBox(height: HarmoniaSpacing.sm),
+            const SizedBox(height: ResoniaSpacing.sm),
             Text('Gelişim (aynı çalışma ve sürüm)', style: text.titleMedium),
-            const SizedBox(height: HarmoniaSpacing.xs),
+            const SizedBox(height: ResoniaSpacing.xs),
             if (byCohort.isEmpty)
               const Text('Geçerli ölçüm yok; gelişim bilinmiyor.'),
             for (final results in byCohort.values)
               Padding(
-                padding: const EdgeInsets.only(top: HarmoniaSpacing.xs),
+                padding: const EdgeInsets.only(top: ResoniaSpacing.xs),
                 child: Text(_trend(results)),
               ),
           ],
@@ -308,9 +308,9 @@ class _EntryTile extends StatelessWidget {
     final status = r.isValid ? 'Ölçüldü' : 'Ölçülemedi — puanlanmadı';
     final detail = _entryDetail(r);
     return Card(
-      margin: const EdgeInsets.only(bottom: HarmoniaSpacing.sm),
+      margin: const EdgeInsets.only(bottom: ResoniaSpacing.sm),
       child: Padding(
-        padding: const EdgeInsets.all(HarmoniaSpacing.md),
+        padding: const EdgeInsets.all(ResoniaSpacing.md),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -324,7 +324,7 @@ class _EntryTile extends StatelessWidget {
                       : Icons.music_note,
                   color: r.isValid ? null : colors.notMeasured,
                 ),
-                const SizedBox(width: HarmoniaSpacing.sm),
+                const SizedBox(width: ResoniaSpacing.sm),
                 Expanded(
                   child: Text(
                     r.exerciseId,
@@ -340,7 +340,7 @@ class _EntryTile extends StatelessWidget {
               ],
             ),
             DataLabel(date),
-            const SizedBox(height: HarmoniaSpacing.sm),
+            const SizedBox(height: ResoniaSpacing.sm),
             Align(
               alignment: AlignmentDirectional.centerStart,
               child: StatusPill(status),

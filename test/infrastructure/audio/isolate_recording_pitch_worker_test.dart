@@ -2,9 +2,9 @@ import 'dart:convert';
 import 'dart:math' as math;
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/domain/audio/recording_pitch_analyzer.dart';
-import 'package:harmonia/domain/models/measurement_provenance.dart';
-import 'package:harmonia/infrastructure/audio/isolate_recording_pitch_worker.dart';
+import 'package:resonia/domain/audio/recording_pitch_analyzer.dart';
+import 'package:resonia/domain/models/measurement_provenance.dart';
+import 'package:resonia/infrastructure/audio/isolate_recording_pitch_worker.dart';
 
 List<double> tone() =>
     List.generate(1600, (i) => 0.25 * math.sin(2 * math.pi * 440 * i / 8000));

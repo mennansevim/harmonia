@@ -1,8 +1,8 @@
-# Harmonia Coach
+# Resonia Coach
 
 ## Amaç
 
-Harmonia Coach, öğrencinin sonuçlarını anlaşılır müzik öğretmeni diline çevirir ve sonraki egzersizi seçer.
+Resonia Coach, öğrencinin sonuçlarını anlaşılır müzik öğretmeni diline çevirir ve sonraki egzersizi seçer.
 
 AI’nin görevi ölçmek değildir. Ölçümü pitch/ritim motoru yapar; AI sonucu açıklar, motive eder ve kişiselleştirir.
 

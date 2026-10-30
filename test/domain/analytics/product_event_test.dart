@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/domain/analytics/product_event.dart';
+import 'package:resonia/domain/analytics/product_event.dart';
 
 const _session = '0123456789abcdef';
 final _t = DateTime.utc(2026, 10, 11, 12, 34, 56, 789);

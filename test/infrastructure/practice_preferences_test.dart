@@ -1,9 +1,9 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/application/practice_preferences.dart';
-import 'package:harmonia/domain/learning/daily_plan.dart';
-import 'package:harmonia/infrastructure/storage/file_practice_preferences.dart';
+import 'package:resonia/application/practice_preferences.dart';
+import 'package:resonia/domain/learning/daily_plan.dart';
+import 'package:resonia/infrastructure/storage/file_practice_preferences.dart';
 
 void main() {
   late Directory dir;

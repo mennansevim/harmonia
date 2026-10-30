@@ -18,11 +18,11 @@ import '../infrastructure/storage/file_practice_preferences.dart';
 import '../infrastructure/storage/file_result_history.dart';
 import 'app_channel.dart';
 import 'app_services.dart';
-import 'theme/harmonia_theme.dart';
+import 'theme/resonia_theme.dart';
 
 /// App shell: loading → guest goal selection → home. No account required.
-class HarmoniaApp extends StatefulWidget {
-  const HarmoniaApp({
+class ResoniaApp extends StatefulWidget {
+  const ResoniaApp({
     super.key,
     this.profiles,
     this.history,
@@ -44,17 +44,17 @@ class HarmoniaApp extends StatefulWidget {
   /// Defaults to on-device practice preferences (daily plan budget).
   final PracticePreferencesRepository? preferences;
 
-  /// Defaults to the build-time channel (HARMONIA_CHANNEL).
+  /// Defaults to the build-time channel (RESONIA_CHANNEL).
   final AppChannel? channel;
 
   /// This run's unexpected errors (main installs the handlers).
   final LocalErrorLog? errorLog;
 
   @override
-  State<HarmoniaApp> createState() => _HarmoniaAppState();
+  State<ResoniaApp> createState() => _ResoniaAppState();
 }
 
-class _HarmoniaAppState extends State<HarmoniaApp> {
+class _ResoniaAppState extends State<ResoniaApp> {
   late final AppShellController _shell;
   late final ResultHistoryRepository _history =
       widget.history ?? FileResultHistory();
@@ -118,7 +118,7 @@ class _HarmoniaAppState extends State<HarmoniaApp> {
   );
 
   @override
-  Widget build(BuildContext context) => HarmoniaHapticsScope(
+  Widget build(BuildContext context) => ResoniaHapticsScope(
     enabled: _hapticsEnabled,
     child: ValueListenableBuilder<int>(
       valueListenable: _preferencesRevision,
@@ -133,10 +133,10 @@ class _HarmoniaAppState extends State<HarmoniaApp> {
   );
 
   Widget _app() => MaterialApp(
-    title: 'Harmonia',
+    title: 'Resonia',
     navigatorKey: _navigator,
-    theme: HarmoniaTheme.light(),
-    darkTheme: HarmoniaTheme.dark(),
+    theme: ResoniaTheme.light(),
+    darkTheme: ResoniaTheme.dark(),
     home: ListenableBuilder(
       listenable: _shell,
       builder: (context, _) => switch (_shell.phase) {
@@ -179,26 +179,26 @@ class _StartupError extends StatelessWidget {
   Widget build(BuildContext context) => Scaffold(
     body: SafeArea(
       child: ListView(
-        padding: const EdgeInsets.all(HarmoniaSpacing.lg),
+        padding: const EdgeInsets.all(ResoniaSpacing.lg),
         children: [
           Semantics(
             liveRegion: true,
             child: Text(
               failure == ProfileStorageFailure.corrupt
-                  ? 'Bu cihazdaki Harmonia profili okunamadı.'
+                  ? 'Bu cihazdaki Resonia profili okunamadı.'
                   : 'Cihaz depolamasına şu an erişilemedi.',
               key: const Key('startup_error'),
               style: Theme.of(context).textTheme.titleLarge,
             ),
           ),
-          const SizedBox(height: HarmoniaSpacing.md),
+          const SizedBox(height: ResoniaSpacing.md),
           FilledButton(
             key: const Key('startup_retry'),
             onPressed: onRetry,
             child: const Text('Yeniden dene'),
           ),
           if (failure == ProfileStorageFailure.corrupt) ...[
-            const SizedBox(height: HarmoniaSpacing.sm),
+            const SizedBox(height: ResoniaSpacing.sm),
             const Text(
               'Sorun sürerse yerel profili silip hedefini yeniden seçebilirsin. Başka veri etkilenmez.',
             ),

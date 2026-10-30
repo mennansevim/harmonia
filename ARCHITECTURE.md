@@ -1,4 +1,4 @@
-# Harmonia — Architecture
+# Resonia — Architecture
 
 ## Mimari prensipler
 
@@ -26,7 +26,7 @@ Kullanıcı devam paketi: domain `RecordingPitchAnalyzer` sabit-config/10 sn bü
 5. AI sonucu değil, sonucu açıklamayı ve sonraki çalışmayı seçmeyi üstlenir.
 6. Ham ses kişisel veri gibi ele alınır; varsayılan olarak gereksiz yere gönderilmez.
 
-2026-10-11 modül envanteri paketi: domain `capture_quality.dart` (`AudioRouteSnapshot`/`RoutePolicy`, `CalibrationStamp`, `NoiseFloorCalibrator`, `CaptureQualityAssessor`, `LatencyCalibration`) saf Dart ve O(n)'dir; IO/plugin bağımlılığı yoktur. Opsiyonel `AudioRouteProbe` yetkinliği infrastructure `audio_route_mapping.dart` ile audio_session cihaz listesinden route çıkarır (API deneysel; yükseltmede yeniden test). `AudioLabController` kalibrasyon kaydını alıp siler, cevap kaydında kalite raporunu worker'dan önce hesaplar. Uygulama kabuğu: `HarmoniaApp` → `AppShellController` (application) → `ProfileRepository` (application arayüzü) → `FileProfileRepository`/`JsonFileStore` (infrastructure). Tema token'ları `lib/app/theme/harmonia_theme.dart`; sonuç renkleri `HarmoniaResultColors` ThemeExtension. Ekranlar `features/onboarding|home|settings`. Karar: ADR-021/022.
+2026-10-11 modül envanteri paketi: domain `capture_quality.dart` (`AudioRouteSnapshot`/`RoutePolicy`, `CalibrationStamp`, `NoiseFloorCalibrator`, `CaptureQualityAssessor`, `LatencyCalibration`) saf Dart ve O(n)'dir; IO/plugin bağımlılığı yoktur. Opsiyonel `AudioRouteProbe` yetkinliği infrastructure `audio_route_mapping.dart` ile audio_session cihaz listesinden route çıkarır (API deneysel; yükseltmede yeniden test). `AudioLabController` kalibrasyon kaydını alıp siler, cevap kaydında kalite raporunu worker'dan önce hesaplar. Uygulama kabuğu: `ResoniaApp` → `AppShellController` (application) → `ProfileRepository` (application arayüzü) → `FileProfileRepository`/`JsonFileStore` (infrastructure). Tema token'ları `lib/app/theme/resonia_theme.dart`; sonuç renkleri `ResoniaResultColors` ThemeExtension. Ekranlar `features/onboarding|home|settings`. Karar: ADR-021/022.
 
 ## Katmanlar
 
@@ -180,7 +180,7 @@ Uygulanan temel: `EventRhythmAnalyzer`, sınırlı kronolojik event listelerini 
 Mobil uygulama doğrudan OpenAI API anahtarı taşımaz.
 
 ```text
-Flutter -> Harmonia API -> AI Gateway -> gpt-4o-mini
+Flutter -> Resonia API -> AI Gateway -> gpt-4o-mini
                                   └-> schema validation
                                   └-> usage limits
                                   └-> prompt versioning
@@ -220,7 +220,7 @@ Ham kayıtlar `ExerciseAttempt` içine gömülmemeli; ayrı storage kaydı olmal
 
 ```text
 Flutter: seçilmiş kayıt + seçilmiş gelişim özeti + paylaşım onayı
-  -> Harmonia Review API: auth / entitlement / kapasite / hak rezervasyonu
+  -> Resonia Review API: auth / entitlement / kapasite / hak rezervasyonu
   -> Private RecordingAsset + HumanReviewRequest + queue
   -> Atanmış gerçek eğitimcinin paneli: dinleme + kendi yazdığı yorum
   -> WrittenFeedback + PracticeAssignment
@@ -326,7 +326,7 @@ spacing/typography token'ları kullanılır; fake başarı rengi/animasyonu yok.
 tool/quality_check.dart standalone Dart IO; mobil runtime'a import edilmez.
 QualityStep/qualityPlan immutable executable+argv; shell string evaluation yok.
 executeQualityPlan injected executor test seam, sequential fail-fast; process
-stdio miras alınır, root script konumu ve Harmonia pubspec guard ile sabit.
+stdio miras alınır, root script konumu ve Resonia pubspec guard ile sabit.
 Default no-pub/no fetch; explicit --fetch locked pub resolution. Hard timeout,
 SDK kurma/upgrade, build/deploy/upload veya hosted CI activation yok. Plan ve
 QA code acceptance cihaz/voice/eğitim acceptance'dan ayrıdır.
@@ -379,7 +379,7 @@ ve plan ekranının ortak egzersiz açıcısı. Bütçe seçimi kalıcı değil 
 
 ## DATA-03a / LEARN-04a / SHELL-04a — Yerel taşıma, rapor, tercih (2026-10-13)
 
-`application/data_export.dart`: `harmonia-local-export` schema 1; profil +
+`application/data_export.dart`: `resonia-local-export` schema 1; profil +
 sonuç özetleri, ses yok, exportedAt dakika hassasiyeti. Decode önce bütün
 belgeyi doğrular (4 MiB, ≤5000 kayıt, exact root keys, strict profile/result,
 yinelenen attempt reddi); hata kodu metni yankılamaz. Import yalnız
@@ -431,10 +431,10 @@ aynı, validation stricter (ADR-025). Metadata hedefi waveform doğrulamaz.
 
 ## UI-01 — A+C tasarım sistemi (2026-10-14)
 
-`app/theme/harmonia_theme.dart`: indigo birincil, `HarmoniaPalette` (derin
+`app/theme/resonia_theme.dart`: indigo birincil, `ResoniaPalette` (derin
 gölge, güneş, mercan, nane, çizgi, soluk metin, dalga renkleri), sonuç
-renkleri, `HarmoniaMotion` (hareket azaltma), iOS'ta Cupertino geçişleri,
-Android'de predictive back. `features/common/ui/harmonia_ui.dart`:
+renkleri, `ResoniaMotion` (hareket azaltma), iOS'ta Cupertino geçişleri,
+Android'de predictive back. `features/common/ui/resonia_ui.dart`:
 ChunkyButton, AnswerOption, FeedbackPanel, DataLabel, StatusPill,
 LessonProgressBar, StatTile. Ana kabuk `HomeScreen` alt sekmeli: Bugün (öneri,
 günlük plan, beceri yolu `home/skill_path.dart` + `home/home_data.dart`),
@@ -711,7 +711,7 @@ and teaching acceptance remain open.
 
 ## ONB-01 — Guest daily-duration setup (2026-10-20)
 
-HarmoniaApp now hosts GuestOnboardingScreen: draft goal → explicit5/12/15
+ResoniaApp now hosts GuestOnboardingScreen: draft goal → explicit5/12/15
 minute preference → home. Returning profiles and Settings goal changes bypass
 this step. Budget uses existing schema1, then chooseGoal writes the profile.
 Skip never writes budget, retaining prior preference or daily planner's twelve
@@ -849,10 +849,10 @@ denied/unavailable/failure. Time picker is injectable for deterministic tests.
 
 ## HAPTIC-01 — App-wide haptic capability preference (2026-10-21)
 
-`HarmoniaHapticsScope` carries a `ValueNotifier<bool>` and defaults to enabled
+`ResoniaHapticsScope` carries a `ValueNotifier<bool>` and defaults to enabled
 when no scope is present, preserving isolated widget behavior. Every current
 direct `HapticFeedback` call consults this scope; disabling haptics does not
-disable the underlying user action. `HarmoniaApp` loads the local value and
+disable the underlying user action. `ResoniaApp` loads the local value and
 fails open to the documented default without turning a preference read error
 into an app-start failure. Settings persists first and publishes second, so a
 write failure cannot create a session-only state that disagrees with disk.
@@ -1036,7 +1036,7 @@ atomicity. This creates no account, outbox, upload or server merge contract.
 
 ## DATA-03d — Runtime preference revision boundary (2026-10-25)
 
-`HarmoniaApp` owns a monotonic in-memory preference revision and publishes it
+`ResoniaApp` owns a monotonic in-memory preference revision and publishes it
 through `AppServices` only after `savePortablePreferences` succeeds. Today
 re-reads its cached daily budget and weekly goal when the revision changes.
 The Home and Navigator identities remain stable, so importing preferences does

@@ -1,11 +1,11 @@
-# Harmonia çalışma kuralları
+# Resonia çalışma kuralları
 
 Yeni model/ajan önce `MODEL_HANDOFF.md`, `CURRENT_ROADMAP.md`,
 `IMPLEMENTATION_ROADMAP.md`, `IMPLEMENTATION_LOG.md`, `AUDIO_TESTING.md` ve
 ilgili mimari/ürün kararlarını okusun. Geçmiş log tarihsel; güncel kod, son
 kullanıcı açıklaması ve handoff mevcut durumu belirler.
 
-- Bu repo Harmonia'dır. Komutları bu repo kökünde çalıştır; komşu
+- Bu repo Resonia'dır. Komutları bu repo kökünde çalıştır; komşu
   `agoravoiceweb` kaynaklarını değiştirme. Kullanıcı değişikliklerini koru.
 - Son chord yönü: **hazır 2/3/4 sesli piyano kayıtları klasörden çalınır,
   öğrenci sesleri birer birer tekrar eder**. Kullanıcı kayıtları sağlayınca

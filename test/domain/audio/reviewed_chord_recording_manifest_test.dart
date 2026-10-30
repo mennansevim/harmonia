@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/domain/audio/reviewed_chord_recording_manifest.dart';
+import 'package:resonia/domain/audio/reviewed_chord_recording_manifest.dart';
 
 ReviewedChordRecording recording({
   String id = 'c4-g4',

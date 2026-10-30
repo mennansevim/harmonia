@@ -53,7 +53,7 @@ class IntroSlide {
   final List<String>? highlight;
 }
 
-/// One step of Harmonia's ladder: the items it adds and why they come now.
+/// One step of Resonia's ladder: the items it adds and why they come now.
 class _Stage {
   const _Stage(this.add, this.why);
   final List<String> add;
@@ -76,7 +76,7 @@ class _Drill {
 
 const _anyReg = [Register.low, Register.medium, Register.high];
 
-/// Harmonia's generated ladder: per stage a "Yeni" lesson, then (from the
+/// Resonia's generated ladder: per stage a "Yeni" lesson, then (from the
 /// second stage) a mixed review; an "Ara durak" after every third stage;
 /// register/direction drills; a "Konser provası" at the end.
 TrainerPath _ladder(

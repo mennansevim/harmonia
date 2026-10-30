@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../../../app/theme/harmonia_theme.dart';
+import '../../../app/theme/resonia_theme.dart';
 
 enum ChunkyTone { primary, success, neutral, record }
 
@@ -63,7 +63,7 @@ class _ChunkyButtonState extends State<ChunkyButton> {
     };
     final disabledFill = scheme.onSurface.withValues(alpha: 0.08);
     final depth = enabled && !_down ? 4.0 : 0.0;
-    final reduced = HarmoniaMotion.reduced(context);
+    final reduced = ResoniaMotion.reduced(context);
     final body = AnimatedContainer(
       duration: reduced ? Duration.zero : const Duration(milliseconds: 70),
       curve: Curves.easeOut,
@@ -72,7 +72,7 @@ class _ChunkyButtonState extends State<ChunkyButton> {
       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
       decoration: BoxDecoration(
         color: enabled ? fill : disabledFill,
-        borderRadius: BorderRadius.circular(HarmoniaRadius.button),
+        borderRadius: BorderRadius.circular(ResoniaRadius.button),
         border: border == null || !enabled
             ? null
             : Border.all(color: border, width: 2),
@@ -90,7 +90,7 @@ class _ChunkyButtonState extends State<ChunkyButton> {
               size: 22,
               color: enabled ? ink : scheme.onSurface.withValues(alpha: .38),
             ),
-            const SizedBox(width: HarmoniaSpacing.sm),
+            const SizedBox(width: ResoniaSpacing.sm),
           ],
           Flexible(
             child: Text(
@@ -118,7 +118,7 @@ class _ChunkyButtonState extends State<ChunkyButton> {
         onTapUp: enabled ? (_) => setState(() => _down = false) : null,
         onTap: enabled
             ? () {
-                if (HarmoniaHapticsScope.enabled(context)) {
+                if (ResoniaHapticsScope.enabled(context)) {
                   HapticFeedback.lightImpact();
                 }
                 widget.onPressed!();
@@ -210,15 +210,15 @@ class AnswerOption extends StatelessWidget {
         child: Ink(
           decoration: BoxDecoration(
             color: fill,
-            borderRadius: BorderRadius.circular(HarmoniaRadius.button),
+            borderRadius: BorderRadius.circular(ResoniaRadius.button),
             border: Border.all(color: border, width: 2),
             boxShadow: [BoxShadow(color: border, offset: const Offset(0, 3))],
           ),
           child: InkWell(
-            borderRadius: BorderRadius.circular(HarmoniaRadius.button),
+            borderRadius: BorderRadius.circular(ResoniaRadius.button),
             onTap: enabled
                 ? () {
-                    if (HarmoniaHapticsScope.enabled(context)) {
+                    if (ResoniaHapticsScope.enabled(context)) {
                       HapticFeedback.selectionClick();
                     }
                     onTap!();
@@ -227,8 +227,8 @@ class AnswerOption extends StatelessWidget {
             child: Container(
               constraints: const BoxConstraints(minHeight: 64),
               padding: const EdgeInsets.symmetric(
-                horizontal: HarmoniaSpacing.md,
-                vertical: HarmoniaSpacing.sm + 2,
+                horizontal: ResoniaSpacing.md,
+                vertical: ResoniaSpacing.sm + 2,
               ),
               child: Row(
                 children: [
@@ -292,18 +292,18 @@ class FeedbackPanel extends StatelessWidget {
     final results = context.resultColors;
     final text = Theme.of(context).textTheme;
     final ink = correct ? results.correct : results.incorrect;
-    final reduced = HarmoniaMotion.reduced(context);
+    final reduced = ResoniaMotion.reduced(context);
     final panel = Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(
-        HarmoniaSpacing.md,
-        HarmoniaSpacing.md,
-        HarmoniaSpacing.md,
-        HarmoniaSpacing.md,
+        ResoniaSpacing.md,
+        ResoniaSpacing.md,
+        ResoniaSpacing.md,
+        ResoniaSpacing.md,
       ),
       decoration: BoxDecoration(
         color: correct ? palette.mintSoft : palette.coralSoft,
-        borderRadius: BorderRadius.circular(HarmoniaRadius.card),
+        borderRadius: BorderRadius.circular(ResoniaRadius.card),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -316,7 +316,7 @@ class FeedbackPanel extends StatelessWidget {
                   correct ? Icons.check_circle_rounded : Icons.info_rounded,
                   color: ink,
                 ),
-                const SizedBox(width: HarmoniaSpacing.sm),
+                const SizedBox(width: ResoniaSpacing.sm),
                 Expanded(
                   child: Text(
                     title,
@@ -328,10 +328,10 @@ class FeedbackPanel extends StatelessWidget {
             ),
           ),
           if (detail != null) ...[
-            const SizedBox(height: HarmoniaSpacing.xs),
+            const SizedBox(height: ResoniaSpacing.xs),
             Text(detail!, style: text.bodyMedium),
           ],
-          const SizedBox(height: HarmoniaSpacing.md),
+          const SizedBox(height: ResoniaSpacing.md),
           ChunkyButton(
             key: actionKey,
             label: actionLabel,
@@ -344,8 +344,8 @@ class FeedbackPanel extends StatelessWidget {
     if (reduced) return panel;
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0, end: 1),
-      duration: HarmoniaMotion.medium,
-      curve: HarmoniaMotion.emphasized,
+      duration: ResoniaMotion.medium,
+      curve: ResoniaMotion.emphasized,
       builder: (context, t, child) => Opacity(
         opacity: t,
         child: Transform.translate(
@@ -366,7 +366,7 @@ class DataLabel extends StatelessWidget {
   final Color? color;
   @override
   Widget build(BuildContext context) =>
-      Text(text, style: harmoniaDataLabel(context).copyWith(color: color));
+      Text(text, style: resoniaDataLabel(context).copyWith(color: color));
 }
 
 enum PillTone { success, primary, warning, neutral }
@@ -433,10 +433,10 @@ class LessonProgressBar extends StatelessWidget {
               ColoredBox(color: palette.line),
               TweenAnimationBuilder<double>(
                 tween: Tween(end: value.clamp(0, 1)),
-                duration: HarmoniaMotion.reduced(context)
+                duration: ResoniaMotion.reduced(context)
                     ? Duration.zero
-                    : HarmoniaMotion.slow,
-                curve: HarmoniaMotion.emphasized,
+                    : ResoniaMotion.slow,
+                curve: ResoniaMotion.emphasized,
                 builder: (context, v, _) => FractionallySizedBox(
                   alignment: AlignmentDirectional.centerStart,
                   widthFactor: v,
@@ -471,8 +471,8 @@ class StatTile extends StatelessWidget {
   Widget build(BuildContext context) => Card(
     child: Padding(
       padding: const EdgeInsets.symmetric(
-        horizontal: HarmoniaSpacing.sm + 4,
-        vertical: HarmoniaSpacing.sm + 2,
+        horizontal: ResoniaSpacing.sm + 4,
+        vertical: ResoniaSpacing.sm + 2,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -522,9 +522,9 @@ class LessonScaffold extends StatelessWidget {
           children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(
-                HarmoniaSpacing.xs,
-                HarmoniaSpacing.xs,
-                HarmoniaSpacing.lg,
+                ResoniaSpacing.xs,
+                ResoniaSpacing.xs,
+                ResoniaSpacing.lg,
                 0,
               ),
               child: Row(
@@ -535,7 +535,7 @@ class LessonScaffold extends StatelessWidget {
                     icon: Icon(Icons.close_rounded, color: palette.muted),
                     onPressed: () => Navigator.of(context).maybePop(),
                   ),
-                  const SizedBox(width: HarmoniaSpacing.xs),
+                  const SizedBox(width: ResoniaSpacing.xs),
                   if (progress case final value?)
                     Expanded(
                       child: LessonProgressBar(
@@ -545,8 +545,8 @@ class LessonScaffold extends StatelessWidget {
                     ),
                   if (progress == null) const Spacer(),
                   if (counter != null) ...[
-                    const SizedBox(width: HarmoniaSpacing.md),
-                    Text(counter!, style: harmoniaDataLabel(context)),
+                    const SizedBox(width: ResoniaSpacing.md),
+                    Text(counter!, style: resoniaDataLabel(context)),
                   ],
                 ],
               ),
@@ -555,17 +555,17 @@ class LessonScaffold extends StatelessWidget {
               child: LayoutBuilder(
                 builder: (context, box) => SingleChildScrollView(
                   padding: const EdgeInsets.fromLTRB(
-                    HarmoniaSpacing.lg,
-                    HarmoniaSpacing.sm,
-                    HarmoniaSpacing.lg,
-                    HarmoniaSpacing.lg,
+                    ResoniaSpacing.lg,
+                    ResoniaSpacing.sm,
+                    ResoniaSpacing.lg,
+                    ResoniaSpacing.lg,
                   ),
                   child: ConstrainedBox(
                     constraints: BoxConstraints(
                       minHeight:
                           (box.maxHeight -
-                                  HarmoniaSpacing.sm -
-                                  HarmoniaSpacing.lg)
+                                  ResoniaSpacing.sm -
+                                  ResoniaSpacing.lg)
                               .clamp(0, double.infinity),
                     ),
                     // Diagnostic/results content can grow as help opens.
@@ -579,7 +579,7 @@ class LessonScaffold extends StatelessWidget {
                             children: [
                               ...top,
                               if (bottom.isNotEmpty) ...[
-                                const SizedBox(height: HarmoniaSpacing.md),
+                                const SizedBox(height: ResoniaSpacing.md),
                                 ...bottom,
                               ],
                             ],
@@ -591,7 +591,7 @@ class LessonScaffold extends StatelessWidget {
                                 ...top,
                                 if (bottom.isNotEmpty) ...[
                                   const Spacer(),
-                                  const SizedBox(height: HarmoniaSpacing.md),
+                                  const SizedBox(height: ResoniaSpacing.md),
                                   ...bottom,
                                 ],
                               ],
@@ -661,17 +661,17 @@ class LevelPicker extends StatelessWidget {
                   builder: (sheet) => SafeArea(
                     child: Padding(
                       padding: const EdgeInsets.fromLTRB(
-                        HarmoniaSpacing.lg,
+                        ResoniaSpacing.lg,
                         0,
-                        HarmoniaSpacing.lg,
-                        HarmoniaSpacing.lg,
+                        ResoniaSpacing.lg,
+                        ResoniaSpacing.lg,
                       ),
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           Text('Seviye seç', style: text.titleLarge),
-                          const SizedBox(height: HarmoniaSpacing.md),
+                          const SizedBox(height: ResoniaSpacing.md),
                           for (final c in choices) ...[
                             AnswerOption(
                               key: Key('${keyPrefix}_level_${c.id}'),
@@ -682,7 +682,7 @@ class LevelPicker extends StatelessWidget {
                                   : OptionState.idle,
                               onTap: () => Navigator.of(sheet).pop(c.id),
                             ),
-                            const SizedBox(height: HarmoniaSpacing.sm),
+                            const SizedBox(height: ResoniaSpacing.sm),
                           ],
                         ],
                       ),
@@ -756,7 +756,7 @@ class EqualHeightGrid extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               for (var j = 0; j < cols; j++) ...[
-                if (j > 0) const SizedBox(width: HarmoniaSpacing.sm),
+                if (j > 0) const SizedBox(width: ResoniaSpacing.sm),
                 Expanded(child: j < cells.length ? cells[j] : const SizedBox()),
               ],
             ],
@@ -768,7 +768,7 @@ class EqualHeightGrid extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         for (final (i, r) in rows.indexed) ...[
-          if (i > 0) const SizedBox(height: HarmoniaSpacing.sm + 2),
+          if (i > 0) const SizedBox(height: ResoniaSpacing.sm + 2),
           r,
         ],
       ],

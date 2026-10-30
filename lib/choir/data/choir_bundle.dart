@@ -10,7 +10,7 @@ import '../domain/resource.dart';
 import '../domain/submission.dart';
 import 'choir_store.dart';
 
-/// `.harmonia` files: how a choir works with no server. The conductor shares
+/// `.resonia` files: how a choir works with no server. The conductor shares
 /// a choir package, singers send takes back, the conductor returns feedback.
 /// Any channel the choir already uses carries them, and only a person's own
 /// share action ever sends anything.
@@ -63,9 +63,9 @@ class JoinPreview {
   final String _path;
 }
 
-const bundleExtension = 'harmonia';
+const bundleExtension = 'resonia';
 const maxBundleBytes = 512 << 20;
-const _format = 'harmonia-choir';
+const _format = 'resonia-choir';
 const _schema = 1;
 
 class ChoirBundles {

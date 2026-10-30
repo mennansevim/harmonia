@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/domain/content/draft_micro_lessons.dart';
-import 'package:harmonia/domain/learning/micro_lesson.dart';
-import 'package:harmonia/domain/learning/skill_graph.dart';
+import 'package:resonia/domain/content/draft_micro_lessons.dart';
+import 'package:resonia/domain/learning/micro_lesson.dart';
+import 'package:resonia/domain/learning/skill_graph.dart';
 
 List<LessonStep> _steps({
   List<String> training = const ['sample-aa', 'sample-bb'],

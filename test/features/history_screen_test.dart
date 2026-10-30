@@ -2,10 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/app/theme/harmonia_theme.dart';
-import 'package:harmonia/application/result_history.dart';
-import 'package:harmonia/domain/models/exercise_result.dart';
-import 'package:harmonia/features/history/history_screen.dart';
+import 'package:resonia/app/theme/resonia_theme.dart';
+import 'package:resonia/application/result_history.dart';
+import 'package:resonia/domain/models/exercise_result.dart';
+import 'package:resonia/features/history/history_screen.dart';
 
 import '../infrastructure/storage/file_result_history_test.dart' show entry;
 
@@ -236,7 +236,7 @@ void main() {
     await h.record(entry('attempt-0001'));
     await tester.pumpWidget(
       MaterialApp(
-        theme: HarmoniaTheme.dark(),
+        theme: ResoniaTheme.dark(),
         home: Builder(
           builder: (context) => Scaffold(
             body: TextButton(

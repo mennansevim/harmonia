@@ -1,6 +1,6 @@
 import 'dart:async';
-import 'package:harmonia/domain/audio/recording_pitch_analyzer.dart';
-import 'package:harmonia/domain/models/measurement_provenance.dart';
+import 'package:resonia/domain/audio/recording_pitch_analyzer.dart';
+import 'package:resonia/domain/models/measurement_provenance.dart';
 
 class FakeRecordingPitchWorker implements RecordingPitchWorker {
   int calls = 0;

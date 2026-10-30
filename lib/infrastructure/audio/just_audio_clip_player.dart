@@ -16,7 +16,7 @@ class JustAudioClipPlayer implements ReferenceClipPlayer {
   @override
   Future<PlaybackHandle> playWav(List<int> wavBytes) async {
     _directory ??= await (await getTemporaryDirectory()).createTemp(
-      'harmonia-clip-',
+      'resonia-clip-',
     );
     _player ??= AudioPlayer(handleInterruptions: false);
     await _player!.stop();

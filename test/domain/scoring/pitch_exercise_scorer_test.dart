@@ -1,10 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/domain/audio/pitch_analyzer.dart';
-import 'package:harmonia/domain/models/exercise.dart';
-import 'package:harmonia/domain/models/exercise_result.dart';
-import 'package:harmonia/domain/models/score_metric.dart';
+import 'package:resonia/domain/audio/pitch_analyzer.dart';
+import 'package:resonia/domain/models/exercise.dart';
+import 'package:resonia/domain/models/exercise_result.dart';
+import 'package:resonia/domain/models/score_metric.dart';
 import 'dart:convert';
-import 'package:harmonia/domain/scoring/pitch_exercise_scorer.dart';
+import 'package:resonia/domain/scoring/pitch_exercise_scorer.dart';
 
 void main() {
   const exercise = Exercise(

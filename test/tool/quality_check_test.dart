@@ -100,14 +100,14 @@ void main() {
     );
   });
   test('repository name check rejects Agora and partial names', () {
-    expect(isHarmoniaPubspec('name: harmonia\nversion: 1'), isTrue);
+    expect(isResoniaPubspec('name: resonia\nversion: 1'), isTrue);
     for (final text in [
       'name: agora',
-      'name: harmonia_fake',
-      '# name: harmonia',
-      'xname: harmonia',
+      'name: resonia_fake',
+      '# name: resonia',
+      'xname: resonia',
     ]) {
-      expect(isHarmoniaPubspec(text), isFalse);
+      expect(isResoniaPubspec(text), isFalse);
     }
   });
 }

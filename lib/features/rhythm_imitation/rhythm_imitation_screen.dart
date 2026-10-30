@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../../app/theme/harmonia_theme.dart';
+import '../../app/theme/resonia_theme.dart';
 import '../../application/result_history.dart';
 import '../../application/rhythm_imitation_controller.dart';
 import '../../domain/audio/audio_capture.dart';
@@ -14,7 +14,7 @@ import '../../infrastructure/audio/click_track.dart';
 import '../../infrastructure/audio/just_audio_clip_player.dart';
 import '../common/sound/playback_visual.dart';
 import '../common/sound/waveform_playback_view.dart';
-import '../common/ui/harmonia_ui.dart';
+import '../common/ui/resonia_ui.dart';
 import '../learning/next_step_text.dart';
 import '../learning/micro_lesson_screen.dart';
 
@@ -123,10 +123,10 @@ class _RhythmImitationScreenState extends State<RhythmImitationScreen>
                 ),
                 if (c.retentionCheck || c.isGuided)
                   Padding(
-                    padding: const EdgeInsets.only(top: HarmoniaSpacing.xs),
+                    padding: const EdgeInsets.only(top: ResoniaSpacing.xs),
                     child: Wrap(
-                      spacing: HarmoniaSpacing.xs,
-                      runSpacing: HarmoniaSpacing.xs,
+                      spacing: ResoniaSpacing.xs,
+                      runSpacing: ResoniaSpacing.xs,
                       children: [
                         if (c.retentionCheck)
                           const StatusPill(
@@ -145,31 +145,31 @@ class _RhythmImitationScreenState extends State<RhythmImitationScreen>
                   ),
               ],
             ),
-            const SizedBox(height: HarmoniaSpacing.md),
+            const SizedBox(height: ResoniaSpacing.md),
             Text(
               c.isGuided
                   ? 'Zor bölümü dinle, sonra tekrar et'
                   : 'Dinle, sonra aynı ritme dokun',
               style: text.headlineSmall,
             ),
-            const SizedBox(height: HarmoniaSpacing.xs),
+            const SizedBox(height: ResoniaSpacing.xs),
             Text(
               'İlk dokunuşun başlangıç sayılır; sonrakiler tempoyla karşılaştırılır.',
               style: text.bodyMedium?.copyWith(color: context.palette.muted),
             ),
             if (c.pattern.review != ContentReviewStatus.educatorApproved)
               Padding(
-                padding: const EdgeInsets.only(top: HarmoniaSpacing.xs),
+                padding: const EdgeInsets.only(top: ResoniaSpacing.xs),
                 child: Text(
                   'Taslak içerik — eğitimci onayı bekliyor. ${c.pattern.description}',
                   key: const Key('rhythm_draft_label'),
                   style: text.bodySmall?.copyWith(color: context.palette.muted),
                 ),
               ),
-            const SizedBox(height: HarmoniaSpacing.md),
+            const SizedBox(height: ResoniaSpacing.md),
             Card(
               child: Padding(
-                padding: const EdgeInsets.all(HarmoniaSpacing.md),
+                padding: const EdgeInsets.all(ResoniaSpacing.md),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
@@ -178,7 +178,7 @@ class _RhythmImitationScreenState extends State<RhythmImitationScreen>
                       height: 96,
                       idleLabel: 'Ritim burada çalacak',
                     ),
-                    const SizedBox(height: HarmoniaSpacing.md),
+                    const SizedBox(height: ResoniaSpacing.md),
                     ChunkyButton(
                       key: const Key('rhythm_listen'),
                       onPressed: c.canListen ? c.listen : null,
@@ -193,7 +193,7 @@ class _RhythmImitationScreenState extends State<RhythmImitationScreen>
                 ),
               ),
             ),
-            const SizedBox(height: HarmoniaSpacing.sm),
+            const SizedBox(height: ResoniaSpacing.sm),
             Semantics(
               liveRegion: true,
               child: Text(
@@ -203,11 +203,11 @@ class _RhythmImitationScreenState extends State<RhythmImitationScreen>
               ),
             ),
             if (c.outcome case final o?) ...[
-              const SizedBox(height: HarmoniaSpacing.md),
+              const SizedBox(height: ResoniaSpacing.md),
               _Result(outcome: o),
               if (c.suggestedGuidedSegment != null)
                 Padding(
-                  padding: const EdgeInsets.only(top: HarmoniaSpacing.sm),
+                  padding: const EdgeInsets.only(top: ResoniaSpacing.sm),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
@@ -217,7 +217,7 @@ class _RhythmImitationScreenState extends State<RhythmImitationScreen>
                         icon: const Icon(Icons.center_focus_strong_rounded),
                         label: const Text('Zor bölümü çalış'),
                       ),
-                      const SizedBox(height: HarmoniaSpacing.xs),
+                      const SizedBox(height: ResoniaSpacing.xs),
                       OutlinedButton.icon(
                         key: const Key('rhythm_concept_review'),
                         onPressed: () => Navigator.of(context).push(
@@ -240,7 +240,7 @@ class _RhythmImitationScreenState extends State<RhythmImitationScreen>
                 ),
               if (c.isGuided)
                 Padding(
-                  padding: const EdgeInsets.only(top: HarmoniaSpacing.sm),
+                  padding: const EdgeInsets.only(top: ResoniaSpacing.sm),
                   child: OutlinedButton(
                     key: const Key('rhythm_exit_guided'),
                     onPressed: c.exitGuidedSegment,
@@ -351,15 +351,15 @@ class _TapPadState extends State<_TapPad> with SingleTickerProviderStateMixin {
         onPointerDown: (event) {
           c.registerTap(event.timeStamp);
           if (!active) return;
-          if (HarmoniaHapticsScope.enabled(context)) {
+          if (ResoniaHapticsScope.enabled(context)) {
             HapticFeedback.lightImpact();
           }
-          if (!HarmoniaMotion.reduced(context)) _pulse.forward(from: 0);
+          if (!ResoniaMotion.reduced(context)) _pulse.forward(from: 0);
         },
         child: Container(
           constraints: const BoxConstraints(minHeight: 200),
-          padding: const EdgeInsets.all(HarmoniaSpacing.md),
-          margin: const EdgeInsets.symmetric(vertical: HarmoniaSpacing.sm),
+          padding: const EdgeInsets.all(ResoniaSpacing.md),
+          margin: const EdgeInsets.symmetric(vertical: ResoniaSpacing.sm),
           decoration: BoxDecoration(
             color: active ? palette.coral : scheme.surfaceContainerHigh,
             borderRadius: BorderRadius.circular(28),
@@ -400,7 +400,7 @@ class _TapPadState extends State<_TapPad> with SingleTickerProviderStateMixin {
                     size: 40,
                     color: active ? Colors.white : palette.muted,
                   ),
-                  const SizedBox(height: HarmoniaSpacing.xs),
+                  const SizedBox(height: ResoniaSpacing.xs),
                   Text(
                     active ? 'Buraya dokun' : 'Dinledikten sonra açılır',
                     textAlign: TextAlign.center,
@@ -437,7 +437,7 @@ class _Result extends StatelessWidget {
       return Card(
         key: const Key('rhythm_result'),
         child: Padding(
-          padding: const EdgeInsets.all(HarmoniaSpacing.md),
+          padding: const EdgeInsets.all(ResoniaSpacing.md),
           child: Text(
             outcome.status == RhythmImitationStatus.tooFewTaps
                 ? 'Ölçüm alınamadı — puanlanmadı. Ritmi karşılaştırmak için en az iki vuruş gerekli.'
@@ -461,7 +461,7 @@ class _Result extends StatelessWidget {
     return Card(
       key: const Key('rhythm_result'),
       child: Padding(
-        padding: const EdgeInsets.all(HarmoniaSpacing.md),
+        padding: const EdgeInsets.all(ResoniaSpacing.md),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -474,7 +474,7 @@ class _Result extends StatelessWidget {
             ),
             if (outcome.tempoDiffers)
               Padding(
-                padding: const EdgeInsets.only(top: HarmoniaSpacing.xs),
+                padding: const EdgeInsets.only(top: ResoniaSpacing.xs),
                 child: Text(
                   outcome.spanRatio! > 1
                       ? 'Genel olarak referanstan yavaş çaldın; vuruşlar giderek geç kaldı.'
@@ -482,10 +482,10 @@ class _Result extends StatelessWidget {
                   key: const Key('rhythm_tempo_hint'),
                 ),
               ),
-            const SizedBox(height: HarmoniaSpacing.sm),
+            const SizedBox(height: ResoniaSpacing.sm),
             Wrap(
-              spacing: HarmoniaSpacing.xs,
-              runSpacing: HarmoniaSpacing.xs,
+              spacing: ResoniaSpacing.xs,
+              runSpacing: ResoniaSpacing.xs,
               children: [
                 for (final (i, e) in outcome.timeline.indexed)
                   _BeatChip(entry: e, index: i, colors: colors),
@@ -506,7 +506,7 @@ class _BeatChip extends StatelessWidget {
   });
   final BeatTimelineEntry entry;
   final int index;
-  final HarmoniaResultColors colors;
+  final ResoniaResultColors colors;
   @override
   Widget build(BuildContext context) {
     final (label, icon, color) = switch (entry.verdict) {
@@ -549,7 +549,7 @@ class _Details extends StatelessWidget {
     final a = outcome.analysis!;
     return Padding(
       key: const Key('rhythm_details_panel'),
-      padding: const EdgeInsets.symmetric(vertical: HarmoniaSpacing.sm),
+      padding: const EdgeInsets.symmetric(vertical: ResoniaSpacing.sm),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -578,7 +578,7 @@ class _NextStepCard extends StatelessWidget {
     return Card(
       key: const Key('rhythm_next_step'),
       child: Padding(
-        padding: const EdgeInsets.all(HarmoniaSpacing.md),
+        padding: const EdgeInsets.all(ResoniaSpacing.md),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -587,7 +587,7 @@ class _NextStepCard extends StatelessWidget {
             Text(reason),
             if (action.isNotEmpty)
               Padding(
-                padding: const EdgeInsets.only(top: HarmoniaSpacing.sm),
+                padding: const EdgeInsets.only(top: ResoniaSpacing.sm),
                 child: FilledButton(
                   key: const Key('rhythm_apply_next'),
                   onPressed: controller.applyNextStep,

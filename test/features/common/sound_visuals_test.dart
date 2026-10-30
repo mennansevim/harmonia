@@ -2,12 +2,12 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/app/theme/harmonia_theme.dart';
-import 'package:harmonia/domain/audio/audio_capture.dart';
-import 'package:harmonia/features/common/input_level_meter.dart';
-import 'package:harmonia/features/common/sound/playback_visual.dart';
-import 'package:harmonia/features/common/sound/waveform_playback_view.dart';
-import 'package:harmonia/infrastructure/audio/click_track.dart';
+import 'package:resonia/app/theme/resonia_theme.dart';
+import 'package:resonia/domain/audio/audio_capture.dart';
+import 'package:resonia/features/common/input_level_meter.dart';
+import 'package:resonia/features/common/sound/playback_visual.dart';
+import 'package:resonia/features/common/sound/waveform_playback_view.dart';
+import 'package:resonia/infrastructure/audio/click_track.dart';
 
 class _Player implements ReferenceClipPlayer {
   Completer<void> end = Completer();
@@ -22,7 +22,7 @@ class _Player implements ReferenceClipPlayer {
 }
 
 Widget _host(Widget child, {bool reduce = false}) => MaterialApp(
-  theme: HarmoniaTheme.light(),
+  theme: ResoniaTheme.light(),
   home: MediaQuery(
     data: MediaQueryData(disableAnimations: reduce),
     child: Scaffold(

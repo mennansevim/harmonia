@@ -1,10 +1,10 @@
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/application/chord_reference_session.dart';
-import 'package:harmonia/domain/audio/audio_capture.dart';
-import 'package:harmonia/domain/audio/reviewed_chord_recording_manifest.dart';
-import 'package:harmonia/domain/models/exercise.dart';
+import 'package:resonia/application/chord_reference_session.dart';
+import 'package:resonia/domain/audio/audio_capture.dart';
+import 'package:resonia/domain/audio/reviewed_chord_recording_manifest.dart';
+import 'package:resonia/domain/models/exercise.dart';
 
 class _Player implements ReferenceClipPlayer {
   final calls = <String>[];

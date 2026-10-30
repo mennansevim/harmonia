@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import '../../app/theme/harmonia_theme.dart';
+import '../../app/theme/resonia_theme.dart';
 import '../../application/pitch_comparison_controller.dart';
 import '../../application/review_playback.dart';
 import '../../application/result_history.dart';
@@ -15,7 +15,7 @@ import '../../infrastructure/audio/click_track.dart';
 import '../../infrastructure/audio/just_audio_clip_player.dart';
 import '../common/sound/playback_visual.dart';
 import '../common/sound/waveform_playback_view.dart';
-import '../common/ui/harmonia_ui.dart';
+import '../common/ui/resonia_ui.dart';
 import '../common/ui/answer_comparison_card.dart';
 import '../learning/micro_lesson_screen.dart';
 
@@ -152,7 +152,7 @@ class _PitchComparisonScreenState extends State<PitchComparisonScreen>
                           : null,
                     ),
                   ),
-                  const SizedBox(width: HarmoniaSpacing.sm),
+                  const SizedBox(width: ResoniaSpacing.sm),
                   if (c.guidedRetry)
                     const StatusPill(
                       'Tekrar',
@@ -170,17 +170,17 @@ class _PitchComparisonScreenState extends State<PitchComparisonScreen>
                     const StatusPill('Taslak'),
                 ],
               ),
-              const SizedBox(height: HarmoniaSpacing.md),
+              const SizedBox(height: ResoniaSpacing.md),
               if (o == null) ...[
                 Text(
                   'Hangisi daha tiz?',
                   key: const Key('perc_progress'),
                   style: text.headlineSmall,
                 ),
-                const SizedBox(height: HarmoniaSpacing.md),
+                const SizedBox(height: ResoniaSpacing.md),
                 Card(
                   child: Padding(
-                    padding: const EdgeInsets.all(HarmoniaSpacing.md),
+                    padding: const EdgeInsets.all(ResoniaSpacing.md),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
@@ -188,7 +188,7 @@ class _PitchComparisonScreenState extends State<PitchComparisonScreen>
                           playback: _visual.current,
                           idleLabel: 'İki ses sırayla çalacak',
                         ),
-                        const SizedBox(height: HarmoniaSpacing.md),
+                        const SizedBox(height: ResoniaSpacing.md),
                         ChunkyButton(
                           key: const Key('perc_play'),
                           onPressed: c.canPlay ? c.playCurrent : null,
@@ -204,7 +204,7 @@ class _PitchComparisonScreenState extends State<PitchComparisonScreen>
                         ),
                         if (c.playbackFailed)
                           const Padding(
-                            padding: EdgeInsets.only(top: HarmoniaSpacing.sm),
+                            padding: EdgeInsets.only(top: ResoniaSpacing.sm),
                             child: Text('Ses çalınamadı. Yeniden dene.'),
                           ),
                       ],
@@ -232,12 +232,12 @@ class _PitchComparisonScreenState extends State<PitchComparisonScreen>
                         ),
                       ),
                       if (a == PitchAnswer.first)
-                        const SizedBox(width: HarmoniaSpacing.sm + 4),
+                        const SizedBox(width: ResoniaSpacing.sm + 4),
                     ],
                   ],
                 ),
                 if (feedback) ...[
-                  const SizedBox(height: HarmoniaSpacing.md),
+                  const SizedBox(height: ResoniaSpacing.md),
                   FeedbackPanel(
                     correct: c.lastAnswerCorrect,
                     textKey: const Key('perc_feedback'),
@@ -287,7 +287,7 @@ class _Summary extends StatelessWidget {
               : 'Tur bitti',
           style: text.headlineSmall,
         ),
-        const SizedBox(height: HarmoniaSpacing.md),
+        const SizedBox(height: ResoniaSpacing.md),
         Row(
           children: [
             Expanded(
@@ -297,14 +297,14 @@ class _Summary extends StatelessWidget {
                 valueColor: clean ? results.correct : null,
               ),
             ),
-            const SizedBox(width: HarmoniaSpacing.sm),
+            const SizedBox(width: ResoniaSpacing.sm),
             Expanded(
               child: StatTile(
                 label: 'Şans',
                 value: '%${PitchComparisonOutcome.chanceLevelPercent}',
               ),
             ),
-            const SizedBox(width: HarmoniaSpacing.sm),
+            const SizedBox(width: ResoniaSpacing.sm),
             Expanded(
               child: StatTile(
                 label: 'Dinleme',
@@ -313,21 +313,21 @@ class _Summary extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: HarmoniaSpacing.md),
+        const SizedBox(height: ResoniaSpacing.md),
         Card(
           child: Padding(
-            padding: const EdgeInsets.all(HarmoniaSpacing.md),
+            padding: const EdgeInsets.all(ResoniaSpacing.md),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const DataLabel('Ne oldu'),
-                const SizedBox(height: HarmoniaSpacing.xs),
+                const SizedBox(height: ResoniaSpacing.xs),
                 Text(
                   '$total sorudan ${outcome.correctCount} doğru.',
                   key: const Key('perc_summary_text'),
                   style: text.titleMedium,
                 ),
-                const SizedBox(height: HarmoniaSpacing.xs),
+                const SizedBox(height: ResoniaSpacing.xs),
                 Text(
                   controller.guidedRetry
                       ? 'Yalnız önceki turda kaçırdığın $total çift tekrarlandı. Bu rehberli tur ölçüt veya ustalık kanıtı üretmez.'
@@ -336,14 +336,14 @@ class _Summary extends StatelessWidget {
                 ),
                 if (outcome.referencePlays > 1)
                   const Padding(
-                    padding: EdgeInsets.only(top: HarmoniaSpacing.xs),
+                    padding: EdgeInsets.only(top: ResoniaSpacing.xs),
                     child: Text(
                       'Bazı çiftleri tekrar dinledin; tek dinlemeyle başarı “bağımsız” sayılır.',
                     ),
                   ),
                 if (controller.recordOutcome != null)
                   Padding(
-                    padding: const EdgeInsets.only(top: HarmoniaSpacing.xs),
+                    padding: const EdgeInsets.only(top: ResoniaSpacing.xs),
                     child: Text(
                       'Sonuç bu cihazdaki geçmişine kaydedildi.',
                       style: text.bodySmall?.copyWith(
@@ -355,7 +355,7 @@ class _Summary extends StatelessWidget {
                   const Text('Sonuç geçmişe kaydedilemedi.'),
                 if (controller.guidedRetry)
                   const Padding(
-                    padding: EdgeInsets.only(top: HarmoniaSpacing.xs),
+                    padding: EdgeInsets.only(top: ResoniaSpacing.xs),
                     child: Text(
                       'Bu kısa hata tekrarı çalışma içindir; geçmişe, beceri durumuna veya sınav sonucuna eklenmedi.',
                       key: Key('perc_guided_notice'),
@@ -365,7 +365,7 @@ class _Summary extends StatelessWidget {
             ),
           ),
         ),
-        const SizedBox(height: HarmoniaSpacing.md),
+        const SizedBox(height: ResoniaSpacing.md),
         if (controller.mistakeCount > 0) ...[
           ChunkyButton(
             key: const Key('perc_guided_retry'),
@@ -373,7 +373,7 @@ class _Summary extends StatelessWidget {
             icon: Icons.my_location_rounded,
             onPressed: () => unawaited(controller.startGuidedRetry()),
           ),
-          const SizedBox(height: HarmoniaSpacing.sm),
+          const SizedBox(height: ResoniaSpacing.sm),
           if (!controller.guidedRetry) ...[
             OutlinedButton.icon(
               key: const Key('perc_concept_review'),
@@ -390,7 +390,7 @@ class _Summary extends StatelessWidget {
             const Text(
               'İsteğe bağlı metin taslağıdır; tur sonucunu ve beceri durumunu değiştirmez.',
             ),
-            const SizedBox(height: HarmoniaSpacing.sm),
+            const SizedBox(height: ResoniaSpacing.sm),
           ],
         ],
         ChunkyButton(
@@ -399,7 +399,7 @@ class _Summary extends StatelessWidget {
           icon: Icons.replay_rounded,
           onPressed: controller.newRound,
         ),
-        const SizedBox(height: HarmoniaSpacing.lg),
+        const SizedBox(height: ResoniaSpacing.lg),
         Text('Cevaplarını karşılaştır', style: text.titleLarge),
         const Text(
           'Çalınan sentetik örnek ile dokunarak verdiğin cevap gösterilir; '

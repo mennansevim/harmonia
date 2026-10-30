@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/domain/audio/pitch_deviation.dart';
+import 'package:resonia/domain/audio/pitch_deviation.dart';
 
 void main() {
   test('absolute signed cents and pitch-class residual are distinct', () {

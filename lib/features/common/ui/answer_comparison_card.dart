@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../../app/theme/harmonia_theme.dart';
-import 'harmonia_ui.dart';
+import '../../../app/theme/resonia_theme.dart';
+import 'resonia_ui.dart';
 
 /// Read-only round evidence, not a claim about what the learner perceived.
 /// Closed initially so the summary remains short; no playback or writes.
@@ -46,7 +46,7 @@ class AnswerComparisonCard extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         DataLabel(label),
-        const SizedBox(height: HarmoniaSpacing.xs),
+        const SizedBox(height: ResoniaSpacing.xs),
         Text(value, style: Theme.of(context).textTheme.bodyLarge),
       ],
     );
@@ -71,12 +71,12 @@ class AnswerComparisonCard extends StatelessWidget {
     return Card(
       child: ExpansionTile(
         title: Text('Soru $questionNumber · $status'),
-        childrenPadding: const EdgeInsets.all(HarmoniaSpacing.md),
+        childrenPadding: const EdgeInsets.all(ResoniaSpacing.md),
         children: [
           field('Çalınan örnek', reference),
           if (onPlayReference != null || referenceLoading || referencePlaying)
             Padding(
-              padding: const EdgeInsets.only(top: HarmoniaSpacing.sm),
+              padding: const EdgeInsets.only(top: ResoniaSpacing.sm),
               child: listenButton(
                 id: 'reference',
                 idleLabel: 'Örneği dinle',
@@ -85,19 +85,19 @@ class AnswerComparisonCard extends StatelessWidget {
                 playing: referencePlaying,
               ),
             ),
-          const SizedBox(height: HarmoniaSpacing.md),
+          const SizedBox(height: ResoniaSpacing.md),
           // Wrap supports the lesson shell's intrinsic sizing. LayoutBuilder
           // here would fail when the expanded card is measured intrinsically.
           if (MediaQuery.textScalerOf(context).scale(16) > 24) ...[
             field('Senin seçimin', selected ?? 'Cevap yok'),
-            const SizedBox(height: HarmoniaSpacing.md),
+            const SizedBox(height: ResoniaSpacing.md),
             field('Doğru cevap', correct),
           ] else
             Align(
               alignment: AlignmentDirectional.centerStart,
               child: Wrap(
-                spacing: HarmoniaSpacing.md,
-                runSpacing: HarmoniaSpacing.md,
+                spacing: ResoniaSpacing.md,
+                runSpacing: ResoniaSpacing.md,
                 children: [
                   SizedBox(
                     width: 240,
@@ -109,7 +109,7 @@ class AnswerComparisonCard extends StatelessWidget {
             ),
           if (onPlaySelected != null || selectedLoading || selectedPlaying)
             Padding(
-              padding: const EdgeInsets.only(top: HarmoniaSpacing.md),
+              padding: const EdgeInsets.only(top: ResoniaSpacing.md),
               child: listenButton(
                 id: 'selected',
                 idleLabel: 'Seçtiğini dinle',
@@ -120,7 +120,7 @@ class AnswerComparisonCard extends StatelessWidget {
             ),
           if (playbackFailed)
             const Padding(
-              padding: EdgeInsets.only(top: HarmoniaSpacing.sm),
+              padding: EdgeInsets.only(top: ResoniaSpacing.sm),
               child: Text(
                 'Ses çalınamadı. Sonucun değişmedi; yeniden deneyebilirsin.',
               ),

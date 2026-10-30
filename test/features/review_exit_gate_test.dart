@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/features/interval/interval_screen.dart';
-import 'package:harmonia/features/pitch_comparison/pitch_comparison_screen.dart';
+import 'package:resonia/features/interval/interval_screen.dart';
+import 'package:resonia/features/pitch_comparison/pitch_comparison_screen.dart';
 
 import '../support/fake_clip_player.dart';
 

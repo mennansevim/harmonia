@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-import '../../app/theme/harmonia_theme.dart';
+import '../../app/theme/resonia_theme.dart';
 import '../../domain/learning/micro_lesson.dart';
 import '../../domain/learning/skill_graph.dart';
-import '../common/ui/harmonia_ui.dart';
+import '../common/ui/resonia_ui.dart';
 
 /// Text draft reader only. No recorder/player, completion marker or history.
 class MicroLessonScreen extends StatelessWidget {
@@ -23,7 +23,7 @@ class MicroLessonScreen extends StatelessWidget {
           key: Key('lesson_review_notice'),
         ),
       ),
-      const SizedBox(height: HarmoniaSpacing.md),
+      const SizedBox(height: ResoniaSpacing.md),
       Semantics(
         header: true,
         child: Text(
@@ -31,15 +31,15 @@ class MicroLessonScreen extends StatelessWidget {
           style: Theme.of(context).textTheme.headlineSmall,
         ),
       ),
-      const SizedBox(height: HarmoniaSpacing.sm),
+      const SizedBox(height: ResoniaSpacing.sm),
       Text(
         lesson.dimension == SkillDimension.perception
             ? 'Hedef boyutu: Algı'
             : 'Hedef boyutu: Üretim',
       ),
-      const SizedBox(height: HarmoniaSpacing.sm),
+      const SizedBox(height: ResoniaSpacing.sm),
       Text(lesson.objective),
-      const SizedBox(height: HarmoniaSpacing.sm),
+      const SizedBox(height: ResoniaSpacing.sm),
       const Text(
         'Yalnız metin okuma. Ses, mikrofon, puan ve ilerleme kaydı yok. Okumak, öğrenme kanıtı değildir.',
         key: Key('lesson_no_mastery_notice'),
@@ -55,12 +55,12 @@ class MicroLessonScreen extends StatelessWidget {
           ),
         ],
       ),
-      const SizedBox(height: HarmoniaSpacing.md),
+      const SizedBox(height: ResoniaSpacing.md),
       for (final step in lesson.steps)
         Card(
           key: Key('lesson_phase_${step.phase.name}'),
           child: Padding(
-            padding: const EdgeInsets.all(HarmoniaSpacing.md),
+            padding: const EdgeInsets.all(ResoniaSpacing.md),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -71,10 +71,10 @@ class MicroLessonScreen extends StatelessWidget {
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                 ),
-                const SizedBox(height: HarmoniaSpacing.xs),
+                const SizedBox(height: ResoniaSpacing.xs),
                 Text(step.instruction),
                 if (step.phase != LessonPhase.explanation) ...[
-                  const SizedBox(height: HarmoniaSpacing.sm),
+                  const SizedBox(height: ResoniaSpacing.sm),
                   Text(
                     step.awaitsExamples
                         ? 'Ses örnekleri henüz eklenmedi.'

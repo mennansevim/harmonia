@@ -2,10 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/application/result_history.dart';
-import 'package:harmonia/domain/models/learner_profile.dart';
-import 'package:harmonia/features/skill_map/skill_map_screen.dart';
-import 'package:harmonia/features/learning/micro_lesson_screen.dart';
+import 'package:resonia/application/result_history.dart';
+import 'package:resonia/domain/models/learner_profile.dart';
+import 'package:resonia/features/skill_map/skill_map_screen.dart';
+import 'package:resonia/features/learning/micro_lesson_screen.dart';
 
 class _History extends InMemoryResultHistory {
   bool fails = true;

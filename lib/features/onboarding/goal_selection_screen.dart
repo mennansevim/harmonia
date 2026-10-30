@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../app/theme/harmonia_theme.dart';
+import '../../app/theme/resonia_theme.dart';
 import '../../domain/models/learner_profile.dart';
 
 String goalTitle(PracticeGoal goal) => switch (goal) {
@@ -48,28 +48,28 @@ class GoalSelectionScreen extends StatelessWidget {
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(
-            HarmoniaSpacing.lg,
-            HarmoniaSpacing.xl,
-            HarmoniaSpacing.lg,
-            HarmoniaSpacing.lg,
+            ResoniaSpacing.lg,
+            ResoniaSpacing.xl,
+            ResoniaSpacing.lg,
+            ResoniaSpacing.lg,
           ),
           children: [
             const _BrandMark(),
-            const SizedBox(height: HarmoniaSpacing.lg),
+            const SizedBox(height: ResoniaSpacing.lg),
             Text(
-              'Harmonia',
+              'Resonia',
               style: text.labelLarge?.copyWith(color: scheme.primary),
             ),
             Text('Ne için çalışıyorsun?', style: text.headlineMedium),
-            const SizedBox(height: HarmoniaSpacing.sm),
+            const SizedBox(height: ResoniaSpacing.sm),
             Text(
               'Hesap açman gerekmez. Seçimin yalnız bu cihazda saklanır ve istediğin zaman değiştirilebilir.',
               style: text.bodyMedium?.copyWith(color: palette.muted),
             ),
-            const SizedBox(height: HarmoniaSpacing.lg),
+            const SizedBox(height: ResoniaSpacing.lg),
             for (final goal in PracticeGoal.values)
               Padding(
-                padding: const EdgeInsets.only(bottom: HarmoniaSpacing.md),
+                padding: const EdgeInsets.only(bottom: ResoniaSpacing.md),
                 child: _GoalTile(
                   key: Key('goal_${goal.name}'),
                   icon: _icon(goal),
@@ -126,15 +126,15 @@ class _GoalTile extends StatelessWidget {
                     scheme.surfaceContainerLowest,
                   )
                 : scheme.surfaceContainerLowest,
-            borderRadius: BorderRadius.circular(HarmoniaRadius.card),
+            borderRadius: BorderRadius.circular(ResoniaRadius.card),
             border: Border.all(color: border, width: 2),
             boxShadow: [BoxShadow(color: border, offset: const Offset(0, 4))],
           ),
           child: InkWell(
-            borderRadius: BorderRadius.circular(HarmoniaRadius.card),
+            borderRadius: BorderRadius.circular(ResoniaRadius.card),
             onTap: onTap,
             child: Padding(
-              padding: const EdgeInsets.all(HarmoniaSpacing.md),
+              padding: const EdgeInsets.all(ResoniaSpacing.md),
               child: Row(
                 children: [
                   Container(
@@ -146,13 +146,13 @@ class _GoalTile extends StatelessWidget {
                     ),
                     child: Icon(icon, color: scheme.primary, size: 28),
                   ),
-                  const SizedBox(width: HarmoniaSpacing.md),
+                  const SizedBox(width: ResoniaSpacing.md),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(title, style: text.titleMedium),
-                        const SizedBox(height: HarmoniaSpacing.xs),
+                        const SizedBox(height: ResoniaSpacing.xs),
                         Text(
                           description,
                           style: text.bodySmall?.copyWith(color: palette.muted),

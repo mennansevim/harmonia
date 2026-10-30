@@ -1,8 +1,8 @@
-# Harmonia — Product Spec
+# Resonia — Product Spec
 
 ## Ürün tanımı
 
-Harmonia, konservatuvar hazırlığı ve koro/müzik sınavları için kişisel işitsel beceri koçudur.
+Resonia, konservatuvar hazırlığı ve koro/müzik sınavları için kişisel işitsel beceri koçudur.
 
 Kullanıcı; notayı duyar, tekrarlar, nerede hata yaptığını görür ve bir sonraki egzersizi otomatik alır.
 
@@ -101,7 +101,7 @@ flowchart TD
 5. Feedback: Hata türü, ölçüm ve tekrar düğmesi.
 6. Session summary: Beceri bazlı sonuçlar.
 7. Progress: Haftalık gelişim ve zayıf alanlar.
-8. Coach: Harmonia AI mesajları.
+8. Coach: Resonia AI mesajları.
 9. Öğrenme rotası: beceri basamakları, ders, bağımsız kontrol ve tekrar zamanı.
 10. Plus: kayıt/özet paylaşımı, eğitimci durumu, imzalı yazılı değerlendirme ve takip ödevleri.
 
@@ -142,7 +142,7 @@ AI bu skorları değiştiremez; yalnızca yorumlar ve öneri üretir.
 
 - Sınırsız egzersiz.
 - Adaptif plan.
-- Harmonia Coach.
+- Resonia Coach.
 - 2/3/4 sesli sınavlar.
 - Ezgi hafızası.
 - Ayrıntılı rapor.

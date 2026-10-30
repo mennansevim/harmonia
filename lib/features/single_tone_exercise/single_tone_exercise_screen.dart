@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
-import '../../app/theme/harmonia_theme.dart';
+import '../../app/theme/resonia_theme.dart';
 import '../../domain/audio/pitch_analyzer.dart';
 import '../../domain/models/exercise.dart';
 import '../../domain/models/exercise_result.dart';
 import '../../domain/models/score_metric.dart';
 import '../../domain/scoring/pitch_exercise_scorer.dart';
 import '../../infrastructure/audio/mock/mock_pitch_analyzer.dart';
-import '../common/ui/harmonia_ui.dart';
+import '../common/ui/resonia_ui.dart';
 
 /// Developer-only result gallery: [MockPitchScenario] exercises deterministic
 /// feedback without opening a microphone, playing a reference or saving history.
@@ -109,13 +109,13 @@ class _SingleToneExerciseScreenState extends State<SingleToneExerciseScreen> {
           alignment: AlignmentDirectional.centerStart,
           child: StatusPill('Mikrofon kapalı'),
         ),
-        const SizedBox(height: HarmoniaSpacing.md),
+        const SizedBox(height: ResoniaSpacing.md),
         Text(exercise.title, style: Theme.of(context).textTheme.headlineSmall),
         const Text('Mikrofon girişi henüz simüle ediliyor'),
         const Text(
           'Bunlar hazır sonuç örnekleridir; senin başarını ölçmez, geçmişine veya gelişimine eklenmez.',
         ),
-        const SizedBox(height: HarmoniaSpacing.md),
+        const SizedBox(height: ResoniaSpacing.md),
         _TargetNoteCard(exercise: exercise),
         if (_isAnalyzing)
           Semantics(
@@ -141,9 +141,9 @@ class _SingleToneExerciseScreenState extends State<SingleToneExerciseScreen> {
           'Bir sonuç örneği seç',
           style: Theme.of(context).textTheme.titleMedium,
         ),
-        const SizedBox(height: HarmoniaSpacing.sm),
+        const SizedBox(height: ResoniaSpacing.sm),
         _ScenarioButtons(isBusy: _isAnalyzing, onSelected: _runScenario),
-        const SizedBox(height: HarmoniaSpacing.md),
+        const SizedBox(height: ResoniaSpacing.md),
         const ExpansionTile(
           key: Key('demo_help'),
           tilePadding: EdgeInsets.zero,
@@ -169,7 +169,7 @@ class _TargetNoteCard extends StatelessWidget {
     final target = exercise.targetNote!;
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(HarmoniaSpacing.md),
+        padding: const EdgeInsets.all(ResoniaSpacing.md),
         child: Column(
           children: [
             Text(
@@ -325,12 +325,12 @@ class _StatusCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(HarmoniaSpacing.md),
+        padding: const EdgeInsets.all(ResoniaSpacing.md),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const StatusPill('Simülasyon sonucu'),
-            const SizedBox(height: HarmoniaSpacing.sm),
+            const SizedBox(height: ResoniaSpacing.sm),
             Row(
               children: [
                 Icon(icon, color: color),

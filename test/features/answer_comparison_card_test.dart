@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/app/theme/harmonia_theme.dart';
-import 'package:harmonia/features/common/ui/answer_comparison_card.dart';
+import 'package:resonia/app/theme/resonia_theme.dart';
+import 'package:resonia/features/common/ui/answer_comparison_card.dart';
 
 Widget app({String? selected = 'mi', bool dark = false}) => MaterialApp(
-  theme: dark ? HarmoniaTheme.dark() : HarmoniaTheme.light(),
+  theme: dark ? ResoniaTheme.dark() : ResoniaTheme.light(),
   home: Scaffold(
     body: SingleChildScrollView(
       child: AnswerComparisonCard(

@@ -104,7 +104,7 @@ class FlutterLocalNotificationDriver implements PracticeNotificationDriver {
     }
     final initialized = await _plugin.initialize(
       settings: const InitializationSettings(
-        android: AndroidInitializationSettings('ic_stat_harmonia'),
+        android: AndroidInitializationSettings('ic_stat_resonia'),
         iOS: DarwinInitializationSettings(
           requestAlertPermission: false,
           requestBadgePermission: false,

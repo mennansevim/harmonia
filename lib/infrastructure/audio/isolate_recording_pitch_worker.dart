@@ -51,5 +51,5 @@ Future<RecordingPitchEvidence> _runSnapshot(
     sampleRateHz: sampleRateHz,
     source: source,
   ),
-  debugName: 'harmonia-recording-pitch',
+  debugName: 'resonia-recording-pitch',
 );

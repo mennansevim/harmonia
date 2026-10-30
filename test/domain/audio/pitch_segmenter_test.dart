@@ -1,11 +1,11 @@
 import 'dart:math' as math;
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/domain/audio/pitch_segmenter.dart';
-import 'package:harmonia/domain/audio/pitch_deviation.dart';
-import 'package:harmonia/domain/audio/pitch_sequence_alignment.dart';
-import 'package:harmonia/domain/audio/recording_pitch_analyzer.dart';
-import 'package:harmonia/domain/audio/yin_pitch_frame_analyzer.dart';
-import 'package:harmonia/domain/models/measurement_provenance.dart';
+import 'package:resonia/domain/audio/pitch_segmenter.dart';
+import 'package:resonia/domain/audio/pitch_deviation.dart';
+import 'package:resonia/domain/audio/pitch_sequence_alignment.dart';
+import 'package:resonia/domain/audio/recording_pitch_analyzer.dart';
+import 'package:resonia/domain/audio/yin_pitch_frame_analyzer.dart';
+import 'package:resonia/domain/models/measurement_provenance.dart';
 
 const provenance = MeasurementProvenance(
   source: MeasurementSource.synthetic,

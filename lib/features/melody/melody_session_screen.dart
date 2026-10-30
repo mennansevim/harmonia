@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import '../../app/theme/harmonia_theme.dart';
+import '../../app/theme/resonia_theme.dart';
 import '../../application/melody_session.dart';
 import '../../application/melody_practice.dart';
 import '../../application/microphone_permission_recovery.dart';
@@ -10,7 +10,7 @@ import '../../application/single_tone_session.dart';
 import '../../domain/audio/recording_pitch_analyzer.dart';
 import '../../infrastructure/audio/isolate_recording_pitch_worker.dart';
 import '../../infrastructure/audio/synthetic_melody_backend.dart';
-import '../common/ui/harmonia_ui.dart';
+import '../common/ui/resonia_ui.dart';
 import '../common/ui/microphone_permission_recovery_card.dart';
 import 'melody_practice_screen.dart';
 
@@ -114,7 +114,7 @@ class _MelodySessionScreenState extends State<MelodySessionScreen>
             alignment: AlignmentDirectional.centerStart,
             child: StatusPill('Deneysel · Doğrulama bekliyor'),
           ),
-          const SizedBox(height: HarmoniaSpacing.md),
+          const SizedBox(height: ResoniaSpacing.md),
           if (_openingPractice)
             Semantics(
               liveRegion: true,
@@ -135,7 +135,7 @@ class _MelodySessionScreenState extends State<MelodySessionScreen>
           const Text(
             'Sentetik tonlar; piyano kaydı değildir. Nota, sıra ve hafıza puanı verilmez.',
           ),
-          const SizedBox(height: HarmoniaSpacing.md),
+          const SizedBox(height: ResoniaSpacing.md),
           Semantics(
             liveRegion: true,
             child: Text(
@@ -160,10 +160,10 @@ class _MelodySessionScreenState extends State<MelodySessionScreen>
             ],
           ),
           if (session.outcome case final outcome?) ...[
-            const SizedBox(height: HarmoniaSpacing.md),
+            const SizedBox(height: ResoniaSpacing.md),
             Card(
               child: Padding(
-                padding: const EdgeInsets.all(HarmoniaSpacing.md),
+                padding: const EdgeInsets.all(ResoniaSpacing.md),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -219,11 +219,11 @@ class _MelodySessionScreenState extends State<MelodySessionScreen>
                     evidence: alignment,
                   )
                   case final suggestion?) ...[
-                const SizedBox(height: HarmoniaSpacing.sm),
+                const SizedBox(height: ResoniaSpacing.sm),
                 Card(
                   key: const Key('melody_candidate_practice'),
                   child: Padding(
-                    padding: const EdgeInsets.all(HarmoniaSpacing.md),
+                    padding: const EdgeInsets.all(ResoniaSpacing.md),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -261,7 +261,7 @@ class _MelodySessionScreenState extends State<MelodySessionScreen>
               icon: Icons.mic_none_rounded,
               label: 'Ortamı ölç (2 sn sessizlik)',
             ),
-            const SizedBox(height: HarmoniaSpacing.sm),
+            const SizedBox(height: ResoniaSpacing.sm),
             ChunkyButton(
               key: const Key('melody_start'),
               onPressed: () {
@@ -274,7 +274,7 @@ class _MelodySessionScreenState extends State<MelodySessionScreen>
                   : ChunkyTone.neutral,
               label: 'Dinle ve söyle',
             ),
-            const SizedBox(height: HarmoniaSpacing.md),
+            const SizedBox(height: ResoniaSpacing.md),
             ChunkyButton(
               key: const Key('melody_open_practice'),
               onPressed: _openPractice,
@@ -293,7 +293,7 @@ class _MelodySessionScreenState extends State<MelodySessionScreen>
               tone: ChunkyTone.record,
               label: 'Bitirdim',
             ),
-            const SizedBox(height: HarmoniaSpacing.sm),
+            const SizedBox(height: ResoniaSpacing.sm),
           ],
           if (!session.canStart && !_openingPractice)
             ChunkyButton(
@@ -326,7 +326,7 @@ String _retry(SessionRetryReason reason) => switch (reason) {
   SessionRetryReason.calibrationRequired =>
     'Önce ortamı ölç. Çıkış değiştiyse yeniden ölçmek gerekir.',
   SessionRetryReason.permissionDenied =>
-    'Mikrofon izni verilmedi. Telefon ayarlarından Harmonia mikrofon iznini açabilir veya geri dönebilirsin.',
+    'Mikrofon izni verilmedi. Telefon ayarlarından Resonia mikrofon iznini açabilir veya geri dönebilirsin.',
   SessionRetryReason.routeUnsupported =>
     'Bu ses çıkışı desteklenmiyor. Kablolu kulaklıkla tekrar dene.',
   SessionRetryReason.interrupted =>

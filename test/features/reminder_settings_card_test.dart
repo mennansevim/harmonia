@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/app/theme/harmonia_theme.dart';
-import 'package:harmonia/application/practice_preferences.dart';
-import 'package:harmonia/application/practice_reminder.dart';
-import 'package:harmonia/features/settings/reminder_settings_card.dart';
+import 'package:resonia/app/theme/resonia_theme.dart';
+import 'package:resonia/application/practice_preferences.dart';
+import 'package:resonia/application/practice_reminder.dart';
+import 'package:resonia/features/settings/reminder_settings_card.dart';
 
 class _Platform implements PracticeReminderPlatform {
   ReminderPermission current;
@@ -43,7 +43,7 @@ Future<void> _pump(
 }) async {
   await tester.pumpWidget(
     MaterialApp(
-      theme: dark ? HarmoniaTheme.dark() : HarmoniaTheme.light(),
+      theme: dark ? ResoniaTheme.dark() : ResoniaTheme.light(),
       home: Scaffold(
         body: SingleChildScrollView(
           child: ReminderSettingsCard(

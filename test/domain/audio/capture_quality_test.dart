@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/domain/audio/capture_quality.dart';
+import 'package:resonia/domain/audio/capture_quality.dart';
 
 const _rate = 16000;
 final _t0 = DateTime.utc(2026, 10, 11, 12);

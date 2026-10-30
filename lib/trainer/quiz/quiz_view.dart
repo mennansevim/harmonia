@@ -11,7 +11,7 @@ import 'quiz.dart';
 
 enum _Phase { answering, review, done }
 
-/// Harmonia question runner: one listening disc, only the question's own
+/// Resonia question runner: one listening disc, only the question's own
 /// options, a per-question evidence strip and an inline comparison panel
 /// after a miss. First attempts are scored; retries only teach.
 class QuizView extends StatefulWidget {

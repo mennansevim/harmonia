@@ -6,7 +6,7 @@ enum ErrorOrigin { framework, platform }
 
 /// One unexpected error, reduced to non-personal fields: no message text
 /// (it may contain paths or user input), only the type and the first
-/// Harmonia source frame.
+/// Resonia source frame.
 @immutable
 class ErrorRecord {
   const ErrorRecord({
@@ -62,7 +62,7 @@ class LocalErrorLog extends ChangeNotifier {
 
   String report({required String channel}) =>
       const JsonEncoder.withIndent('  ').convert({
-        'format': 'harmonia-error-report',
+        'format': 'resonia-error-report',
         'schemaVersion': 1,
         'channel': channel,
         'dropped': _dropped,
@@ -81,7 +81,7 @@ class LocalErrorLog extends ChangeNotifier {
   static String? firstAppFrame(StackTrace? stack) {
     if (stack == null) return null;
     final m = RegExp(
-      r'package:harmonia/([A-Za-z0-9_/]+\.dart):(\d+)',
+      r'package:resonia/([A-Za-z0-9_/]+\.dart):(\d+)',
     ).firstMatch(stack.toString());
     return m == null ? null : 'lib/${m[1]}:${m[2]}';
   }

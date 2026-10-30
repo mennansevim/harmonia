@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/features/common/input_level_meter.dart';
-import 'package:harmonia/features/single_tone_session/single_tone_session_screen.dart';
+import 'package:resonia/features/common/input_level_meter.dart';
+import 'package:resonia/features/single_tone_session/single_tone_session_screen.dart';
 
 import '../support/fake_audio_lab_backend.dart';
 import '../support/fake_recording_pitch_worker.dart';

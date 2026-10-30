@@ -7,7 +7,7 @@ import '../home/daily_route.dart';
 import '../settings/settings_tab.dart';
 import '../ui/kit.dart';
 
-/// Harmonia's short first run: how you use Harmonia, your vocal range
+/// Resonia's short first run: how you use Resonia, your vocal range
 /// (optional), what to train and how often. Personal practice is the same
 /// for every role; the choir module is separate (ADR-035). The current step is persisted so a killed app resumes there.
 class OnboardingFlow extends StatefulWidget {
@@ -100,7 +100,7 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
     return switch (_step) {
       Ob.welcome => _Welcome(onStart: _next),
       Ob.role => _choices(
-        'Harmonia\'yı nasıl kullanacaksın?',
+        'Resonia\'yı nasıl kullanacaksın?',
         'Ses, nefes ve kulak çalışması herkes için aynı. '
             'Koro ödevleri ayrı bir sekmede açılır.',
         [

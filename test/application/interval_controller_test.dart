@@ -2,9 +2,9 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/application/interval_controller.dart';
-import 'package:harmonia/application/result_history.dart';
-import 'package:harmonia/domain/perception/interval_identification.dart';
+import 'package:resonia/application/interval_controller.dart';
+import 'package:resonia/application/result_history.dart';
+import 'package:resonia/domain/perception/interval_identification.dart';
 
 import '../support/fake_clip_player.dart';
 

@@ -1,4 +1,4 @@
-// Renders the Harmonia app icon set from code so it stays crisp and
+// Renders the Resonia app icon set from code so it stays crisp and
 // reproducible. Not part of the test suite; run on demand:
 //   flutter test tool/brand/render_icons_test.dart
 import 'dart:io';

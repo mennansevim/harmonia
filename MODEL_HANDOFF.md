@@ -1,4 +1,4 @@
-# Harmonia — Model devir ve genel işleyiş notu
+# Resonia — Model devir ve genel işleyiş notu
 
 **Güncelleme:** 2026-10-11 (Europe/Istanbul)  
 **Repo:** `/Users/sevimm/Documents/Projects/harmonia`  
@@ -17,7 +17,7 @@
 et. Bu teslim ilk yerel commit olarak hazırlanıyor; daha eski kod commit'leri
 yoktu. Commit kimliğini `git log` üzerinden al; bu not kendi commit hash'ini
 sabit yazmaz. Push/yayın bu teslimin kapsamı değil. Komşu Agora ayrı repodur;
-çalışma dizini orası olarak açılmış olabilir, Harmonia workdir'ini explicit seç.
+çalışma dizini orası olarak açılmış olabilir, Resonia workdir'ini explicit seç.
 
 ## 2. Ürün ve kullanıcı kararları
 
@@ -40,11 +40,11 @@ ana içerik yolunu yeniden ona çevirmeme.
 Agora tek sesler: `src/PitchTest/lib/audioPlayer.ts` →
 `/sounds/piano/{noteName}.wav` fetch/decode/cache. 41 WAV var; örnek C4/A4
 header mono PCM16/48 kHz, tüm etiket/hak zinciri doğrulanmadı. Repo MIT olsa da
-sample hakları varsayılmadı; Harmonia'ya kopyalanmadı.
+sample hakları varsayılmadı; Resonia'ya kopyalanmadı.
 
 ## 2g. 2026-10-30 — Ana tasarım (DESIGN-05)
 
-Referans Figma dosyası `SuYUG25GKXgGN4WjbIn1n6` (18 ekran; kopyalar `design-exports/uxpilot/harmonia-zip/`). 2f'deki İfade renk ve yazıları geçersiz: krem zemin, patlıcan kart, Inter + Lora, `kit.dart` değerleri Figma'dan. Tasarımda olup gerçek verisi veya gerçek işlevi olmayan öğeler (otomatik hizala, kayıt öncesi mikrofon göstergesi, arkadaş sayısı) eklenmez.
+Referans Figma dosyası `SuYUG25GKXgGN4WjbIn1n6` (18 ekran; kopyalar `design-exports/uxpilot/resonia-zip/`). 2f'deki İfade renk ve yazıları geçersiz: krem zemin, patlıcan kart, Inter + Lora, `kit.dart` değerleri Figma'dan. Tasarımda olup gerçek verisi veya gerçek işlevi olmayan öğeler (otomatik hizala, kayıt öncesi mikrofon göstergesi, arkadaş sayısı) eklenmez.
 
 ## 2f. 2026-10-30 — İfade tasarımı (ADR-037)
 
@@ -52,7 +52,7 @@ Referans Figma dosyası `SuYUG25GKXgGN4WjbIn1n6` (18 ekran; kopyalar `design-exp
 
 ## 2e. 2026-10-30 — CHOIR-A0 Koro modülü (ADR-036)
 
-`lib/choir/app|audio|data|midi|domain`. Sunucu yok, `ChoirStore` + `.harmonia` paketleri; sunucu gelince `ChoirPersistence` ve paket taşıması değişir, ekranlar değil. Eşlikli kayıt tek telefonda: `part_renderer` → `PluginTakeCapture` → `mixTake`. `Isolate.run` closure'ı store veya controller yakalamamalı; üst düzey fonksiyon kullan. Hoparlörde eşlikli kayıt kapalı kalsın. Kayıt puanlanmaz. Metinler `choir_text.dart` (TR/EN); uygulamanın geri kalanı Türkçe, İngilizce cihazda karışık görünür. Gerçek cihaz/kulaklık/Android/pilot kapıları açık; ayrıntı CURRENT_ROADMAP.
+`lib/choir/app|audio|data|midi|domain`. Sunucu yok, `ChoirStore` + `.resonia` paketleri; sunucu gelince `ChoirPersistence` ve paket taşıması değişir, ekranlar değil. Eşlikli kayıt tek telefonda: `part_renderer` → `PluginTakeCapture` → `mixTake`. `Isolate.run` closure'ı store veya controller yakalamamalı; üst düzey fonksiyon kullan. Hoparlörde eşlikli kayıt kapalı kalsın. Kayıt puanlanmaz. Metinler `choir_text.dart` (TR/EN); uygulamanın geri kalanı Türkçe, İngilizce cihazda karışık görünür. Gerçek cihaz/kulaklık/Android/pilot kapıları açık; ayrıntı CURRENT_ROADMAP.
 
 ## 2d. 2026-10-30 — ADR-035 Personal / Choir
 
@@ -72,18 +72,18 @@ VAD-01 veya CAL-02'nin yerine geçmez; gerçek kayıt/cihaz skoru açma.
 
 ## 2c. 2026-10-29 — TRAINER-02 farklılaşma
 
-Referans uygulamaya benzerlik bilinçli olarak azaltıldı (ADR-033): Harmonia paleti ve buton/kart dili, Bugün/Koro/İlerleme/Ayarlar sekmeleri, 8 adımlı koro onboarding'i, `VoicePart` ile partiye göre çalma, yerel koro seviyesi. Lig, istatistik kilidi, kullanıcı adı/topluluk ve 30 adımlı akış kaldırıldı. Yeni ekranlarda referans uygulamanın metnini/düzenini geri getirme. TRAINER-03 (ADR-034) ile ders/quiz/müfredat da yeniden yazıldı: `_ladder` müfredatı, Dinle → Söyle → Ayırt et, `ListenDisc` quiz, `SkillScreen`. Sıradaki doğal adım: Söyle adımını kalite kapılı mikrofonla isteğe bağlı ölçmek (ayrı kaynak etiketiyle).
+Referans uygulamaya benzerlik bilinçli olarak azaltıldı (ADR-033): Resonia paleti ve buton/kart dili, Bugün/Koro/İlerleme/Ayarlar sekmeleri, 8 adımlı koro onboarding'i, `VoicePart` ile partiye göre çalma, yerel koro seviyesi. Lig, istatistik kilidi, kullanıcı adı/topluluk ve 30 adımlı akış kaldırıldı. Yeni ekranlarda referans uygulamanın metnini/düzenini geri getirme. TRAINER-03 (ADR-034) ile ders/quiz/müfredat da yeniden yazıldı: `_ladder` müfredatı, Dinle → Söyle → Ayırt et, `ListenDisc` quiz, `SkillScreen`. Sıradaki doğal adım: Söyle adımını kalite kapılı mikrofonla isteğe bağlı ölçmek (ayrı kaynak etiketiyle).
 
 ## 2b. 2026-10-29 güncellemesi — yeni ana deneyim (TRAINER-01)
 
-`lib/main.dart` → `TrainerApp` (`lib/trainer/`). Aşağıdaki §3 eski `HarmoniaApp`
+`lib/main.dart` → `TrainerApp` (`lib/trainer/`). Aşağıdaki §3 eski `ResoniaApp`
 kabuğunu anlatır; o kabuk testleriyle korunuyor ama açılışta kullanılmıyor.
 Yeni yapı: `trainer/domain` (müzik sözlüğü, ses tarifleri, müfredat),
 `trainer/audio` (additive sentez + clip player), `trainer/quiz` (soru üretimi
 ve ortak quiz ekranı), `trainer/learn`, `trainer/practice`, `trainer/home`,
 `trainer/stats`, `trainer/settings`, `trainer/onboarding`, `trainer/koro`
 (ses aralığı testi çekirdek `RecordingPitchAnalyzer` kalite kapısıyla; eski
-deneysel tekrar ekranları `HarmoniaTheme` ile itilir). Durum tek JSON:
+deneysel tekrar ekranları `ResoniaTheme` ile itilir). Durum tek JSON:
 `trainer/state/trainer_store.dart`. Testler `test/trainer/`; ekran turu:
 `flutter test test/trainer/screenshot_tour_test.dart --dart-define=TOUR_DIR=/abs/dir`.
 iOS: Homebrew Flutter 3.47.8 ile `flutter run -d <simülatör>` çalışıyor (3.44.4
@@ -96,7 +96,7 @@ konteynerindeki `Library/Application Support/ear_trainer.json` dosyasına
 
 ## 3. Uygulamayı açınca ne çalışıyor?
 
-`lib/main.dart` → `HarmoniaApp` → `AppShellController` → yükleniyor → (profil yoksa) hedef seçimi → `HomeScreen`. Profil yalnız hedef + oluşturma zamanı; uygulamaya özel dizinde atomik JSON (`FileProfileRepository`). Widget testleri `HarmoniaApp(profiles: InMemoryProfileRepository(...), history: InMemoryResultHistory(), startupCleanup: ...)` kullanmalı; gerçek dosya IO'su FakeAsync içinde tamamlanmaz.
+`lib/main.dart` → `ResoniaApp` → `AppShellController` → yükleniyor → (profil yoksa) hedef seçimi → `HomeScreen`. Profil yalnız hedef + oluşturma zamanı; uygulamaya özel dizinde atomik JSON (`FileProfileRepository`). Widget testleri `ResoniaApp(profiles: InMemoryProfileRepository(...), history: InMemoryResultHistory(), startupCleanup: ...)` kullanmalı; gerçek dosya IO'su FakeAsync içinde tamamlanmaz.
 
 - Home birincil kart → **Ses laboratuvarı** (Deneysel): ortam sessizliği kalibrasyonu (2 sn, klip silinir), sentetik C4 referans, açık izinle kısa yerel WAV kaydı, replay/delete, kalite raporu (enerji/SNR/route; insan sesi tespiti değil) ve deneysel frekans diagnostics. iOS/Android adapter var; fiziksel mic/route QA yapılmadı. Upload/skor yok.
 - **Tek ses: dinle ve söyle** (Deneysel, SESSION-01): kalibrasyon → referans → bekleme → cevap → kalite kapısı → puansız diagnostics; `SingleToneSessionOutcome.scoringEnabled == false`.
@@ -116,7 +116,7 @@ konteynerindeki `Library/Application Support/ear_trainer.json` dosyasına
 - `lib/application/result_history.dart` + `lib/infrastructure/storage/file_result_history.dart` (CORE-05): attempt ID tekilleştirme/çakışma/kapasite; `lib/app/app_services.dart` geçmiş + temizlik raporu. `ExerciseResult.fromJson` katıdır.
 - `lib/domain/learning/rhythm_next_step.dart` (LEARN-03a): taslak ustalık ölçütü (2 temiz deneme, ≤60 ms) ve öncelik sırası; testler ölçütü sabitler.
 - `lib/domain/analytics/product_event.dart` (gönderim yok), `lib/domain/coach/coach_contract.dart` + `lib/application/coach_service.dart` (canlı API yok, UI'ya bağlı değil), `lib/features/common/input_level_meter.dart` (yalnız görüntü).
-- `lib/app/theme/harmonia_theme.dart` (ADR-022): spacing/radius, `HarmoniaResultColors`. `lib/application/app_shell_controller.dart`, `profile_repository.dart`; `lib/infrastructure/storage/`.
+- `lib/app/theme/resonia_theme.dart` (ADR-022): spacing/radius, `ResoniaResultColors`. `lib/application/app_shell_controller.dart`, `profile_repository.dart`; `lib/infrastructure/storage/`.
 
 - `lib/domain/models`: Exercise/Protocol/ConfiguredExercise, sonuç v2,
   ScoreMetric measured/notMeasured/notApplicable; invalid sayısal skor taşımaz.
@@ -387,11 +387,11 @@ canonicalization/approval or acoustic correctness claim. Session hint/tuning
 cohort and true content/device/EDU gates remain open; no commit/push/deploy.
 
 **2026-10-14 11:55 TRT — en güncel (kullanıcı oturumu):** REL-09 kanal bayrağı
-(`HARMONIA_CHANNEL=beta` geliştirici araçlarını gizler), Android imzalama/ad,
+(`RESONIA_CHANNEL=beta` geliştirici araçlarını gizler), Android imzalama/ad,
 iOS PrivacyInfo.xcprivacy; OPS-01a yerel hata günlüğü. RELEASE_READINESS.md
 yayın açıklarını listeler. iOS simulator ve Android debug APK build başarılı.
 626 test. Commit edilmedi. Otomatik ajanla aynı dosyalarda (home/settings/
-harmonia_app) çalışırken mevcut dirty değişiklikleri koru.
+resonia_app) çalışırken mevcut dirty değişiklikleri koru.
 
 **2026-10-14 — UI-01 A+C (design/a-c dalı):** Yeni tasarım sistemi ve alt
 sekmeli kabuk; gerçek veriye bağlı ses görselleri (ADR-026). Bileşenler
@@ -759,7 +759,7 @@ present REM-01a as a working reminder. Melody auto-segment remains blocked by
 unvalidated per-note learner alignment; existing manual excerpt stays puansız.
 
 **2026-10-21 — REM-01b handoff:** Settings contains a tested reminder card for
-time select/enable/change/disable and denied/pending/failure copy. HarmoniaApp
+time select/enable/change/disable and denied/pending/failure copy. ResoniaApp
 still injects `UnavailablePracticeReminderPlatform`; production therefore
 shows “Kullanılamıyor”, offers no action and triggers no permission. New4,
 full812, analyze/format/diff clean. Do not call reminders complete until a
@@ -768,7 +768,7 @@ delivery tests exist. The later HAPTIC-01 package closes only the local
 preference/code gate; physical-device vibration remains open.
 
 **2026-10-21 — HAPTIC-01 handoff:** Settings now persists a default-on haptic
-preference in schema4. `HarmoniaHapticsScope` gates all current direct Flutter
+preference in schema4. `ResoniaHapticsScope` gates all current direct Flutter
 haptic calls; save-before-publish keeps runtime and disk consistent on failure.
 Platform-channel and widget/storage tests pass; full815, analyze/format/diff
 clean. Do not claim physical-device vibration validation. Native reminder

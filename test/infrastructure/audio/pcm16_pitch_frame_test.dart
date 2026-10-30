@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/domain/audio/pitch_deviation.dart';
-import 'package:harmonia/domain/audio/yin_pitch_frame_analyzer.dart';
-import 'package:harmonia/infrastructure/audio/pcm16_wav.dart';
+import 'package:resonia/domain/audio/pitch_deviation.dart';
+import 'package:resonia/domain/audio/yin_pitch_frame_analyzer.dart';
+import 'package:resonia/infrastructure/audio/pcm16_wav.dart';
 
 void main() {
   final analyzer = YinPitchFrameAnalyzer();

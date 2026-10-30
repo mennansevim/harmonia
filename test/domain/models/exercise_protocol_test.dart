@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/domain/models/exercise.dart';
-import 'package:harmonia/domain/models/exercise_protocol.dart';
+import 'package:resonia/domain/models/exercise.dart';
+import 'package:resonia/domain/models/exercise_protocol.dart';
 
 void main() {
   NoteEvent note({double onset = 0, double duration = 1}) => NoteEvent(

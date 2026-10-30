@@ -26,7 +26,7 @@ abstract interface class RangeProbe {
   Future<void> close();
 }
 
-/// Quality gate on the shared Harmonia pitch core. Thresholds are draft
+/// Quality gate on the shared Resonia pitch core. Thresholds are draft
 /// hypotheses (no human benchmark yet): a take must be mostly periodic and
 /// steady, otherwise it is reported as unmeasured, never guessed.
 RangeTake evaluateRangeEvidence(RecordingPitchEvidence evidence) {
@@ -244,7 +244,7 @@ class _RangeTestScreenState extends State<RangeTestScreen> {
           emoji: '🎤',
           title: 'Ses aralığını bul',
           body:
-              'Önce en pes, sonra en tiz rahat sesini "aa" ile 3 saniye tut. Harmonia\'nın ses tespit çekirdeği her kaydın temsilî perdesini ölçer.\n\nKayıtlar cihazdan çıkmaz ve analizden sonra silinir. Sonuç deneyseldir; ses tipini bir eğitmen ya da koro şefi belirler.',
+              'Önce en pes, sonra en tiz rahat sesini "aa" ile 3 saniye tut. Resonia\'nın ses tespit çekirdeği her kaydın temsilî perdesini ölçer.\n\nKayıtlar cihazdan çıkmaz ve analizden sonra silinir. Sonuç deneyseldir; ses tipini bir eğitmen ya da koro şefi belirler.',
           button: 'Başla',
           onPressed: _start,
         );
@@ -253,7 +253,7 @@ class _RangeTestScreenState extends State<RangeTestScreen> {
           emoji: '🔒',
           title: 'Mikrofon izni gerekli',
           body:
-              'Ses aralığını ölçmek için mikrofon izni ver. iOS Ayarlar > Harmonia > Mikrofon\'dan açabilirsin.',
+              'Ses aralığını ölçmek için mikrofon izni ver. iOS Ayarlar > Resonia > Mikrofon\'dan açabilirsin.',
           button: 'Tekrar dene',
           onPressed: _start,
         );

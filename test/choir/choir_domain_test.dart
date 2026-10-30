@@ -1,9 +1,9 @@
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/choir/domain/assignment.dart';
-import 'package:harmonia/choir/domain/choir.dart';
-import 'package:harmonia/choir/domain/submission.dart';
+import 'package:resonia/choir/domain/assignment.dart';
+import 'package:resonia/choir/domain/choir.dart';
+import 'package:resonia/choir/domain/submission.dart';
 
 final t0 = DateTime.utc(2026, 11, 2, 18);
 DateTime at(int hours) => t0.add(Duration(hours: hours));

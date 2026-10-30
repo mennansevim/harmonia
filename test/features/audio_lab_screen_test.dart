@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/app/theme/harmonia_theme.dart';
-import 'package:harmonia/features/common/ui/harmonia_ui.dart';
-import 'package:harmonia/features/audio_lab/audio_lab_screen.dart';
-import 'package:harmonia/domain/audio/recording_pitch_analyzer.dart';
+import 'package:resonia/app/theme/resonia_theme.dart';
+import 'package:resonia/features/common/ui/resonia_ui.dart';
+import 'package:resonia/features/audio_lab/audio_lab_screen.dart';
+import 'package:resonia/domain/audio/recording_pitch_analyzer.dart';
 import '../support/fake_audio_lab_backend.dart';
 import '../support/fake_recording_pitch_worker.dart';
 
@@ -142,7 +142,7 @@ void main() {
       final backend = FakeAudioLabBackend()..permission = false;
       await tester.pumpWidget(
         MaterialApp(
-          theme: HarmoniaTheme.dark(),
+          theme: ResoniaTheme.dark(),
           home: AudioLabScreen(
             backend: backend,
             worker: FakeRecordingPitchWorker(),

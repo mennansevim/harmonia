@@ -3,13 +3,13 @@ import 'dart:math' as math;
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/choir/audio/take_engine.dart';
-import 'package:harmonia/choir/audio/wav_io.dart';
-import 'package:harmonia/choir/domain/choir.dart';
-import 'package:harmonia/choir/midi/midi_section.dart';
-import 'package:harmonia/choir/midi/part_renderer.dart';
-import 'package:harmonia/choir/midi/smf_reader.dart';
-import 'package:harmonia/domain/audio/capture_quality.dart';
+import 'package:resonia/choir/audio/take_engine.dart';
+import 'package:resonia/choir/audio/wav_io.dart';
+import 'package:resonia/choir/domain/choir.dart';
+import 'package:resonia/choir/midi/midi_section.dart';
+import 'package:resonia/choir/midi/part_renderer.dart';
+import 'package:resonia/choir/midi/smf_reader.dart';
+import 'package:resonia/domain/audio/capture_quality.dart';
 
 MidiNote note(int key, int start, int end) => MidiNote(
   channel: 0,

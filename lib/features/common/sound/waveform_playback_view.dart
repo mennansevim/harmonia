@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 
-import '../../../app/theme/harmonia_theme.dart';
+import '../../../app/theme/resonia_theme.dart';
 import 'playback_visual.dart';
 
 /// Draws the clip that is actually playing: its real amplitude envelope with
@@ -74,7 +74,7 @@ class _WaveformPlaybackViewState extends State<WaveformPlaybackView>
     if (v != null && !_reduced) _ticker.start();
   }
 
-  bool get _reduced => mounted && HarmoniaMotion.reduced(context);
+  bool get _reduced => mounted && ResoniaMotion.reduced(context);
 
   double get _progress {
     final v = _visual;
@@ -116,7 +116,7 @@ class _WaveformPlaybackViewState extends State<WaveformPlaybackView>
               visual: _visual,
               last: _last,
               progressOf: () => _progress,
-              reduced: HarmoniaMotion.reduced(context),
+              reduced: ResoniaMotion.reduced(context),
               active: palette.wave,
               second: palette.waveSecond,
               track: palette.line,

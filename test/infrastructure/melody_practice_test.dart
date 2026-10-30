@@ -1,10 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/application/melody_practice.dart';
-import 'package:harmonia/application/melody_session.dart';
-import 'package:harmonia/domain/audio/pitch_deviation.dart';
-import 'package:harmonia/domain/audio/yin_pitch_frame_analyzer.dart';
-import 'package:harmonia/infrastructure/audio/pcm16_wav.dart';
-import 'package:harmonia/infrastructure/audio/synthetic_melody_backend.dart';
+import 'package:resonia/application/melody_practice.dart';
+import 'package:resonia/application/melody_session.dart';
+import 'package:resonia/domain/audio/pitch_deviation.dart';
+import 'package:resonia/domain/audio/yin_pitch_frame_analyzer.dart';
+import 'package:resonia/infrastructure/audio/pcm16_wav.dart';
+import 'package:resonia/infrastructure/audio/synthetic_melody_backend.dart';
 
 DiagnosticMelodyReference reference(List<double> frequencies) =>
     DiagnosticMelodyReference(

@@ -16,7 +16,7 @@ class OrphanCleanupReport {
 }
 
 /// Removes temp directories left by a crash/kill of earlier audio sessions.
-/// Only `harmonia-audio-lab-*` / `harmonia-clip-*` directories directly in
+/// Only `resonia-audio-lab-*` / `resonia-clip-*` directories directly in
 /// the temp root are considered, only known file names inside them are
 /// deleted, and a directory is removed only once empty. Never recursive.
 /// Run at app start, before any audio screen creates its own directory.
@@ -24,7 +24,7 @@ class OrphanAudioCleaner {
   OrphanAudioCleaner(this._tempRoot);
 
   final Future<Directory> Function() _tempRoot;
-  static const prefixes = ['harmonia-audio-lab-', 'harmonia-clip-'];
+  static const prefixes = ['resonia-audio-lab-', 'resonia-clip-'];
   static const knownFiles = {'recording.wav', 'reference.wav', 'clip.wav'};
 
   Future<OrphanCleanupReport> run() async {

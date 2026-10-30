@@ -2,10 +2,10 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:crypto/crypto.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/domain/audio/audio_fixture.dart';
-import 'package:harmonia/domain/audio/audio_fixture_manifest.dart';
-import 'package:harmonia/infrastructure/audio/audio_fixture_loader.dart';
-import 'package:harmonia/infrastructure/audio/pcm16_wav.dart';
+import 'package:resonia/domain/audio/audio_fixture.dart';
+import 'package:resonia/domain/audio/audio_fixture_manifest.dart';
+import 'package:resonia/infrastructure/audio/audio_fixture_loader.dart';
+import 'package:resonia/infrastructure/audio/pcm16_wav.dart';
 
 void main() {
   late Directory temporary;
@@ -14,7 +14,7 @@ void main() {
   late AudioFixtureLoader loader;
   setUp(() async {
     temporary = await Directory.systemTemp.createTemp(
-      'harmonia-fixture-loader-test-',
+      'resonia-fixture-loader-test-',
     );
     root = await Directory('${temporary.path}/dataset').create();
     bytes = Pcm16Wav.tone(

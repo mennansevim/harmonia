@@ -2,15 +2,15 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/application/practice_preferences.dart';
-import 'package:harmonia/application/result_history.dart';
-import 'package:harmonia/domain/learning/daily_plan.dart';
-import 'package:harmonia/domain/models/exercise_result.dart';
-import 'package:harmonia/domain/models/learner_profile.dart';
-import 'package:harmonia/domain/perception/pitch_comparison.dart';
-import 'package:harmonia/features/daily_plan/daily_plan_screen.dart';
-import 'package:harmonia/features/common/ui/harmonia_ui.dart';
-import 'package:harmonia/app/theme/harmonia_theme.dart';
+import 'package:resonia/application/practice_preferences.dart';
+import 'package:resonia/application/result_history.dart';
+import 'package:resonia/domain/learning/daily_plan.dart';
+import 'package:resonia/domain/models/exercise_result.dart';
+import 'package:resonia/domain/models/learner_profile.dart';
+import 'package:resonia/domain/perception/pitch_comparison.dart';
+import 'package:resonia/features/daily_plan/daily_plan_screen.dart';
+import 'package:resonia/features/common/ui/resonia_ui.dart';
+import 'package:resonia/app/theme/resonia_theme.dart';
 
 final _now = DateTime(2026, 10, 11, 12);
 var _attempt = 0;
@@ -145,7 +145,7 @@ void main() {
       await pump(
         tester,
         InMemoryResultHistory(),
-        theme: HarmoniaTheme.dark(),
+        theme: ResoniaTheme.dark(),
         reducedMotion: true,
       );
       await tester.tap(find.byKey(const Key('budget_15')));

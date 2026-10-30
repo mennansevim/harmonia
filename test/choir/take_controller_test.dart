@@ -3,12 +3,12 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/choir/audio/take_controller.dart';
-import 'package:harmonia/choir/audio/take_engine.dart';
-import 'package:harmonia/choir/audio/wav_io.dart';
-import 'package:harmonia/choir/domain/submission.dart';
-import 'package:harmonia/choir/midi/part_renderer.dart';
-import 'package:harmonia/domain/audio/capture_quality.dart';
+import 'package:resonia/choir/audio/take_controller.dart';
+import 'package:resonia/choir/audio/take_engine.dart';
+import 'package:resonia/choir/audio/wav_io.dart';
+import 'package:resonia/choir/domain/submission.dart';
+import 'package:resonia/choir/midi/part_renderer.dart';
+import 'package:resonia/domain/audio/capture_quality.dart';
 
 class FakeCapture implements TakeCapture {
   final events = StreamController<TakeInterruption>.broadcast();

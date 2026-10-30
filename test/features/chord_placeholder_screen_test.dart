@@ -2,16 +2,16 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/app/harmonia_app.dart';
-import 'package:harmonia/infrastructure/audio/orphan_audio_cleaner.dart';
-import 'package:harmonia/application/result_history.dart';
-import 'package:harmonia/application/profile_repository.dart';
-import 'package:harmonia/domain/models/learner_profile.dart';
-import 'package:harmonia/domain/audio/chord_recording_catalog.dart';
-import 'package:harmonia/features/chord_exercise/chord_placeholder_screen.dart';
-import 'package:harmonia/infrastructure/audio/asset_chord_recording_catalog.dart';
-import 'package:harmonia/features/common/ui/harmonia_ui.dart';
-import 'package:harmonia/app/theme/harmonia_theme.dart';
+import 'package:resonia/app/resonia_app.dart';
+import 'package:resonia/infrastructure/audio/orphan_audio_cleaner.dart';
+import 'package:resonia/application/result_history.dart';
+import 'package:resonia/application/profile_repository.dart';
+import 'package:resonia/domain/models/learner_profile.dart';
+import 'package:resonia/domain/audio/chord_recording_catalog.dart';
+import 'package:resonia/features/chord_exercise/chord_placeholder_screen.dart';
+import 'package:resonia/infrastructure/audio/asset_chord_recording_catalog.dart';
+import 'package:resonia/features/common/ui/resonia_ui.dart';
+import 'package:resonia/app/theme/resonia_theme.dart';
 
 import '../domain/audio/chord_recording_catalog_test.dart' show pendingCatalog;
 
@@ -112,7 +112,7 @@ void main() {
       final repository = FakeCatalogRepository();
       await tester.pumpWidget(
         MaterialApp(
-          theme: HarmoniaTheme.dark(),
+          theme: ResoniaTheme.dark(),
           builder: (context, child) => MediaQuery(
             data: MediaQuery.of(context).copyWith(disableAnimations: true),
             child: child!,
@@ -178,7 +178,7 @@ void main() {
     'home entry opens real bundled placeholders with disabled actions',
     (tester) async {
       await tester.pumpWidget(
-        HarmoniaApp(
+        ResoniaApp(
           startupCleanup: _noSweep,
           history: InMemoryResultHistory(),
           profiles: InMemoryProfileRepository(

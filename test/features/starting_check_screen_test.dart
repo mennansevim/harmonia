@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/application/result_history.dart';
-import 'package:harmonia/domain/learning/measured_exercise.dart';
-import 'package:harmonia/domain/models/exercise_result.dart';
-import 'package:harmonia/domain/models/learner_profile.dart';
-import 'package:harmonia/domain/models/measurement_provenance.dart';
-import 'package:harmonia/domain/models/score_metric.dart';
-import 'package:harmonia/features/onboarding/starting_check_screen.dart';
+import 'package:resonia/application/result_history.dart';
+import 'package:resonia/domain/learning/measured_exercise.dart';
+import 'package:resonia/domain/models/exercise_result.dart';
+import 'package:resonia/domain/models/learner_profile.dart';
+import 'package:resonia/domain/models/measurement_provenance.dart';
+import 'package:resonia/domain/models/score_metric.dart';
+import 'package:resonia/features/onboarding/starting_check_screen.dart';
 
 class _BrokenHistory extends InMemoryResultHistory {
   @override

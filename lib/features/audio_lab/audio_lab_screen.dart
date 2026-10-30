@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import '../../app/theme/harmonia_theme.dart';
+import '../../app/theme/resonia_theme.dart';
 import '../../application/audio_lab_controller.dart';
 import '../../application/microphone_permission_recovery.dart';
 import '../../domain/audio/audio_capture.dart';
@@ -9,7 +9,7 @@ import '../../domain/audio/recording_pitch_analyzer.dart';
 import '../../infrastructure/audio/isolate_recording_pitch_worker.dart';
 import '../../infrastructure/audio/plugin_audio_lab_backend.dart';
 import '../common/input_level_meter.dart';
-import '../common/ui/harmonia_ui.dart';
+import '../common/ui/resonia_ui.dart';
 import '../common/ui/microphone_permission_recovery_card.dart';
 
 class AudioLabScreen extends StatefulWidget {
@@ -73,7 +73,7 @@ class _AudioLabScreenState extends State<AudioLabScreen>
             alignment: AlignmentDirectional.centerStart,
             child: StatusPill('Gerçek kayıt • Deneysel'),
           ),
-          const SizedBox(height: HarmoniaSpacing.md),
+          const SizedBox(height: ResoniaSpacing.md),
           Text(
             'Ses laboratuvarı',
             style: Theme.of(context).textTheme.headlineSmall,
@@ -81,7 +81,7 @@ class _AudioLabScreenState extends State<AudioLabScreen>
           const Text(
             'C4 referansı sentetik bir tondur. Yerel kayıt ve analiz burada denenir; doğru/yanlış kararı veya başarı puanı verilmez.',
           ),
-          const SizedBox(height: HarmoniaSpacing.md),
+          const SizedBox(height: ResoniaSpacing.md),
           Semantics(
             liveRegion: true,
             child: Text(
@@ -91,7 +91,7 @@ class _AudioLabScreenState extends State<AudioLabScreen>
           ),
           if (controller.error != null)
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: HarmoniaSpacing.sm),
+              padding: const EdgeInsets.symmetric(vertical: ResoniaSpacing.sm),
               child: Text(
                 _error(controller.error!),
                 key: const Key('audio_lab_error'),
@@ -107,10 +107,10 @@ class _AudioLabScreenState extends State<AudioLabScreen>
             InputLevelMeter(
               levels: (controller.backend as InputLevelSource).inputLevelDb,
             ),
-          const SizedBox(height: HarmoniaSpacing.md),
+          const SizedBox(height: ResoniaSpacing.md),
           _CalibrationCard(controller: controller),
           if (recording != null) ...[
-            const SizedBox(height: HarmoniaSpacing.md),
+            const SizedBox(height: ResoniaSpacing.md),
             DataLabel(
               '${recording.durationSeconds.toStringAsFixed(2)} sn • ${recording.sampleRateHz} Hz • mono PCM16',
               key: const Key('audio_lab_metadata'),
@@ -137,7 +137,7 @@ class _AudioLabScreenState extends State<AudioLabScreen>
           if (controller.canStart) ...[
             if (recording != null)
               const Padding(
-                padding: EdgeInsets.only(bottom: HarmoniaSpacing.sm),
+                padding: EdgeInsets.only(bottom: ResoniaSpacing.sm),
                 child: Text(
                   'Yeni kayıt veya ortam ölçümü önceki geçici kaydı değiştirir.',
                 ),
@@ -149,7 +149,7 @@ class _AudioLabScreenState extends State<AudioLabScreen>
               icon: Icons.volume_up_outlined,
               label: 'C4 referansını dinle',
             ),
-            const SizedBox(height: HarmoniaSpacing.sm),
+            const SizedBox(height: ResoniaSpacing.sm),
             ChunkyButton(
               key: const Key('audio_lab_record'),
               onPressed: controller.startRecording,
@@ -167,7 +167,7 @@ class _AudioLabScreenState extends State<AudioLabScreen>
               label: 'Kaydı bitir',
             ),
           if (recording != null) ...[
-            const SizedBox(height: HarmoniaSpacing.sm),
+            const SizedBox(height: ResoniaSpacing.sm),
             ChunkyButton(
               key: const Key('audio_lab_analyze'),
               onPressed: controller.canAnalyze
@@ -177,7 +177,7 @@ class _AudioLabScreenState extends State<AudioLabScreen>
               icon: Icons.analytics_outlined,
               label: 'Kaydını analiz et (deneysel)',
             ),
-            const SizedBox(height: HarmoniaSpacing.sm),
+            const SizedBox(height: ResoniaSpacing.sm),
             ChunkyButton(
               key: const Key('audio_lab_replay'),
               onPressed: controller.canStart ? controller.playRecording : null,
@@ -187,7 +187,7 @@ class _AudioLabScreenState extends State<AudioLabScreen>
             ),
           ],
           if (controller.phase != AudioLabPhase.idle) ...[
-            const SizedBox(height: HarmoniaSpacing.sm),
+            const SizedBox(height: ResoniaSpacing.sm),
             ChunkyButton(
               key: const Key('audio_lab_cancel'),
               onPressed: controller.phase == AudioLabPhase.cancelling
@@ -197,7 +197,7 @@ class _AudioLabScreenState extends State<AudioLabScreen>
               label: recording == null ? 'İptal et' : 'Kaydı sil ve sıfırla',
             ),
           ],
-          const SizedBox(height: HarmoniaSpacing.md),
+          const SizedBox(height: ResoniaSpacing.md),
           const ExpansionTile(
             key: Key('audio_lab_help'),
             tilePadding: EdgeInsets.zero,
@@ -206,9 +206,9 @@ class _AudioLabScreenState extends State<AudioLabScreen>
               Text(
                 'Mikrofon yalnız “Kaydı başlat” veya “Ortam sessizliğini ölç” ile açılır. Referans piyano veya insan sesi değildir. Kayıt geçici olarak cihazında tutulur; çıkışta silme işlemi yapılır. Sunucuya veya AI’ye gönderilmez.',
               ),
-              SizedBox(height: HarmoniaSpacing.sm),
+              SizedBox(height: ResoniaSpacing.sm),
               Text(
-                'İsteğe bağlı analiz deneysel frekans kanıtıdır; nota doğruluğu veya öğrenci başarı puanı değildir. İzin reddedilirse telefon ayarlarından Harmonia’nın mikrofon iznini kontrol edebilirsin. İzin tekrar otomatik istenmez. Bluetooth ve kulaklık davranışı cihaz testini bekliyor.',
+                'İsteğe bağlı analiz deneysel frekans kanıtıdır; nota doğruluğu veya öğrenci başarı puanı değildir. İzin reddedilirse telefon ayarlarından Resonia’nın mikrofon iznini kontrol edebilirsin. İzin tekrar otomatik istenmez. Bluetooth ve kulaklık davranışı cihaz testini bekliyor.',
               ),
             ],
           ),
@@ -242,7 +242,7 @@ class _Diagnostics extends StatelessWidget {
   Widget build(BuildContext context) => Card(
     key: const Key('audio_lab_diagnostics'),
     child: Padding(
-      padding: const EdgeInsets.all(HarmoniaSpacing.md),
+      padding: const EdgeInsets.all(ResoniaSpacing.md),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -250,7 +250,7 @@ class _Diagnostics extends StatelessWidget {
             'Yerel analiz • Başarı skoru değildir',
             style: Theme.of(context).textTheme.titleMedium,
           ),
-          const SizedBox(height: HarmoniaSpacing.sm),
+          const SizedBox(height: ResoniaSpacing.sm),
           Text(switch (evidence.status) {
             RecordingPitchStatus.invalidInput => 'Analiz girdisi geçersiz.',
             RecordingPitchStatus.insufficientData =>
@@ -312,7 +312,7 @@ class _CalibrationCard extends StatelessWidget {
             icon: Icons.graphic_eq,
             label: 'Ortam sessizliğini ölç (2 sn)',
           ),
-          const SizedBox(height: HarmoniaSpacing.sm),
+          const SizedBox(height: ResoniaSpacing.sm),
         ],
         if (controller.recording != null)
           const Text(
@@ -353,7 +353,7 @@ class _QualityReport extends StatelessWidget {
   Widget build(BuildContext context) => Card(
     key: const Key('audio_lab_quality'),
     child: Padding(
-      padding: const EdgeInsets.all(HarmoniaSpacing.md),
+      padding: const EdgeInsets.all(ResoniaSpacing.md),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

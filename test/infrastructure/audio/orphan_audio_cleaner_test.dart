@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/infrastructure/audio/orphan_audio_cleaner.dart';
+import 'package:resonia/infrastructure/audio/orphan_audio_cleaner.dart';
 
 void main() {
   late Directory root;
@@ -19,14 +19,14 @@ void main() {
   }
 
   test('removes only own orphan dirs with known files', () async {
-    final lab = dir('harmonia-audio-lab-abc', [
+    final lab = dir('resonia-audio-lab-abc', [
       'recording.wav',
       'reference.wav',
     ]);
-    final clip = dir('harmonia-clip-xyz', ['clip.wav']);
-    final empty = dir('harmonia-clip-empty', []);
+    final clip = dir('resonia-clip-xyz', ['clip.wav']);
+    final empty = dir('resonia-clip-empty', []);
     final other = dir('someone-else', ['recording.wav']);
-    final stray = File('${root.path}/harmonia-audio-lab-file')
+    final stray = File('${root.path}/resonia-audio-lab-file')
       ..writeAsStringSync('not a dir');
     final report = await OrphanAudioCleaner(() async => root).run();
     expect(report.removedDirectories, 3);
@@ -40,7 +40,7 @@ void main() {
   });
 
   test('unexpected content keeps the directory and is reported', () async {
-    final d = dir('harmonia-audio-lab-odd', ['recording.wav', 'notes.txt']);
+    final d = dir('resonia-audio-lab-odd', ['recording.wav', 'notes.txt']);
     Directory('${d.path}/nested').createSync();
     final report = await OrphanAudioCleaner(() async => root).run();
     expect(report.keptDirectories, 1);
@@ -54,7 +54,7 @@ void main() {
     final outside = await Directory.systemTemp.createTemp('outside-');
     addTearDown(() => outside.delete(recursive: true));
     File('${outside.path}/recording.wav').writeAsStringSync('keep');
-    Link('${root.path}/harmonia-clip-link').createSync(outside.path);
+    Link('${root.path}/resonia-clip-link').createSync(outside.path);
     final report = await OrphanAudioCleaner(() async => root).run();
     expect(File('${outside.path}/recording.wav').existsSync(), isTrue);
     expect(report.removedDirectories, 0);

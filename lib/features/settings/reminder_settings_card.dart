@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-import '../../app/theme/harmonia_theme.dart';
+import '../../app/theme/resonia_theme.dart';
 import '../../application/practice_preferences.dart';
 import '../../application/practice_reminder.dart';
-import '../common/ui/harmonia_ui.dart';
+import '../common/ui/resonia_ui.dart';
 
 typedef ReminderTimePicker =
     Future<TimeOfDay?> Function(BuildContext context, TimeOfDay initialTime);
@@ -93,8 +93,8 @@ class _ReminderSettingsCardState extends State<ReminderSettingsCard> {
     setState(() {
       _updating = false;
       _message = opened
-          ? 'Bildirim ayarları açıldı. İzni değiştirdikten sonra Harmonia’ya dön.'
-          : 'Bildirim ayarları açılamadı. Telefon ayarlarından Harmonia bildirimlerini açabilirsin.';
+          ? 'Bildirim ayarları açıldı. İzni değiştirdikten sonra Resonia’ya dön.'
+          : 'Bildirim ayarları açılamadı. Telefon ayarlarından Resonia bildirimlerini açabilirsin.';
     });
   }
 
@@ -122,9 +122,9 @@ class _ReminderSettingsCardState extends State<ReminderSettingsCard> {
     final unavailable = _permission == ReminderPermission.unavailable;
     return Card(
       key: const Key('reminder_settings'),
-      margin: const EdgeInsets.only(bottom: HarmoniaSpacing.md),
+      margin: const EdgeInsets.only(bottom: ResoniaSpacing.md),
       child: Padding(
-        padding: const EdgeInsets.all(HarmoniaSpacing.md),
+        padding: const EdgeInsets.all(ResoniaSpacing.md),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -132,15 +132,15 @@ class _ReminderSettingsCardState extends State<ReminderSettingsCard> {
               header: true,
               child: Text('Çalışma hatırlatması', style: text.titleMedium),
             ),
-            const SizedBox(height: HarmoniaSpacing.sm),
+            const SizedBox(height: ResoniaSpacing.sm),
             if (_loading)
               const Text('Hatırlatma durumu okunuyor…')
             else if (unavailable) ...[
               const Text(
-                'Bu sürümde cihaz bildirimi henüz bağlı değil. Harmonia izin istemez ve hatırlatma kurmaz.',
+                'Bu sürümde cihaz bildirimi henüz bağlı değil. Resonia izin istemez ve hatırlatma kurmaz.',
                 key: Key('reminder_unavailable'),
               ),
-              const SizedBox(height: HarmoniaSpacing.sm),
+              const SizedBox(height: ResoniaSpacing.sm),
               const StatusPill('Kullanılamıyor', tone: PillTone.neutral),
             ] else ...[
               Text(
@@ -149,7 +149,7 @@ class _ReminderSettingsCardState extends State<ReminderSettingsCard> {
                     : 'Her gün ${_format(_time!)} için ayarlı.',
                 key: const Key('reminder_status'),
               ),
-              const SizedBox(height: HarmoniaSpacing.sm),
+              const SizedBox(height: ResoniaSpacing.sm),
               ChunkyButton(
                 key: const Key('reminder_choose_time'),
                 tone: ChunkyTone.neutral,
@@ -157,7 +157,7 @@ class _ReminderSettingsCardState extends State<ReminderSettingsCard> {
                 label: _time == null ? 'Saat seç ve aç' : 'Saati değiştir',
               ),
               if (_permission == ReminderPermission.denied) ...[
-                const SizedBox(height: HarmoniaSpacing.sm),
+                const SizedBox(height: ResoniaSpacing.sm),
                 TextButton(
                   key: const Key('reminder_open_settings'),
                   onPressed: _updating ? null : _openSettings,
@@ -165,7 +165,7 @@ class _ReminderSettingsCardState extends State<ReminderSettingsCard> {
                 ),
               ],
               if (_time != null) ...[
-                const SizedBox(height: HarmoniaSpacing.sm),
+                const SizedBox(height: ResoniaSpacing.sm),
                 TextButton(
                   key: const Key('reminder_disable'),
                   onPressed: _updating ? null : _disable,
@@ -177,7 +177,7 @@ class _ReminderSettingsCardState extends State<ReminderSettingsCard> {
               Semantics(
                 liveRegion: true,
                 child: Padding(
-                  padding: const EdgeInsets.only(top: HarmoniaSpacing.sm),
+                  padding: const EdgeInsets.only(top: ResoniaSpacing.sm),
                   child: Text(
                     _updating ? 'Cihazda doğrulanıyor…' : _message!,
                     key: const Key('reminder_message'),

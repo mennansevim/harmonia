@@ -2,7 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/features/audio_lab/audio_lab_screen.dart';
+import 'package:resonia/features/audio_lab/audio_lab_screen.dart';
 
 import '../support/fake_audio_lab_backend.dart';
 import '../support/fake_recording_pitch_worker.dart';

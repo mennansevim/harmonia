@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/domain/audio/audio_fixture.dart';
+import 'package:resonia/domain/audio/audio_fixture.dart';
 
 void main() {
   AudioFixture human({

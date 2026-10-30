@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
-import '../../app/theme/harmonia_theme.dart';
+import '../../app/theme/resonia_theme.dart';
 import '../../application/practice_preferences.dart';
 import '../../domain/learning/daily_plan.dart';
 import '../../domain/models/learner_profile.dart';
-import '../common/ui/harmonia_ui.dart';
+import '../common/ui/resonia_ui.dart';
 import 'goal_selection_screen.dart';
 
 /// Local goal → budget choice. The two stores are not one transaction:
@@ -103,26 +103,26 @@ class _GuestOnboardingScreenState extends State<GuestOnboardingScreen> {
         ),
         body: SafeArea(
           child: ListView(
-            padding: const EdgeInsets.all(HarmoniaSpacing.lg),
+            padding: const EdgeInsets.all(ResoniaSpacing.lg),
             children: [
               const Align(
                 alignment: AlignmentDirectional.centerStart,
                 child: StatusPill('Yerel tercih'),
               ),
-              const SizedBox(height: HarmoniaSpacing.md),
+              const SizedBox(height: ResoniaSpacing.md),
               Text(
                 'Her gün kaç dakika?',
                 style: Theme.of(context).textTheme.headlineMedium,
               ),
               Text('Hedefin: ${goalTitle(_goal!)}'),
-              const SizedBox(height: HarmoniaSpacing.sm),
+              const SizedBox(height: ResoniaSpacing.sm),
               const Text(
                 'Bu bir planlama tercihi; başarı veya sınava hazırlık ölçüsü değil. Süreni daha sonra günlük plandan değiştirebilirsin.',
               ),
-              const SizedBox(height: HarmoniaSpacing.lg),
+              const SizedBox(height: ResoniaSpacing.lg),
               for (final budget in DailyBudget.values)
                 Padding(
-                  padding: const EdgeInsets.only(bottom: HarmoniaSpacing.md),
+                  padding: const EdgeInsets.only(bottom: ResoniaSpacing.md),
                   child: AnswerOption(
                     key: Key('onboarding_budget_${budget.minutes}'),
                     title: '${budget.minutes} dakika',
@@ -145,20 +145,20 @@ class _GuestOnboardingScreenState extends State<GuestOnboardingScreen> {
                     key: const Key('onboarding_status'),
                   ),
                 ),
-              const SizedBox(height: HarmoniaSpacing.md),
+              const SizedBox(height: ResoniaSpacing.md),
               ChunkyButton(
                 key: const Key('onboarding_finish'),
                 label: 'Kaydet ve başla',
                 onPressed: _busy ? null : () => _complete(saveBudget: true),
               ),
-              const SizedBox(height: HarmoniaSpacing.md),
+              const SizedBox(height: ResoniaSpacing.md),
               ChunkyButton(
                 key: const Key('onboarding_skip_budget'),
                 label: 'Süreyi değiştirmeden devam et',
                 tone: ChunkyTone.neutral,
                 onPressed: _busy ? null : () => _complete(saveBudget: false),
               ),
-              const SizedBox(height: HarmoniaSpacing.sm),
+              const SizedBox(height: ResoniaSpacing.sm),
               Text(
                 _savedBudget == null
                     ? 'Atlamak mevcut süre tercihini korur; tercih yoksa günlük plan 12 dakika kullanır.'

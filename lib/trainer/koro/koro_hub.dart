@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../app/theme/harmonia_theme.dart';
+import '../../app/theme/resonia_theme.dart';
 import '../../features/chord_exercise/chord_placeholder_screen.dart';
 import '../../features/melody/melody_session_screen.dart';
 import '../../features/rhythm_imitation/rhythm_imitation_screen.dart';
@@ -14,7 +14,7 @@ import 'range_test.dart';
 import 'voice_count.dart';
 
 /// Voice workshop ("Ses" tab, for every learner — ADR-035): single-voice and
-/// 2/3/4-voice work built on the Harmonia capture/pitch core. Status tags stay honest about what is
+/// 2/3/4-voice work built on the Resonia capture/pitch core. Status tags stay honest about what is
 /// experimental, draft or still waiting for recordings.
 class KoroHub extends StatelessWidget {
   const KoroHub({super.key, this.asTab = false});
@@ -33,7 +33,7 @@ class KoroHub extends StatelessWidget {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (_) =>
-            legacy ? Theme(data: HarmoniaTheme.light(), child: screen) : screen,
+            legacy ? Theme(data: ResoniaTheme.light(), child: screen) : screen,
       ),
     );
   }

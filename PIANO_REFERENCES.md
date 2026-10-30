@@ -1,4 +1,4 @@
-# Harmonia — 2/3/4 sesli piyano referansları
+# Resonia — 2/3/4 sesli piyano referansları
 
 **Tarih:** 2026-10-11  
 **Durum:** Hazır 2/3/4 sesli piyano kayıtları için klasör/katalog, placeholder ekranı, CONS-01a–e reviewed yükleme/playback/composer, CONS-02a/b exact-any-order matcher, CONS-02c gated monofonik cevap kaydı, CONS-02d route/kalite kapılı diagnostic zincir, CONS-02e session ortam kalibrasyonu ve CONS-02f uçtan uca attempt coordinator var. Gerçek piyano dosyaları, birlikte nota/hak/tını QA, production player/UI ve gerçek insan sesi benchmark'ı yok. Önceki tekil sample mix kodu alternatif altyapı olarak korunuyor; ana içerik yolu değil.
@@ -7,11 +7,11 @@
 
 Kullanıcı son açıklamasında, tek seslerde olduğu gibi **klasörden gelen hazır 2/3/4 sesli piyano örnekleri → öğrenci tekrar eder** akışını seçti. Piyanoda çalıp sağlayacağı kayıtlar gelince birlikte incelenecek. Otomatik canlı akor transkripsiyonu veya tekil nota sample'larını mix etme ana akış değil; önceki renderer silinmeden alternatif olarak korunuyor.
 
-Agora'da tek ses loader `src/PitchTest/lib/audioPlayer.ts` üzerinden `/sounds/piano/{noteName}.wav` fetch/decode/cache yapıyor. Harmonia'nın tek ses demo ekranı ise hâlâ mock, laboratuvar referansı sentetik. Agora klasöründen ses kopyalanmadı veya kaynak değiştirilmedi.
+Agora'da tek ses loader `src/PitchTest/lib/audioPlayer.ts` üzerinden `/sounds/piano/{noteName}.wav` fetch/decode/cache yapıyor. Resonia'nın tek ses demo ekranı ise hâlâ mock, laboratuvar referansı sentetik. Agora klasöründen ses kopyalanmadı veya kaynak değiştirilmedi.
 
 ## Şimdi eklenen placeholder'lar
 
-Harmonia'da `assets/audio/piano/chords/2-notes/`, `3-notes/`, `4-notes/` klasörleri README ile ayrıldı; hiçbir boş/sentetik WAV konmadı. `catalog.json` bundled asset olarak üç reserved slot taşır. Status `awaiting_recording`; assetPath/targetMidiNotes/rightsReference **null**, gerçek dosya veya hedef etiketi uydurulmaz. Placeholder-only parser ready/path/labels ekleyerek oynatmayı sessiz açmaya izin vermez; gerçek kayıt için ayrıca reviewed manifest/player entegrasyonu gerekir.
+Resonia'da `assets/audio/piano/chords/2-notes/`, `3-notes/`, `4-notes/` klasörleri README ile ayrıldı; hiçbir boş/sentetik WAV konmadı. `catalog.json` bundled asset olarak üç reserved slot taşır. Status `awaiting_recording`; assetPath/targetMidiNotes/rightsReference **null**, gerçek dosya veya hedef etiketi uydurulmaz. Placeholder-only parser ready/path/labels ekleyerek oynatmayı sessiz açmaya izin vermez; gerçek kayıt için ayrıca reviewed manifest/player entegrasyonu gerekir.
 
 Ana mock ekranın müzik-kitaplığı düğmesi **2 / 3 / 4 Ses** ekranını açar. Üç kart “Piyano kaydı bekleniyor” der; dinleme/tekrar düğmeleri disabled. No permission/player/capture/scorer; loading/error/retry ve geç gelen katalog sonucu güvenli. Tek ses demo/laboratuvar ayrı korunur.
 

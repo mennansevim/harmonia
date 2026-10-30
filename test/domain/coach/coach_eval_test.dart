@@ -2,12 +2,12 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/application/coach_service.dart';
-import 'package:harmonia/domain/coach/coach_contract.dart';
-import 'package:harmonia/domain/models/exercise.dart';
-import 'package:harmonia/domain/models/exercise_result.dart';
-import 'package:harmonia/domain/models/measurement_provenance.dart';
-import 'package:harmonia/domain/models/score_metric.dart';
+import 'package:resonia/application/coach_service.dart';
+import 'package:resonia/domain/coach/coach_contract.dart';
+import 'package:resonia/domain/models/exercise.dart';
+import 'package:resonia/domain/models/exercise_result.dart';
+import 'package:resonia/domain/models/measurement_provenance.dart';
+import 'package:resonia/domain/models/score_metric.dart';
 
 ExerciseResult _rhythm({
   bool valid = true,

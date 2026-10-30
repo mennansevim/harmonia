@@ -9,16 +9,16 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/choir/app/piece_audio.dart';
-import 'package:harmonia/choir/audio/plugin_take_engine.dart';
-import 'package:harmonia/choir/audio/take_controller.dart';
-import 'package:harmonia/choir/audio/wav_io.dart';
-import 'package:harmonia/choir/data/choir_bundle.dart';
-import 'package:harmonia/choir/data/choir_store.dart';
-import 'package:harmonia/choir/domain/assignment.dart';
-import 'package:harmonia/choir/domain/choir.dart';
-import 'package:harmonia/choir/domain/submission.dart';
-import 'package:harmonia/choir/midi/part_renderer.dart';
+import 'package:resonia/choir/app/piece_audio.dart';
+import 'package:resonia/choir/audio/plugin_take_engine.dart';
+import 'package:resonia/choir/audio/take_controller.dart';
+import 'package:resonia/choir/audio/wav_io.dart';
+import 'package:resonia/choir/data/choir_bundle.dart';
+import 'package:resonia/choir/data/choir_store.dart';
+import 'package:resonia/choir/domain/assignment.dart';
+import 'package:resonia/choir/domain/choir.dart';
+import 'package:resonia/choir/domain/submission.dart';
+import 'package:resonia/choir/midi/part_renderer.dart';
 import 'package:integration_test/integration_test.dart';
 
 /// A real SMF: 120 BPM, soprano and bass, one bar of 4/4.

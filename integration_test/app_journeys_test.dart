@@ -7,10 +7,10 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/trainer/app/trainer_app.dart';
-import 'package:harmonia/trainer/domain/curriculum.dart';
-import 'package:harmonia/trainer/domain/trainers.dart';
-import 'package:harmonia/trainer/state/trainer_store.dart';
+import 'package:resonia/trainer/app/trainer_app.dart';
+import 'package:resonia/trainer/domain/curriculum.dart';
+import 'package:resonia/trainer/domain/trainers.dart';
+import 'package:resonia/trainer/state/trainer_store.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:path_provider/path_provider.dart';
 

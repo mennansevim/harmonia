@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/application/microphone_permission_recovery.dart';
-import 'package:harmonia/features/common/ui/microphone_permission_recovery_card.dart';
+import 'package:resonia/application/microphone_permission_recovery.dart';
+import 'package:resonia/features/common/ui/microphone_permission_recovery_card.dart';
 
 final class _Recovery implements MicrophonePermissionRecovery {
   _Recovery({this.result = true, this.failure, this.gate});
@@ -40,7 +40,7 @@ void main() {
 
     expect(recovery.calls, 1);
     expect(
-      find.textContaining('Harmonia’ya dönüp yeniden dene'),
+      find.textContaining('Resonia’ya dönüp yeniden dene'),
       findsOneWidget,
     );
   });
@@ -85,7 +85,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.textContaining('Telefon ayarları açılamadı'), findsOneWidget);
-    expect(find.textContaining('Harmonia’ya dönüp'), findsNothing);
+    expect(find.textContaining('Resonia’ya dönüp'), findsNothing);
   });
 
   testWidgets('turns platform exceptions into the same recoverable message', (

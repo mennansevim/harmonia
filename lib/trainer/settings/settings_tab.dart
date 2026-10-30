@@ -88,7 +88,7 @@ class SettingsTab extends StatelessWidget {
                           children: [
                             Text(
                               store.part == null
-                                  ? 'Harmonia'
+                                  ? 'Resonia'
                                   : 'Çalışma aralığı: ${store.part!.title}',
                               style: TT.title,
                             ),
@@ -263,7 +263,7 @@ class SettingsTab extends StatelessWidget {
                     onTap: () => _info(
                       context,
                       'Kullanım koşulları',
-                      'Harmonia beta sürümündedir. İçerik taslaktır, eğitimci onayından geçmemiştir ve sınav başarısı garantisi vermez.',
+                      'Resonia beta sürümündedir. İçerik taslaktır, eğitimci onayından geçmemiştir ve sınav başarısı garantisi vermez.',
                     ),
                   ),
                   _Item(

@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/domain/audio/pitch_analyzer.dart';
-import 'package:harmonia/infrastructure/audio/mock/mock_pitch_analyzer.dart';
+import 'package:resonia/domain/audio/pitch_analyzer.dart';
+import 'package:resonia/infrastructure/audio/mock/mock_pitch_analyzer.dart';
 
 void main() {
   const targetFrequencyHz = 261.63;

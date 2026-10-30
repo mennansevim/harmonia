@@ -2,11 +2,11 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/application/result_history.dart';
-import 'package:harmonia/features/history/history_screen.dart';
-import 'package:harmonia/features/interval/interval_screen.dart';
-import 'package:harmonia/features/learning/micro_lesson_screen.dart';
-import 'package:harmonia/features/common/ui/answer_comparison_card.dart';
+import 'package:resonia/application/result_history.dart';
+import 'package:resonia/features/history/history_screen.dart';
+import 'package:resonia/features/interval/interval_screen.dart';
+import 'package:resonia/features/learning/micro_lesson_screen.dart';
+import 'package:resonia/features/common/ui/answer_comparison_card.dart';
 
 import '../support/fake_clip_player.dart';
 

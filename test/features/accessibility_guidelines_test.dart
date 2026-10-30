@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/app/harmonia_app.dart';
-import 'package:harmonia/application/profile_repository.dart';
-import 'package:harmonia/application/result_history.dart';
-import 'package:harmonia/domain/models/learner_profile.dart';
-import 'package:harmonia/features/audio_lab/audio_lab_screen.dart';
-import 'package:harmonia/features/history/history_screen.dart';
-import 'package:harmonia/features/interval/interval_screen.dart';
-import 'package:harmonia/features/pitch_comparison/pitch_comparison_screen.dart';
-import 'package:harmonia/features/rhythm_imitation/rhythm_imitation_screen.dart';
-import 'package:harmonia/features/single_tone_session/single_tone_session_screen.dart';
-import 'package:harmonia/infrastructure/audio/orphan_audio_cleaner.dart';
+import 'package:resonia/app/resonia_app.dart';
+import 'package:resonia/application/profile_repository.dart';
+import 'package:resonia/application/result_history.dart';
+import 'package:resonia/domain/models/learner_profile.dart';
+import 'package:resonia/features/audio_lab/audio_lab_screen.dart';
+import 'package:resonia/features/history/history_screen.dart';
+import 'package:resonia/features/interval/interval_screen.dart';
+import 'package:resonia/features/pitch_comparison/pitch_comparison_screen.dart';
+import 'package:resonia/features/rhythm_imitation/rhythm_imitation_screen.dart';
+import 'package:resonia/features/single_tone_session/single_tone_session_screen.dart';
+import 'package:resonia/infrastructure/audio/orphan_audio_cleaner.dart';
 
 import '../support/fake_audio_lab_backend.dart';
 import '../support/fake_clip_player.dart';
@@ -25,7 +25,7 @@ Future<void> _guidelines(WidgetTester tester) async {
   handle.dispose();
 }
 
-Widget _app({LearnerProfile? profile}) => HarmoniaApp(
+Widget _app({LearnerProfile? profile}) => ResoniaApp(
   profiles: InMemoryProfileRepository(profile),
   history: InMemoryResultHistory(),
   startupCleanup: () async => const OrphanCleanupReport(),

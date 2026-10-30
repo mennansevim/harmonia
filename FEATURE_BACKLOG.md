@@ -1,4 +1,4 @@
-# Harmonia — Rakiplerden türetilen özellik backlog'u
+# Resonia — Rakiplerden türetilen özellik backlog'u
 
 **Güncelleme:** 2026-10-11. P0: güvenilirlik; P1: ilk değer; P2: Premium/Plus; P3: ölçeklenme. “Planda” kodda tamamlandı demek değildir. Canlı AI, gerçek mikrofon, abonelik, eğitimci servisi ve lig henüz bağlı değildir.
 

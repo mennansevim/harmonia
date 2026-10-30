@@ -1,11 +1,11 @@
 import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/domain/learning/skill_graph.dart';
-import 'package:harmonia/domain/models/exercise.dart';
-import 'package:harmonia/domain/models/exercise_result.dart';
-import 'package:harmonia/domain/perception/interval_identification.dart';
-import 'package:harmonia/infrastructure/audio/click_track.dart';
+import 'package:resonia/domain/learning/skill_graph.dart';
+import 'package:resonia/domain/models/exercise.dart';
+import 'package:resonia/domain/models/exercise_result.dart';
+import 'package:resonia/domain/perception/interval_identification.dart';
+import 'package:resonia/infrastructure/audio/click_track.dart';
 
 final _a = draftIntervalLevels[0];
 final _b = draftIntervalLevels[1];

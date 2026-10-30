@@ -1,16 +1,16 @@
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/application/melody_session.dart';
-import 'package:harmonia/application/melody_practice.dart';
-import 'package:harmonia/application/single_tone_session.dart';
-import 'package:harmonia/domain/audio/audio_capture.dart';
-import 'package:harmonia/domain/audio/capture_quality.dart';
-import 'package:harmonia/domain/audio/yin_pitch_frame_analyzer.dart';
-import 'package:harmonia/domain/audio/pitch_deviation.dart';
-import 'package:harmonia/domain/models/measurement_provenance.dart';
-import 'package:harmonia/infrastructure/audio/pcm16_wav.dart';
-import 'package:harmonia/infrastructure/audio/synthetic_melody_backend.dart';
+import 'package:resonia/application/melody_session.dart';
+import 'package:resonia/application/melody_practice.dart';
+import 'package:resonia/application/single_tone_session.dart';
+import 'package:resonia/domain/audio/audio_capture.dart';
+import 'package:resonia/domain/audio/capture_quality.dart';
+import 'package:resonia/domain/audio/yin_pitch_frame_analyzer.dart';
+import 'package:resonia/domain/audio/pitch_deviation.dart';
+import 'package:resonia/domain/models/measurement_provenance.dart';
+import 'package:resonia/infrastructure/audio/pcm16_wav.dart';
+import 'package:resonia/infrastructure/audio/synthetic_melody_backend.dart';
 
 import '../support/fake_audio_lab_backend.dart';
 import '../support/fake_clip_player.dart';

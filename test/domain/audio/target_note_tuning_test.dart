@@ -1,10 +1,10 @@
 import 'dart:math' as math;
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/domain/audio/target_note_tuning.dart';
-import 'package:harmonia/domain/audio/piano_chord_reference.dart';
-import 'package:harmonia/domain/models/exercise.dart';
-import 'package:harmonia/domain/models/exercise_protocol.dart';
+import 'package:resonia/domain/audio/target_note_tuning.dart';
+import 'package:resonia/domain/audio/piano_chord_reference.dart';
+import 'package:resonia/domain/models/exercise.dart';
+import 'package:resonia/domain/models/exercise_protocol.dart';
 
 ExerciseProtocol _protocol(String note, double hz, {double a4 = 440}) =>
     ExerciseProtocol(

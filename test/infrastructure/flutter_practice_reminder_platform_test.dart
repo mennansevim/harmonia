@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/application/practice_preferences.dart';
-import 'package:harmonia/application/practice_reminder.dart';
-import 'package:harmonia/infrastructure/notifications/flutter_practice_reminder_platform.dart';
+import 'package:resonia/application/practice_preferences.dart';
+import 'package:resonia/application/practice_reminder.dart';
+import 'package:resonia/infrastructure/notifications/flutter_practice_reminder_platform.dart';
 import 'package:timezone/data/latest.dart' as tz_data;
 import 'package:timezone/timezone.dart' as tz;
 

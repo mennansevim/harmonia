@@ -1,8 +1,8 @@
 // ignore_for_file: experimental_member_use
 import 'package:audio_session/audio_session.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/domain/audio/capture_quality.dart';
-import 'package:harmonia/infrastructure/audio/audio_route_mapping.dart';
+import 'package:resonia/domain/audio/capture_quality.dart';
+import 'package:resonia/infrastructure/audio/audio_route_mapping.dart';
 
 AudioDevice _d(
   AudioDeviceType type, {

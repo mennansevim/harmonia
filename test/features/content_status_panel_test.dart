@@ -2,9 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/application/result_history.dart';
-import 'package:harmonia/features/common/content_status_panel.dart';
-import 'package:harmonia/features/history/history_screen.dart';
+import 'package:resonia/application/result_history.dart';
+import 'package:resonia/features/common/content_status_panel.dart';
+import 'package:resonia/features/history/history_screen.dart';
 
 class _RecoverableHistory extends InMemoryResultHistory {
   int loads = 0;

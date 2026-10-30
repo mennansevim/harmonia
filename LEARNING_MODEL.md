@@ -1,4 +1,4 @@
-# Harmonia — Eğitim modeli ve öğrenci rotası
+# Resonia — Eğitim modeli ve öğrenci rotası
 
 **Tarih:** 2026-10-11  
 **Durum:** Önerilen müfredat ve ölçüm sözleşmesi; uygulamada henüz yok. Müzik eğitimcileriyle pilot/onay bekleniyor. İlk çekirdek Batı müziği işitsel becerileri; makam/usul ve enstrüman pedagojisi ayrı uzmanlık rotalarıdır.
@@ -17,7 +17,7 @@ Her çalışma bir beceri hedefi taşır: **anla → örneği duy → ayırt et 
 
 Algılama ile üretme ayrı tutulur. İki sesten hangisinin daha tiz olduğunu doğru seçip notayı yanlış söyleyen öğrenciye “kulağın kötü” denmez; vokal eşleme çalışması atanır. Ezgiyi doğru sırayla ama ritimsiz söyleme, nota hafızası ve zamanlama açısından ayrı raporlanır. Mikrofon/ortam sorunu öğrenme hatası sayılmaz.
 
-[Agarwal, Nunes ve Blunt'un 2021 sistematik incelemesi](https://pdf.poojaagarwal.com/Agarwal_etal_2021_EDPR.pdf), sınıf ortamlarında bilgiyi geri çağırma çalışmalarını destekler. Buradan ipucusuz hatırlamayı eğitim döngüsüne ekliyoruz. Bu genel bulgu Harmonia'nın müzik becerileri üzerindeki etkisini veya aşağıdaki tekrar takvimini doğrulamaz; ayrıca pilot gerekir.
+[Agarwal, Nunes ve Blunt'un 2021 sistematik incelemesi](https://pdf.poojaagarwal.com/Agarwal_etal_2021_EDPR.pdf), sınıf ortamlarında bilgiyi geri çağırma çalışmalarını destekler. Buradan ipucusuz hatırlamayı eğitim döngüsüne ekliyoruz. Bu genel bulgu Resonia'nın müzik becerileri üzerindeki etkisini veya aşağıdaki tekrar takvimini doğrulamaz; ayrıca pilot gerekir.
 
 ## Ortak temel ve iki hazırlık rotası
 

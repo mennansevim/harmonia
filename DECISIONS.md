@@ -1,4 +1,4 @@
-# Harmonia — Decisions
+# Resonia — Decisions
 
 Bu dosya, ileride “neden böyle yaptık?” sorusunun cevabıdır. Büyük kararlar değişirse eski karar silinmez; yeni karar eklenir.
 
@@ -325,17 +325,17 @@ değildir ve geç kalan eski async okumalar generation kapısıyla elenir.
 
 **Tarih:** 2026-10-29 · **Durum:** kısmen yerine geçti (ADR-033: tasarım ve akış farklılaştırıldı)
 
-**Karar:** Uygulama girişi `TrainerApp` (5 dinleme eğitmeni: Öğren yolu + Pratik, istatistik, sıralama, ayarlar, kalıcı 30 adımlı onboarding). Harmonia'nın mikrofon/perde çekirdeği ve deneysel tekrar ekranları “Koro Atölyesi” kategorisinde toplanır. Eski `HarmoniaApp` kabuğu korunur ama açılışta kullanılmaz.
+**Karar:** Uygulama girişi `TrainerApp` (5 dinleme eğitmeni: Öğren yolu + Pratik, istatistik, sıralama, ayarlar, kalıcı 30 adımlı onboarding). Resonia'nın mikrofon/perde çekirdeği ve deneysel tekrar ekranları “Koro Atölyesi” kategorisinde toplanır. Eski `ResoniaApp` kabuğu korunur ama açılışta kullanılmaz.
 
 **Gerekçe:** Kullanıcı referans uygulamanın akışını birebir istedi; koro hazırlığı ayrı modül olarak eklenecekti.
 
 **Sınırlar:** Marka/ad kopyalanmaz; ödeme, sahte yorum/istatistik, sahte lig oyuncusu yok. Dinleme quiz'leri yalnız dokunma cevabıdır (`touch`), mikrofon skoru değildir. Ses aralığı testi kalite kapısından geçmeyen kaydı “ölçülemedi” sayar; parti önerisi taslaktır. 2/3/4 sesli tekrar kayıtlar gelene kadar kapalı. Dinleme quiz sonuçları ayrı JSON'da tutulur, `ResultHistory`/mastery'ye yazılmaz (ritim ekranları kendi geçmişine yazmaya devam eder).
 
-## ADR-033 — Referans uygulamadan farklılaşma: koro öncelikli Harmonia deneyimi
+## ADR-033 — Referans uygulamadan farklılaşma: koro öncelikli Resonia deneyimi
 
 **Tarih:** 2026-10-29 · **Durum:** kabul (kullanıcı isteği: "kopya ibarelerini değiştirelim, tasarımı ve özellikleri farklılaştıralım")
 
-**Karar:** Eğitmen modülü referans uygulamanın görünümünü ve akışını taşımaz. Görsel kimlik Harmonia A+C markasına geçti (indigo ana renk, güneş sarısı seri, beceri başına ayrı vurgu, alt kenarlı "chunky" buton, ince çizgili kartlar). Sekmeler Bugün / Koro / İlerleme / Ayarlar; Koro Atölyesi birinci sınıf sekme. 30 adımlı onboarding kaldırıldı; yerine 8 adımlı koro akışı (rol, parti, odak, nota adı, günlük süre, hatırlatma, plan). Sıralama/lig ekranı, istatistik kilidi, kullanıcı adı ve topluluk panosu kaldırıldı; yerine koro temalı yerel seviye kartı. Yeni özellik: seçilen parti (SATB) ders sesini öğrencinin aralığına taşır (tenor/bas bir oktav pes). Belirgin çeviri ifadeler Harmonia diliyle yeniden yazıldı.
+**Karar:** Eğitmen modülü referans uygulamanın görünümünü ve akışını taşımaz. Görsel kimlik Resonia A+C markasına geçti (indigo ana renk, güneş sarısı seri, beceri başına ayrı vurgu, alt kenarlı "chunky" buton, ince çizgili kartlar). Sekmeler Bugün / Koro / İlerleme / Ayarlar; Koro Atölyesi birinci sınıf sekme. 30 adımlı onboarding kaldırıldı; yerine 8 adımlı koro akışı (rol, parti, odak, nota adı, günlük süre, hatırlatma, plan). Sıralama/lig ekranı, istatistik kilidi, kullanıcı adı ve topluluk panosu kaldırıldı; yerine koro temalı yerel seviye kartı. Yeni özellik: seçilen parti (SATB) ders sesini öğrencinin aralığına taşır (tenor/bas bir oktav pes). Belirgin çeviri ifadeler Resonia diliyle yeniden yazıldı.
 
 **Sınırlar:** Parti yalnız çalma register'ını değiştirir; skor/tolerans/rubrik değişmez. Ses aralığı testindeki parti önerisi taslaktır; "partim olarak kaydet" kullanıcının seçimidir. Ders/quiz mekaniği (öğren-pratik, tanı/evet-hayır/bul soru tipleri, kontrol noktası) türün yaygın kalıplarıdır ama hâlâ referansa işlevsel olarak yakındır; mağaza öncesi ek farklılaşma ve referans sahibinin onayı ayrıca değerlendirilmelidir. Hukuki uygunluk görüşü değildir.
 
@@ -343,15 +343,15 @@ değildir ve geç kalan eski async okumalar generation kapısıyla elenir.
 
 **Tarih:** 2026-10-29 · **Durum:** kabul (kullanıcı: "arkadaşımla ileride sorun yaşarsak diye benzerlik olmasın")
 
-**Karar:** ADR-033'te kalan işlevsel benzerlikler de değiştirildi. Müfredat el yazımı düğüm listeleri yerine Harmonia'nın kendi koro odaklı sırasıyla üretilen "Basamak" merdiveni (her basamak bir yeni öğe + karışık tekrar, üç basamakta bir "Ara durak", bölge/yön çalışmaları, "Konser provası"). Şarkı kancaları ve öznel "his" metinleri kaldırıldı; yerlerine solfej örnekleri ve teori formülleri (yarım ses sayısı, T/Y adımları, akor yapısı) geldi. Ders akışı Dinle → Söyle (ölçülmez) → Ayırt et. Quiz: dinleme diski ve süre halkası, yalnız sorunun seçenekleri, soru başına kanıt şeridi, satır içi karşılaştırma; dalga animasyonu, kulak sıfırlama sesi, ekran çerçevesi geri bildirimi, ipucu gizleme sorusu kaldırıldı. Yol ekranı + Öğren/Pratik penceresi tek Beceri sayfasında birleşti. Oturum sonu tek kanıt kartı; seri kutlama penceresi yok. Beceri istatistiği ısı haritası/eğilim yerine zayıftan güçlüye tablo.
+**Karar:** ADR-033'te kalan işlevsel benzerlikler de değiştirildi. Müfredat el yazımı düğüm listeleri yerine Resonia'nın kendi koro odaklı sırasıyla üretilen "Basamak" merdiveni (her basamak bir yeni öğe + karışık tekrar, üç basamakta bir "Ara durak", bölge/yön çalışmaları, "Konser provası"). Şarkı kancaları ve öznel "his" metinleri kaldırıldı; yerlerine solfej örnekleri ve teori formülleri (yarım ses sayısı, T/Y adımları, akor yapısı) geldi. Ders akışı Dinle → Söyle (ölçülmez) → Ayırt et. Quiz: dinleme diski ve süre halkası, yalnız sorunun seçenekleri, soru başına kanıt şeridi, satır içi karşılaştırma; dalga animasyonu, kulak sıfırlama sesi, ekran çerçevesi geri bildirimi, ipucu gizleme sorusu kaldırıldı. Yol ekranı + Öğren/Pratik penceresi tek Beceri sayfasında birleşti. Oturum sonu tek kanıt kartı; seri kutlama penceresi yok. Beceri istatistiği ısı haritası/eğilim yerine zayıftan güçlüye tablo.
 
-**Sınırlar:** Kulak eğitiminin genel türü (nota/aralık/akor/dizi/kadans tanıma, puan, seri) bu kategorideki tüm uygulamalarda ortaktır ve kimsenin özel ifadesi değildir; kod, metin, görsel düzen ve ders sırası artık Harmonia'ya özgüdür. Hukuki görüş değildir.
+**Sınırlar:** Kulak eğitiminin genel türü (nota/aralık/akor/dizi/kadans tanıma, puan, seri) bu kategorideki tüm uygulamalarda ortaktır ve kimsenin özel ifadesi değildir; kod, metin, görsel düzen ve ders sırası artık Resonia'ya özgüdür. Hukuki görüş değildir.
 
 ## ADR-035 — Personal ana kimlik; Koro davetli ayrı modül
 
 **Tarih:** 2026-10-30 · **Durum:** kabul (kullanıcı: "koro modülü ayrı, ses nefes eğitimi vs bunlar tüm kullanıcılar için olacak"); IA-01/ONB-03 ile uygulandı (2026-10-30): Ses sekmesi, kişisel onboarding, atlanabilir aralık; koro modülü henüz yok. ADR-033'ün koro öncelikli sekme/onboarding kararını kısmen yerine geçer.
 
-**Karar:** Tek uygulama ve tek hesap. Harmonia Personal (nefes, ses aralığı, kulak, ritim, ezgi, günlük rota, Free/Pro) herkes içindir. Harmonia Choir ayrı modüldür: bir koroya davetle katılınca görünür; şef işleri web panelindedir. Bugünkü Koro Atölyesi araçları Personal'ın “Ses” bölümüne taşınır. Koro ödevindeki zorluk Personal egzersizine köprülenir; ilk sürümde şefin etiketiyle, otomatik tespitle değil.
+**Karar:** Tek uygulama ve tek hesap. Resonia Personal (nefes, ses aralığı, kulak, ritim, ezgi, günlük rota, Free/Pro) herkes içindir. Resonia Choir ayrı modüldür: bir koroya davetle katılınca görünür; şef işleri web panelindedir. Bugünkü Koro Atölyesi araçları Personal'ın “Ses” bölümüne taşınır. Koro ödevindeki zorluk Personal egzersizine köprülenir; ilk sürümde şefin etiketiyle, otomatik tespitle değil.
 
 **Sınırlar:** Choir C1 kayıtları puanlanmaz; otomatik değerlendirme BENCH-01/VAD-01/CHOIR-01 kapılarından önce açılmaz. Sunucu, hesap, upload, web yayını ve ödeme ayrı kullanıcı yetkisi ve ADR ister. Plan: [PRODUCT_PLAN_PERSONAL_CHOIR.md](./PRODUCT_PLAN_PERSONAL_CHOIR.md).
 
@@ -361,7 +361,7 @@ değildir ve geç kalan eski async okumalar generation kapısıyla elenir.
 
 **Bağlam:** Kullanıcının korosunda şef ölçü aralığı, solfej/sözlü, son gün ve eşlik isteğiyle ödev verir; bir ödevde birden çok eser olabilir. Bugün MIDI bir cihazda çalınır, ikinci cihazla üstüne kaydedilir; şef yazıyla yorum yapar, gerekirse kendi sesiyle söyler, nefes kaçaklarına bakar. Ders kayıtları gelemeyenler için saklanır. Sunucu, hesap ve kayıt yükleme için yetki yok (AGENTS, K2).
 
-**Karar:** (1) Modül `ChoirStore` arkasında cihazda çalışır; şef ve korist `.harmonia` zip paketleriyle konuşur (koro/ödev, kayıt, geri bildirim). Paketi yalnız kişi kendi paylaşım eylemiyle gönderir; WhatsApp gibi mevcut kanallar taşır. Sunucu eklenince ekranlar değil `ChoirPersistence` ve paket taşıması değişir. (2) İki cihaz sorunu tek telefonda çözülür: MIDI uygulamada ses olarak üretilir, kulaklıktan çalar, mikrofon yalnız sesi alır, sonra tek dosyada birleşir (`accompaniedMix`). İkinci cihazda alınmış kayıt da dosya olarak eklenebilir (`imported`). (3) Hoparlörde eşlikli kayıt kapalı kalır (ARCHITECTURE `choir_practice`). (4) Kayıt puanlanmaz; nefes kaçağı dahil tüm işaretler şefindir. (5) `lib/choir/app` metinleri TR/EN; Türkçe olmayan cihazda EN.
+**Karar:** (1) Modül `ChoirStore` arkasında cihazda çalışır; şef ve korist `.resonia` zip paketleriyle konuşur (koro/ödev, kayıt, geri bildirim). Paketi yalnız kişi kendi paylaşım eylemiyle gönderir; WhatsApp gibi mevcut kanallar taşır. Sunucu eklenince ekranlar değil `ChoirPersistence` ve paket taşıması değişir. (2) İki cihaz sorunu tek telefonda çözülür: MIDI uygulamada ses olarak üretilir, kulaklıktan çalar, mikrofon yalnız sesi alır, sonra tek dosyada birleşir (`accompaniedMix`). İkinci cihazda alınmış kayıt da dosya olarak eklenebilir (`imported`). (3) Hoparlörde eşlikli kayıt kapalı kalır (ARCHITECTURE `choir_practice`). (4) Kayıt puanlanmaz; nefes kaçağı dahil tüm işaretler şefindir. (5) `lib/choir/app` metinleri TR/EN; Türkçe olmayan cihazda EN.
 
 **Sınırlar:** Paketler imzalı değildir, şekil ve tutarlılık denetlenir; kimlik CHOIR-B1 ister. Hizalama yazılım tahmini + kulakla düzeltmedir, ölçülmüş gecikme değildir (CAL-03b). Sesler sentezdir, piyano kaydı değildir (MIDI-03). Korist listesi yalnız kayıt gönderenleri bilir. Küresel ölçek, davet linki, push ve şef web paneli sunucu kararından sonradır. Divisi (S1/S2) yok.
 
@@ -371,7 +371,11 @@ değildir ve geç kalan eski async okumalar generation kapısıyla elenir.
 
 **Karar:** Ortak marka: mor + limon, Bricolage + Figtree, hap düğme, organik limon şekil (kalan gün, kayıt). Her ekranda tek ana eylem; limon yalnız en önemli eylem veya uyarıda. Platforma özgü davranış (geri, geçiş, kaydırma) Flutter'a bırakılır. Hareket gerçek veriye bağlıdır, süs döngüsü yoktur.
 
-**Güncelleme:** Ana tasarım kullanıcının 18 ekranlık çıktısıdır (`design-exports/uxpilot/harmonia-zip/`); renk, yazı ve şekil kararlarının yerine geçer: krem zemin, patlıcan kart, Inter + Lora. Tasarımda olup gerçek verisi olmayan öğeler uydurulmaz.
+**Güncelleme:** Ana tasarım kullanıcının 18 ekranlık çıktısıdır (`design-exports/uxpilot/resonia-zip/`); renk, yazı ve şekil kararlarının yerine geçer: krem zemin, patlıcan kart, Inter + Lora. Tasarımda olup gerçek verisi olmayan öğeler uydurulmaz.
 
 **Sınırlar:** Limon üstünde beyaz yazı kullanılmaz. Yazı tipi eklerken lisans dosyası `assets/fonts` altında kalır.
+
+## ADR-038 — Uygulama adı Resonia
+
+**Tarih:** 2026-10-30 · **Durum:** kabul (kullanıcı: "uygulamanın adını her yerde Resonia olarak değiştir"). Görünen ad, Dart paketi, kod adları, paket uzantısı ve `com.resonia.resonia` kimliği değişti. Eski belgelerdeki tarihsel anlatım da yeni adı kullanır; proje klasörü yolu ve dış tasarım dosya adları istisnadır. Kimlik ilk mağaza yüklemesinden sonra değişmez.
 

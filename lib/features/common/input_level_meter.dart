@@ -3,7 +3,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
-import '../../app/theme/harmonia_theme.dart';
+import '../../app/theme/resonia_theme.dart';
 
 /// Live input level from the recorder, drawn as a voice ribbon whose height
 /// follows the real dBFS level with spring smoothing. Motion advances only
@@ -44,7 +44,7 @@ class _InputLevelMeterState extends State<InputLevelMeter>
       _target = target;
       _phaseFrom = _phase;
       _phaseTo = _phase + 0.55 + target * 0.9;
-      if (HarmoniaMotion.reduced(context)) {
+      if (ResoniaMotion.reduced(context)) {
         _shown = target;
         _phase = _phaseTo;
       } else {
@@ -107,7 +107,7 @@ class _InputLevelMeterState extends State<InputLevelMeter>
               ),
             ),
           ),
-          const SizedBox(height: HarmoniaSpacing.xs),
+          const SizedBox(height: ResoniaSpacing.xs),
           Text(
             'Giriş seviyesi: $label',
             style: Theme.of(context).textTheme.labelLarge,

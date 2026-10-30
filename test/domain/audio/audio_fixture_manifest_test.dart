@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/domain/audio/audio_fixture.dart';
-import 'package:harmonia/domain/audio/audio_fixture_manifest.dart';
+import 'package:resonia/domain/audio/audio_fixture.dart';
+import 'package:resonia/domain/audio/audio_fixture_manifest.dart';
 
 AudioFixture fixture({String id = 's1', String hashChar = 'a'}) => AudioFixture(
   id: id,

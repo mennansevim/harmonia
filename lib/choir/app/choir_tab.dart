@@ -8,7 +8,7 @@ import 'choir_scope.dart';
 import 'choir_screen.dart';
 import 'choir_text.dart';
 
-/// Picks a `.harmonia` file and routes it: join, update, take or feedback.
+/// Picks a `.resonia` file and routes it: join, update, take or feedback.
 Future<void> openBundleFlow(BuildContext context) async {
   final scope = ChoirScope.read(context);
   final text = CT.of(context);

@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/domain/audio/event_rhythm_analyzer.dart';
-import 'package:harmonia/domain/audio/rhythm_analyzer.dart';
-import 'package:harmonia/domain/models/exercise_result.dart';
-import 'package:harmonia/domain/models/score_metric.dart';
+import 'package:resonia/domain/audio/event_rhythm_analyzer.dart';
+import 'package:resonia/domain/audio/rhythm_analyzer.dart';
+import 'package:resonia/domain/models/exercise_result.dart';
+import 'package:resonia/domain/models/score_metric.dart';
 
 void main() {
   final analyzer = EventRhythmAnalyzer();

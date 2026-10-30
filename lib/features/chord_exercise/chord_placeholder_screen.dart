@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 
 import '../../domain/audio/chord_recording_catalog.dart';
 import '../../infrastructure/audio/asset_chord_recording_catalog.dart';
-import '../../app/theme/harmonia_theme.dart';
+import '../../app/theme/resonia_theme.dart';
 import '../common/content_status_panel.dart';
-import '../common/ui/harmonia_ui.dart';
+import '../common/ui/resonia_ui.dart';
 
 /// Prerecorded chord placeholders only: no permission, player or scorer.
 class ChordPlaceholderScreen extends StatefulWidget {
@@ -51,12 +51,12 @@ class _ChordPlaceholderScreenState extends State<ChordPlaceholderScreen> {
         alignment: AlignmentDirectional.centerStart,
         child: StatusPill('Kayıt bekleniyor'),
       ),
-      const SizedBox(height: HarmoniaSpacing.md),
+      const SizedBox(height: ResoniaSpacing.md),
       Text(
         '2 / 3 / 4 sesli piyano',
         style: Theme.of(context).textTheme.headlineSmall,
       ),
-      const SizedBox(height: HarmoniaSpacing.sm),
+      const SizedBox(height: ResoniaSpacing.sm),
       const Text(
         'Birlikte dinle, tek tek söyle. Kayıtlar doğrulanınca bu bölüm açılacak.',
       ),
@@ -72,7 +72,7 @@ class _ChordPlaceholderScreenState extends State<ChordPlaceholderScreen> {
           ),
         ],
       ),
-      const SizedBox(height: HarmoniaSpacing.md),
+      const SizedBox(height: ResoniaSpacing.md),
       FutureBuilder<ChordRecordingCatalog>(
         future: _catalog,
         builder: (context, snapshot) {
@@ -114,7 +114,7 @@ class _ChordPlaceholderScreenState extends State<ChordPlaceholderScreen> {
                           tone: ChunkyTone.neutral,
                           label: 'Piyano örneğini dinle',
                         ),
-                        const SizedBox(height: HarmoniaSpacing.sm),
+                        const SizedBox(height: ResoniaSpacing.sm),
                         ChunkyButton(
                           key: Key('chord_repeat_${slot.voiceCount}'),
                           onPressed: null,

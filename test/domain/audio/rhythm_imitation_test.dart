@@ -1,12 +1,12 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/domain/audio/event_rhythm_analyzer.dart';
-import 'package:harmonia/domain/audio/rhythm_analyzer.dart';
-import 'package:harmonia/domain/audio/rhythm_imitation.dart';
-import 'package:harmonia/domain/content/rhythm_patterns.dart';
-import 'package:harmonia/domain/models/exercise.dart';
-import 'package:harmonia/domain/models/exercise_protocol.dart';
-import 'package:harmonia/domain/models/exercise_result.dart';
-import 'package:harmonia/domain/models/score_metric.dart';
+import 'package:resonia/domain/audio/event_rhythm_analyzer.dart';
+import 'package:resonia/domain/audio/rhythm_analyzer.dart';
+import 'package:resonia/domain/audio/rhythm_imitation.dart';
+import 'package:resonia/domain/content/rhythm_patterns.dart';
+import 'package:resonia/domain/models/exercise.dart';
+import 'package:resonia/domain/models/exercise_protocol.dart';
+import 'package:resonia/domain/models/exercise_result.dart';
+import 'package:resonia/domain/models/score_metric.dart';
 
 final _quarters = draftRhythmPatterns.first; // [0,1,2,3] @ 80 bpm = 750 ms
 List<Duration> _taps(List<int> ms, {int start = 12345}) => [

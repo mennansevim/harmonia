@@ -1,15 +1,15 @@
 import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/domain/audio/rhythm_imitation.dart';
-import 'package:harmonia/domain/content/rhythm_patterns.dart';
-import 'package:harmonia/domain/learning/rhythm_next_step.dart';
-import 'package:harmonia/domain/learning/skill_graph.dart';
-import 'package:harmonia/domain/learning/today_planner.dart';
-import 'package:harmonia/domain/models/exercise_result.dart';
-import 'package:harmonia/domain/models/learner_profile.dart';
-import 'package:harmonia/domain/perception/interval_identification.dart';
-import 'package:harmonia/domain/perception/pitch_comparison.dart';
+import 'package:resonia/domain/audio/rhythm_imitation.dart';
+import 'package:resonia/domain/content/rhythm_patterns.dart';
+import 'package:resonia/domain/learning/rhythm_next_step.dart';
+import 'package:resonia/domain/learning/skill_graph.dart';
+import 'package:resonia/domain/learning/today_planner.dart';
+import 'package:resonia/domain/models/exercise_result.dart';
+import 'package:resonia/domain/models/learner_profile.dart';
+import 'package:resonia/domain/perception/interval_identification.dart';
+import 'package:resonia/domain/perception/pitch_comparison.dart';
 
 final _day = DateTime(2026, 10, 11, 10);
 

@@ -2,13 +2,13 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/app/theme/harmonia_theme.dart';
-import 'package:harmonia/application/melody_practice.dart';
-import 'package:harmonia/application/melody_session.dart';
-import 'package:harmonia/domain/audio/audio_capture.dart';
-import 'package:harmonia/features/common/ui/harmonia_ui.dart';
-import 'package:harmonia/features/melody/melody_practice_screen.dart';
-import 'package:harmonia/features/melody/melody_session_screen.dart';
+import 'package:resonia/app/theme/resonia_theme.dart';
+import 'package:resonia/application/melody_practice.dart';
+import 'package:resonia/application/melody_session.dart';
+import 'package:resonia/domain/audio/audio_capture.dart';
+import 'package:resonia/features/common/ui/resonia_ui.dart';
+import 'package:resonia/features/melody/melody_practice_screen.dart';
+import 'package:resonia/features/melody/melody_session_screen.dart';
 
 import '../support/fake_audio_lab_backend.dart';
 import '../support/fake_recording_pitch_worker.dart';
@@ -84,7 +84,7 @@ void main() {
   }) async {
     await tester.pumpWidget(
       MaterialApp(
-        theme: dark ? HarmoniaTheme.dark() : HarmoniaTheme.light(),
+        theme: dark ? ResoniaTheme.dark() : ResoniaTheme.light(),
         home: Builder(
           builder: (context) => Scaffold(
             body: TextButton(

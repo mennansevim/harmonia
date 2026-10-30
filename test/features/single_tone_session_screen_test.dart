@@ -3,9 +3,9 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/features/single_tone_session/single_tone_session_screen.dart';
-import 'package:harmonia/features/common/ui/harmonia_ui.dart';
-import 'package:harmonia/app/theme/harmonia_theme.dart';
+import 'package:resonia/features/single_tone_session/single_tone_session_screen.dart';
+import 'package:resonia/features/common/ui/resonia_ui.dart';
+import 'package:resonia/app/theme/resonia_theme.dart';
 
 import '../support/fake_audio_lab_backend.dart';
 import '../support/fake_recording_pitch_worker.dart';
@@ -133,7 +133,7 @@ void main() {
       final backend = FakeRoutedAudioLabBackend()..permission = false;
       await tester.pumpWidget(
         MaterialApp(
-          theme: HarmoniaTheme.dark(),
+          theme: ResoniaTheme.dark(),
           builder: (context, child) => MediaQuery(
             data: MediaQuery.of(context).copyWith(disableAnimations: true),
             child: child!,

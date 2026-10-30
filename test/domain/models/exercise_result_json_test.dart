@@ -1,14 +1,14 @@
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/domain/audio/pitch_analyzer.dart';
-import 'package:harmonia/domain/audio/rhythm_imitation.dart';
-import 'package:harmonia/domain/content/rhythm_patterns.dart';
-import 'package:harmonia/domain/models/exercise.dart';
-import 'package:harmonia/domain/models/exercise_result.dart';
-import 'package:harmonia/domain/models/measurement_provenance.dart';
-import 'package:harmonia/domain/scoring/pitch_exercise_scorer.dart';
-import 'package:harmonia/infrastructure/audio/mock/mock_pitch_analyzer.dart';
+import 'package:resonia/domain/audio/pitch_analyzer.dart';
+import 'package:resonia/domain/audio/rhythm_imitation.dart';
+import 'package:resonia/domain/content/rhythm_patterns.dart';
+import 'package:resonia/domain/models/exercise.dart';
+import 'package:resonia/domain/models/exercise_result.dart';
+import 'package:resonia/domain/models/measurement_provenance.dart';
+import 'package:resonia/domain/scoring/pitch_exercise_scorer.dart';
+import 'package:resonia/infrastructure/audio/mock/mock_pitch_analyzer.dart';
 
 Map<String, Object?> _wire(ExerciseResult r) =>
     jsonDecode(jsonEncode(r.toJson())) as Map<String, Object?>;

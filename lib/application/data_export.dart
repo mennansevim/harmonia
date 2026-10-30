@@ -10,7 +10,7 @@ import 'result_history.dart';
 class LocalDataExport {
   const LocalDataExport._();
 
-  static const format = 'harmonia-local-export';
+  static const format = 'resonia-local-export';
   static const schemaVersion = 2;
 
   /// Bounded so a pasted document cannot exhaust memory.

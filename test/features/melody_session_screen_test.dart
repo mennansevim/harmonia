@@ -3,15 +3,15 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/application/melody_session.dart';
-import 'package:harmonia/application/melody_practice.dart';
-import 'package:harmonia/domain/audio/audio_capture.dart';
-import 'package:harmonia/domain/models/learner_profile.dart';
-import 'package:harmonia/features/home/home_screen.dart';
-import 'package:harmonia/features/melody/melody_session_screen.dart';
-import 'package:harmonia/features/melody/melody_practice_screen.dart';
-import 'package:harmonia/features/common/ui/harmonia_ui.dart';
-import 'package:harmonia/app/theme/harmonia_theme.dart';
+import 'package:resonia/application/melody_session.dart';
+import 'package:resonia/application/melody_practice.dart';
+import 'package:resonia/domain/audio/audio_capture.dart';
+import 'package:resonia/domain/models/learner_profile.dart';
+import 'package:resonia/features/home/home_screen.dart';
+import 'package:resonia/features/melody/melody_session_screen.dart';
+import 'package:resonia/features/melody/melody_practice_screen.dart';
+import 'package:resonia/features/common/ui/resonia_ui.dart';
+import 'package:resonia/app/theme/resonia_theme.dart';
 
 import '../support/fake_audio_lab_backend.dart';
 import '../support/fake_recording_pitch_worker.dart';
@@ -182,7 +182,7 @@ void main() {
     final backend = _Backend();
     await tester.pumpWidget(
       MaterialApp(
-        theme: HarmoniaTheme.dark(),
+        theme: ResoniaTheme.dark(),
         builder: (context, child) => MediaQuery(
           data: MediaQuery.of(context).copyWith(disableAnimations: true),
           child: child!,

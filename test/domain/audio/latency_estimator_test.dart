@@ -1,9 +1,9 @@
 import 'dart:collection';
 import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/domain/audio/capture_quality.dart';
-import 'package:harmonia/domain/audio/latency_estimator.dart';
-import 'package:harmonia/domain/models/measurement_provenance.dart';
+import 'package:resonia/domain/audio/capture_quality.dart';
+import 'package:resonia/domain/audio/latency_estimator.dart';
+import 'package:resonia/domain/models/measurement_provenance.dart';
 
 const route = AudioRouteSnapshot(
   input: AudioRouteKind.builtIn,

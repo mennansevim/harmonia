@@ -1,4 +1,4 @@
-# Harmonia — Dış öneri değerlendirmesi ve 90 günlük ürün yol haritası
+# Resonia — Dış öneri değerlendirmesi ve 90 günlük ürün yol haritası
 
 **Tarih:** 2026-10-29 · **Girdi:** başka bir LLM'in rakip analizi, konumlandırma,
 gelir modeli ve 90 gün planı (kullanıcı tarafından yapıştırıldı).
@@ -120,7 +120,7 @@ Kod değil ama tüm takvimi bunlar kilitliyor:
 
 | ID | İş | Tür |
 |---|---|---|
-| GTM-00a | Uygulama kimliği (`com.harmonia.harmonia` geçici → kalıcı alan adı) | Ka |
+| GTM-00a | Uygulama kimliği (`com.resonia.resonia` geçici → kalıcı alan adı) | Ka |
 | GTM-00b | Apple Developer + Play Console hesabı, Android keystore | Ka/D |
 | GTM-00c | Eğitimci arayışı: içerik onayı (EDU-01) + Plus pilotu (HUM) için 1 kişi | D |
 | GTM-00d | Konumlandırma cümlesinin onayı (bu belgedeki §1) | Ka |

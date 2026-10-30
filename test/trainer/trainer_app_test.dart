@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/application/practice_preferences.dart';
-import 'package:harmonia/application/practice_reminder.dart';
-import 'package:harmonia/application/result_history.dart';
-import 'package:harmonia/trainer/app/trainer_app.dart';
-import 'package:harmonia/trainer/audio/trainer_audio.dart';
-import 'package:harmonia/trainer/domain/curriculum.dart';
-import 'package:harmonia/trainer/domain/music.dart';
-import 'package:harmonia/trainer/domain/trainers.dart';
-import 'package:harmonia/trainer/state/trainer_store.dart';
+import 'package:resonia/application/practice_preferences.dart';
+import 'package:resonia/application/practice_reminder.dart';
+import 'package:resonia/application/result_history.dart';
+import 'package:resonia/trainer/app/trainer_app.dart';
+import 'package:resonia/trainer/audio/trainer_audio.dart';
+import 'package:resonia/trainer/domain/curriculum.dart';
+import 'package:resonia/trainer/domain/music.dart';
+import 'package:resonia/trainer/domain/trainers.dart';
+import 'package:resonia/trainer/state/trainer_store.dart';
 
 TrainerStore memoryStore([Map<String, Object?>? doc]) => TrainerStore(
   MemoryTrainerPersistence(doc),
@@ -75,7 +75,7 @@ void main() {
 
     expect(find.text('Sesini ve kulağını\nher gün geliştir'), findsOneWidget);
     await tapKey(tester, 'get_started');
-    expect(find.text('Harmonia\'yı nasıl kullanacaksın?'), findsOneWidget);
+    expect(find.text('Resonia\'yı nasıl kullanacaksın?'), findsOneWidget);
     await tapKey(tester, 'opt_singer');
     await tapKey(tester, 'ob_continue');
     await tapKey(tester, 'opt_tenor');

@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/domain/audio/chord_recording_catalog.dart';
+import 'package:resonia/domain/audio/chord_recording_catalog.dart';
 
 Map<String, dynamic> pendingCatalog() => {
   'schemaVersion': 1,

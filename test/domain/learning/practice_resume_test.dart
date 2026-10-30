@@ -1,11 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/domain/learning/measured_exercise.dart';
-import 'package:harmonia/domain/learning/practice_resume.dart';
-import 'package:harmonia/domain/learning/skill_graph.dart';
-import 'package:harmonia/domain/models/exercise_result.dart';
-import 'package:harmonia/domain/models/learner_profile.dart';
-import 'package:harmonia/domain/models/measurement_provenance.dart';
-import 'package:harmonia/domain/models/score_metric.dart';
+import 'package:resonia/domain/learning/measured_exercise.dart';
+import 'package:resonia/domain/learning/practice_resume.dart';
+import 'package:resonia/domain/learning/skill_graph.dart';
+import 'package:resonia/domain/models/exercise_result.dart';
+import 'package:resonia/domain/models/learner_profile.dart';
+import 'package:resonia/domain/models/measurement_provenance.dart';
+import 'package:resonia/domain/models/score_metric.dart';
 
 ExerciseResult _result(
   MeasuredExercise exercise,

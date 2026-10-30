@@ -2,16 +2,16 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/app/harmonia_app.dart';
-import 'package:harmonia/app/app_channel.dart';
-import 'package:harmonia/app/app_services.dart';
-import 'package:harmonia/application/practice_preferences.dart';
-import 'package:harmonia/application/profile_repository.dart';
-import 'package:harmonia/application/result_history.dart';
-import 'package:harmonia/domain/learning/daily_plan.dart';
-import 'package:harmonia/domain/models/learner_profile.dart';
-import 'package:harmonia/features/home/home_screen.dart';
-import 'package:harmonia/infrastructure/audio/orphan_audio_cleaner.dart';
+import 'package:resonia/app/resonia_app.dart';
+import 'package:resonia/app/app_channel.dart';
+import 'package:resonia/app/app_services.dart';
+import 'package:resonia/application/practice_preferences.dart';
+import 'package:resonia/application/profile_repository.dart';
+import 'package:resonia/application/result_history.dart';
+import 'package:resonia/domain/learning/daily_plan.dart';
+import 'package:resonia/domain/models/learner_profile.dart';
+import 'package:resonia/features/home/home_screen.dart';
+import 'package:resonia/infrastructure/audio/orphan_audio_cleaner.dart';
 
 class _ControlledPreferences extends InMemoryPracticePreferences {
   final saves = <WeeklyPracticeGoal?>[];
@@ -59,7 +59,7 @@ Future<void> _pump(
   PracticePreferencesRepository preferences,
 ) async {
   await tester.pumpWidget(
-    HarmoniaApp(
+    ResoniaApp(
       profiles: InMemoryProfileRepository(
         LearnerProfile(
           goal: PracticeGoal.foundations,

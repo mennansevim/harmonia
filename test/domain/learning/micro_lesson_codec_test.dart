@@ -1,9 +1,9 @@
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/domain/content/draft_micro_lessons.dart';
-import 'package:harmonia/domain/learning/micro_lesson_codec.dart';
-import 'package:harmonia/domain/learning/skill_graph.dart';
+import 'package:resonia/domain/content/draft_micro_lessons.dart';
+import 'package:resonia/domain/learning/micro_lesson_codec.dart';
+import 'package:resonia/domain/learning/skill_graph.dart';
 
 Map<String, dynamic> _json() =>
     jsonDecode(MicroLessonCodec.encode(draftMicroLessons))

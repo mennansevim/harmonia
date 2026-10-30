@@ -3,13 +3,13 @@ import 'package:flutter/services.dart';
 
 import '../../app/app_channel.dart';
 import '../../app/app_services.dart';
-import '../../app/theme/harmonia_theme.dart';
+import '../../app/theme/resonia_theme.dart';
 import '../../application/app_shell_controller.dart';
 import '../../application/error_log.dart';
 import '../../application/result_history.dart';
 import '../../application/practice_reminder.dart';
 import '../../application/practice_preferences.dart';
-import '../common/ui/harmonia_ui.dart';
+import '../common/ui/resonia_ui.dart';
 import '../history/history_screen.dart';
 import '../onboarding/goal_selection_screen.dart';
 import 'data_transfer_screen.dart';
@@ -161,9 +161,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
     Widget section(String title, List<Widget> children) => Card(
-      margin: const EdgeInsets.only(bottom: HarmoniaSpacing.md),
+      margin: const EdgeInsets.only(bottom: ResoniaSpacing.md),
       child: Padding(
-        padding: const EdgeInsets.all(HarmoniaSpacing.md),
+        padding: const EdgeInsets.all(ResoniaSpacing.md),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -171,7 +171,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               header: true,
               child: Text(title, style: text.titleMedium),
             ),
-            const SizedBox(height: HarmoniaSpacing.sm),
+            const SizedBox(height: ResoniaSpacing.sm),
             ...children,
           ],
         ),
@@ -183,20 +183,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
         child: ListenableBuilder(
           listenable: controller,
           builder: (context, _) => ListView(
-            padding: const EdgeInsets.all(HarmoniaSpacing.lg),
+            padding: const EdgeInsets.all(ResoniaSpacing.lg),
             children: [
               const Align(
                 alignment: AlignmentDirectional.centerStart,
                 child: StatusPill('Misafir • bu cihazda'),
               ),
-              const SizedBox(height: HarmoniaSpacing.md),
+              const SizedBox(height: ResoniaSpacing.md),
               section('Hedef', [
                 Text(
                   controller.profile == null
                       ? 'Hedef seçilmedi'
                       : goalTitle(controller.profile!.goal),
                 ),
-                const SizedBox(height: HarmoniaSpacing.sm),
+                const SizedBox(height: ResoniaSpacing.sm),
                 ChunkyButton(
                   key: const Key('change_goal'),
                   tone: ChunkyTone.neutral,
@@ -216,9 +216,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   title: Text('İzin ve kulaklık rehberi'),
                   children: [
                     Text(
-                      'İzin vermediysen telefonun Ayarlar > Harmonia > Mikrofon bölümünden açabilirsin. İzin vermeden de referansları dinleyebilir ve önizlemeleri görebilirsin.',
+                      'İzin vermediysen telefonun Ayarlar > Resonia > Mikrofon bölümünden açabilirsin. İzin vermeden de referansları dinleyebilir ve önizlemeleri görebilirsin.',
                     ),
-                    SizedBox(height: HarmoniaSpacing.sm),
+                    SizedBox(height: ResoniaSpacing.sm),
                     Text(
                       'En güvenilir sonuç için kablolu kulaklık ve sessiz bir oda önerilir. Bluetooth kulaklıkta gecikme ölçülmediği için ritim çalışmaları desteklenmeyecek.',
                     ),
@@ -277,7 +277,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         report == null || report.clean
                         ? const SizedBox.shrink()
                         : const Padding(
-                            padding: EdgeInsets.only(top: HarmoniaSpacing.sm),
+                            padding: EdgeInsets.only(top: ResoniaSpacing.sm),
                             child: Text(
                               'Önceki bir oturumdan kalan bazı geçici ses dosyaları silinemedi. Uygulamayı yeniden açtığında tekrar denenir; dosyalar cihaz dışına çıkmaz.',
                               key: Key('cleanup_warning'),
@@ -297,7 +297,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                 if (history != null)
                   Padding(
-                    padding: const EdgeInsets.only(top: HarmoniaSpacing.sm),
+                    padding: const EdgeInsets.only(top: ResoniaSpacing.sm),
                     child: ChunkyButton(
                       key: const Key('open_data_transfer'),
                       tone: ChunkyTone.neutral,
@@ -325,7 +325,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 const Text(
                   'Misafir olarak kullanıyorsun; hesap gerekmez. Hesap ve cihazlar arası eşitleme henüz yok.',
                 ),
-                const SizedBox(height: HarmoniaSpacing.sm),
+                const SizedBox(height: ResoniaSpacing.sm),
                 ChunkyButton(
                   key: const Key('delete_profile'),
                   tone: ChunkyTone.neutral,
@@ -356,7 +356,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             'Cihazdan çıkmaz; istersen kopyalayıp destekle paylaşabilirsin.',
                             key: const Key('error_summary'),
                           ),
-                          const SizedBox(height: HarmoniaSpacing.sm),
+                          const SizedBox(height: ResoniaSpacing.sm),
                           ChunkyButton(
                             key: const Key('copy_error_report'),
                             tone: ChunkyTone.neutral,
@@ -375,7 +375,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
               section('Hakkında', [
                 Text(
-                  'Harmonia ${channel.label.toLowerCase()}dür. Ses değerlendirmesi deterministik ölçümle yapılır; yapay zekâ puan vermez. Sınav kazanma garantisi verilmez.',
+                  'Resonia ${channel.label.toLowerCase()}dür. Ses değerlendirmesi deterministik ölçümle yapılır; yapay zekâ puan vermez. Sınav kazanma garantisi verilmez.',
                   key: const Key('about_channel'),
                 ),
               ]),

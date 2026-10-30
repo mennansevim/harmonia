@@ -1,4 +1,4 @@
-/// A Harmonia user.
+/// A Resonia user.
 ///
 /// ADR-004: Guests may complete exercises before creating an account.
 /// ADR-003: Raw audio consent is tracked separately from account creation.

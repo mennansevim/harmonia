@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 
 import '../../app/app_channel.dart';
 import '../../app/app_services.dart';
-import '../../app/theme/harmonia_theme.dart';
+import '../../app/theme/resonia_theme.dart';
 import '../../application/result_history.dart';
 import '../../application/practice_preferences.dart';
 import '../../domain/content/draft_micro_lessons.dart';
@@ -17,7 +17,7 @@ import '../audio_lab/audio_lab_screen.dart';
 import '../chord_exercise/chord_placeholder_screen.dart';
 import '../common/content_status_panel.dart';
 import '../common/foreground_refresh_state.dart';
-import '../common/ui/harmonia_ui.dart';
+import '../common/ui/resonia_ui.dart';
 import '../daily_plan/daily_plan_screen.dart';
 import '../history/history_screen.dart';
 import '../interval/interval_screen.dart';
@@ -470,9 +470,9 @@ class _TodayTabState extends ForegroundRefreshState<_TodayTab> {
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(
-                    HarmoniaSpacing.lg,
-                    HarmoniaSpacing.sm,
-                    HarmoniaSpacing.md,
+                    ResoniaSpacing.lg,
+                    ResoniaSpacing.sm,
+                    ResoniaSpacing.md,
                     0,
                   ),
                   child: Row(
@@ -495,7 +495,7 @@ class _TodayTabState extends ForegroundRefreshState<_TodayTab> {
                         ),
                       ),
                       const _BetaChip(),
-                      const SizedBox(width: HarmoniaSpacing.xs),
+                      const SizedBox(width: ResoniaSpacing.xs),
                       if (d != null) _StreakBadge(data: d.home),
                     ],
                   ),
@@ -503,10 +503,10 @@ class _TodayTabState extends ForegroundRefreshState<_TodayTab> {
               ),
               SliverPadding(
                 padding: const EdgeInsets.fromLTRB(
-                  HarmoniaSpacing.lg,
-                  HarmoniaSpacing.md,
-                  HarmoniaSpacing.lg,
-                  HarmoniaSpacing.xl,
+                  ResoniaSpacing.lg,
+                  ResoniaSpacing.md,
+                  ResoniaSpacing.lg,
+                  ResoniaSpacing.xl,
                 ),
                 sliver: SliverList.list(
                   children: [
@@ -538,20 +538,20 @@ class _TodayTabState extends ForegroundRefreshState<_TodayTab> {
                             : todayStepText(d.home.step).$3,
                         onOpen: _openNode,
                       ),
-                      const SizedBox(height: HarmoniaSpacing.md),
+                      const SizedBox(height: ResoniaSpacing.md),
                       if (!d.startingCheck.isComplete) ...[
                         _StartingCheckCard(
                           summary: d.startingCheck,
                           onOpen: _openStartingCheck,
                         ),
-                        const SizedBox(height: HarmoniaSpacing.md),
+                        const SizedBox(height: ResoniaSpacing.md),
                       ],
                       if (d.resume case final resume?) ...[
                         _ResumePracticeCard(
                           resume: resume,
                           onOpen: () => _openResume(resume),
                         ),
-                        const SizedBox(height: HarmoniaSpacing.md),
+                        const SizedBox(height: ResoniaSpacing.md),
                       ],
                       RecentPracticeCard(
                         key: const Key('recent_practice'),
@@ -590,12 +590,12 @@ class _StartingCheckCard extends StatelessWidget {
   Widget build(BuildContext context) => Card(
     key: const Key('starting_check_card'),
     child: Padding(
-      padding: const EdgeInsets.all(HarmoniaSpacing.md),
+      padding: const EdgeInsets.all(ResoniaSpacing.md),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const StatusPill('İsteğe bağlı'),
-          const SizedBox(height: HarmoniaSpacing.sm),
+          const SizedBox(height: ResoniaSpacing.sm),
           Text(
             'Başlangıç kontrolü',
             style: Theme.of(context).textTheme.titleLarge,
@@ -603,7 +603,7 @@ class _StartingCheckCard extends StatelessWidget {
           Text(
             '${summary.completedCount}/${summary.items.length} kısa tur tamamlandı. Yalnız uygulamanın güvenilir ölçebildiği alanlardan çalışma başlangıcı önerir.',
           ),
-          const SizedBox(height: HarmoniaSpacing.md),
+          const SizedBox(height: ResoniaSpacing.md),
           ChunkyButton(
             key: const Key('starting_check_open'),
             onPressed: onOpen,
@@ -629,25 +629,25 @@ class _ResumePracticeCard extends StatelessWidget {
   Widget build(BuildContext context) => Card(
     key: const Key('resume_practice_card'),
     child: Padding(
-      padding: const EdgeInsets.all(HarmoniaSpacing.md),
+      padding: const EdgeInsets.all(ResoniaSpacing.md),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const StatusPill('Yerel geçmiş'),
-          const SizedBox(height: HarmoniaSpacing.sm),
+          const SizedBox(height: ResoniaSpacing.sm),
           Text(
             'Son çalışmaya dön',
             style: Theme.of(context).textTheme.titleLarge,
           ),
           Text(resume.exercise.title),
-          const SizedBox(height: HarmoniaSpacing.xs),
+          const SizedBox(height: ResoniaSpacing.xs),
           Text(
             resume.previousMeasurementValid
                 ? 'Son tur kaydedildi. Kaldığın sorudan değil, yeni bir turdan başlarsın.'
                 : 'Son ölçüm tamamlanamadı. Aynı çalışmayı yeni bir turla yeniden deneyebilirsin.',
           ),
           const Text('Ses, mikrofon veya yarım oturum otomatik açılmaz.'),
-          const SizedBox(height: HarmoniaSpacing.md),
+          const SizedBox(height: ResoniaSpacing.md),
           ChunkyButton(
             key: const Key('resume_practice_open'),
             onPressed: onOpen,
@@ -675,7 +675,7 @@ class _TodaySkeleton extends StatelessWidget {
         height: height,
         decoration: BoxDecoration(
           color: color,
-          borderRadius: BorderRadius.circular(HarmoniaRadius.chip),
+          borderRadius: BorderRadius.circular(ResoniaRadius.chip),
         ),
       ),
     );
@@ -692,28 +692,28 @@ class _TodaySkeleton extends StatelessWidget {
             style: Theme.of(context).textTheme.titleMedium,
           ),
           const Text('Önerin ve beceri yolun için yerel geçmiş okunuyor.'),
-          const SizedBox(height: HarmoniaSpacing.md),
+          const SizedBox(height: ResoniaSpacing.md),
           Card(
             child: Padding(
-              padding: const EdgeInsets.all(HarmoniaSpacing.md),
+              padding: const EdgeInsets.all(ResoniaSpacing.md),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   block(.65, 20),
-                  const SizedBox(height: HarmoniaSpacing.md),
+                  const SizedBox(height: ResoniaSpacing.md),
                   block(1, 16),
-                  const SizedBox(height: HarmoniaSpacing.sm),
+                  const SizedBox(height: ResoniaSpacing.sm),
                   block(.8, 16),
-                  const SizedBox(height: HarmoniaSpacing.lg),
+                  const SizedBox(height: ResoniaSpacing.lg),
                   block(1, 48),
                 ],
               ),
             ),
           ),
-          const SizedBox(height: HarmoniaSpacing.md),
+          const SizedBox(height: ResoniaSpacing.md),
           for (var i = 0; i < 3; i++)
             Padding(
-              padding: const EdgeInsets.only(bottom: HarmoniaSpacing.md),
+              padding: const EdgeInsets.only(bottom: ResoniaSpacing.md),
               child: Row(
                 children: [
                   Container(
@@ -724,7 +724,7 @@ class _TodaySkeleton extends StatelessWidget {
                       shape: BoxShape.circle,
                     ),
                   ),
-                  const SizedBox(width: HarmoniaSpacing.md),
+                  const SizedBox(width: ResoniaSpacing.md),
                   Expanded(child: block(.75, 20)),
                 ],
               ),
@@ -782,12 +782,12 @@ class _BetaSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
     Widget row(IconData icon, String title, String body) => Padding(
-      padding: const EdgeInsets.only(bottom: HarmoniaSpacing.md),
+      padding: const EdgeInsets.only(bottom: ResoniaSpacing.md),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Icon(icon, color: Theme.of(context).colorScheme.primary),
-          const SizedBox(width: HarmoniaSpacing.md),
+          const SizedBox(width: ResoniaSpacing.md),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -808,16 +808,16 @@ class _BetaSheet extends StatelessWidget {
     return SafeArea(
       child: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(
-          HarmoniaSpacing.lg,
+          ResoniaSpacing.lg,
           0,
-          HarmoniaSpacing.lg,
-          HarmoniaSpacing.lg,
+          ResoniaSpacing.lg,
+          ResoniaSpacing.lg,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Harmonia beta', style: text.titleLarge),
-            const SizedBox(height: HarmoniaSpacing.md),
+            Text('Resonia beta', style: text.titleLarge),
+            const SizedBox(height: ResoniaSpacing.md),
             row(
               Icons.edit_note_rounded,
               'Taslak ölçütler',
@@ -916,7 +916,7 @@ class _NextCard extends StatelessWidget {
     return Card(
       key: const Key('today_card'),
       child: Padding(
-        padding: const EdgeInsets.all(HarmoniaSpacing.md + 2),
+        padding: const EdgeInsets.all(ResoniaSpacing.md + 2),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -945,7 +945,7 @@ class _NextCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                const SizedBox(width: HarmoniaSpacing.sm),
+                const SizedBox(width: ResoniaSpacing.sm),
                 _MinuteRing(
                   done: minutesDone,
                   target: target,
@@ -953,7 +953,7 @@ class _NextCard extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: HarmoniaSpacing.sm),
+            const SizedBox(height: ResoniaSpacing.sm),
             Text(
               reason,
               maxLines: 3,
@@ -961,7 +961,7 @@ class _NextCard extends StatelessWidget {
               style: text.bodyMedium,
             ),
             if (!done) ...[
-              const SizedBox(height: HarmoniaSpacing.md),
+              const SizedBox(height: ResoniaSpacing.md),
               ChunkyButton(
                 key: const Key('today_action'),
                 label: action,
@@ -971,7 +971,7 @@ class _NextCard extends StatelessWidget {
                 onPressed: onOpen,
               ),
             ] else ...[
-              const SizedBox(height: HarmoniaSpacing.sm),
+              const SizedBox(height: ResoniaSpacing.sm),
               TextButton(
                 onPressed: onOpenPlan,
                 style: TextButton.styleFrom(foregroundColor: scheme.primary),
@@ -1019,9 +1019,9 @@ class _MinuteRing extends StatelessWidget {
                 height: 56,
                 child: TweenAnimationBuilder<double>(
                   tween: Tween(end: value),
-                  duration: HarmoniaMotion.reduced(context)
+                  duration: ResoniaMotion.reduced(context)
                       ? Duration.zero
-                      : HarmoniaMotion.slow,
+                      : ResoniaMotion.slow,
                   builder: (context, v, _) => CircularProgressIndicator(
                     value: v,
                     strokeWidth: 6,
@@ -1076,30 +1076,30 @@ class _ComingSkillSheet extends StatelessWidget {
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(
-          HarmoniaSpacing.lg,
+          ResoniaSpacing.lg,
           0,
-          HarmoniaSpacing.lg,
-          HarmoniaSpacing.lg,
+          ResoniaSpacing.lg,
+          ResoniaSpacing.lg,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(node.node.title, style: text.titleLarge),
-            const SizedBox(height: HarmoniaSpacing.xs),
+            const SizedBox(height: ResoniaSpacing.xs),
             Text(node.node.goal),
-            const SizedBox(height: HarmoniaSpacing.sm),
+            const SizedBox(height: ResoniaSpacing.sm),
             Align(
               alignment: AlignmentDirectional.centerStart,
               child: StatusPill(nodeStateText(node)),
             ),
-            const SizedBox(height: HarmoniaSpacing.sm),
+            const SizedBox(height: ResoniaSpacing.sm),
             Text(
               supportLabel(node.node.support),
               style: text.bodySmall?.copyWith(color: context.palette.muted),
             ),
             for (final l in lessons) ...[
-              const SizedBox(height: HarmoniaSpacing.md),
+              const SizedBox(height: ResoniaSpacing.md),
               ChunkyButton(
                 label: 'Metin taslağını oku',
                 tone: ChunkyTone.neutral,
@@ -1130,14 +1130,14 @@ class _PracticeTab extends StatelessWidget {
     final history = AppServices.maybeOf(context)?.history;
     Widget section(String title, {String? pill}) => Padding(
       padding: const EdgeInsets.only(
-        top: HarmoniaSpacing.lg,
-        bottom: HarmoniaSpacing.sm + 2,
+        top: ResoniaSpacing.lg,
+        bottom: ResoniaSpacing.sm + 2,
       ),
       child: Row(
         children: [
           Text(title, style: text.titleLarge),
           if (pill != null) ...[
-            const SizedBox(width: HarmoniaSpacing.sm),
+            const SizedBox(width: ResoniaSpacing.sm),
             StatusPill(pill),
           ],
         ],
@@ -1148,10 +1148,10 @@ class _PracticeTab extends StatelessWidget {
       bottom: false,
       child: ListView(
         padding: const EdgeInsets.fromLTRB(
-          HarmoniaSpacing.lg,
-          HarmoniaSpacing.sm,
-          HarmoniaSpacing.lg,
-          HarmoniaSpacing.xl,
+          ResoniaSpacing.lg,
+          ResoniaSpacing.sm,
+          ResoniaSpacing.lg,
+          ResoniaSpacing.xl,
         ),
         children: [
           Text('Pratik', style: text.headlineMedium),
@@ -1264,7 +1264,7 @@ class _ModuleTile extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.all(HarmoniaSpacing.md),
+          padding: const EdgeInsets.all(ResoniaSpacing.md),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -1277,7 +1277,7 @@ class _ModuleTile extends StatelessWidget {
                 ),
                 child: Icon(icon, color: tint, size: 26),
               ),
-              const SizedBox(height: HarmoniaSpacing.sm + 4),
+              const SizedBox(height: ResoniaSpacing.sm + 4),
               Text(title, style: text.titleMedium),
               const SizedBox(height: 2),
               Text(
@@ -1320,17 +1320,17 @@ class _ProfileTab extends StatelessWidget {
       bottom: false,
       child: ListView(
         padding: const EdgeInsets.fromLTRB(
-          HarmoniaSpacing.lg,
-          HarmoniaSpacing.md,
-          HarmoniaSpacing.lg,
-          HarmoniaSpacing.xl,
+          ResoniaSpacing.lg,
+          ResoniaSpacing.md,
+          ResoniaSpacing.lg,
+          ResoniaSpacing.xl,
         ),
         children: [
           Text('Profil', style: text.headlineSmall),
-          const SizedBox(height: HarmoniaSpacing.md),
+          const SizedBox(height: ResoniaSpacing.md),
           Card(
             child: Padding(
-              padding: const EdgeInsets.all(HarmoniaSpacing.md),
+              padding: const EdgeInsets.all(ResoniaSpacing.md),
               child: Row(
                 children: [
                   CircleAvatar(
@@ -1338,7 +1338,7 @@ class _ProfileTab extends StatelessWidget {
                     backgroundColor: scheme.primary.withValues(alpha: .14),
                     child: Icon(Icons.person, color: scheme.primary),
                   ),
-                  const SizedBox(width: HarmoniaSpacing.md),
+                  const SizedBox(width: ResoniaSpacing.md),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1357,7 +1357,7 @@ class _ProfileTab extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: HarmoniaSpacing.md),
+          const SizedBox(height: ResoniaSpacing.md),
           Card(
             clipBehavior: Clip.antiAlias,
             child: Column(
@@ -1390,7 +1390,7 @@ class _ProfileTab extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: HarmoniaSpacing.md),
+          const SizedBox(height: ResoniaSpacing.md),
           Text(
             'Hesap gerekmez. Verilerin bu cihazda kalır.',
             style: text.bodySmall?.copyWith(color: context.palette.muted),

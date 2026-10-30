@@ -1,15 +1,13 @@
 import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/infrastructure/audio/pcm16_wav.dart';
-import 'package:harmonia/infrastructure/audio/read_lab_wav.dart';
+import 'package:resonia/infrastructure/audio/pcm16_wav.dart';
+import 'package:resonia/infrastructure/audio/read_lab_wav.dart';
 
 void main() {
   late Directory directory;
   late File file;
   setUp(() async {
-    directory = await Directory.systemTemp.createTemp(
-      'harmonia-lab-read-test-',
-    );
+    directory = await Directory.systemTemp.createTemp('resonia-lab-read-test-');
     file = File('${directory.path}/recording.wav');
   });
   tearDown(() async {

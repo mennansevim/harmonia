@@ -3,16 +3,16 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/app/app_channel.dart';
-import 'package:harmonia/app/theme/harmonia_theme.dart';
-import 'package:harmonia/application/app_shell_controller.dart';
-import 'package:harmonia/application/error_log.dart';
-import 'package:harmonia/application/profile_repository.dart';
-import 'package:harmonia/application/practice_preferences.dart';
-import 'package:harmonia/application/result_history.dart';
-import 'package:harmonia/domain/models/learner_profile.dart';
-import 'package:harmonia/features/common/ui/harmonia_ui.dart';
-import 'package:harmonia/features/settings/settings_screen.dart';
+import 'package:resonia/app/app_channel.dart';
+import 'package:resonia/app/theme/resonia_theme.dart';
+import 'package:resonia/application/app_shell_controller.dart';
+import 'package:resonia/application/error_log.dart';
+import 'package:resonia/application/profile_repository.dart';
+import 'package:resonia/application/practice_preferences.dart';
+import 'package:resonia/application/result_history.dart';
+import 'package:resonia/domain/models/learner_profile.dart';
+import 'package:resonia/features/common/ui/resonia_ui.dart';
+import 'package:resonia/features/settings/settings_screen.dart';
 
 class _Profiles extends InMemoryProfileRepository {
   _Profiles()
@@ -84,7 +84,7 @@ void main() {
     await controller.load();
     await tester.pumpWidget(
       MaterialApp(
-        theme: dark ? HarmoniaTheme.dark() : HarmoniaTheme.light(),
+        theme: dark ? ResoniaTheme.dark() : ResoniaTheme.light(),
         home: SettingsScreen(
           controller: controller,
           channel: AppChannel.beta,

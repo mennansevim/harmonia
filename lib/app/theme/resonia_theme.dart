@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 /// controls and answer sheet for everyday practice; C's thin cards, mono
 /// data labels and evidence layout for results and reports. Platform fonts
 /// (SF Pro / Roboto) keep native rendering, Dynamic Type and offline use.
-abstract final class HarmoniaSpacing {
+abstract final class ResoniaSpacing {
   static const xs = 4.0;
   static const sm = 8.0;
   static const md = 16.0;
@@ -14,13 +14,13 @@ abstract final class HarmoniaSpacing {
   static const xl = 32.0;
 }
 
-abstract final class HarmoniaRadius {
+abstract final class ResoniaRadius {
   static const card = 20.0;
   static const chip = 12.0;
   static const button = 16.0;
 }
 
-abstract final class HarmoniaMotion {
+abstract final class ResoniaMotion {
   static const quick = Duration(milliseconds: 160);
   static const medium = Duration(milliseconds: 280);
   static const slow = Duration(milliseconds: 420);
@@ -31,8 +31,8 @@ abstract final class HarmoniaMotion {
       MediaQuery.maybeDisableAnimationsOf(context) ?? false;
 }
 
-class HarmoniaHapticsScope extends InheritedNotifier<ValueNotifier<bool>> {
-  const HarmoniaHapticsScope({
+class ResoniaHapticsScope extends InheritedNotifier<ValueNotifier<bool>> {
+  const ResoniaHapticsScope({
     super.key,
     required ValueNotifier<bool> enabled,
     required super.child,
@@ -40,7 +40,7 @@ class HarmoniaHapticsScope extends InheritedNotifier<ValueNotifier<bool>> {
 
   static bool enabled(BuildContext context) =>
       context
-          .dependOnInheritedWidgetOfExactType<HarmoniaHapticsScope>()
+          .dependOnInheritedWidgetOfExactType<ResoniaHapticsScope>()
           ?.notifier
           ?.value ??
       true;
@@ -49,8 +49,8 @@ class HarmoniaHapticsScope extends InheritedNotifier<ValueNotifier<bool>> {
 /// Result semantics. Wrong octave is NEVER the success colour and an invalid
 /// measurement is neutral, not the error red: it is not a student mistake.
 @immutable
-class HarmoniaResultColors extends ThemeExtension<HarmoniaResultColors> {
-  const HarmoniaResultColors({
+class ResoniaResultColors extends ThemeExtension<ResoniaResultColors> {
+  const ResoniaResultColors({
     required this.correct,
     required this.nearMiss,
     required this.incorrect,
@@ -64,7 +64,7 @@ class HarmoniaResultColors extends ThemeExtension<HarmoniaResultColors> {
   final Color wrongOctave;
   final Color notMeasured;
 
-  static const light = HarmoniaResultColors(
+  static const light = ResoniaResultColors(
     correct: Color(0xFF137A52),
     nearMiss: Color(0xFF8A5A00),
     incorrect: Color(0xFFB42318),
@@ -72,7 +72,7 @@ class HarmoniaResultColors extends ThemeExtension<HarmoniaResultColors> {
     notMeasured: Color(0xFF545871),
   );
 
-  static const dark = HarmoniaResultColors(
+  static const dark = ResoniaResultColors(
     correct: Color(0xFF5FD6A0),
     nearMiss: Color(0xFFF2C46B),
     incorrect: Color(0xFFFFB4A8),
@@ -81,13 +81,13 @@ class HarmoniaResultColors extends ThemeExtension<HarmoniaResultColors> {
   );
 
   @override
-  HarmoniaResultColors copyWith({
+  ResoniaResultColors copyWith({
     Color? correct,
     Color? nearMiss,
     Color? incorrect,
     Color? wrongOctave,
     Color? notMeasured,
-  }) => HarmoniaResultColors(
+  }) => ResoniaResultColors(
     correct: correct ?? this.correct,
     nearMiss: nearMiss ?? this.nearMiss,
     incorrect: incorrect ?? this.incorrect,
@@ -96,9 +96,9 @@ class HarmoniaResultColors extends ThemeExtension<HarmoniaResultColors> {
   );
 
   @override
-  HarmoniaResultColors lerp(HarmoniaResultColors? other, double t) {
+  ResoniaResultColors lerp(ResoniaResultColors? other, double t) {
     if (other == null) return this;
-    return HarmoniaResultColors(
+    return ResoniaResultColors(
       correct: Color.lerp(correct, other.correct, t)!,
       nearMiss: Color.lerp(nearMiss, other.nearMiss, t)!,
       incorrect: Color.lerp(incorrect, other.incorrect, t)!,
@@ -111,8 +111,8 @@ class HarmoniaResultColors extends ThemeExtension<HarmoniaResultColors> {
 /// Brand palette beyond the Material scheme: the chunky-button shadow,
 /// streak/achievement sun, recording coral, success mint and hairlines.
 @immutable
-class HarmoniaPalette extends ThemeExtension<HarmoniaPalette> {
-  const HarmoniaPalette({
+class ResoniaPalette extends ThemeExtension<ResoniaPalette> {
+  const ResoniaPalette({
     required this.primaryDeep,
     required this.sun,
     required this.onSun,
@@ -138,7 +138,7 @@ class HarmoniaPalette extends ThemeExtension<HarmoniaPalette> {
   final Color wave;
   final Color waveSecond;
 
-  static const light = HarmoniaPalette(
+  static const light = ResoniaPalette(
     primaryDeep: Color(0xFF3B2BBF),
     sun: Color(0xFFFFC531),
     onSun: Color(0xFF3D2C00),
@@ -152,7 +152,7 @@ class HarmoniaPalette extends ThemeExtension<HarmoniaPalette> {
     waveSecond: Color(0xFFE5483A),
   );
 
-  static const dark = HarmoniaPalette(
+  static const dark = ResoniaPalette(
     primaryDeep: Color(0xFF2A1F86),
     sun: Color(0xFFFFCF5C),
     onSun: Color(0xFF2A1E00),
@@ -167,13 +167,13 @@ class HarmoniaPalette extends ThemeExtension<HarmoniaPalette> {
   );
 
   @override
-  HarmoniaPalette copyWith() => this;
+  ResoniaPalette copyWith() => this;
 
   @override
-  HarmoniaPalette lerp(HarmoniaPalette? other, double t) {
+  ResoniaPalette lerp(ResoniaPalette? other, double t) {
     if (other == null) return this;
     Color l(Color a, Color b) => Color.lerp(a, b, t)!;
-    return HarmoniaPalette(
+    return ResoniaPalette(
       primaryDeep: l(primaryDeep, other.primaryDeep),
       sun: l(sun, other.sun),
       onSun: l(onSun, other.onSun),
@@ -189,7 +189,7 @@ class HarmoniaPalette extends ThemeExtension<HarmoniaPalette> {
   }
 }
 
-abstract final class HarmoniaTheme {
+abstract final class ResoniaTheme {
   static const _indigo = Color(0xFF5B46F5);
 
   static ThemeData light() => _build(
@@ -210,8 +210,8 @@ abstract final class HarmoniaTheme {
       onSurfaceVariant: const Color(0xFF5E6285),
       outlineVariant: const Color(0xFFE4E3EF),
     ),
-    HarmoniaResultColors.light,
-    HarmoniaPalette.light,
+    ResoniaResultColors.light,
+    ResoniaPalette.light,
   );
 
   static ThemeData dark() => _build(
@@ -232,14 +232,14 @@ abstract final class HarmoniaTheme {
       onSurfaceVariant: const Color(0xFFA6A9C6),
       outlineVariant: const Color(0xFF2E2F4A),
     ),
-    HarmoniaResultColors.dark,
-    HarmoniaPalette.dark,
+    ResoniaResultColors.dark,
+    ResoniaPalette.dark,
   );
 
   static ThemeData _build(
     ColorScheme scheme,
-    HarmoniaResultColors results,
-    HarmoniaPalette palette,
+    ResoniaResultColors results,
+    ResoniaPalette palette,
   ) {
     final base = ThemeData(
       colorScheme: scheme,
@@ -300,7 +300,7 @@ abstract final class HarmoniaTheme {
         margin: EdgeInsets.zero,
         color: scheme.surfaceContainerLow,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(HarmoniaRadius.card),
+          borderRadius: BorderRadius.circular(ResoniaRadius.card),
           side: BorderSide(color: palette.line),
         ),
       ),
@@ -310,7 +310,7 @@ abstract final class HarmoniaTheme {
           minimumSize: const Size(48, 52),
           textStyle: text.labelLarge?.copyWith(fontSize: 16),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(HarmoniaRadius.button),
+            borderRadius: BorderRadius.circular(ResoniaRadius.button),
           ),
         ),
       ),
@@ -320,7 +320,7 @@ abstract final class HarmoniaTheme {
           side: BorderSide(color: palette.line, width: 2),
           textStyle: text.labelLarge,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(HarmoniaRadius.button),
+            borderRadius: BorderRadius.circular(ResoniaRadius.button),
           ),
         ),
       ),
@@ -332,7 +332,7 @@ abstract final class HarmoniaTheme {
       ),
       chipTheme: base.chipTheme.copyWith(
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(HarmoniaRadius.chip),
+          borderRadius: BorderRadius.circular(ResoniaRadius.chip),
         ),
         side: BorderSide(color: palette.line),
         labelStyle: text.labelLarge,
@@ -371,7 +371,7 @@ abstract final class HarmoniaTheme {
 }
 
 /// Data label style (C): small caps-like utility text with tabular digits.
-TextStyle harmoniaDataLabel(BuildContext context) {
+TextStyle resoniaDataLabel(BuildContext context) {
   final theme = Theme.of(context);
   return (theme.textTheme.labelSmall ?? const TextStyle()).copyWith(
     letterSpacing: 0.4,
@@ -381,10 +381,10 @@ TextStyle harmoniaDataLabel(BuildContext context) {
   );
 }
 
-extension HarmoniaThemeX on BuildContext {
-  HarmoniaResultColors get resultColors =>
-      Theme.of(this).extension<HarmoniaResultColors>() ??
-      HarmoniaResultColors.light;
-  HarmoniaPalette get palette =>
-      Theme.of(this).extension<HarmoniaPalette>() ?? HarmoniaPalette.light;
+extension ResoniaThemeX on BuildContext {
+  ResoniaResultColors get resultColors =>
+      Theme.of(this).extension<ResoniaResultColors>() ??
+      ResoniaResultColors.light;
+  ResoniaPalette get palette =>
+      Theme.of(this).extension<ResoniaPalette>() ?? ResoniaPalette.light;
 }

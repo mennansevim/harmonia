@@ -1,9 +1,9 @@
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/application/app_shell_controller.dart';
-import 'package:harmonia/application/profile_repository.dart';
-import 'package:harmonia/domain/models/learner_profile.dart';
+import 'package:resonia/application/app_shell_controller.dart';
+import 'package:resonia/application/profile_repository.dart';
+import 'package:resonia/domain/models/learner_profile.dart';
 
 class FlakyProfileRepository implements ProfileRepository {
   ProfileStorageFailure? loadFailure;

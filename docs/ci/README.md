@@ -2,7 +2,7 @@
 
 Repo kökünden `dart tool/quality_check.dart` çalıştırılır. `dart run` kullanılmaz:
 bu standalone script package çözümlemesi/build hooks başlatmadan açılır. Script konumu
-Harmonia kökünü belirler; çağıranın cwd'si (Agora dahil) kullanılmaz. Sıra:
+Resonia kökünü belirler; çağıranın cwd'si (Agora dahil) kullanılmaz. Sıra:
 read-only format (lib/test/tool/integration_test) → no-pub analyze → no-pub full test.
 İlk hata exit code'u korunur, sonrakiler çalışmaz; eksik SDK otomatik kurulmaz.
 Bu komut build, cihaz testi, API, upload, push veya deployment yapmaz.

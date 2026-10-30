@@ -1,11 +1,11 @@
-# Harmonia — Ürün ve eğitim yeterliliği incelemesi
+# Resonia — Ürün ve eğitim yeterliliği incelemesi
 
 **Tarih:** 2026-10-11  
 **Kapsam:** Yerel Flutter kaynakları, mevcut ürün dokümanları, Agora Voice referans motoru ve resmî eğitim/seçme örnekleri. Kod düzeltmesi veya yeni canlı servis bu incelemede yapılmadı.
 
 ## İnceleme sonrası geliştirme kaydı — 2026-10-11
 
-Aşağıdaki inceleme eski 26 testli başlangıç sürümünün tarihsel bulgularını korur; satır numaraları o sürüme aittir. Kullanıcının sonraki “başla” isteğiyle Harmonia kaynakları değiştirildi. Güncel kanıt [IMPLEMENTATION_LOG.md](./IMPLEMENTATION_LOG.md), işler [IMPLEMENTATION_ROADMAP.md](./IMPLEMENTATION_ROADMAP.md).
+Aşağıdaki inceleme eski 26 testli başlangıç sürümünün tarihsel bulgularını korur; satır numaraları o sürüme aittir. Kullanıcının sonraki “başla” isteğiyle Resonia kaynakları değiştirildi. Güncel kanıt [IMPLEMENTATION_LOG.md](./IMPLEMENTATION_LOG.md), işler [IMPLEMENTATION_ROADMAP.md](./IMPLEMENTATION_ROADMAP.md).
 
 | Bulgu | Güncel kapanış / kalan sınır |
 |---|---|
@@ -19,7 +19,7 @@ Aşağıdaki inceleme eski 26 testli başlangıç sürümünün tarihsel bulgula
 
 ## Karar özeti
 
-Bugünkü Harmonia, eğitim ürünü değil: tek sesli senaryoları gösteren Flutter demosu ve ürün planıdır. Planlanan kapsam işitsel hazırlık için iyi bir çekirdek oluşturuyor; tam konservatuvar hazırlığı veya çok sesli koroya hazırlık için tek başına yeterli değildir. Eksik olan yalnız daha çok soru türü değil; öğretim içeriği, kalıcı öğrenmenin ölçümü, parti bağımsızlığı, gerçek repertuvara aktarım ve eğitimci değerlendirmesidir.
+Bugünkü Resonia, eğitim ürünü değil: tek sesli senaryoları gösteren Flutter demosu ve ürün planıdır. Planlanan kapsam işitsel hazırlık için iyi bir çekirdek oluşturuyor; tam konservatuvar hazırlığı veya çok sesli koroya hazırlık için tek başına yeterli değildir. Eksik olan yalnız daha çok soru türü değil; öğretim içeriği, kalıcı öğrenmenin ölçümü, parti bağımsızlığı, gerçek repertuvara aktarım ve eğitimci değerlendirmesidir.
 
 **Doğru konumlandırma:** Öğretmen ve prova yerine geçen uygulama değil, onların arasında düzenli ve açıklanabilir çalışma sağlayan hazırlık arkadaşı. Kullanıcının tercih ettiği Aurora marka deneyimi + Konservatuvar sonuç açıklığı, öncelikli tasarım yönü olarak kaydedildi; kullanılabilirlik doğrulaması bekleniyor.
 
@@ -29,7 +29,7 @@ Bugünkü Harmonia, eğitim ürünü değil: tek sesli senaryoları gösteren Fl
 |---|---|---|---|
 | Flutter uygulaması | Açılıyor; doğrudan tek ses demo ekranına gidiyor | Çok ekranlı mobil ürün | Teknik başlangıç var; kullanıcı rotası yok |
 | Tek ses | Sabit C4 ve yedi mock senaryo; oktav hata kuralı | Gerçek dinle-söyle ve canlı görsel | Gerçek kayıt/ölçüm olmadan eğitim değerlendirmesi değil |
-| Ses aralığı | Harmonia'da gerçek tarama yok; Agora'da referans var | Rahat aralık ve nota uyarlama | Referans taşınmalı ve oktav güvenilirliği doğrulanmalı |
+| Ses aralığı | Resonia'da gerçek tarama yok; Agora'da referans var | Rahat aralık ve nota uyarlama | Referans taşınmalı ve oktav güvenilirliği doğrulanmalı |
 | Aralıklar / 2–3–4 ses | Skill enum'u dışında çalışma akışı yok | Interval, birlikte duyup sırayla söyleme, çevrim | Katalog, segmentleme ve ölçüm sözleşmesi gerekiyor |
 | Ritim | Basit timestamp eşleştiren mock analyzer | Tap, clap, tempo, eksik/fazla vuruş | Ekran/giriş yok; skor eğitim kullanımı için eksik |
 | Ezgi | Açıkça placeholder analyzer | Kısa/uzun ezgi, hafıza, bölüm tekrarı | Nota sırası, süre ve hafıza ölçümü henüz yok |
@@ -40,7 +40,7 @@ Bugünkü Harmonia, eğitim ürünü değil: tek sesli senaryoları gösteren Fl
 | Gerçek eğitimci yorumu | Yok | Bu incelemede F21 ve HUMAN_REVIEW.md eklendi | Plus kapsamı; henüz uygulanmadı |
 | Koro parti bağımsızlığı | Yok | Bu incelemede F23/F24 eklendi | Çok ses duyma sınavından farklı beceri |
 
-Kanıt: [uygulama başlangıcı](./lib/app/harmonia_app.dart), [tek ses ekranı](./lib/features/single_tone_exercise/single_tone_exercise_screen.dart), [bağımlılıklar](./pubspec.yaml). Ekran analiz isteğinde boş sample listesi gönderir; sonuç mock senaryodan gelir. Gerçek nota çalma, mikrofon, Aurora görseli, AI, satın alma veya kayıt paylaşma bağlı değildir. Önceki beş tasarım da simülasyondur.
+Kanıt: [uygulama başlangıcı](./lib/app/resonia_app.dart), [tek ses ekranı](./lib/features/single_tone_exercise/single_tone_exercise_screen.dart), [bağımlılıklar](./pubspec.yaml). Ekran analiz isteğinde boş sample listesi gönderir; sonuç mock senaryodan gelir. Gerçek nota çalma, mikrofon, Aurora görseli, AI, satın alma veya kayıt paylaşma bağlı değildir. Önceki beş tasarım da simülasyondur.
 
 **Doğrulama, 2026-10-11:** `flutter test --no-pub`: 26 test geçti. `flutter analyze --no-pub`: sorun bulunmadı. Bu sonuçlar mevcut domain/mock/widget davranışını doğrular; gerçek mikrofon doğruluğunu, konservatuvar başarısını veya eğitim etkisini doğrulamaz.
 

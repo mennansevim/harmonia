@@ -2,10 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import '../../../app/theme/harmonia_theme.dart';
+import '../../../app/theme/resonia_theme.dart';
 import '../../../application/microphone_permission_recovery.dart';
 import '../../../infrastructure/permissions/permission_handler_microphone_recovery.dart';
-import 'harmonia_ui.dart';
+import 'resonia_ui.dart';
 
 /// Explicit recovery UI shown only after a microphone permission denial.
 ///
@@ -45,8 +45,8 @@ class _MicrophonePermissionRecoveryCardState
     setState(() {
       _opening = false;
       _status = opened
-          ? 'Ayarlardan mikrofonu açtıktan sonra Harmonia’ya dönüp yeniden dene.'
-          : 'Telefon ayarları açılamadı. Ayarlar > Harmonia > Mikrofon yolunu kullanabilirsin.';
+          ? 'Ayarlardan mikrofonu açtıktan sonra Resonia’ya dönüp yeniden dene.'
+          : 'Telefon ayarları açılamadı. Ayarlar > Resonia > Mikrofon yolunu kullanabilirsin.';
     });
   }
 
@@ -54,7 +54,7 @@ class _MicrophonePermissionRecoveryCardState
   Widget build(BuildContext context) => Card(
     key: const Key('microphone_permission_recovery'),
     child: Padding(
-      padding: const EdgeInsets.all(HarmoniaSpacing.md),
+      padding: const EdgeInsets.all(ResoniaSpacing.md),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -62,11 +62,11 @@ class _MicrophonePermissionRecoveryCardState
             'Mikrofon erişimini düzelt',
             style: Theme.of(context).textTheme.titleMedium,
           ),
-          const SizedBox(height: HarmoniaSpacing.xs),
+          const SizedBox(height: ResoniaSpacing.xs),
           const Text(
-            'İzin penceresi yeniden görünmüyorsa mikrofonu telefon ayarlarından açabilirsin. Harmonia izni kendiliğinden değiştiremez.',
+            'İzin penceresi yeniden görünmüyorsa mikrofonu telefon ayarlarından açabilirsin. Resonia izni kendiliğinden değiştiremez.',
           ),
-          const SizedBox(height: HarmoniaSpacing.sm),
+          const SizedBox(height: ResoniaSpacing.sm),
           ChunkyButton(
             key: const Key('microphone_open_settings'),
             onPressed: _opening ? null : () => unawaited(_openSettings()),
@@ -75,7 +75,7 @@ class _MicrophonePermissionRecoveryCardState
             label: _opening ? 'Ayarlar açılıyor…' : 'Mikrofon ayarlarını aç',
           ),
           if (_status case final status?) ...[
-            const SizedBox(height: HarmoniaSpacing.sm),
+            const SizedBox(height: ResoniaSpacing.sm),
             Semantics(
               liveRegion: true,
               child: Text(status, key: const Key('microphone_settings_status')),

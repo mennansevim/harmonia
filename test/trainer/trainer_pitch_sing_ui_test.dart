@@ -3,14 +3,14 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/domain/audio/audio_capture.dart';
-import 'package:harmonia/trainer/app/scope.dart';
-import 'package:harmonia/trainer/audio/trainer_audio.dart';
-import 'package:harmonia/trainer/domain/curriculum.dart';
-import 'package:harmonia/trainer/domain/trainers.dart';
-import 'package:harmonia/trainer/learn/lesson_flow.dart';
-import 'package:harmonia/trainer/sing/trainer_pitch_sing_session.dart';
-import 'package:harmonia/trainer/state/trainer_store.dart';
+import 'package:resonia/domain/audio/audio_capture.dart';
+import 'package:resonia/trainer/app/scope.dart';
+import 'package:resonia/trainer/audio/trainer_audio.dart';
+import 'package:resonia/trainer/domain/curriculum.dart';
+import 'package:resonia/trainer/domain/trainers.dart';
+import 'package:resonia/trainer/learn/lesson_flow.dart';
+import 'package:resonia/trainer/sing/trainer_pitch_sing_session.dart';
+import 'package:resonia/trainer/state/trainer_store.dart';
 
 import '../support/fake_audio_lab_backend.dart';
 import '../support/fake_recording_pitch_worker.dart';

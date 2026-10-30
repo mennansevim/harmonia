@@ -69,7 +69,7 @@ class AppShellController extends ChangeNotifier {
     }
   }
 
-  /// Deletes only Harmonia's local profile after explicit user confirmation.
+  /// Deletes only Resonia's local profile after explicit user confirmation.
   Future<bool> deleteLocalProfile() async {
     final generation = ++_generation;
     try {

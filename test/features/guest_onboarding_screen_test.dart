@@ -2,16 +2,16 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/app/harmonia_app.dart';
-import 'package:harmonia/app/theme/harmonia_theme.dart';
-import 'package:harmonia/application/practice_preferences.dart';
-import 'package:harmonia/application/profile_repository.dart';
-import 'package:harmonia/application/result_history.dart';
-import 'package:harmonia/domain/learning/daily_plan.dart';
-import 'package:harmonia/domain/models/learner_profile.dart';
-import 'package:harmonia/features/common/ui/harmonia_ui.dart';
-import 'package:harmonia/features/onboarding/guest_onboarding_screen.dart';
-import 'package:harmonia/infrastructure/audio/orphan_audio_cleaner.dart';
+import 'package:resonia/app/resonia_app.dart';
+import 'package:resonia/app/theme/resonia_theme.dart';
+import 'package:resonia/application/practice_preferences.dart';
+import 'package:resonia/application/profile_repository.dart';
+import 'package:resonia/application/result_history.dart';
+import 'package:resonia/domain/learning/daily_plan.dart';
+import 'package:resonia/domain/models/learner_profile.dart';
+import 'package:resonia/features/common/ui/resonia_ui.dart';
+import 'package:resonia/features/onboarding/guest_onboarding_screen.dart';
+import 'package:resonia/infrastructure/audio/orphan_audio_cleaner.dart';
 
 class _Preferences extends InMemoryPracticePreferences {
   int writes = 0;
@@ -43,7 +43,7 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         key: UniqueKey(),
-        theme: dark ? HarmoniaTheme.dark() : HarmoniaTheme.light(),
+        theme: dark ? ResoniaTheme.dark() : ResoniaTheme.light(),
         home: GuestOnboardingScreen(preferences: prefs, onComplete: complete),
       ),
     );
@@ -212,7 +212,7 @@ void main() {
     final history = InMemoryResultHistory();
     final profiles = InMemoryProfileRepository();
     await tester.pumpWidget(
-      HarmoniaApp(
+      ResoniaApp(
         profiles: profiles,
         preferences: prefs,
         history: history,

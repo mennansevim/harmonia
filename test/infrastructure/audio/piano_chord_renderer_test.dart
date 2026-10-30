@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/domain/audio/piano_chord_reference.dart';
-import 'package:harmonia/infrastructure/audio/piano_chord_renderer.dart';
-import 'package:harmonia/infrastructure/audio/pcm16_wav.dart';
+import 'package:resonia/domain/audio/piano_chord_reference.dart';
+import 'package:resonia/infrastructure/audio/piano_chord_renderer.dart';
+import 'package:resonia/infrastructure/audio/pcm16_wav.dart';
 
 PianoNoteSample sample(
   int midi, {

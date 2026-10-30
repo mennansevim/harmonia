@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../app/theme/harmonia_theme.dart';
+import '../../app/theme/resonia_theme.dart';
 import '../../application/result_history.dart';
 import '../../domain/content/draft_micro_lessons.dart';
 import '../../domain/learning/micro_lesson.dart';
@@ -17,7 +17,7 @@ import '../learning/micro_lesson_screen.dart';
 import '../learning/next_step_text.dart';
 import '../common/content_status_panel.dart';
 import '../common/foreground_refresh_state.dart';
-import '../common/ui/harmonia_ui.dart';
+import '../common/ui/resonia_ui.dart';
 
 /// LEARN-01 view: recommended order for the learner's goal and an
 /// evidence-backed state per skill. Nothing is locked; unknown is shown.
@@ -125,7 +125,7 @@ class _SkillMapScreenState extends ForegroundRefreshState<SkillMapScreen> {
           final skills = graph.forGoal(widget.goal);
           final now = (widget.clock ?? DateTime.now)();
           return ListView(
-            padding: const EdgeInsets.all(HarmoniaSpacing.lg),
+            padding: const EdgeInsets.all(ResoniaSpacing.lg),
             children: [
               Text(
                 'Önerilen sıra, kilit yok. Harita taslaktır; ölçülemeyen beceriler eksik sayılmaz.',
@@ -143,7 +143,7 @@ class _SkillMapScreenState extends ForegroundRefreshState<SkillMapScreen> {
                   onRetry: _reload,
                 ),
               if (!historyError) ...[
-                const SizedBox(height: HarmoniaSpacing.md),
+                const SizedBox(height: ResoniaSpacing.md),
                 _ReportCard(
                   report: SkillReport.build(
                     graph: graph,
@@ -154,7 +154,7 @@ class _SkillMapScreenState extends ForegroundRefreshState<SkillMapScreen> {
                   ),
                   onFocus: widget.history == null ? null : _openFocus,
                 ),
-                const SizedBox(height: HarmoniaSpacing.md),
+                const SizedBox(height: ResoniaSpacing.md),
                 _WeeklyPracticeReportCard(
                   report: WeeklyPracticeReport.build(
                     graph: graph,
@@ -165,7 +165,7 @@ class _SkillMapScreenState extends ForegroundRefreshState<SkillMapScreen> {
                   ),
                 ),
               ],
-              const SizedBox(height: HarmoniaSpacing.md),
+              const SizedBox(height: ResoniaSpacing.md),
               for (final node in skills)
                 _SkillCard(
                   node: node,
@@ -220,9 +220,9 @@ class _SkillCard extends StatelessWidget {
     ].join(' · ');
     return Card(
       key: Key('skill_${node.id}'),
-      margin: const EdgeInsets.only(bottom: HarmoniaSpacing.sm),
+      margin: const EdgeInsets.only(bottom: ResoniaSpacing.sm),
       child: Padding(
-        padding: const EdgeInsets.all(HarmoniaSpacing.md),
+        padding: const EdgeInsets.all(ResoniaSpacing.md),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -230,7 +230,7 @@ class _SkillCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(child: Text(node.title, style: text.titleMedium)),
-                const SizedBox(width: HarmoniaSpacing.sm),
+                const SizedBox(width: ResoniaSpacing.sm),
                 Chip(
                   key: Key('skill_state_${node.id}'),
                   visualDensity: VisualDensity.compact,
@@ -243,7 +243,7 @@ class _SkillCard extends StatelessWidget {
               ],
             ),
             Text(node.goal, style: text.bodyMedium),
-            const SizedBox(height: HarmoniaSpacing.xs),
+            const SizedBox(height: ResoniaSpacing.xs),
             Text(meta, style: text.bodySmall?.copyWith(color: palette.muted)),
             if (!measured)
               Text(
@@ -298,12 +298,12 @@ class _WeeklyPracticeReportCard extends StatelessWidget {
     return Card(
       key: const Key('weekly_practice_report'),
       child: Padding(
-        padding: const EdgeInsets.all(HarmoniaSpacing.md + 2),
+        padding: const EdgeInsets.all(ResoniaSpacing.md + 2),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text('Haftalık çalışma özeti', style: text.titleLarge),
-            const SizedBox(height: HarmoniaSpacing.sm),
+            const SizedBox(height: ResoniaSpacing.sm),
             Row(
               children: [
                 Expanded(
@@ -312,7 +312,7 @@ class _WeeklyPracticeReportCard extends StatelessWidget {
                     value: '${report.activeDays}/7',
                   ),
                 ),
-                const SizedBox(width: HarmoniaSpacing.sm),
+                const SizedBox(width: ResoniaSpacing.sm),
                 Expanded(
                   child: StatTile(
                     label: 'Geçerli tur',
@@ -321,7 +321,7 @@ class _WeeklyPracticeReportCard extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: HarmoniaSpacing.sm),
+            const SizedBox(height: ResoniaSpacing.sm),
             Text(comparison, key: const Key('weekly_report_comparison')),
             if (report.activities.isEmpty)
               const Text(
@@ -329,7 +329,7 @@ class _WeeklyPracticeReportCard extends StatelessWidget {
                 key: Key('weekly_report_empty'),
               )
             else ...[
-              const SizedBox(height: HarmoniaSpacing.sm),
+              const SizedBox(height: ResoniaSpacing.sm),
               const DataLabel('Çalışılan alanlar'),
               for (final activity in report.activities)
                 Text('${activity.title}: ${activity.validRounds} tur'),
@@ -339,7 +339,7 @@ class _WeeklyPracticeReportCard extends StatelessWidget {
                 '${report.incompleteMeasurements} ölçüm tamamlanamadı; geçerli turlara eklenmedi.',
                 key: const Key('weekly_report_incomplete'),
               ),
-            const SizedBox(height: HarmoniaSpacing.sm),
+            const SizedBox(height: ResoniaSpacing.sm),
             Text(
               'Bu özet çalışma sıklığını gösterir; beceri artışı, sınav başarısı veya hazır oluş puanı değildir.',
               key: const Key('weekly_report_scope'),
@@ -401,12 +401,12 @@ class _ReportCard extends StatelessWidget {
     return Card(
       key: const Key('skill_report'),
       child: Padding(
-        padding: const EdgeInsets.all(HarmoniaSpacing.md + 2),
+        padding: const EdgeInsets.all(ResoniaSpacing.md + 2),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text('Beceri raporu', style: text.titleLarge),
-            const SizedBox(height: HarmoniaSpacing.sm),
+            const SizedBox(height: ResoniaSpacing.sm),
             Row(
               children: [
                 Expanded(
@@ -416,17 +416,17 @@ class _ReportCard extends StatelessWidget {
                     valueColor: strong > 0 ? palette.onSun : null,
                   ),
                 ),
-                const SizedBox(width: HarmoniaSpacing.sm),
+                const SizedBox(width: ResoniaSpacing.sm),
                 Expanded(
                   child: StatTile(label: 'Çalışılıyor', value: '$working'),
                 ),
-                const SizedBox(width: HarmoniaSpacing.sm),
+                const SizedBox(width: ResoniaSpacing.sm),
                 Expanded(
                   child: StatTile(label: 'Denenmedi', value: '$untried'),
                 ),
               ],
             ),
-            const SizedBox(height: HarmoniaSpacing.md),
+            const SizedBox(height: ResoniaSpacing.md),
             Semantics(
               label:
                   '$total becerinin $strong tanesi bağımsız, $working tanesi çalışılıyor, $untried tanesi denenmedi, ${r.unknownCount} tanesi bilinmiyor',
@@ -451,7 +451,7 @@ class _ReportCard extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(height: HarmoniaSpacing.sm),
+            const SizedBox(height: ResoniaSpacing.sm),
             Text(
               'Rotandaki $total becerinin ${r.measurableCount} tanesi uygulamada ölçülebiliyor.',
               key: const Key('report_scope'),
@@ -468,14 +468,14 @@ class _ReportCard extends StatelessWidget {
               key: const Key('report_unknown'),
               style: text.bodySmall?.copyWith(color: palette.muted),
             ),
-            const Divider(height: HarmoniaSpacing.lg + 8),
+            const Divider(height: ResoniaSpacing.lg + 8),
             const DataLabel('Tek hedef'),
-            const SizedBox(height: HarmoniaSpacing.xs),
+            const SizedBox(height: ResoniaSpacing.xs),
             Text(title, style: text.titleMedium),
             const SizedBox(height: 2),
             Text(reason, style: text.bodyMedium),
             if (action.isNotEmpty && onFocus != null) ...[
-              const SizedBox(height: HarmoniaSpacing.md),
+              const SizedBox(height: ResoniaSpacing.md),
               ChunkyButton(
                 key: const Key('report_focus_action'),
                 label: action,
@@ -483,7 +483,7 @@ class _ReportCard extends StatelessWidget {
                 onPressed: () => onFocus!(r.focus),
               ),
             ],
-            const SizedBox(height: HarmoniaSpacing.sm),
+            const SizedBox(height: ResoniaSpacing.sm),
             Text(
               'Genel hazırlık yüzdesi gösterilmez; ölçütler taslak ve eğitimci onayı bekliyor.',
               style: text.bodySmall?.copyWith(color: palette.muted),

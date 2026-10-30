@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/app/theme/harmonia_theme.dart';
-import 'package:harmonia/features/common/ui/harmonia_ui.dart';
+import 'package:resonia/app/theme/resonia_theme.dart';
+import 'package:resonia/features/common/ui/resonia_ui.dart';
 
 void main() {
   testWidgets('shared haptic scope suppresses and restores button feedback', (
@@ -22,7 +22,7 @@ void main() {
     addTearDown(enabled.dispose);
     var taps = 0;
     await tester.pumpWidget(
-      HarmoniaHapticsScope(
+      ResoniaHapticsScope(
         enabled: enabled,
         child: MaterialApp(
           home: Scaffold(

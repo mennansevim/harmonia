@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/domain/audio/pitch_sequence_alignment.dart';
-import 'package:harmonia/domain/models/measurement_provenance.dart';
+import 'package:resonia/domain/audio/pitch_sequence_alignment.dart';
+import 'package:resonia/domain/models/measurement_provenance.dart';
 
 List<SequencePitchEvent> notes(List<double> hz) => [
   for (var i = 0; i < hz.length; i++)

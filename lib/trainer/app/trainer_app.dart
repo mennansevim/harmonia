@@ -115,7 +115,7 @@ class _TrainerAppState extends State<TrainerApp> {
       child: ChoirScope.live(
         store: _choir,
         child: MaterialApp(
-          title: 'Harmonia',
+          title: 'Resonia',
           debugShowCheckedModeBanner: false,
           navigatorKey: _navigator,
           theme: trainerTheme(),

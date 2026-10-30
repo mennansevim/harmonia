@@ -1,4 +1,4 @@
-# Harmonia — Beş uçtan uca mobil tasarım
+# Resonia — Beş uçtan uca mobil tasarım
 
 **Tarih:** 2026-10-10 · **Durum:** etkileşimli konsept; üretim Flutter arayüzü henüz değiştirilmedi.
 
@@ -24,7 +24,7 @@ Doğrulama hedefi: öğrencinin sonuçtan hatayı ve sonraki eylemi anlaması; n
 
 Konuşmadaki beş seçenek tek bir carousel'de gösterilir; her biri onboarding, kalibrasyon, home, egzersiz, cevap, sonuç, gelişim/lig ve Premium ekranlarına ilerler. Örnek değerler, kişiler ve fiyatlar tasarım verisidir; gerçek ölçüm veya canlı sıralama değildir. Mikrofon kullanılmaz. “Örnek yanıtı oynat” ses algılama hareketini simüle eder; gerçek reference/mikrofon pipeline'ı bağlanmaz.
 
-**Düzenlenebilir önizleme kaynağı:** `/Users/sevimm/.codex/visualizations/2026/08/14/01a001fd-51fc-7613-bc84-3b92833f3a31/harmonia-five-directions.html`.
+**Düzenlenebilir önizleme kaynağı:** `/Users/sevimm/.codex/visualizations/2026/08/14/01a001fd-51fc-7613-bc84-3b92833f3a31/resonia-five-directions.html`.
 
 ## Ortak bilgi mimarisi
 

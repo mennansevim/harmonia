@@ -1,4 +1,4 @@
-# Harmonia — Yayın hazırlığı (canlıya çıkış açıkları)
+# Resonia — Yayın hazırlığı (canlıya çıkış açıkları)
 
 **Güncelleme:** 2026-10-25 · Kaynaklar: CURRENT_ROADMAP, IMPLEMENTATION_ROADMAP §5–§11.
 Durum sözlüğü roadmap ile aynı; kod-test geçmesi cihaz/pilot/yayın kabulü değildir.
@@ -10,7 +10,7 @@ Tür: **K** = kodla kapatılabilir, **Ka** = kullanıcı kararı, **D** = dış 
 
 1. **İç test / kapalı beta (TestFlight internal, Play internal testing):** en
    yakın hedef. Yalnız dokunmaya dayalı ölçülen çalışmalar (tiz/pes, derece,
-   ritim, günlük plan) + puansız deneysel ses modülleri. `HARMONIA_CHANNEL=beta`.
+   ritim, günlük plan) + puansız deneysel ses modülleri. `RESONIA_CHANNEL=beta`.
 2. **Kapalı beta Core:** gerçek tek ses ve kısa ezgi sonucu, ölçülmüş gecikmeyle
    ritim, eğitimci onaylı ilk mikroüniteler.
 3. **İlk ücretli yayın:** hesap/sync, Premium abonelik, isteğe bağlı AI koç,
@@ -22,7 +22,7 @@ Tür: **K** = kodla kapatılabilir, **Ka** = kullanıcı kararı, **D** = dış 
 |---|---|---|
 | Android derleme ortamı | D | Debug APK derlendi (2026-10-14; Gradle CMake 3.22.1'i kendisi kurdu). cmdline-tools eksik, `flutter doctor --android-licenses` onaylanmadı; gerçek Android cihaz/emülatörde çalıştırılmadı |
 | Release imzalama | Ka/D | Kod hazır (`android/key.properties`, gitignore). Keystore üretimi ve saklanması kullanıcıda; iOS için Apple Developer hesabı + signing team |
-| Uygulama kimliği | Ka | `com.harmonia.harmonia` geçici. Mağazaya ilk yüklemeden sonra değişmez; kendi alan adınızla seçilmeli |
+| Uygulama kimliği | Ka | `com.resonia.resonia` geçici. Mağazaya ilk yüklemeden sonra değişmez; kendi alan adınızla seçilmeli |
 | Uygulama ikonu / açılış ekranı | K/D | Koddan üretilen marka ikonu; iOS tek-boyut varsayılan/koyu/renklendirilmiş kaynakları asset-testli ve Xcode 27 actool uyarısız, Android uyarlanabilir + tek renk; tema renginde açılış ekranı. Fiziksel görünüm, profesyonel tasarım kabulü ve mağaza ekran görüntüleri açık |
 | Sürüm numarası | K | `1.0.0+1`; her yüklemede build numarası artırılmalı (CI yok) |
 | Gerçek cihazda gezinti | D | Simulator build başarılı, elle gezinti/gerçek iPhone/Android testi yok |
@@ -32,7 +32,7 @@ Tür: **K** = kodla kapatılabilir, **Ka** = kullanıcı kararı, **D** = dış 
 | Yaş/çocuk güvenliği beyanı | D | Hedef kitle öğrenci; hukuk incelemesi |
 
 **Kodda tamam (REL-09/OPS-01a):** beta kanalında geliştirici araçları gizli,
-uygulama adı "Harmonia", iOS PrivacyInfo.xcprivacy (izleme yok, veri toplama
+uygulama adı "Resonia", iOS PrivacyInfo.xcprivacy (izleme yok, veri toplama
 yok, dosya zaman damgası C617.1), release imzalama yapılandırması, yerel hata
 günlüğü + kopyalanabilir rapor, release'te kırmızı hata ekranı yerine sakin mesaj.
 
@@ -73,8 +73,8 @@ CURRENT_ROADMAP › "Kalan işler — 2026-10-15".
 
 ```sh
 dart tool/quality_check.dart
-flutter build ios --simulator --debug --dart-define=HARMONIA_CHANNEL=beta
-flutter build apk --release --dart-define=HARMONIA_CHANNEL=beta   # key.properties yoksa debug imzalı
+flutter build ios --simulator --debug --dart-define=RESONIA_CHANNEL=beta
+flutter build apk --release --dart-define=RESONIA_CHANNEL=beta   # key.properties yoksa debug imzalı
 ```
 
 Mağazaya yükleme, TestFlight dağıtımı, push ve deployment ayrı kullanıcı

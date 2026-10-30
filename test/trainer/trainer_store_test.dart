@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/trainer/audio/synth.dart';
-import 'package:harmonia/trainer/domain/curriculum.dart';
-import 'package:harmonia/trainer/domain/music.dart';
-import 'package:harmonia/trainer/domain/trainers.dart';
-import 'package:harmonia/trainer/state/trainer_store.dart';
+import 'package:resonia/trainer/audio/synth.dart';
+import 'package:resonia/trainer/domain/curriculum.dart';
+import 'package:resonia/trainer/domain/music.dart';
+import 'package:resonia/trainer/domain/trainers.dart';
+import 'package:resonia/trainer/state/trainer_store.dart';
 
 void main() {
   var now = DateTime(2026, 10, 29, 9);

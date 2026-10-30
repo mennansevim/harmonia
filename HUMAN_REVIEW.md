@@ -1,4 +1,4 @@
-# Harmonia Plus — Gerçek eğitimciden yazılı kayıt değerlendirmesi
+# Resonia Plus — Gerçek eğitimciden yazılı kayıt değerlendirmesi
 
 **Tarih:** 2026-10-11  
 **Durum:** Kullanıcının istediği özellik ürün kapsamına eklendi; servis, eğitimci havuzu, ödeme ve kayıt yükleme henüz uygulanmadı. Kota/fiyat/teslim süresi pilot hipotezidir, canlı teklif değildir.
@@ -7,7 +7,7 @@
 
 Öğrenci seçtiği ses kaydını, çalışma hedefini ve izin verdiği gelişim özetini gönderir. Uygun uzmanlığı doğrulanmış **gerçek bir müzik eğitimcisi kaydı dinler, kendisi yazılı değerlendirme yapar** ve takip çalışmaları verir. İlk sürümde bu değerlendirme AI tarafından yazılmaz; AI taslağı öğretmen imzasıyla insan değerlendirmesi gibi sunulmaz.
 
-Harmonia Coach'un otomatik mesajı ayrı, açıkça “AI koç” olarak görünür. Human review “Eğitimci değerlendirmesi”, ad/uzmanlık/tarih ile gösterilir. AI motor skorunu belirlemez; eğitimci de otomatik ölçüm sonucunu sessizce değiştirmez. Gözlemi ayrı bir değerlendirme kaydıdır.
+Resonia Coach'un otomatik mesajı ayrı, açıkça “AI koç” olarak görünür. Human review “Eğitimci değerlendirmesi”, ad/uzmanlık/tarih ile gösterilir. AI motor skorunu belirlemez; eğitimci de otomatik ölçüm sonucunu sessizce değiştirmez. Gözlemi ayrı bir değerlendirme kaydıdır.
 
 Müzisyen olmak tek başına öğretim yetkinliği değildir. İlk havuz: 3–5 eğitimci; konservatuvar işitme/solfej, koro/şan ve gerekiyorsa ilgili çalgı uzmanlığı ayrı doğrulanır. Eğitmen olmayan yorumcuya pedagojik uzmanlık unvanı verilmez.
 
@@ -89,7 +89,7 @@ Yan yollar: `upload_failed`, `needs_rerecord`, `waitlisted`, `cancelled`, `credi
 | `PracticeAssignment` | İzinli egzersiz ID'leri, parametreler, eğitimci hedefi, son kontrol tarihi |
 | `Consent` / audit | Amaç, alıcı kategorisi, sürüm/tarih, geri çekme ve erişim olayları |
 
-Flutter → yetkili Harmonia API → private storage + request queue → eğitimci paneli → öğrenciye teslim. Bildirim yalnız yeni yorum var bilgisini taşır; ses veya hassas yorum push payload'ına konmaz. Bildirim/outbox yeniden denemesi çift teslim/çift tüketim yaratmaz.
+Flutter → yetkili Resonia API → private storage + request queue → eğitimci paneli → öğrenciye teslim. Bildirim yalnız yeni yorum var bilgisini taşır; ses veya hassas yorum push payload'ına konmaz. Bildirim/outbox yeniden denemesi çift teslim/çift tüketim yaratmaz.
 
 Kayıt URL'leri kısa ömürlü ve yetkili; public link olmaz. Eğitimci yalnız aktif atandığı başvuruyu ve öğrencinin seçtiği özet veriyi görebilir. Öğretmen sınıf yetkisi bir Plus kaydına otomatik erişim vermez. Rol kontrolü API ve storage'da uygulanır; UI'da düğme saklamak güvenlik değildir. Dosya türü, süre/boyut, decode ve güvenli upload kontrolleri gerekir.
 

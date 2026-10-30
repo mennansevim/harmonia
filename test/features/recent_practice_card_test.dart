@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/app/theme/harmonia_theme.dart';
-import 'package:harmonia/features/home/home_data.dart';
-import 'package:harmonia/features/home/recent_practice_card.dart';
+import 'package:resonia/app/theme/resonia_theme.dart';
+import 'package:resonia/features/home/home_data.dart';
+import 'package:resonia/features/home/recent_practice_card.dart';
 
 void main() {
   for (final dark in [false, true]) {
@@ -22,7 +22,7 @@ void main() {
       );
       await tester.pumpWidget(
         MaterialApp(
-          theme: dark ? HarmoniaTheme.dark() : HarmoniaTheme.light(),
+          theme: dark ? ResoniaTheme.dark() : ResoniaTheme.light(),
           home: Scaffold(
             body: SingleChildScrollView(
               child: RecentPracticeCard(

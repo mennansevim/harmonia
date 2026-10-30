@@ -1,4 +1,4 @@
-# Harmonia — 10 rakip ve ürün çıkarımları
+# Resonia — 10 rakip ve ürün çıkarımları
 
 **20 Ekim 2026 ticari ek inceleme:** Simply/Simply Piano, Yousician ve
 Duolingo Music için finansal kanıt, özellik örüntüleri, mevcut kod farkları
@@ -9,11 +9,11 @@ kartı GROW-01a kodlandı; diğer eksikler mevcut backlog'a bağlandı.
 
 **İnceleme:** 2026-10-10 · **Kapsam:** konservatuvar hazırlığı, kulak eğitimi, ritim ve vokal geri bildirim.
 
-Bu liste indirme/gelir verisine dayalı bir “dünyanın en iyi 10'u” sıralaması değildir. Harmonia'nın dört temel becerisine en ilgili 10 karşılaştırma ürünüdür. Resmî ürün sayfaları ve yardım belgeleri üzerinden masa başı araştırması yapıldı; ücretli hesapla derslerin uygulamalı testi veya 10 ürünün tamamında ekran ekran görsel denetim yapılmadı. Doğrulanan özellikler ile aşağıdaki UX yorumları birbirinden ayrıdır. Fiyatlar ülkeye ve mağazaya göre değişebildiği için fiyat karşılaştırması yapılmadı. Pazarlama doğruluk/öğrenme/gelir iddiaları bağımsız kanıt kabul edilmedi.
+Bu liste indirme/gelir verisine dayalı bir “dünyanın en iyi 10'u” sıralaması değildir. Resonia'nın dört temel becerisine en ilgili 10 karşılaştırma ürünüdür. Resmî ürün sayfaları ve yardım belgeleri üzerinden masa başı araştırması yapıldı; ücretli hesapla derslerin uygulamalı testi veya 10 ürünün tamamında ekran ekran görsel denetim yapılmadı. Doğrulanan özellikler ile aşağıdaki UX yorumları birbirinden ayrıdır. Fiyatlar ülkeye ve mağazaya göre değişebildiği için fiyat karşılaştırması yapılmadı. Pazarlama doğruluk/öğrenme/gelir iddiaları bağımsız kanıt kabul edilmedi.
 
 ## Karşılaştırma ve plana aktarım
 
-| Ürün / birincil kaynak | Resmî olarak görülen özellik | Harmonia için UX çıkarımı (bizim yorumumuz) | Plandaki karşılığı |
+| Ürün / birincil kaynak | Resmî olarak görülen özellik | Resonia için UX çıkarımı (bizim yorumumuz) | Plandaki karşılığı |
 |---|---|---|---|
 | [EarMaster](https://www.earmaster.com/products/ear-training-sight-singing/earmaster-software.html) | Mikrofondan söyleme/alkış, canlı pitch eğrisi, deşifre, ezgi/ritim tekrarı ve dikte; akor çevrimleri; özel süreli egzersizler ve sınav kursları | Cevabı yalnızca doğru/yanlış değil, hangi nota/vuruşta hata olduğunu göstererek açıklamak; öğrenme ile sınav görünümünü ayırmak | F03, F04, F07, F08, F13, F17 |
 | [Perfect Ear](https://perfectear.app/) | Aralık karşılaştırma/tanıma/okuma; dizi ve akor tanıma, çevrim/progresyon; söyleme; ritim okuma/tıklama/taklit; deşifre ve teori | Aynı becerinin duyma, okuma ve söyleme biçimleri arasında köprü; ilk ekranda bütün kataloğu göstermemek | F03, F06, F07, F08, F10 |
@@ -34,7 +34,7 @@ Bu liste indirme/gelir verisine dayalı bir “dünyanın en iyi 10'u” sırala
 - Özelleştirilebilir egzersiz ve öğretmen programı.
 - Kısa günlük görevler, ustalık kilitleri ve isteğe bağlı yarışma.
 
-## Harmonia'nın konumlandırması — doğrulanacak hipotez
+## Resonia'nın konumlandırması — doğrulanacak hipotez
 
 **“Türkçe konservatuvar hazırlığı: duyduğun sesi ayır, doğru oktavda söyle, hatanı gör, her gün zayıf becerini çalış.”**
 
@@ -52,7 +52,7 @@ Farkımız yalnızca AI veya daha parlak bir orb olmayacak. Üç/dört sesli duy
 
 - [ ] Bu 10 üründe cihaz üzerinde onboarding → ilk egzersiz → sonuç → ödeme akışını süre tutarak dene.
 - [ ] Erişilebilirlik, izin reddi, offline, gürültü ve Bluetooth durumlarını karşılaştır.
-- [ ] 10 öğrenci + 3 öğretmenle beş Harmonia tasarımını kör test et.
+- [ ] 10 öğrenci + 3 öğretmenle beş Resonia tasarımını kör test et.
 - [ ] Mağaza yorumları için ayrı, örneklem/tarih belirtilen çalışma yap; buradaki ürün iddialarıyla karıştırma.
 
 Özelliklerin uygulama durumu ve kabul kriterleri: [FEATURE_BACKLOG.md](./FEATURE_BACKLOG.md). Tasarımlar: [DESIGN_STUDIES.md](./DESIGN_STUDIES.md).

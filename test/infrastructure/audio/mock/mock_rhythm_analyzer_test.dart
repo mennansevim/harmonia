@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/domain/audio/rhythm_analyzer.dart';
-import 'package:harmonia/infrastructure/audio/mock/mock_rhythm_analyzer.dart';
+import 'package:resonia/domain/audio/rhythm_analyzer.dart';
+import 'package:resonia/infrastructure/audio/mock/mock_rhythm_analyzer.dart';
 
 void main() {
   final analyzer = MockRhythmAnalyzer();

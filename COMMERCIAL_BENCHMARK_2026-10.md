@@ -1,4 +1,4 @@
-# Harmonia — Ticari başarıdan ürüne aktarım
+# Resonia — Ticari başarıdan ürüne aktarım
 
 İnceleme: 20 Ekim 2026. Üç referans: Simply Piano/Simply, Yousician,
 Duolingo Music. Bu bir mağaza gelir sıralaması veya yatırım/getiri önerisi
@@ -40,7 +40,7 @@ bir tekrar nedeni bizim çıkarımımız; bunların gelir katkısı ayrı ölç�
 
 **Duolingo:** Şirketin yayımladığı eski streak A/B deneyinde günlük hedefi
 seriden ayırmak D14 geri dönüşünde %3,3 artışla raporlanmış. Bu dil ürünü
-bağlamındaki şirket deneyidir; müzik/Harmonia için nedensel etki veya aynı
+bağlamındaki şirket deneyidir; müzik/Resonia için nedensel etki veya aynı
 artış garantisi değildir. Music'te beceriye bağlı popüler şarkı çalışmaları
 ve Super için daha geniş tekrar erişimi bulunuyor. Arkadaş görevleri ortak
 çalışmayı destekliyor; sosyal özelliklerle tamamlama korelasyonu tek başına
@@ -50,12 +50,12 @@ nedensellik değildir.
 [arkadaş görevleri](https://blog.duolingo.com/de/freundesmissionen/).
 
 “En tutan” ifadesi burada üç üründeki güçlü örüntüler anlamında kullanılır.
-Özellik bazlı gelir/retention sıralaması mevcut değil. Harmonia seçimleri
+Özellik bazlı gelir/retention sıralaması mevcut değil. Resonia seçimleri
 test edilecek hipotezlerdir; görseller, içerikler, sesler veya marka kopyalanmaz.
 
 ## 3. Mevcut ürünle fark analizi ve uygulama işleri
 
-| İş | Harmonia'da bugün | Eklenecek / kabul kapısı | Öncelik |
+| İş | Resonia'da bugün | Eklenecek / kabul kapısı | Öncelik |
 |---|---|---|---|
 | GROW-01a / F27: çalışma düzeni | Günlük seri var; son yedi gün dökümü bu pakette eklendi. | Yerel takvimde son7 gün, desteklenen cohort'ta geçerli tur; aynı gün tek sayılır; düşük doğru da çalışmadır. Mock/unknown/future hariç; başarı puanına karışmaz. | Kod-test |
 | GROW-01b / F27: gönüllü hedef | 5/12/15 dakika ve günlük plan var. | İsteğe bağlı haftalık gün hedefi, değiştir/atla; izinli hatırlatma. Hedef kaçınca ücretli kurtarma veya utandırma yok. Streak/ustalık ayrı. Yeni izin/plugin kararı ve cihaz testi gerekir. | P1, GROW-01a sonrası |

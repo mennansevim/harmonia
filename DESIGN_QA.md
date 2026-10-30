@@ -1,4 +1,4 @@
-# Harmonia — Tasarım önizlemesi kontrolü
+# Resonia — Tasarım önizlemesi kontrolü
 
 **Tarih:** 2026-10-10. Üretim Flutter uygulaması için değil, beş etkileşimli tasarım önizlemesi için kontrol kaydıdır.
 
@@ -60,7 +60,7 @@ Otomatik kontroller: 320 px/1,8× yazı, açık/koyu, Flutter erişilebilirlik k
 
 ## UXR-01 — kullanıcı testi protokolü (hazır, yürütülmedi)
 
-**Katılımcı:** en az 5 konservatuvar hazırlık öğrencisi (farklı seviyeler) + 1 eğitimci; reşit olmayanlar için veli onayı. **Cihaz:** katılımcının kendi telefonu + bir düşük/orta Android. **Kayıt:** ses kaydı Harmonia dışına çıkmaz; gözlemci yalnız not ve süre tutar (ekran kaydı ayrıca rıza ister).
+**Katılımcı:** en az 5 konservatuvar hazırlık öğrencisi (farklı seviyeler) + 1 eğitimci; reşit olmayanlar için veli onayı. **Cihaz:** katılımcının kendi telefonu + bir düşük/orta Android. **Kayıt:** ses kaydı Resonia dışına çıkmaz; gözlemci yalnız not ve süre tutar (ekran kaydı ayrıca rıza ister).
 
 **Görevler:** (1) Uygulamayı ilk kez aç, hedef seç, ilk ölçülen çalışmayı tamamla. (2) Ritim sonucunda hangi vuruşun neden yanlış olduğunu sesli açıkla. (3) Sonuçtan sonra ne çalışacağını seç. (4) Tek ses oturumunda ölçüm alınamadı ekranını gör ve ne yapacağını söyle. (5) Geçmişini bul ve bir kaydı sil.
 

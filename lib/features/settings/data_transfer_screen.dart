@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../../app/theme/harmonia_theme.dart';
+import '../../app/theme/resonia_theme.dart';
 import '../../application/data_export.dart';
 import '../../application/practice_preferences.dart';
 import '../../application/result_history.dart';
 import '../../domain/models/learner_profile.dart';
-import '../common/ui/harmonia_ui.dart';
+import '../common/ui/resonia_ui.dart';
 
 /// DATA-03 local part: copy an audio-free export to the clipboard, or add
 /// results from a pasted export. Nothing is sent anywhere by the app.
@@ -134,7 +134,7 @@ class _DataTransferScreenState extends State<DataTransferScreen> {
 
   static String _reason(String r) => switch (r) {
     'too_large' => 'Metin çok büyük (4 MB sınırı).',
-    'not_json' || 'not_object' => 'Bu bir Harmonia dışa aktarma metni değil.',
+    'not_json' || 'not_object' => 'Bu bir Resonia dışa aktarma metni değil.',
     'version' || 'keys' =>
       'Desteklenmeyen dışa aktarma sürümü veya biçimi. Hiçbir şey eklenmedi.',
     _ => 'Metin bozuk veya eksik. Hiçbir şey eklenmedi.',
@@ -152,16 +152,16 @@ class _DataTransferScreenState extends State<DataTransferScreen> {
           alignment: AlignmentDirectional.centerStart,
           child: StatusPill('Ses kaydı içermez'),
         ),
-        const SizedBox(height: HarmoniaSpacing.md),
+        const SizedBox(height: ResoniaSpacing.md),
         Text('Verilerini taşı', style: text.headlineSmall),
         const Text('Hedef, sonuç ve çalışma planı. Sunucuya gönderilmez.'),
-        const SizedBox(height: HarmoniaSpacing.md),
+        const SizedBox(height: ResoniaSpacing.md),
         Text('Dışa aktar', style: text.titleMedium),
-        const SizedBox(height: HarmoniaSpacing.xs),
+        const SizedBox(height: ResoniaSpacing.xs),
         const Text(
           'Sonuçlar, günlük süre ve haftalık hedef panoya kopyalanır. Ses, hatırlatma ve titreşim taşınmaz.',
         ),
-        const SizedBox(height: HarmoniaSpacing.sm),
+        const SizedBox(height: ResoniaSpacing.sm),
         ChunkyButton(
           key: const Key('export_copy'),
           onPressed: _busy ? null : _export,
@@ -170,19 +170,19 @@ class _DataTransferScreenState extends State<DataTransferScreen> {
         ),
         if (_exportStatus != null)
           Padding(
-            padding: const EdgeInsets.only(top: HarmoniaSpacing.sm),
+            padding: const EdgeInsets.only(top: ResoniaSpacing.sm),
             child: Semantics(
               liveRegion: true,
               child: Text(_exportStatus!, key: const Key('export_status')),
             ),
           ),
-        const SizedBox(height: HarmoniaSpacing.lg),
+        const SizedBox(height: ResoniaSpacing.lg),
         Text('İçe aktar', style: text.titleMedium),
-        const SizedBox(height: HarmoniaSpacing.xs),
+        const SizedBox(height: ResoniaSpacing.xs),
         const Text(
           'Başka bir cihazdan kopyaladığın metni buraya yapıştır. Önce tamamı doğrulanır; bozuksa hiçbir şey eklenmez.',
         ),
-        const SizedBox(height: HarmoniaSpacing.sm),
+        const SizedBox(height: ResoniaSpacing.sm),
         TextField(
           key: const Key('import_text'),
           controller: _input,
@@ -194,7 +194,7 @@ class _DataTransferScreenState extends State<DataTransferScreen> {
             border: OutlineInputBorder(),
           ),
         ),
-        const SizedBox(height: HarmoniaSpacing.sm),
+        const SizedBox(height: ResoniaSpacing.sm),
         ChunkyButton(
           key: const Key('import_apply'),
           onPressed: _busy ? null : _import,
@@ -203,7 +203,7 @@ class _DataTransferScreenState extends State<DataTransferScreen> {
         ),
         if (_importStatus != null)
           Padding(
-            padding: const EdgeInsets.only(top: HarmoniaSpacing.sm),
+            padding: const EdgeInsets.only(top: ResoniaSpacing.sm),
             child: Semantics(
               liveRegion: true,
               child: Text(_importStatus!, key: const Key('import_status')),

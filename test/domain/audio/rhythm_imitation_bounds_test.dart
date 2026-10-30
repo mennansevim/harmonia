@@ -1,10 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/application/rhythm_imitation_controller.dart';
-import 'package:harmonia/domain/audio/rhythm_imitation.dart';
-import 'package:harmonia/domain/audio/rhythm_reference_clock.dart';
-import 'package:harmonia/domain/content/rhythm_patterns.dart';
-import 'package:harmonia/domain/models/exercise.dart';
-import 'package:harmonia/domain/models/exercise_protocol.dart';
+import 'package:resonia/application/rhythm_imitation_controller.dart';
+import 'package:resonia/domain/audio/rhythm_imitation.dart';
+import 'package:resonia/domain/audio/rhythm_reference_clock.dart';
+import 'package:resonia/domain/content/rhythm_patterns.dart';
+import 'package:resonia/domain/models/exercise.dart';
+import 'package:resonia/domain/models/exercise_protocol.dart';
 
 import '../../support/fake_clip_player.dart';
 

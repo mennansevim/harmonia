@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../../app/theme/harmonia_theme.dart';
+import '../../app/theme/resonia_theme.dart';
 import '../../domain/learning/skill_graph.dart';
-import '../common/ui/harmonia_ui.dart';
+import '../common/ui/resonia_ui.dart';
 import 'home_data.dart';
 
 String stageTitle(SkillStage s) => switch (s) {
@@ -109,19 +109,19 @@ class _StageBanner extends StatelessWidget {
     final text = Theme.of(context).textTheme;
     return Padding(
       padding: const EdgeInsets.only(
-        top: HarmoniaSpacing.md,
-        bottom: HarmoniaSpacing.sm,
+        top: ResoniaSpacing.md,
+        bottom: ResoniaSpacing.sm,
       ),
       child: Semantics(
         header: true,
         child: Container(
           width: double.infinity,
-          padding: const EdgeInsets.all(HarmoniaSpacing.md),
+          padding: const EdgeInsets.all(ResoniaSpacing.md),
           decoration: BoxDecoration(
             color: measurable == 0
                 ? scheme.surfaceContainerHigh
                 : scheme.primary,
-            borderRadius: BorderRadius.circular(HarmoniaRadius.card),
+            borderRadius: BorderRadius.circular(ResoniaRadius.card),
             boxShadow: measurable == 0
                 ? null
                 : [
@@ -139,7 +139,7 @@ class _StageBanner extends StatelessWidget {
                   children: [
                     Text(
                       'BÖLÜM ${stage.index + 1}',
-                      style: harmoniaDataLabel(context).copyWith(
+                      style: resoniaDataLabel(context).copyWith(
                         color: measurable == 0
                             ? palette.muted
                             : scheme.onPrimary.withValues(alpha: .8),
@@ -336,7 +336,7 @@ class _NodeState extends State<_Node> {
         onTapCancel: () => setState(() => _down = false),
         onTapUp: (_) => setState(() => _down = false),
         onTap: () {
-          if (HarmoniaHapticsScope.enabled(context)) {
+          if (ResoniaHapticsScope.enabled(context)) {
             HapticFeedback.lightImpact();
           }
           widget.onTap();

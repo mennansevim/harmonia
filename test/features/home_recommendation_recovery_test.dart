@@ -2,13 +2,13 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/app/app_services.dart';
-import 'package:harmonia/app/theme/harmonia_theme.dart';
-import 'package:harmonia/application/result_history.dart';
-import 'package:harmonia/domain/models/learner_profile.dart';
-import 'package:harmonia/features/home/home_screen.dart';
-import 'package:harmonia/features/home/skill_path.dart';
-import 'package:harmonia/infrastructure/audio/orphan_audio_cleaner.dart';
+import 'package:resonia/app/app_services.dart';
+import 'package:resonia/app/theme/resonia_theme.dart';
+import 'package:resonia/application/result_history.dart';
+import 'package:resonia/domain/models/learner_profile.dart';
+import 'package:resonia/features/home/home_screen.dart';
+import 'package:resonia/features/home/skill_path.dart';
+import 'package:resonia/infrastructure/audio/orphan_audio_cleaner.dart';
 
 class _History extends InMemoryResultHistory {
   int loads = 0;
@@ -51,7 +51,7 @@ Widget _app(
   history: history,
   cleanup: cleanup,
   child: MaterialApp(
-    theme: dark ? HarmoniaTheme.dark() : HarmoniaTheme.light(),
+    theme: dark ? ResoniaTheme.dark() : ResoniaTheme.light(),
     home: HomeScreen(
       profile: LearnerProfile(
         goal: PracticeGoal.foundations,

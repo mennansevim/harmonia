@@ -1,12 +1,12 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/application/result_history.dart';
-import 'package:harmonia/domain/models/exercise.dart';
-import 'package:harmonia/domain/models/exercise_result.dart';
-import 'package:harmonia/domain/models/measurement_provenance.dart';
-import 'package:harmonia/domain/models/score_metric.dart';
-import 'package:harmonia/infrastructure/storage/file_result_history.dart';
+import 'package:resonia/application/result_history.dart';
+import 'package:resonia/domain/models/exercise.dart';
+import 'package:resonia/domain/models/exercise_result.dart';
+import 'package:resonia/domain/models/measurement_provenance.dart';
+import 'package:resonia/domain/models/score_metric.dart';
+import 'package:resonia/infrastructure/storage/file_result_history.dart';
 
 ResultHistoryEntry entry(String id, {double score = 80}) => ResultHistoryEntry(
   attemptId: id,

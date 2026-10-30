@@ -3,13 +3,13 @@ import 'dart:async';
 import 'package:audio_session/audio_session.dart';
 import 'package:flutter/material.dart';
 
-import '../../app/theme/harmonia_theme.dart';
+import '../../app/theme/resonia_theme.dart';
 import '../../application/melody_practice.dart';
 import '../../application/melody_practice_playback.dart';
 import '../../application/melody_session.dart';
 import '../../infrastructure/audio/just_audio_clip_player.dart';
 import '../../infrastructure/audio/synthetic_melody_backend.dart';
-import '../common/ui/harmonia_ui.dart';
+import '../common/ui/resonia_ui.dart';
 
 /// Reference-only route. The caller must close its capture session FIRST.
 /// Owns a fresh player and prevents back navigation until it is closed.
@@ -179,7 +179,7 @@ class _MelodyPracticeScreenState extends State<MelodyPracticeScreen>
                     : 'Sentetik · deneysel aday bölüm',
               ),
             ),
-            const SizedBox(height: HarmoniaSpacing.md),
+            const SizedBox(height: ResoniaSpacing.md),
             Text(
               'Ezginin bir bölümünü dinle',
               style: Theme.of(context).textTheme.headlineSmall,
@@ -189,11 +189,11 @@ class _MelodyPracticeScreenState extends State<MelodyPracticeScreen>
                   ? 'Mikrofon açılmaz. Bu seçim bir hata tespiti veya sınav değildir; dinleme geçmişe, puana ya da beceri ilerlemesine eklenmez.'
                   : 'Mikrofon açılmaz. Başlangıç seçimi yalnız deneysel frekans adaylarından türetilmiştir; doğrulanmış hata, puan veya hafıza sonucu değildir.',
             ),
-            const SizedBox(height: HarmoniaSpacing.md),
+            const SizedBox(height: ResoniaSpacing.md),
             Text(
               'Referans: ${widget.reference.id} • ${widget.reference.contentVersion}',
             ),
-            const SizedBox(height: HarmoniaSpacing.md),
+            const SizedBox(height: ResoniaSpacing.md),
             DropdownButtonFormField<int>(
               isExpanded: true,
               key: const Key('practice_start'),
@@ -210,7 +210,7 @@ class _MelodyPracticeScreenState extends State<MelodyPracticeScreen>
                     })
                   : null,
             ),
-            const SizedBox(height: HarmoniaSpacing.md),
+            const SizedBox(height: ResoniaSpacing.md),
             DropdownButtonFormField<int>(
               isExpanded: true,
               key: ValueKey('practice_end_$_start'),
@@ -226,7 +226,7 @@ class _MelodyPracticeScreenState extends State<MelodyPracticeScreen>
                   ? (value) => setState(() => _end = value!)
                   : null,
             ),
-            const SizedBox(height: HarmoniaSpacing.md),
+            const SizedBox(height: ResoniaSpacing.md),
             DropdownButtonFormField<int>(
               isExpanded: true,
               key: const Key('practice_repetitions'),
@@ -244,13 +244,13 @@ class _MelodyPracticeScreenState extends State<MelodyPracticeScreen>
                   ? (value) => setState(() => _repetitions = value!)
                   : null,
             ),
-            const SizedBox(height: HarmoniaSpacing.md),
+            const SizedBox(height: ResoniaSpacing.md),
             DataLabel('Seçim: ${_start + 1}–$_end. ses • $_repetitions tekrar'),
             for (var i = _start; i < _end; i++)
               Text(
                 '${i + 1}. ses: ${widget.reference.frequenciesHz[i].toStringAsFixed(2)} Hz',
               ),
-            const SizedBox(height: HarmoniaSpacing.md),
+            const SizedBox(height: ResoniaSpacing.md),
             Semantics(
               liveRegion: true,
               child: Text(
@@ -287,7 +287,7 @@ class _MelodyPracticeScreenState extends State<MelodyPracticeScreen>
                 (playback.phase == MelodyPracticePhase.loading ||
                     playback.phase == MelodyPracticePhase.playing ||
                     playback.phase == MelodyPracticePhase.stopping)) ...[
-              const SizedBox(height: HarmoniaSpacing.sm),
+              const SizedBox(height: ResoniaSpacing.sm),
               ChunkyButton(
                 key: const Key('practice_stop'),
                 label: 'Durdur',
@@ -297,7 +297,7 @@ class _MelodyPracticeScreenState extends State<MelodyPracticeScreen>
                     : playback.stop,
               ),
             ],
-            const SizedBox(height: HarmoniaSpacing.md),
+            const SizedBox(height: ResoniaSpacing.md),
             ExpansionTile(
               key: Key('practice_help'),
               tilePadding: EdgeInsets.zero,

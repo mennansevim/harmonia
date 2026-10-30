@@ -1,4 +1,4 @@
-# Harmonia — Ses testi ve kayıt prototipi devam notu
+# Resonia — Ses testi ve kayıt prototipi devam notu
 
 **Güncelleme:** 2026-10-11. Bu dosya uygulanmış altyapıyı ve henüz uygulanmamış cihaz işlerini ayırır.
 
@@ -33,7 +33,7 @@
 
 Agora'nın `public/sounds/piano` klasöründe **41 WAV** bulundu. Örnek olarak incelenen **C4.wav ve A4.wav: mono, 16-bit PCM, 48.000 Hz**. Diğer 39 dosyanın header/hash/süre/pitch doğrulaması yapılmadı. Bunlar piyano referanslarıdır; insan sesindeki algılama başarısını kanıtlamaz.
 
-Repo kökünde MIT lisansı var; piyano sample'larının özgün üretici/kaynak ve üçüncü taraf hak zinciri bu incelemede doğrulanmadı. Harmonia'ya ses dosyası kopyalanmadı. Envanter loader'ı, tüm dosyaların hash/header/süre/nota etiketini ve kaynak/hak referansını kaydetmeli. Dağıtılabilirlik doğrulanana kadar yerel prototip sentetik referans kullanabilir.
+Repo kökünde MIT lisansı var; piyano sample'larının özgün üretici/kaynak ve üçüncü taraf hak zinciri bu incelemede doğrulanmadı. Resonia'ya ses dosyası kopyalanmadı. Envanter loader'ı, tüm dosyaların hash/header/süre/nota etiketini ve kaynak/hak referansını kaydetmeli. Dağıtılabilirlik doğrulanana kadar yerel prototip sentetik referans kullanabilir.
 
 Gerçek insan benchmark: hedef doğru/yanlış nota, +/- oktav, sessizlik, konuşma/gürültü, kararsızlık, kısa buffer, clipping, eşlik sızıntısı. Gerçek cihaz/model/route ve kayıt koşulları ayrı manifest alanlarıyla genişletilmeli. Eğitimci etiketleri ve izinli özel depolama kullanıcı koordinasyonu gerektirir; sahte katılımcı veya onay üretilmez.
 
@@ -54,7 +54,7 @@ Resmî paket sayfalarında kontrol edilen adaylar:
 - [record](https://pub.dev/packages/record): mikrofon dosya/stream; WAV/PCM16, izin kontrolü, stop/cancel. İnceleme anındaki sayfa 7.1.2 gösterdi. Kurulumda Flutter/platform uyumu tekrar çözülüp lockfile'a kaydedilecek.
 - [just_audio](https://pub.dev/packages/just_audio): yerel dosya/referans çalma, stop/dispose, çalma bitişini bekleme. İnceleme anındaki sayfa 0.10.6 gösterdi.
 
-Harmonia lockfile'ında **record 7.1.2, just_audio 0.10.6, path_provider 2.1.6, audio_session 0.2.4** çözüldü. Paket varlığı; latency, route yönetimi veya DSP doğruluğu garantisi değildir. Cihazda kayıt henüz yapılmadı.
+Resonia lockfile'ında **record 7.1.2, just_audio 0.10.6, path_provider 2.1.6, audio_session 0.2.4** çözüldü. Paket varlığı; latency, route yönetimi veya DSP doğruluğu garantisi değildir. Cihazda kayıt henüz yapılmadı.
 
 ### Dar dilimin kabul matrisi / kalanlar
 
@@ -298,7 +298,7 @@ VAD/benchmark/eğitimci kapıları açık.
 
 `dart tool/quality_check.dart` format/analyze/full suite'i sequential fail-fast
 çalıştırır. Script-root guard invoking cwd'ye dayanmaz; Agora'dan --plan çağrısı
-yalnız Harmonia komutlarını gösterir. 10 runner testi: CLI plan/unknown option,
+yalnız Resonia komutlarını gösterir. 10 runner testi: CLI plan/unknown option,
 default no-fetch plan, explicit lock fetch, immutable argv, sırayla success,
 her adımda failure exit/short-circuit, missing executable, unexpected exception
 ve yanlış repo adı. Bunlar test otomasyonu regresyonları, audio QA değil.
@@ -1115,7 +1115,7 @@ temiz. Sentetik tonlar gerçek piyano/insan sesi, VAD, mikrofon, cihaz veya
 
 ## Koro: tek telefonda eşlikli kayıt (CHOIR-A0)
 
-Simülatör kanıtı: `integration_test/choir_journey_test.dart` gerçek eklentilerle çalma + kayıt + miks zincirini çalıştırır (önce `xcrun simctl privacy <id> grant microphone com.harmonia.harmonia`). Simülatörde kulaklık ve gerçek akustik yol yoktur; gecikme, bleed veya ses kalitesi kanıtı değildir.
+Simülatör kanıtı: `integration_test/choir_journey_test.dart` gerçek eklentilerle çalma + kayıt + miks zincirini çalıştırır (önce `xcrun simctl privacy <id> grant microphone com.resonia.resonia`). Simülatörde kulaklık ve gerçek akustik yol yoktur; gecikme, bleed veya ses kalitesi kanıtı değildir.
 
 Gerçek cihazda bakılacaklar: kablolu kulaklıkla kayıt; eşlik mikrofona sızıyor mu; `_lagMs` tahmini kulakla ne kadar tutuyor, hizalama kaydırıcısı ne kadar gerekiyor; AirPods ile A2DP çıkış + telefon mikrofonu gerçekten açılıyor mu; kayıt sırasında kulaklık çıkınca kayıt iptal oluyor mu; arama gelince davranış; Android'de aynı anda çalma/kayıt ve ses odağı; 10 dakikalık kayıtta bellek.
 

@@ -1,16 +1,16 @@
 import 'dart:math' as math;
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/domain/audio/recording_pitch_analyzer.dart';
-import 'package:harmonia/infrastructure/audio/pcm16_wav.dart';
-import 'package:harmonia/trainer/audio/synth.dart';
-import 'package:harmonia/trainer/domain/curriculum.dart';
-import 'package:harmonia/trainer/domain/music.dart';
-import 'package:harmonia/trainer/domain/trainers.dart';
-import 'package:harmonia/trainer/koro/aksak_patterns.dart';
-import 'package:harmonia/trainer/koro/range_test.dart';
-import 'package:harmonia/trainer/koro/voice_count.dart';
-import 'package:harmonia/trainer/quiz/quiz.dart';
+import 'package:resonia/domain/audio/recording_pitch_analyzer.dart';
+import 'package:resonia/infrastructure/audio/pcm16_wav.dart';
+import 'package:resonia/trainer/audio/synth.dart';
+import 'package:resonia/trainer/domain/curriculum.dart';
+import 'package:resonia/trainer/domain/music.dart';
+import 'package:resonia/trainer/domain/trainers.dart';
+import 'package:resonia/trainer/koro/aksak_patterns.dart';
+import 'package:resonia/trainer/koro/range_test.dart';
+import 'package:resonia/trainer/koro/voice_count.dart';
+import 'package:resonia/trainer/quiz/quiz.dart';
 
 void main() {
   group('music vocabulary', () {

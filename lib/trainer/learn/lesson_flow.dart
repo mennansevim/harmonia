@@ -16,7 +16,7 @@ import '../sing/trainer_pitch_sing_session.dart';
 import '../ui/kit.dart';
 import 'session_end.dart';
 
-/// Harmonia lesson: Dinle (meet each new sound) → Söyle (sing it back,
+/// Resonia lesson: Dinle (meet each new sound) → Söyle (sing it back,
 /// self-paced and unmeasured) → Ayırt et (scored listening practice).
 /// Gates skip straight to the scored part; the intro only reads.
 class LessonFlow extends StatefulWidget {

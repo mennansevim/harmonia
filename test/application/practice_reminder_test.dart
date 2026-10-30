@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/application/practice_preferences.dart';
-import 'package:harmonia/application/practice_reminder.dart';
+import 'package:resonia/application/practice_preferences.dart';
+import 'package:resonia/application/practice_reminder.dart';
 
 class _Platform implements PracticeReminderPlatform {
   ReminderPermission current = ReminderPermission.unknown;

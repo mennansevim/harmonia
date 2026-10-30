@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/infrastructure/audio/click_track.dart';
-import 'package:harmonia/infrastructure/audio/pcm16_wav.dart';
+import 'package:resonia/infrastructure/audio/click_track.dart';
+import 'package:resonia/infrastructure/audio/pcm16_wav.dart';
 
 void main() {
   test('clicks start on the exact onset sample and round-trip as WAV', () {

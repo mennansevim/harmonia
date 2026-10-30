@@ -16,7 +16,7 @@ val keystoreProperties = Properties().apply {
 val hasReleaseKey = keystoreProperties.getProperty("storeFile") != null
 
 android {
-    namespace = "com.harmonia.harmonia"
+    namespace = "com.resonia.resonia"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -28,7 +28,7 @@ android {
 
     defaultConfig {
         // Store ID is final once published; confirm before the first upload.
-        applicationId = "com.harmonia.harmonia"
+        applicationId = "com.resonia.resonia"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
@@ -54,7 +54,7 @@ android {
             if (hasReleaseKey) {
                 signingConfig = signingConfigs.getByName("release")
             } else {
-                logger.warn("Harmonia: android/key.properties yok; release DEBUG anahtarıyla imzalanıyor (mağazaya yüklenemez).")
+                logger.warn("Resonia: android/key.properties yok; release DEBUG anahtarıyla imzalanıyor (mağazaya yüklenemez).")
                 signingConfig = signingConfigs.getByName("debug")
             }
         }

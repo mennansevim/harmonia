@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/choir/midi/smf_reader.dart';
+import 'package:resonia/choir/midi/smf_reader.dart';
 
 /// Minimal SMF writer for fixtures: bytes are built here, not copied from
 /// any third-party file.

@@ -3,8 +3,8 @@ import 'dart:typed_data';
 
 import 'package:crypto/crypto.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/domain/audio/reviewed_chord_recording_manifest.dart';
-import 'package:harmonia/infrastructure/audio/reviewed_chord_recording_loader.dart';
+import 'package:resonia/domain/audio/reviewed_chord_recording_manifest.dart';
+import 'package:resonia/infrastructure/audio/reviewed_chord_recording_loader.dart';
 
 Uint8List wav({int rate = 8000, int channels = 1, int frames = 800}) {
   final bytes = Uint8List(44 + frames * channels * 2);
@@ -34,7 +34,7 @@ void main() {
 
   setUp(() async {
     temporary = await Directory.systemTemp.createTemp(
-      'harmonia-reviewed-chord-loader-',
+      'resonia-reviewed-chord-loader-',
     );
     root = await Directory('${temporary.path}/chords').create();
     await Directory('${root.path}/2-notes').create();

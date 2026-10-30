@@ -4,12 +4,12 @@ import 'dart:ui' show PlatformDispatcher;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/app/app_channel.dart';
-import 'package:harmonia/app/error_handling.dart';
-import 'package:harmonia/application/app_shell_controller.dart';
-import 'package:harmonia/application/error_log.dart';
-import 'package:harmonia/application/profile_repository.dart';
-import 'package:harmonia/features/settings/settings_screen.dart';
+import 'package:resonia/app/app_channel.dart';
+import 'package:resonia/app/error_handling.dart';
+import 'package:resonia/application/app_shell_controller.dart';
+import 'package:resonia/application/error_log.dart';
+import 'package:resonia/application/profile_repository.dart';
+import 'package:resonia/features/settings/settings_screen.dart';
 
 void main() {
   final at = DateTime.utc(2026, 10, 13, 21, 5, 33);
@@ -18,7 +18,7 @@ void main() {
     final log = LocalErrorLog(clock: () => at);
     final stack = StackTrace.fromString(
       '#0 foo (package:flutter/src/x.dart:1:1)\n'
-      '#1 bar (package:harmonia/features/home/home_screen.dart:42:7)\n',
+      '#1 bar (package:resonia/features/home/home_screen.dart:42:7)\n',
     );
     log.record(
       StateError('user typed: my secret'),
@@ -32,7 +32,7 @@ void main() {
     final report = log.report(channel: 'beta');
     expect(report, isNot(contains('secret')));
     final doc = jsonDecode(report) as Map<String, Object?>;
-    expect(doc['format'], 'harmonia-error-report');
+    expect(doc['format'], 'resonia-error-report');
     expect(doc['channel'], 'beta');
   });
 

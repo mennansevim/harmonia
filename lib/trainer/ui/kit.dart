@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 
 import '../domain/trainers.dart';
 
-/// Harmonia visual system (A+C brand, see lib/app/theme): lavender canvas,
+/// Resonia visual system (A+C brand, see lib/app/theme): lavender canvas,
 /// indigo primary shared with the choir workshop, sun for streaks and one
 /// accent colour per skill.
 abstract final class TC {

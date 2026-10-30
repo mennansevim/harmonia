@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import '../../app/theme/harmonia_theme.dart';
+import '../../app/theme/resonia_theme.dart';
 import '../../application/microphone_permission_recovery.dart';
 import '../../application/single_tone_session.dart';
 import '../../domain/audio/audio_capture.dart';
@@ -11,7 +11,7 @@ import '../../domain/audio/recording_pitch_analyzer.dart';
 import '../../infrastructure/audio/isolate_recording_pitch_worker.dart';
 import '../../infrastructure/audio/plugin_audio_lab_backend.dart';
 import '../common/input_level_meter.dart';
-import '../common/ui/harmonia_ui.dart';
+import '../common/ui/resonia_ui.dart';
 import '../common/ui/microphone_permission_recovery_card.dart';
 
 /// SESSION-01 UI: real capture flow, but no correct/incorrect decision until
@@ -77,14 +77,14 @@ class _SingleToneSessionScreenState extends State<SingleToneSessionScreen>
               alignment: AlignmentDirectional.centerStart,
               child: StatusPill('Deneysel'),
             ),
-            const SizedBox(height: HarmoniaSpacing.md),
+            const SizedBox(height: ResoniaSpacing.md),
             Text('Tek ses: dinle ve söyle', style: text.headlineSmall),
             Text('Hedef: Do (C4)', style: text.titleMedium),
-            const SizedBox(height: HarmoniaSpacing.xs),
+            const SizedBox(height: ResoniaSpacing.xs),
             const Text(
               'Referans sentetik bir tondur. Doğru/yanlış kararı ve puan henüz verilmez.',
             ),
-            const SizedBox(height: HarmoniaSpacing.lg),
+            const SizedBox(height: ResoniaSpacing.lg),
             Semantics(
               liveRegion: true,
               child: Text(
@@ -108,13 +108,13 @@ class _SingleToneSessionScreenState extends State<SingleToneSessionScreen>
                     session.phase == SingleToneSessionPhase.calibrating) &&
                 session.backend is InputLevelSource)
               Padding(
-                padding: const EdgeInsets.only(top: HarmoniaSpacing.sm),
+                padding: const EdgeInsets.only(top: ResoniaSpacing.sm),
                 child: InputLevelMeter(
                   levels: (session.backend as InputLevelSource).inputLevelDb,
                 ),
               ),
             if (session.outcome case final outcome?) ...[
-              const SizedBox(height: HarmoniaSpacing.md),
+              const SizedBox(height: ResoniaSpacing.md),
               _OutcomeCard(outcome: outcome),
               if (outcome.retryReason == SessionRetryReason.permissionDenied)
                 MicrophonePermissionRecoveryCard(
@@ -143,7 +143,7 @@ class _SingleToneSessionScreenState extends State<SingleToneSessionScreen>
                 icon: Icons.mic_none_rounded,
                 label: 'Ortamı ölç (2 sn sessizlik)',
               ),
-              const SizedBox(height: HarmoniaSpacing.sm),
+              const SizedBox(height: ResoniaSpacing.sm),
               ChunkyButton(
                 key: const Key('session_start'),
                 onPressed: () {
@@ -165,7 +165,7 @@ class _SingleToneSessionScreenState extends State<SingleToneSessionScreen>
                 icon: Icons.stop_rounded,
                 label: 'Bitirdim',
               ),
-              const SizedBox(height: HarmoniaSpacing.sm),
+              const SizedBox(height: ResoniaSpacing.sm),
             ],
             if (busy && session.phase != SingleToneSessionPhase.closed)
               ChunkyButton(
@@ -226,7 +226,7 @@ class _OutcomeCard extends StatelessWidget {
     return Card(
       key: const Key('session_outcome'),
       child: Padding(
-        padding: const EdgeInsets.all(HarmoniaSpacing.md),
+        padding: const EdgeInsets.all(ResoniaSpacing.md),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -236,7 +236,7 @@ class _OutcomeCard extends StatelessWidget {
                   outcome.needsRetry ? Icons.refresh : Icons.insights_outlined,
                   color: neutral,
                 ),
-                const SizedBox(width: HarmoniaSpacing.sm),
+                const SizedBox(width: ResoniaSpacing.sm),
                 Expanded(
                   child: Text(
                     title,
@@ -245,7 +245,7 @@ class _OutcomeCard extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: HarmoniaSpacing.xs),
+            const SizedBox(height: ResoniaSpacing.xs),
             Text(body, key: const Key('session_outcome_body')),
           ],
         ),
@@ -261,7 +261,7 @@ String _retryText(
   SessionRetryReason.calibrationRequired =>
     'Önce ortamı ölç. Çıkış (kulaklık/hoparlör) değiştiyse veya ölçüm eskidiyse yeniden ölçmek gerekir.',
   SessionRetryReason.permissionDenied =>
-    'Mikrofon izni yok. Telefon ayarlarından Harmonia için mikrofonu açabilirsin; referansı dinlemek için izin gerekmez.',
+    'Mikrofon izni yok. Telefon ayarlarından Resonia için mikrofonu açabilirsin; referansı dinlemek için izin gerekmez.',
   SessionRetryReason.routeUnsupported =>
     'Bu ses çıkışıyla bu çalışma yapılamıyor. Kablolu kulaklık dene.',
   SessionRetryReason.interrupted =>
@@ -294,7 +294,7 @@ class _Details extends StatelessWidget {
     final hz = outcome.evidence?.representativeFrequencyHz;
     return Padding(
       key: const Key('session_details_panel'),
-      padding: const EdgeInsets.symmetric(vertical: HarmoniaSpacing.sm),
+      padding: const EdgeInsets.symmetric(vertical: ResoniaSpacing.sm),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

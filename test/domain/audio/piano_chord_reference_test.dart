@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/domain/audio/piano_chord_reference.dart';
-import 'package:harmonia/domain/models/exercise.dart';
-import 'package:harmonia/domain/models/exercise_protocol.dart';
+import 'package:resonia/domain/audio/piano_chord_reference.dart';
+import 'package:resonia/domain/models/exercise.dart';
+import 'package:resonia/domain/models/exercise_protocol.dart';
 
 void main() {
   for (final keys in [

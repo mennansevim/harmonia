@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/application/result_history.dart';
-import 'package:harmonia/domain/content/rhythm_patterns.dart';
-import 'package:harmonia/features/learning/micro_lesson_screen.dart';
-import 'package:harmonia/features/rhythm_imitation/rhythm_imitation_screen.dart';
+import 'package:resonia/application/result_history.dart';
+import 'package:resonia/domain/content/rhythm_patterns.dart';
+import 'package:resonia/features/learning/micro_lesson_screen.dart';
+import 'package:resonia/features/rhythm_imitation/rhythm_imitation_screen.dart';
 
 import '../support/fake_clip_player.dart';
 

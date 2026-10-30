@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import '../../app/theme/harmonia_theme.dart';
+import '../../app/theme/resonia_theme.dart';
 import '../../application/interval_controller.dart';
 import '../../application/review_playback.dart';
 import '../../application/result_history.dart';
@@ -15,7 +15,7 @@ import '../../infrastructure/audio/click_track.dart';
 import '../../infrastructure/audio/just_audio_clip_player.dart';
 import '../common/sound/playback_visual.dart';
 import '../common/sound/waveform_playback_view.dart';
-import '../common/ui/harmonia_ui.dart';
+import '../common/ui/resonia_ui.dart';
 import '../common/ui/answer_comparison_card.dart';
 import '../learning/micro_lesson_screen.dart';
 
@@ -163,7 +163,7 @@ class _IntervalScreenState extends State<IntervalScreen>
                           : null,
                     ),
                   ),
-                  const SizedBox(width: HarmoniaSpacing.sm),
+                  const SizedBox(width: ResoniaSpacing.sm),
                   if (c.guidedRetry)
                     const StatusPill(
                       'Tekrar',
@@ -181,24 +181,24 @@ class _IntervalScreenState extends State<IntervalScreen>
                     const StatusPill('Taslak'),
                 ],
               ),
-              const SizedBox(height: HarmoniaSpacing.md),
+              const SizedBox(height: ResoniaSpacing.md),
               if (o == null) ...[
                 Text(
                   'Do\'dan sonra hangi derece?',
                   key: const Key('int_progress'),
                   style: text.headlineSmall,
                 ),
-                const SizedBox(height: HarmoniaSpacing.xs),
+                const SizedBox(height: ResoniaSpacing.xs),
                 Text(
                   'Önce tonu duy (do–mi–sol), sonra do ve hedef ses.',
                   style: text.bodyMedium?.copyWith(
                     color: context.palette.muted,
                   ),
                 ),
-                const SizedBox(height: HarmoniaSpacing.md),
+                const SizedBox(height: ResoniaSpacing.md),
                 Card(
                   child: Padding(
-                    padding: const EdgeInsets.all(HarmoniaSpacing.md),
+                    padding: const EdgeInsets.all(ResoniaSpacing.md),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
@@ -206,7 +206,7 @@ class _IntervalScreenState extends State<IntervalScreen>
                           playback: _visual.current,
                           idleLabel: 'Tonik, ardından do ve hedef derece',
                         ),
-                        const SizedBox(height: HarmoniaSpacing.md),
+                        const SizedBox(height: ResoniaSpacing.md),
                         ChunkyButton(
                           key: const Key('int_play'),
                           onPressed: c.canPlay ? c.playCurrent : null,
@@ -222,7 +222,7 @@ class _IntervalScreenState extends State<IntervalScreen>
                         ),
                         if (c.playbackFailed)
                           const Padding(
-                            padding: EdgeInsets.only(top: HarmoniaSpacing.sm),
+                            padding: EdgeInsets.only(top: ResoniaSpacing.sm),
                             child: Text('Ses çalınamadı. Yeniden dene.'),
                           ),
                       ],
@@ -247,7 +247,7 @@ class _IntervalScreenState extends State<IntervalScreen>
                   ],
                 ),
                 if (feedback) ...[
-                  const SizedBox(height: HarmoniaSpacing.md),
+                  const SizedBox(height: ResoniaSpacing.md),
                   FeedbackPanel(
                     correct: c.lastAnswerCorrect,
                     textKey: const Key('int_feedback'),
@@ -298,7 +298,7 @@ class _Summary extends StatelessWidget {
               : 'Tur bitti',
           style: text.headlineSmall,
         ),
-        const SizedBox(height: HarmoniaSpacing.md),
+        const SizedBox(height: ResoniaSpacing.md),
         Row(
           children: [
             Expanded(
@@ -308,14 +308,14 @@ class _Summary extends StatelessWidget {
                 valueColor: clean ? context.resultColors.correct : null,
               ),
             ),
-            const SizedBox(width: HarmoniaSpacing.sm),
+            const SizedBox(width: ResoniaSpacing.sm),
             Expanded(
               child: StatTile(
                 label: 'Şans',
                 value: '%${outcome.chancePercent.round()}',
               ),
             ),
-            const SizedBox(width: HarmoniaSpacing.sm),
+            const SizedBox(width: ResoniaSpacing.sm),
             Expanded(
               child: StatTile(
                 label: 'Seçenek',
@@ -324,21 +324,21 @@ class _Summary extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: HarmoniaSpacing.md),
+        const SizedBox(height: ResoniaSpacing.md),
         Card(
           child: Padding(
-            padding: const EdgeInsets.all(HarmoniaSpacing.md),
+            padding: const EdgeInsets.all(ResoniaSpacing.md),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const DataLabel('Ne oldu'),
-                const SizedBox(height: HarmoniaSpacing.xs),
+                const SizedBox(height: ResoniaSpacing.xs),
                 Text(
                   '$total sorudan ${outcome.correctCount} doğru.',
                   key: const Key('int_summary_text'),
                   style: text.titleMedium,
                 ),
-                const SizedBox(height: HarmoniaSpacing.xs),
+                const SizedBox(height: ResoniaSpacing.xs),
                 Text(
                   controller.guidedRetry
                       ? 'Yalnız önceki turda kaçırdığın $total derece tekrarlandı. Bu rehberli tur ölçüt veya ustalık kanıtı üretmez.'
@@ -346,7 +346,7 @@ class _Summary extends StatelessWidget {
                 ),
                 if (controller.recordOutcome != null)
                   Padding(
-                    padding: const EdgeInsets.only(top: HarmoniaSpacing.xs),
+                    padding: const EdgeInsets.only(top: ResoniaSpacing.xs),
                     child: Text(
                       'Sonuç bu cihazdaki geçmişine kaydedildi.',
                       style: text.bodySmall?.copyWith(
@@ -358,7 +358,7 @@ class _Summary extends StatelessWidget {
                   const Text('Sonuç geçmişe kaydedilemedi.'),
                 if (controller.guidedRetry)
                   const Padding(
-                    padding: EdgeInsets.only(top: HarmoniaSpacing.xs),
+                    padding: EdgeInsets.only(top: ResoniaSpacing.xs),
                     child: Text(
                       'Bu kısa hata tekrarı çalışma içindir; geçmişe, beceri durumuna veya sınav sonucuna eklenmedi.',
                       key: Key('int_guided_notice'),
@@ -369,16 +369,16 @@ class _Summary extends StatelessWidget {
           ),
         ),
         if (confusions.isNotEmpty) ...[
-          const SizedBox(height: HarmoniaSpacing.sm),
+          const SizedBox(height: ResoniaSpacing.sm),
           Card(
             color: context.palette.sun.withValues(alpha: .16),
             child: Padding(
-              padding: const EdgeInsets.all(HarmoniaSpacing.md),
+              padding: const EdgeInsets.all(ResoniaSpacing.md),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   const DataLabel('En çok karışan'),
-                  const SizedBox(height: HarmoniaSpacing.xs),
+                  const SizedBox(height: ResoniaSpacing.xs),
                   Text(
                     'En çok karışan: ${confusions.first.key.replaceAll('→', ' yerine ')} (${confusions.first.value} kez). Bu iki dereceyi do\'dan başlayarak tekrar dinle.',
                     key: const Key('int_confusion'),
@@ -388,7 +388,7 @@ class _Summary extends StatelessWidget {
             ),
           ),
         ],
-        const SizedBox(height: HarmoniaSpacing.md),
+        const SizedBox(height: ResoniaSpacing.md),
         if (controller.mistakeCount > 0) ...[
           ChunkyButton(
             key: const Key('int_guided_retry'),
@@ -396,7 +396,7 @@ class _Summary extends StatelessWidget {
             icon: Icons.my_location_rounded,
             onPressed: () => unawaited(controller.startGuidedRetry()),
           ),
-          const SizedBox(height: HarmoniaSpacing.sm),
+          const SizedBox(height: ResoniaSpacing.sm),
           if (!controller.guidedRetry) ...[
             OutlinedButton.icon(
               key: const Key('int_concept_review'),
@@ -413,7 +413,7 @@ class _Summary extends StatelessWidget {
             const Text(
               'İsteğe bağlı metin taslağıdır; tur sonucunu ve beceri durumunu değiştirmez.',
             ),
-            const SizedBox(height: HarmoniaSpacing.sm),
+            const SizedBox(height: ResoniaSpacing.sm),
           ],
         ],
         ChunkyButton(
@@ -422,7 +422,7 @@ class _Summary extends StatelessWidget {
           icon: Icons.replay_rounded,
           onPressed: controller.newRound,
         ),
-        const SizedBox(height: HarmoniaSpacing.lg),
+        const SizedBox(height: ResoniaSpacing.lg),
         Text('Cevaplarını karşılaştır', style: text.titleLarge),
         const Text(
           'Çalınan sentetik örnek ile dokunarak verdiğin cevap gösterilir; '

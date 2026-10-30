@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/app/harmonia_app.dart';
-import 'package:harmonia/app/theme/harmonia_theme.dart';
-import 'package:harmonia/application/profile_repository.dart';
-import 'package:harmonia/application/practice_preferences.dart';
-import 'package:harmonia/application/result_history.dart';
-import 'package:harmonia/domain/audio/rhythm_imitation.dart';
-import 'package:harmonia/domain/content/rhythm_patterns.dart';
-import 'package:harmonia/domain/models/learner_profile.dart';
-import 'package:harmonia/infrastructure/audio/orphan_audio_cleaner.dart';
+import 'package:resonia/app/resonia_app.dart';
+import 'package:resonia/app/theme/resonia_theme.dart';
+import 'package:resonia/application/profile_repository.dart';
+import 'package:resonia/application/practice_preferences.dart';
+import 'package:resonia/application/result_history.dart';
+import 'package:resonia/domain/audio/rhythm_imitation.dart';
+import 'package:resonia/domain/content/rhythm_patterns.dart';
+import 'package:resonia/domain/models/learner_profile.dart';
+import 'package:resonia/infrastructure/audio/orphan_audio_cleaner.dart';
 
 import '../application/app_shell_controller_test.dart'
     show FlakyProfileRepository;
@@ -41,7 +41,7 @@ void main() {
   ) async {
     final repo = InMemoryProfileRepository();
     await tester.pumpWidget(
-      HarmoniaApp(
+      ResoniaApp(
         profiles: repo,
         history: InMemoryResultHistory(),
         startupCleanup: _noSweep,
@@ -102,7 +102,7 @@ void main() {
       );
     }
     await tester.pumpWidget(
-      HarmoniaApp(
+      ResoniaApp(
         startupCleanup: _noSweep,
         history: history,
         profiles: InMemoryProfileRepository(
@@ -131,7 +131,7 @@ void main() {
 
   testWidgets('home opens the goal-filtered skill map', (tester) async {
     await tester.pumpWidget(
-      HarmoniaApp(
+      ResoniaApp(
         startupCleanup: _noSweep,
         history: InMemoryResultHistory(),
         profiles: InMemoryProfileRepository(
@@ -153,7 +153,7 @@ void main() {
 
   testWidgets('home opens local history through app services', (tester) async {
     await tester.pumpWidget(
-      HarmoniaApp(
+      ResoniaApp(
         startupCleanup: _noSweep,
         profiles: InMemoryProfileRepository(
           LearnerProfile(
@@ -180,7 +180,7 @@ void main() {
     ) async {
       var swept = 0;
       await tester.pumpWidget(
-        HarmoniaApp(
+        ResoniaApp(
           profiles: InMemoryProfileRepository(
             LearnerProfile(
               goal: PracticeGoal.conservatory,
@@ -214,7 +214,7 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(
-      HarmoniaApp(
+      ResoniaApp(
         startupCleanup: _noSweep,
         history: InMemoryResultHistory(),
         profiles: InMemoryProfileRepository(
@@ -242,7 +242,7 @@ void main() {
       ),
     );
     await tester.pumpWidget(
-      HarmoniaApp(
+      ResoniaApp(
         profiles: repo,
         history: InMemoryResultHistory(),
         startupCleanup: _noSweep,
@@ -284,7 +284,7 @@ void main() {
     final repo = FlakyProfileRepository()
       ..loadFailure = ProfileStorageFailure.corrupt;
     await tester.pumpWidget(
-      HarmoniaApp(
+      ResoniaApp(
         profiles: repo,
         history: InMemoryResultHistory(),
         startupCleanup: _noSweep,
@@ -305,7 +305,7 @@ void main() {
   ) async {
     _narrow(tester);
     await tester.pumpWidget(
-      HarmoniaApp(
+      ResoniaApp(
         profiles: InMemoryProfileRepository(),
         history: InMemoryResultHistory(),
         startupCleanup: _noSweep,
@@ -331,7 +331,7 @@ void main() {
     tester.platformDispatcher.platformBrightnessTestValue = Brightness.dark;
     addTearDown(tester.platformDispatcher.clearPlatformBrightnessTestValue);
     await tester.pumpWidget(
-      HarmoniaApp(
+      ResoniaApp(
         profiles: InMemoryProfileRepository(),
         history: InMemoryResultHistory(),
         startupCleanup: _noSweep,
@@ -340,12 +340,12 @@ void main() {
     await tester.pumpAndSettle();
     final context = tester.element(find.text('Ne için çalışıyorsun?'));
     expect(Theme.of(context).brightness, Brightness.dark);
-    expect(context.resultColors, HarmoniaResultColors.dark);
+    expect(context.resultColors, ResoniaResultColors.dark);
     expect(tester.takeException(), isNull);
   });
 
   test('result tokens never reuse success for octave or error for invalid', () {
-    for (final c in [HarmoniaResultColors.light, HarmoniaResultColors.dark]) {
+    for (final c in [ResoniaResultColors.light, ResoniaResultColors.dark]) {
       expect(c.wrongOctave, isNot(c.correct));
       expect(c.notMeasured, isNot(c.incorrect));
       expect(c.notMeasured, isNot(c.correct));
@@ -360,8 +360,8 @@ void main() {
           (l1 > l2 ? l2 + 0.05 : l1 + 0.05);
     }
 
-    const l = HarmoniaResultColors.light;
-    const d = HarmoniaResultColors.dark;
+    const l = ResoniaResultColors.light;
+    const d = ResoniaResultColors.dark;
     for (final c in [
       l.correct,
       l.nearMiss,

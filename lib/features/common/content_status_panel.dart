@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../app/theme/harmonia_theme.dart';
+import '../../app/theme/resonia_theme.dart';
 
 enum ContentStatusKind { loading, empty, error }
 
@@ -19,7 +19,7 @@ class ContentStatusPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.all(HarmoniaSpacing.lg),
+    padding: const EdgeInsets.all(ResoniaSpacing.lg),
     child: Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -30,7 +30,7 @@ class ContentStatusPanel extends StatelessWidget {
           ),
         Semantics(liveRegion: true, child: Text(message)),
         if (kind == ContentStatusKind.error && onRetry != null) ...[
-          const SizedBox(height: HarmoniaSpacing.sm),
+          const SizedBox(height: ResoniaSpacing.sm),
           OutlinedButton(onPressed: onRetry, child: const Text('Yeniden dene')),
         ],
       ],
@@ -44,8 +44,8 @@ class LocalOnlyNotice extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Padding(
     padding: const EdgeInsets.symmetric(
-      horizontal: HarmoniaSpacing.lg,
-      vertical: HarmoniaSpacing.sm,
+      horizontal: ResoniaSpacing.lg,
+      vertical: ResoniaSpacing.sm,
     ),
     child: Text(
       'Yerel çalışma • Bu ekrandaki sonuçlar cihazında tutulur; sunucuya gönderilmez.',

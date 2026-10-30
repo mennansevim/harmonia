@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../app/theme/harmonia_theme.dart';
+import '../../app/theme/resonia_theme.dart';
 import '../../application/practice_preferences.dart';
 import 'home_data.dart';
 
@@ -32,7 +32,7 @@ class RecentPracticeCard extends StatelessWidget {
     final goalActionPending = loadingGoal || savingGoal;
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(HarmoniaSpacing.md),
+        padding: const EdgeInsets.all(ResoniaSpacing.md),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -40,10 +40,10 @@ class RecentPracticeCard extends StatelessWidget {
               'Son 7 günde $active çalışma günü',
               style: Theme.of(context).textTheme.titleMedium,
             ),
-            const SizedBox(height: HarmoniaSpacing.sm),
+            const SizedBox(height: ResoniaSpacing.sm),
             Wrap(
-              spacing: HarmoniaSpacing.sm,
-              runSpacing: HarmoniaSpacing.sm,
+              spacing: ResoniaSpacing.sm,
+              runSpacing: ResoniaSpacing.sm,
               children: [
                 for (final day in days)
                   Chip(
@@ -54,14 +54,14 @@ class RecentPracticeCard extends StatelessWidget {
                   ),
               ],
             ),
-            const SizedBox(height: HarmoniaSpacing.sm),
+            const SizedBox(height: ResoniaSpacing.sm),
             const Text(
               'Bu cihazdaki geçerli ve desteklenen turlar sayılır. '
               'Çalışma düzenini gösterir; beceri puanı değildir. '
               'Düşük doğru sayısı da çalışma günü sayılır.',
             ),
             if (onWeeklyGoalChanged != null) ...[
-              const SizedBox(height: HarmoniaSpacing.md),
+              const SizedBox(height: ResoniaSpacing.md),
               Text(
                 'Gönüllü haftalık hedef',
                 style: Theme.of(context).textTheme.titleSmall,
@@ -72,10 +72,10 @@ class RecentPracticeCard extends StatelessWidget {
                     : '$active/${goal.days} gün${goalMet ? ' · Son 7 gün hedefin tamamlandı.' : ''}',
                 key: const Key('weekly_goal_status'),
               ),
-              const SizedBox(height: HarmoniaSpacing.sm),
+              const SizedBox(height: ResoniaSpacing.sm),
               Wrap(
-                spacing: HarmoniaSpacing.sm,
-                runSpacing: HarmoniaSpacing.sm,
+                spacing: ResoniaSpacing.sm,
+                runSpacing: ResoniaSpacing.sm,
                 children: [
                   ChoiceChip(
                     key: const Key('weekly_goal_none'),
@@ -98,7 +98,7 @@ class RecentPracticeCard extends StatelessWidget {
               ),
               if (loadingGoal)
                 Padding(
-                  padding: const EdgeInsets.only(top: HarmoniaSpacing.sm),
+                  padding: const EdgeInsets.only(top: ResoniaSpacing.sm),
                   child: Semantics(
                     liveRegion: true,
                     child: const Text('Haftalık hedef yükleniyor…'),
@@ -106,7 +106,7 @@ class RecentPracticeCard extends StatelessWidget {
                 )
               else if (savingGoal)
                 Padding(
-                  padding: const EdgeInsets.only(top: HarmoniaSpacing.sm),
+                  padding: const EdgeInsets.only(top: ResoniaSpacing.sm),
                   child: Semantics(
                     liveRegion: true,
                     child: const Text('Haftalık hedef kaydediliyor…'),
@@ -114,7 +114,7 @@ class RecentPracticeCard extends StatelessWidget {
                 ),
               if (goalError != null)
                 Padding(
-                  padding: const EdgeInsets.only(top: HarmoniaSpacing.sm),
+                  padding: const EdgeInsets.only(top: ResoniaSpacing.sm),
                   child: Semantics(
                     liveRegion: true,
                     child: Text(
@@ -133,7 +133,7 @@ class RecentPracticeCard extends StatelessWidget {
                     label: const Text('Tercihleri yeniden yükle'),
                   ),
                 ),
-              const SizedBox(height: HarmoniaSpacing.sm),
+              const SizedBox(height: ResoniaSpacing.sm),
               const Text(
                 'Bu hedef seri, beceri puanı veya sınav sonucu değildir. '
                 'Kaçırınca ceza uygulanmaz; istediğin zaman değiştirebilir ya da kapatabilirsin.',

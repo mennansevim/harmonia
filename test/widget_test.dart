@@ -3,11 +3,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:harmonia/app/theme/harmonia_theme.dart';
-import 'package:harmonia/domain/audio/pitch_analyzer.dart';
-import 'package:harmonia/features/common/ui/harmonia_ui.dart';
-import 'package:harmonia/features/single_tone_exercise/single_tone_exercise_screen.dart';
-import 'package:harmonia/infrastructure/audio/mock/mock_pitch_analyzer.dart';
+import 'package:resonia/app/theme/resonia_theme.dart';
+import 'package:resonia/domain/audio/pitch_analyzer.dart';
+import 'package:resonia/features/common/ui/resonia_ui.dart';
+import 'package:resonia/features/single_tone_exercise/single_tone_exercise_screen.dart';
+import 'package:resonia/infrastructure/audio/mock/mock_pitch_analyzer.dart';
 
 class _Analyzer extends PitchAnalyzer {
   int calls = 0;
@@ -137,10 +137,7 @@ void main() {
     addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
     addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
     await tester.pumpWidget(
-      MaterialApp(
-        theme: HarmoniaTheme.dark(),
-        home: SingleToneExerciseScreen(),
-      ),
+      MaterialApp(theme: ResoniaTheme.dark(), home: SingleToneExerciseScreen()),
     );
     for (final scenario in MockPitchScenario.values) {
       await choose(tester, scenario.name);
@@ -148,7 +145,7 @@ void main() {
       if (scenario == MockPitchScenario.silence ||
           scenario == MockPitchScenario.noisy) {
         final title = tester.widget<Text>(find.text('Ölçüm Alınamadı'));
-        expect(title.style!.color, HarmoniaResultColors.dark.notMeasured);
+        expect(title.style!.color, ResoniaResultColors.dark.notMeasured);
         expect(find.textContaining('Genel:'), findsNothing);
       }
       expect(tester.takeException(), isNull);
@@ -167,7 +164,7 @@ void main() {
         await tester.pumpWidget(
           MaterialApp(
             key: UniqueKey(),
-            theme: dark ? HarmoniaTheme.dark() : HarmoniaTheme.light(),
+            theme: dark ? ResoniaTheme.dark() : ResoniaTheme.light(),
             home: SingleToneExerciseScreen(),
           ),
         );

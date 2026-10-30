@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../app/theme/harmonia_theme.dart';
+import '../../app/theme/resonia_theme.dart';
 import '../../application/practice_preferences.dart';
 import '../../application/result_history.dart';
 import '../../domain/learning/daily_plan.dart';
@@ -11,7 +11,7 @@ import '../learning/exercise_launcher.dart';
 import '../learning/next_step_text.dart';
 import '../common/content_status_panel.dart';
 import '../common/foreground_refresh_state.dart';
-import '../common/ui/harmonia_ui.dart';
+import '../common/ui/resonia_ui.dart';
 
 /// LEARN-03 view: today's timed plan. Rule-based; durations, review
 /// intervals and criteria are drafts awaiting educator review.
@@ -126,10 +126,10 @@ class _DailyPlanScreenState extends ForegroundRefreshState<DailyPlanScreen> {
           alignment: AlignmentDirectional.centerStart,
           child: StatusPill('Taslak plan'),
         ),
-        const SizedBox(height: HarmoniaSpacing.md),
+        const SizedBox(height: ResoniaSpacing.md),
         Text('Günlük çalışma rotası', style: text.headlineSmall),
         const Text('Bugün ne kadar vaktin var?'),
-        const SizedBox(height: HarmoniaSpacing.md),
+        const SizedBox(height: ResoniaSpacing.md),
         SegmentedButton<DailyBudget>(
           key: const Key('plan_budget'),
           segments: [
@@ -149,7 +149,7 @@ class _DailyPlanScreenState extends ForegroundRefreshState<DailyPlanScreen> {
             _reload();
           },
         ),
-        const SizedBox(height: HarmoniaSpacing.md),
+        const SizedBox(height: ResoniaSpacing.md),
         Text(
           'Taslak süreler ve ölçütler; eğitimci onayı bekliyor.',
           style: text.bodySmall,
@@ -164,7 +164,7 @@ class _DailyPlanScreenState extends ForegroundRefreshState<DailyPlanScreen> {
             ),
           ],
         ),
-        const SizedBox(height: HarmoniaSpacing.md),
+        const SizedBox(height: ResoniaSpacing.md),
         FutureBuilder<DailyPlan>(
           future: _plan,
           builder: (context, snapshot) {
@@ -230,14 +230,14 @@ class _PlanBody extends StatelessWidget {
         ),
         if (plan.complete)
           Padding(
-            padding: const EdgeInsets.only(top: HarmoniaSpacing.xs),
+            padding: const EdgeInsets.only(top: ResoniaSpacing.xs),
             child: Text(
               'Bugünkü plan tamam. Yarın yeni plan kurulur.',
               key: const Key('plan_complete'),
               style: text.titleSmall,
             ),
           ),
-        const SizedBox(height: HarmoniaSpacing.sm),
+        const SizedBox(height: ResoniaSpacing.sm),
         for (final (i, b) in plan.blocks.indexed)
           _BlockCard(index: i, block: b, onOpen: () => onOpen(b)),
         if (plan.freeMinutes > 0)
@@ -285,9 +285,9 @@ class _BlockCard extends StatelessWidget {
     };
     return Card(
       key: Key('plan_block_$index'),
-      margin: const EdgeInsets.only(bottom: HarmoniaSpacing.sm),
+      margin: const EdgeInsets.only(bottom: ResoniaSpacing.sm),
       child: Padding(
-        padding: const EdgeInsets.all(HarmoniaSpacing.md),
+        padding: const EdgeInsets.all(ResoniaSpacing.md),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -295,14 +295,14 @@ class _BlockCard extends StatelessWidget {
               alignment: AlignmentDirectional.centerStart,
               child: StatusPill('$label · ~${b.minutes} dk'),
             ),
-            const SizedBox(height: HarmoniaSpacing.sm),
+            const SizedBox(height: ResoniaSpacing.sm),
             Text(
               '${b.node.title} — ${b.exercise.title}',
               style: text.titleMedium,
             ),
-            const SizedBox(height: HarmoniaSpacing.xs),
+            const SizedBox(height: ResoniaSpacing.xs),
             Text(reason),
-            const SizedBox(height: HarmoniaSpacing.xs),
+            const SizedBox(height: ResoniaSpacing.xs),
             Text(
               b.done
                   ? 'Bugün tamamlandı (${b.roundsDoneToday} geçerli tur).'
@@ -310,7 +310,7 @@ class _BlockCard extends StatelessWidget {
               key: Key('plan_progress_$index'),
               style: text.bodySmall,
             ),
-            const SizedBox(height: HarmoniaSpacing.sm),
+            const SizedBox(height: ResoniaSpacing.sm),
             ChunkyButton(
               key: Key('plan_start_$index'),
               onPressed: onOpen,

@@ -1,4 +1,4 @@
-# Harmonia
+# Resonia
 
 Konservatuvar hazırlığı için kişisel kulak, ritim, ezgi ve ses koçu.
 
@@ -16,7 +16,7 @@ Flutter iskeleti, mock tek ses egzersizi ve yerel kayıt→deneysel DSP laboratu
 - [`IMPLEMENTATION_LOG.md`](./IMPLEMENTATION_LOG.md) — uygulanmış paket, doğrulama ve kalan teknik sınırlar.
 - [`ARCHITECTURE.md`](./ARCHITECTURE.md) — Flutter, ses analiz motoru, backend ve AI sınırları.
 - [`PRODUCT_SPEC.md`](./PRODUCT_SPEC.md) — ürün kapsamı, kullanıcı akışları ve MVP.
-- [`AI_COACH.md`](./AI_COACH.md) — Harmonia Coach, model kullanımı ve değerlendirme planı.
+- [`AI_COACH.md`](./AI_COACH.md) — Resonia Coach, model kullanımı ve değerlendirme planı.
 - [`DECISIONS.md`](./DECISIONS.md) — geri dönülmesi pahalı teknik ve ürün kararları.
 - [`COMPETITOR_RESEARCH.md`](./COMPETITOR_RESEARCH.md) — 10 ilgili rakip, resmî kaynaklar ve ürün çıkarımları.
 - [`FEATURE_BACKLOG.md`](./FEATURE_BACKLOG.md) — eksik özellikler, fazlar ve kabul kriterleri.

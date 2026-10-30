@@ -1,12 +1,12 @@
 import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/domain/learning/skill_graph.dart';
-import 'package:harmonia/domain/models/exercise_result.dart';
-import 'package:harmonia/domain/models/measurement_provenance.dart';
-import 'package:harmonia/domain/models/score_metric.dart';
-import 'package:harmonia/domain/perception/pitch_comparison.dart';
-import 'package:harmonia/infrastructure/audio/click_track.dart';
+import 'package:resonia/domain/learning/skill_graph.dart';
+import 'package:resonia/domain/models/exercise_result.dart';
+import 'package:resonia/domain/models/measurement_provenance.dart';
+import 'package:resonia/domain/models/score_metric.dart';
+import 'package:resonia/domain/perception/pitch_comparison.dart';
+import 'package:resonia/infrastructure/audio/click_track.dart';
 
 final _l200 = draftPitchLevels[0];
 

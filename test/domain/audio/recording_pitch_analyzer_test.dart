@@ -2,9 +2,9 @@ import 'dart:convert';
 import 'dart:math' as math;
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/domain/audio/recording_pitch_analyzer.dart';
-import 'package:harmonia/domain/audio/yin_pitch_frame_analyzer.dart';
-import 'package:harmonia/domain/models/measurement_provenance.dart';
+import 'package:resonia/domain/audio/recording_pitch_analyzer.dart';
+import 'package:resonia/domain/audio/yin_pitch_frame_analyzer.dart';
+import 'package:resonia/domain/models/measurement_provenance.dart';
 
 List<double> tone(int length, int rate, double hz) =>
     List.generate(length, (i) => 0.25 * math.sin(2 * math.pi * hz * i / rate));

@@ -1,11 +1,11 @@
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/application/data_export.dart';
-import 'package:harmonia/application/practice_preferences.dart';
-import 'package:harmonia/application/result_history.dart';
-import 'package:harmonia/domain/learning/daily_plan.dart';
-import 'package:harmonia/domain/models/learner_profile.dart';
+import 'package:resonia/application/data_export.dart';
+import 'package:resonia/application/practice_preferences.dart';
+import 'package:resonia/application/result_history.dart';
+import 'package:resonia/domain/learning/daily_plan.dart';
+import 'package:resonia/domain/models/learner_profile.dart';
 
 import '../infrastructure/storage/file_result_history_test.dart' show entry;
 
@@ -43,7 +43,7 @@ void main() {
   test('round-trip: versioned, minute precision, no audio fields', () {
     final text = _export([entry('attempt-0001'), entry('attempt-0002')]);
     final raw = _doc(text);
-    expect(raw['format'], 'harmonia-local-export');
+    expect(raw['format'], 'resonia-local-export');
     expect(raw['exportedAt'], '2026-10-13T18:30:00.000Z');
     expect(text.toLowerCase(), isNot(contains('pcm')));
     expect(text.toLowerCase(), isNot(contains('.wav')));

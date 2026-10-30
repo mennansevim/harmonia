@@ -3,18 +3,18 @@ import 'dart:math' as math;
 
 import 'package:crypto/crypto.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/domain/audio/audio_fixture.dart';
-import 'package:harmonia/domain/audio/audio_fixture_manifest.dart';
-import 'package:harmonia/domain/audio/pitch_deviation.dart';
-import 'package:harmonia/domain/audio/yin_pitch_frame_analyzer.dart';
-import 'package:harmonia/infrastructure/audio/audio_fixture_loader.dart';
-import 'package:harmonia/infrastructure/audio/pcm16_wav.dart';
+import 'package:resonia/domain/audio/audio_fixture.dart';
+import 'package:resonia/domain/audio/audio_fixture_manifest.dart';
+import 'package:resonia/domain/audio/pitch_deviation.dart';
+import 'package:resonia/domain/audio/yin_pitch_frame_analyzer.dart';
+import 'package:resonia/infrastructure/audio/audio_fixture_loader.dart';
+import 'package:resonia/infrastructure/audio/pcm16_wav.dart';
 
 void main() {
   late Directory root;
 
   setUp(() async {
-    root = await Directory.systemTemp.createTemp('harmonia-audio-01-');
+    root = await Directory.systemTemp.createTemp('resonia-audio-01-');
   });
 
   tearDown(() async {

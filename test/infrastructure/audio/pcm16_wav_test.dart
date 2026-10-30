@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/infrastructure/audio/pcm16_wav.dart';
+import 'package:resonia/infrastructure/audio/pcm16_wav.dart';
 
 void main() {
   test('PCM16 round trip reads actual sample rate and signed amplitudes', () {

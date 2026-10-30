@@ -1,6 +1,6 @@
-# Harmonia — Ses motoru ve 3/4 sesli genişleme
+# Resonia — Ses motoru ve 3/4 sesli genişleme
 
-**Tarih:** 2026-10-11 · **Durum:** teknik tasarım; gerçek motor henüz Harmonia'ya bağlanmadı.
+**Tarih:** 2026-10-11 · **Durum:** teknik tasarım; gerçek motor henüz Resonia'ya bağlanmadı.
 
 **Geliştirme başlangıcı güncellemesi:** REL-01–05 uygulandı: sonuç/metric status ve progress cohort, ritim event alignment, ezgi placeholder fail-closed. Gerçek capture/frame/segment/cihaz benchmark yok. [Uygulama kaydı](./IMPLEMENTATION_LOG.md), [ayrıntılı iş planı](./IMPLEMENTATION_ROADMAP.md).
 
@@ -23,7 +23,7 @@ Agora `src/PitchTest/lib/pitchDetector.ts`, Pitchy kullanır. Pitchy'nin algorit
 - `matchToTarget` ×2/÷2/×4/÷4 adayları kullanır. Oktav cezası olsa da 60 başarı eşiği nedeniyle yanlış oktav başarı sayılabilir. Ses aralığı testine aynen taşınmamalı.
 - Dışa dönen `clarity`, Pitchy frame clarity ortalaması değil geçerli frame oranıdır; alan adları ayrılmalı.
 - Tüm kaydın tek medianı birden fazla sıralı notayı yok eder. Kısa/boş buffer fallback'i özyinelemede sonlanmayabilir; port öncesi sınır testi gerekir.
-- Harmonia'da `PitchAnalyzer`, mock motor ve oktav hatasını başarı saymayan scorer vardır; gerçek ses yakalama yoktur. Sonuç v2 ile tek ses timing/memory uygulanamaz ve invalid puanlanmaz. Pitch/frame performansı henüz gerçek kayıtlarla doğrulanmadı.
+- Resonia'da `PitchAnalyzer`, mock motor ve oktav hatasını başarı saymayan scorer vardır; gerçek ses yakalama yoktur. Sonuç v2 ile tek ses timing/memory uygulanamaz ve invalid puanlanmaz. Pitch/frame performansı henüz gerçek kayıtlarla doğrulanmadı.
 
 “İyi motor” iddiasını fixture ve gerçek cihaz testleriyle kanıtlamak ilk iş; yalnız güzel animasyon yeterli değil.
 

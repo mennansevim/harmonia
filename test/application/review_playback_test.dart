@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/application/review_playback.dart';
-import 'package:harmonia/domain/audio/audio_capture.dart';
+import 'package:resonia/application/review_playback.dart';
+import 'package:resonia/domain/audio/audio_capture.dart';
 
 class _ControlledPlayer implements ReferenceClipPlayer {
   final calls = <String>[];

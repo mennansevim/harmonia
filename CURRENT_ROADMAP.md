@@ -1,17 +1,19 @@
-# Harmonia — Current Roadmap
+# Resonia — Current Roadmap
 
 **Tarih:** 2026-10-30 (son güncelleme: CHOIR-A0 koro modülü)
 **Durum:** Faz 1 — güvenilirlik sözleşmeleri, yerel kayıt laboratuvarı, deneysel DSP/worker, kalibrasyon/kalite kapısı ve misafir uygulama kabuğu kod-test seviyesinde. Tek ses skor ekranı hâlâ simülasyon; fiziksel cihaz, insan sesi benchmark'ı, eğitimci içerik onayı ve öğretim pilotu kapıları açık. **Hiçbir modül cihazda/pilotta doğrulanmış veya yayında değil.**
 **Sahip:** Mennan Sevim  
 **Platform:** Flutter mobil uygulama; ileride web ve öğretmen paneli
 
-**2026-10-30 — DESIGN-05 ana tasarım (ADR-037 güncellendi):** Kullanıcı `Harmonia.zip` içindeki 18 ekranı ana tasarım olarak belirledi (`design-exports/uxpilot/harmonia-zip/`); uygulamanın tamamının teması buna geçti: krem zemin, patlıcan kartlar, Inter + Lora (SIL OFL, Figma değerleri), 14 yarıçaplı düğme, üstte yol etiketi. Eser detayı ödev ekranına katıldı, `piece_screen.dart` kaldırıldı; kayıt hazırlığı, kayıt, önizleme, şef dinleme, kaynak arşivi (arama, filtre) ve yeni ödev/eser formları yenilendi. Bilinçli farklar: Otomatik hizala yok (kulaklıkla kayıtta karşılaştıracak eşlik mikrofona girmez), kayıt öncesi mikrofon göstergesi yok (mikrofon kullanıcı başlatmadan açılmaz), solfej/sözlü seçimi ve Kabul/Tekrar iste korundu, Beceriler ızgarası Bugün'de kaldı, "SON BAKTIKLARIN" yerine gerçek en yakın ödev gösterilir. Dalgalar gerçek ses verisindendir. Figma bağlandı, dosya linki bekleniyor. Gerçek cihaz kapıları açık.
+**2026-10-30 — Ad değişikliği: Resonia:** Kullanıcı kararıyla uygulama adı her yerde Resonia oldu: görünen ad, Dart paketi (`package:resonia`), sınıf ve dosya adları, `RESONIA_CHANNEL`, `.resonia` paket uzantısı, iOS ve Android kimliği `com.resonia.resonia`. Proje klasör yolu ve dışarıdan gelen tasarım dosyalarının adları değişmedi. Eski `.harmonia` paketleri artık açılmaz (yayımlanmış sürüm yok). Tam paket 1103 geçti + 2 atlandı; iOS simülatörde çalıştı; Android derlenmedi. Adın mağazadaki ve marka olarak uygunluğu kontrol edilmedi.
+
+**2026-10-30 — DESIGN-05 ana tasarım (ADR-037 güncellendi):** Kullanıcı `Harmonia.zip` içindeki 18 ekranı ana tasarım olarak belirledi (`design-exports/uxpilot/resonia-zip/`); uygulamanın tamamının teması buna geçti: krem zemin, patlıcan kartlar, Inter + Lora (SIL OFL, Figma değerleri), 14 yarıçaplı düğme, üstte yol etiketi. Eser detayı ödev ekranına katıldı, `piece_screen.dart` kaldırıldı; kayıt hazırlığı, kayıt, önizleme, şef dinleme, kaynak arşivi (arama, filtre) ve yeni ödev/eser formları yenilendi. Bilinçli farklar: Otomatik hizala yok (kulaklıkla kayıtta karşılaştıracak eşlik mikrofona girmez), kayıt öncesi mikrofon göstergesi yok (mikrofon kullanıcı başlatmadan açılmaz), solfej/sözlü seçimi ve Kabul/Tekrar iste korundu, Beceriler ızgarası Bugün'de kaldı, "SON BAKTIKLARIN" yerine gerçek en yakın ödev gösterilir. Dalgalar gerçek ses verisindendir. Figma bağlandı, dosya linki bekleniyor. Gerçek cihaz kapıları açık.
 
 **2026-10-30 — DESIGN-04 UX Pilot akışı (ADR-037 güncellendi):** Kullanıcının `design-exports/uxpilot/uxpilot-export-10-30-26.pdf` 8 ekranı uygulandı: Bugün (Merhaba, Günlük rota kartı, Koro güncellemeleri, Beceriler ızgarası, beyaz alt menü), yeni eser detayı (`piece_screen.dart`), pratik mikseri, Kayıttan önce, kayıt, önizleme + hizalama, şef Ödevi dinle (not ekle, sesli not), yeni ödev. Veri olmadığı için alınmadı: şarkı sözü satırları, profil fotoğrafları, "12 arkadaşın gönderdi", tempo BPM (yüzde gösterilir), üç nokta menüsü. Ses dalgası gerçek WAV örneklerinden çizilir, yalnız yükseklik gösterir; WAV değilse sürgü kalır. Haftalık çubuk Bugün'den kalktı.
 
-**2026-10-30 — DESIGN-03 İfade tasarım dili (ADR-037):** Kullanıcı 10 yönden 4. yönü seçti. Personal + Koro ortak temeli `lib/trainer/ui/kit.dart`: mor #6A3DE8, limon #D8F36A (yalnız koyu yazıyla), şeftali #FF8A6B, Bricolage (başlık) + Figtree (metin), hap düğmeler, 24–34 yarıçaplı kartlar, tonal alt menü. Eski HarmoniaApp kabuğu değişmedi. Koro: öne çıkan tek eser, şefin yorumu Kaydet'in üstünde, dinleme ekranında tekrar eden etiketler kaldırıldı, kayıt şekli gerçek mikrofon seviyesine göre büyür (hareket azaltma açıksa durur). Yazı tipleri SIL OFL, statik kesim, `assets/fonts`. Testler ve 19 ekran görüntüsü üretildi; simülatörde gerçek yazı tipleri doğrulandı. Koro kayıt zincirinde mantık değişmedi, gerçek cihaz kapıları açık. Personal'ın tüm ekranları tek tek gözden geçirilmedi; koyu tema yok.
+**2026-10-30 — DESIGN-03 İfade tasarım dili (ADR-037):** Kullanıcı 10 yönden 4. yönü seçti. Personal + Koro ortak temeli `lib/trainer/ui/kit.dart`: mor #6A3DE8, limon #D8F36A (yalnız koyu yazıyla), şeftali #FF8A6B, Bricolage (başlık) + Figtree (metin), hap düğmeler, 24–34 yarıçaplı kartlar, tonal alt menü. Eski ResoniaApp kabuğu değişmedi. Koro: öne çıkan tek eser, şefin yorumu Kaydet'in üstünde, dinleme ekranında tekrar eden etiketler kaldırıldı, kayıt şekli gerçek mikrofon seviyesine göre büyür (hareket azaltma açıksa durur). Yazı tipleri SIL OFL, statik kesim, `assets/fonts`. Testler ve 19 ekran görüntüsü üretildi; simülatörde gerçek yazı tipleri doğrulandı. Koro kayıt zincirinde mantık değişmedi, gerçek cihaz kapıları açık. Personal'ın tüm ekranları tek tek gözden geçirilmedi; koyu tema yok.
 
-**2026-10-30 — CHOIR-A0 Koro modülü (kod + simülatör, ADR-036):** Kullanıcının anlattığı iş akışı uygulandı. Şef: koro oluşturur, tek ödevde birden çok eser, her eser için solfej/sözlü, ölçü aralığı veya yazılı bölüm, eşlikli kayıt isteği, MIDI + kanal→parti eşlemesi + hak beyanı, son tarih; dinleme sırası, 1/1,25× hız, ana işaret (nefes kaçağı dahil), etiket, yazılı yorum, kendi sesiyle not, kabul/tekrar iste. Korist: pakete katılır, ödev/eser/son tarih görür, MIDI ile çalışır (kendi partisi öne, diğerleri kısık, %50–120 hız, metronom, ön sayım, döngü), tek telefonda eşlikli kayıt alır, hizalama kaydırıcısıyla düzeltir, başka cihaz kaydını dosyadan ekler, şefe gönderir, geri bildirimi ve şefin sesini dinler, Personal çalışmaya geçer. Kaynaklar: nota, ders kaydı, not. Bugün sekmesinde en yakın son tarih. Sunucu yok: `.harmonia` paketleri kişinin kendi paylaşımıyla taşınır; paket boyut/şema/hash/kimlik denetimli, bozuksa hiçbir şey kaydedilmez. TR/EN metin, yerel saat dilimi, yaygın dillerde parti adı önerisi. Yeni bağımlılıklar: `file_picker`, `share_plus`, `archive`, `open_filex`, `flutter_localizations`. **1095 test geçti**, 1 opt-in atlandı; analyze/format temiz. iPhone 17 Pro simülatöründe `integration_test/choir_journey_test.dart` (gerçek `record` + `just_audio` ile aynı anda çalma/kayıt, miks, hizalama, paket gidiş-dönüşü) ve `app_journeys_test.dart` 6/6 geçti; ekranlar elle gezildi, simülatör hoparlör rotasında engel doğru çıktı. **Kapılar açık:** gerçek telefonda kulaklık, bleed, gecikme ve Bluetooth (CAL-03b, CHOIR-01), Android derlemesi, gerçek koro MIDI'si, gerçek şef/koro pilotu, hukuk metni, paket imzası/kimlik, sunucu kararı (K2), son tarih bildirimi, divisi, AAC sıkıştırma (kayıt WAV, ~5 MB/2 dk). Modül ürün olarak bitmiş değildir.
+**2026-10-30 — CHOIR-A0 Koro modülü (kod + simülatör, ADR-036):** Kullanıcının anlattığı iş akışı uygulandı. Şef: koro oluşturur, tek ödevde birden çok eser, her eser için solfej/sözlü, ölçü aralığı veya yazılı bölüm, eşlikli kayıt isteği, MIDI + kanal→parti eşlemesi + hak beyanı, son tarih; dinleme sırası, 1/1,25× hız, ana işaret (nefes kaçağı dahil), etiket, yazılı yorum, kendi sesiyle not, kabul/tekrar iste. Korist: pakete katılır, ödev/eser/son tarih görür, MIDI ile çalışır (kendi partisi öne, diğerleri kısık, %50–120 hız, metronom, ön sayım, döngü), tek telefonda eşlikli kayıt alır, hizalama kaydırıcısıyla düzeltir, başka cihaz kaydını dosyadan ekler, şefe gönderir, geri bildirimi ve şefin sesini dinler, Personal çalışmaya geçer. Kaynaklar: nota, ders kaydı, not. Bugün sekmesinde en yakın son tarih. Sunucu yok: `.resonia` paketleri kişinin kendi paylaşımıyla taşınır; paket boyut/şema/hash/kimlik denetimli, bozuksa hiçbir şey kaydedilmez. TR/EN metin, yerel saat dilimi, yaygın dillerde parti adı önerisi. Yeni bağımlılıklar: `file_picker`, `share_plus`, `archive`, `open_filex`, `flutter_localizations`. **1095 test geçti**, 1 opt-in atlandı; analyze/format temiz. iPhone 17 Pro simülatöründe `integration_test/choir_journey_test.dart` (gerçek `record` + `just_audio` ile aynı anda çalma/kayıt, miks, hizalama, paket gidiş-dönüşü) ve `app_journeys_test.dart` 6/6 geçti; ekranlar elle gezildi, simülatör hoparlör rotasında engel doğru çıktı. **Kapılar açık:** gerçek telefonda kulaklık, bleed, gecikme ve Bluetooth (CAL-03b, CHOIR-01), Android derlemesi, gerçek koro MIDI'si, gerçek şef/koro pilotu, hukuk metni, paket imzası/kimlik, sunucu kararı (K2), son tarih bildirimi, divisi, AAC sıkıştırma (kayıt WAV, ~5 MB/2 dk). Modül ürün olarak bitmiş değildir.
 
 **2026-10-30 — AUDIO-01 kod kapısı:** Fixture manifesti → hash/header/sample
 rate/count doğrulaması → PCM16 decode → hedef bağımsız pitch frame zinciri tek
@@ -36,13 +38,13 @@ değil. **1043 test geçti**, 1 opt-in ekran turu atlandı; analyze/format temiz
 
 **2026-10-29 — E2E-01:** `integration_test/app_journeys_test.dart` ile uygulama gerçek kullanıcı gibi, production kablolamasıyla (dosya depolama, gerçek ses çalma, eklentiler) simülatörde uçtan uca test ediliyor: onboarding + sekmeler + soğuk yeniden başlatma, yarım onboarding'e dönüş, bugünkü ders + kalıcılık, 8 soruluk perde pratiği sonuna kadar, Koro aralık girişi + kaç ses, verileri sil. iPhone 17 Pro (iOS 27) simülatöründe **6/6 geçti** (~1 dk 22 sn). Komut: `flutter test integration_test -d <id>`; `quality_check` yalnız formatını kontrol ediyor (1004 kod testi + analyze/format temiz). Mikrofon, bildirim izni sistem penceresi, duyulan ses, gerçek telefon ve insan kullanıcı kapsam dışı; cihaz/pilot kapıları açık.
 
-**2026-10-29 — TRAINER-03 (ADR-034):** Ders yolu, quiz, ders akışı, müfredat sırası/metinleri, oturum sonu ve istatistik ekranları da Harmonia'ya özgü yeniden yazıldı (Basamak/Ara durak/Konser provası; Dinle → Söyle → Ayırt et; dinleme diski). Referans uygulamadan kalan metin/düzen yok; tür ortak.
+**2026-10-29 — TRAINER-03 (ADR-034):** Ders yolu, quiz, ders akışı, müfredat sırası/metinleri, oturum sonu ve istatistik ekranları da Resonia'ya özgü yeniden yazıldı (Basamak/Ara durak/Konser provası; Dinle → Söyle → Ayırt et; dinleme diski). Referans uygulamadan kalan metin/düzen yok; tür ortak.
 
 **2026-10-29 — TRAINER-04a:** Pitch eğitmeninin isteğe bağlı “Söyle” adımı için UI'dan bağımsız, puansız session composition eklendi. Dersin item/bölge/parti/tını hedefi immutable MIDI+Hz referansına bağlanıyor; sentetik referans ayrı player'dan, cevap mevcut kalibrasyon/kalite/worker kapılı tek-ses oturumundan geçiyor. Çıktı yalnız tanısal candidate evidence; ders tamamlama, store, history, mastery veya unlock yazımı yok. 7 yeni testle tam paket 1000 geçti, 1 opt-in ekran turu atlandı; analyze/format/diff temiz. UI wiring, fiziksel cihaz ve insan sesi BENCH/VAD kapıları açık.
 
 **2026-10-29 — TRAINER-04b:** Pitch dersi “Söyle” sayfasına isteğe bağlı ses kontrolü bağlandı. Ekrana giriş izin/mikrofon açmıyor; öğrenci ortam ölçümünü açıkça başlatıyor, referansı dinleyip söylüyor, yalnız kaynak etiketli tanısal sent farkı görüyor ve her an puanlı “Ayırt et” bölümüne geçebiliyor. Arka plan/çıkış denemeyi iptal ediyor, otomatik devam yok; kurulum hatası nötr ve atlanabilir. Diğer eğitmenlerde ve `liveAudio=false` test/preview'da kapalı. 4 widget testiyle tam 1004 test geçti, 1 opt-in ekran turu atlandı; analyze/format/diff temiz. Gerçek telefon, insan sesi, audibility, VAD/BENCH ve eğitimci kabulü açık.
 
-**2026-10-29 — TRAINER-02 (farklılaşma, ADR-033):** Eğitmen modülü artık Harmonia görsel kimliğinde ve koro öncelikli: Bugün / Koro / İlerleme / Ayarlar sekmeleri, 8 adımlı koro onboarding'i (rol, parti, odak), lig/kilit/kullanıcı adı kaldırıldı, seçilen parti dersleri öğrencinin aralığında çalar. Ders/quiz mekaniği hâlâ türün ortak kalıbında; cihaz/insan sesi/yayın kapıları açık.
+**2026-10-29 — TRAINER-02 (farklılaşma, ADR-033):** Eğitmen modülü artık Resonia görsel kimliğinde ve koro öncelikli: Bugün / Koro / İlerleme / Ayarlar sekmeleri, 8 adımlı koro onboarding'i (rol, parti, odak), lig/kilit/kullanıcı adı kaldırıldı, seçilen parti dersleri öğrencinin aralığında çalar. Ders/quiz mekaniği hâlâ türün ortak kalıbında; cihaz/insan sesi/yayın kapıları açık.
 
 **2026-10-29 — TRAINER-01 (ana deneyim değişti):** Uygulama artık `lib/trainer/` altındaki kulak eğitimi ikiziyle açılıyor (5 eğitmen, Öğren/Pratik, İstatistik, Sıralama, Ayarlar, kalıcı onboarding) ve **Koro Atölyesi** (ses aralığı testi, dinle-söyle, ezgi, ritim, aksak ritim, kaç ses?) ayrı kategori. Ödeme/hesap/lig sunucusu yok; ekranlar bunu açıkça söylüyor. Tam paket 978 test geçti, analyze/format temiz; iOS arm64 simülatör derlemesi başarılı. **Güncelleme (aynı gün sabah):** simülatör onarıldı, Flutter 3.47.8; `flutter run` iPhone 18 Pro (iOS 27) simülatöründe çalıştı. Ana sayfa, pratik quiz'i, ipucu sayfası, Koro Atölyesi ve mikrofonlu ses aralığı testi (izin → kayıt → çekirdek analiz → “ölçülemedi” kapısı) elle doğrulandı; 992 test geçti. Gerçek iPhone'da, insan sesiyle ve sesi kulakla dinleyerek test yapılmadı. Ayrıntı: IMPLEMENTATION_LOG “TRAINER-01”, ADR-032.
 
@@ -297,7 +299,7 @@ katalog/import kapısı; EDU-01 gerçek onay ve örnek bankası hâlâ açık.
 kapalı. Okuma/mastery bridge yok. 9 yeni test; sonraki LEARN-02b taslak okuma
 ekranı/skill-map erişimi. 12 onaylı mikroünite veya öğretim kabulü değil.
 
-**2026-10-13 04:20 TRT — REL-08:** Script-root Harmonia guard, read-only
+**2026-10-13 04:20 TRT — REL-08:** Script-root Resonia guard, read-only
 format→analyze→full suite, fail-fast exit, explicit locked --fetch ve --plan.
 10 runner/CLI testi, 529 full suite. Hosted CI/docs taslağı etkin değil;
 code checks ses/cihaz/pilot kabulü değil. Sıradaki hazır LEARN-02 mikroders
@@ -409,7 +411,7 @@ Tek geliştirici + kullanıcı koordinasyonu varsayımıyla öneridir; tarih gar
 
 ## Kuzey yıldızı
 
-Harmonia, konservatuvar ve müzik sınavlarına hazırlanan öğrencinin her gün kısa bir çalışma yapmasını, hatasını anlamasını ve bir sonraki doğru egzersize yönlendirilmesini sağlamalıdır.
+Resonia, konservatuvar ve müzik sınavlarına hazırlanan öğrencinin her gün kısa bir çalışma yapmasını, hatasını anlamasını ve bir sonraki doğru egzersize yönlendirilmesini sağlamalıdır.
 
 **Ana vaat:** “Her gün 10 dakika: duy, hatırla, tekrar et, sınava hazırlan.”
 
@@ -419,7 +421,7 @@ Harmonia, konservatuvar ve müzik sınavlarına hazırlanan öğrencinin her gü
 - 2026-10-11 geliştirme başlangıcı: ScoreMetric/sonuç v2, valid-invalid, metrik örnek sayıları ve zorluk/mod/sürüm cohort; ritim event alignment; ezgi placeholder'ın sahte skoru kapatıldı. 58 test geçti; analyze temiz, format kontrolü değişiklik bulmadı. Gerçek ses/pedagoji kapısı geçilmedi.
 - Agora Voice içinde çalışan tek sesli ses aralığı testi referans prototip olarak incelendi.
 - Referans projede yukarı/aşağı nota taraması, mikrofon kontrolü, pitch analizi, ses kayıtları ve skor tablosu bulunuyor.
-- Harmonia'da domain/mock tek ses ekranı ve yerel kayıt→native DSP diagnostic laboratuvarı var; VAD/gerçek başarı ve fiziksel mikrofon doğrulaması bekliyor.
+- Resonia'da domain/mock tek ses ekranı ve yerel kayıt→native DSP diagnostic laboratuvarı var; VAD/gerçek başarı ve fiziksel mikrofon doğrulaması bekliyor.
 - Ses ölçümü deterministik ses işleme ile yapılacak; AI ölçümün yerine geçmeyecek.
 - `gpt-4o-mini`, ölçüm sonuçlarını açıklayan ve egzersiz seçen metin tabanlı koç olarak kullanılacak.
 
@@ -478,7 +480,7 @@ Faz süreleri tam zamanlı tek geliştirici ve dar kapsam için eski kaba tahmin
 
 **Çıkış kriteri:** Aynı kayıt, desteklenen cihazlarda tutarlı sonuç vermeli; algoritma testleri çalışmalı.
 
-### Faz 2 — MVP: Harmonia Core
+### Faz 2 — MVP: Resonia Core
 
 **Süre:** 6–8 hafta
 
@@ -499,7 +501,7 @@ Kullanıcıya görünen ilk ürün:
 
 **Çıkış kriteri:** Yeni kullanıcı 3 dakika içinde ilk egzersizi tamamlayabilmeli ve neden hata yaptığını anlayabilmeli.
 
-### Faz 3 — Adaptif öğrenme ve Harmonia Coach
+### Faz 3 — Adaptif öğrenme ve Resonia Coach
 
 **Süre:** 4–6 hafta
 
@@ -564,7 +566,7 @@ Faz 0/1 kapsamında kod tabanı ilk kez oluşturuldu (`agoravoiceweb`'e dokunulm
 
 - **Flutter iskeleti:** `flutter create` ile proje kuruldu (`pubspec.yaml`, `lib/main.dart`, `android/`, `ios/`).
 - **Klasör yapısı** (`ARCHITECTURE.md` katmanlarını yansıtır):
-  - `lib/app/` — app shell (`harmonia_app.dart`).
+  - `lib/app/` — app shell (`resonia_app.dart`).
   - `lib/domain/models/` — `User`, `Exercise`, `ExerciseAttempt`, `ExerciseResult`, `SkillProgress`.
   - `lib/domain/audio/` — `PitchAnalyzer`, `RhythmAnalyzer`, `MelodyAnalyzer` arayüzleri ve sonuç tipleri.
   - `lib/domain/scoring/` — `PitchExerciseScorer`: `PitchAnalysisResult`'ı `ExerciseResult` sözleşmesine çevirir (ADR-006 dahil: yanlış oktav asla başarı sayılmaz).
@@ -669,7 +671,7 @@ Kod yazmaya başlamadan önce `PRODUCT_SPEC.md`, `ARCHITECTURE.md` ve `DECISIONS
 | 2026-08-16 | Flutter proje iskeleti, domain modelleri (`User`, `Exercise`, `ExerciseAttempt`, `ExerciseResult`, `SkillProgress`), pitch/ritim/ezgi analiz arayüzleri, mock pitch/ritim/ezgi motorları, `PitchExerciseScorer`, ilk tek ses egzersizi ekranı ve 26 unit/widget testi eklendi. |
 | 2026-10-10 | 10 rakibin resmî kaynakları; F01–F20 özellik backlog'u; beş uçtan uca etkileşimli tasarım; 3/4 sesli sıralı cevap/multipitch ayrımı ve ses-görsel sözleşmesi. Flutter kaynakları değiştirilmedi; bu oturumda eski 26 test yeniden çalıştırılmadı. |
 | 2026-10-11 | Kod/eğitim yeterliliği incelemesi; 26 test ve temiz analiz yeniden doğrulandı. Aurora + Konservatuvar öncelikli yön; öğrenme modeli/iki rota, Plus gerçek eğitimci servisi, F21–F26 ve ADR-013–016 dokümante edildi. Flutter ve Agora kaynakları değiştirilmedi; canlı servis/ödeme/AI bağlanmadı. |
-| 2026-10-11 — geliştirme başlangıcı | Kullanıcı uygulama başlangıcını istedi. Ayrıntılı roadmap; REL-01–05 kaynak/test değişiklikleri ve dar ekran/büyük yazı kontrolü. 58 test geçti; önceki yalnız doküman oturumundan farklı olarak Harmonia kaynakları değiştirildi. Agora, gerçek mikrofon, AI, ödeme ve dış servisler değişmedi. |
+| 2026-10-11 — geliştirme başlangıcı | Kullanıcı uygulama başlangıcını istedi. Ayrıntılı roadmap; REL-01–05 kaynak/test değişiklikleri ve dar ekran/büyük yazı kontrolü. 58 test geçti; önceki yalnız doküman oturumundan farklı olarak Resonia kaynakları değiştirildi. Agora, gerçek mikrofon, AI, ödeme ve dış servisler değişmedi. |
 | 2026-10-11 — modül envanteri | A–Q modül envanteri, üç teslim kapsamı, kritik yol ve 30/60/90 planı. CAL-01 kalibrasyon/kalite kapısı ve SHELL-01 misafir kabuğu kod-test; 299 test, analyze/format temiz, iOS simulator build. Cihaz/pilot/yayın doğrulaması yok. |
 | 2026-10-11 — oturum + ritim | SESSION-01 tek ses oturumu (puansız) ve CORE-02a ritim taklit modu; just_audio tekrar oynatma düzeltmesi. 338 test, analyze/format temiz, iOS simulator build ve elle simülatör gezintisi. Cihaz/pilot doğrulaması yok. |
 | 2026-10-11 — geçmiş | CORE-05 yerel sonuç geçmişi (katı JSON, tekilleştirme/çakışma/kapasite, bozuk dosya koruma, ekran) ve SESSION-02 yetim ses temizliği. 363 test, analyze/format temiz. |

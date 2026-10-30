@@ -1,4 +1,4 @@
-# Harmonia — Ayrıntılı uygulama ve yayın roadmap'i
+# Resonia — Ayrıntılı uygulama ve yayın roadmap'i
 
 **Başlangıç/güncelleme:** 2026-10-11  
 **Ürün yönü:** Aurora marka deneyimi + Konservatuvar açıklayıcı sonuçları; ortak temel, konservatuvar ve koro rotaları; Plus'ta gerçek eğitimci yorumu.  
@@ -281,7 +281,7 @@ Her işin kanıtı: değişen kaynak, test senaryosu/komut sonucu, manuel cihaz 
 
 Oturum sonunda `CURRENT_ROADMAP.md` güncellenir; karar değişirse `DECISIONS.md`; sözleşme değişirse `ARCHITECTURE.md`. İnceleme bulguları tarihi korunarak kapanış kaydıyla izlenir. Dış sistem açılmadıysa yayında yazılmaz. Mevcut kullanıcı dosyaları korunur; git commit/push/PR/yayın otomatik yapılmaz.
 
-Devam talimatı: “Harmonia'da CURRENT_ROADMAP ve IMPLEMENTATION_ROADMAP'i oku. Bir sonraki tamamlanmamış öncelikli paketi uygula; testlerini çalıştır, yapılan işi ve kalan sınırları belgele. Ölçümü AI'ye yaptırma ve insan yorumunu AI ile taklit etme.”
+Devam talimatı: “Resonia'da CURRENT_ROADMAP ve IMPLEMENTATION_ROADMAP'i oku. Bir sonraki tamamlanmamış öncelikli paketi uygula; testlerini çalıştır, yapılan işi ve kalan sınırları belgele. Ölçümü AI'ye yaptırma ve insan yorumunu AI ile taklit etme.”
 
 ## 11. Modül envanteri iş ID'leri (2026-10-11)
 
@@ -303,7 +303,7 @@ Kullanıcının A–Q modül listesi mevcut ID'lerle eşlendi; eksik kalanlar i�
 | CAL-03a | P0 | Bounded diagnostic medyan/MAD/P90–P10; aykırı trial indeksleri, clock/route/rate ve provenance | CAL-01 | 21 sentetik test; 8–64 trial, invalid tail/mixed clock/scheduled timestamp/inferred route reddi; correctionEnabled=false | CAL-03b gerçek ölçüm | Tap bias/loopback toplamı hardware/touch correction değildir | S | B | K (kod) |
 | CAL-03b | P0 | Pipeline'a özel fiziksel gecikme ölçümü ve ortak gözlenen saat adapter'ı | CAL-03a | Ölçüm kimliği/clock/reset/route değişimi, bağımsız tekrar ve belirsizlik; loopback toplamı dokunma gecikmesi olarak aktarılmaz | Cihaz/ölçüm düzeneği, kullanıcı koordinasyonu | Gecikme bileşenleri ayrı tanımlanamayabilir | M | B | P |
 | SESSION-01 | P0 | Tek ses ürün oturumu: referans → bekleme → otomatik cevap penceresi → kalite kapısı → diagnostics/nötr yeniden deneme; puansız | CAL-01 | 15 controller + 2 widget testi: referans bitmeden kayıt yok, cevap analizden önce silinir, oktav korunur, kalite reddinde worker çalışmaz, kesinti/iptal/eski sonuç, route/yaş/rate kalibrasyon kontrolü | Cihazda oturum QA | Oturum yarışları | M | B | K |
-| SESSION-02 | P1 | Açılışta yetim geçici kayıt temizliği; hata görünürlüğü | AUD-DEV-02 | 4 birim + 2 widget testi: yalnız `harmonia-audio-lab-*`/`harmonia-clip-*`, yalnız bilinen dosya adları, symlink izlenmez, beklenmeyen içerik korunur/raporlanır; ayarlarda uyarı | Cihaz kill testi | Yanlış dosya silme | S | B | K |
+| SESSION-02 | P1 | Açılışta yetim geçici kayıt temizliği; hata görünürlüğü | AUD-DEV-02 | 4 birim + 2 widget testi: yalnız `resonia-audio-lab-*`/`resonia-clip-*`, yalnız bilinen dosya adları, symlink izlenmez, beklenmeyen içerik korunur/raporlanır; ayarlarda uyarı | Cihaz kill testi | Yanlış dosya silme | S | B | K |
 | VAD-01 | P0 | İnsan sesi etkinliği/çekimserlik modeli (konuşma, öksürük, enstrüman, sızıntı ayrımı) | BENCH-01 | Kişi bazlı holdout: yanlış başarı ve çekimserlik oranları önceden kayıtlı eşiklerle | Etiketli kayıt | Veri azlığı | L | B | P |
 | BENCH-01 | P0 | Etiketli izinli kayıt protokolü: doğru/yanlış nota, oktav, sessizlik, gürültü, konuşma, kararsızlık, sızıntı; development/holdout kişi ayrımı | AUD-DEV-01 loader | Manifest/consent/holdout sızıntı kontrolleri (kodda var); ≥100 kayıt | Katılımcılar, eğitimci etiketleme, rıza | Rıza/etiket kalitesi | L (insan) | B | P |
 | CORE-01 | P0 | Gerçek tek ses sonucu (nota/oktav/tiz-pes açıklaması, öğrenme/sınav) | SESSION-01, VAD-01, CAL-02 | Holdout kabul eşikleri; yanlış oktav asla başarı | Cihaz + benchmark | Yanlış başarı | M | B | P |
@@ -419,7 +419,7 @@ dış CI etkinleştirme/push yetkisi değil. LEARN-02 mikroders şeması da haz�
 
 ## 2026-10-13 04:20 TRT — REL-08 yerel kalite runner
 
-Standalone `dart tool/quality_check.dart`: script konumuna bağlı Harmonia root
+Standalone `dart tool/quality_check.dart`: script konumuna bağlı Resonia root
 guard, read-only lib/test/tool format → no-pub analyze → no-pub full tests.
 İlk hata exit code korunur, spawn error 127; otomatik SDK kurulumu yok.
 `--plan` komut envanteri, `--fetch` explicit pub get --enforce-lockfile.

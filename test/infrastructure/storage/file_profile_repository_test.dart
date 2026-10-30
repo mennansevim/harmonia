@@ -1,14 +1,14 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/application/profile_repository.dart';
-import 'package:harmonia/domain/models/learner_profile.dart';
-import 'package:harmonia/infrastructure/storage/file_profile_repository.dart';
-import 'package:harmonia/infrastructure/storage/json_file_store.dart';
+import 'package:resonia/application/profile_repository.dart';
+import 'package:resonia/domain/models/learner_profile.dart';
+import 'package:resonia/infrastructure/storage/file_profile_repository.dart';
+import 'package:resonia/infrastructure/storage/json_file_store.dart';
 
 void main() {
   late Directory dir;
-  setUp(() async => dir = await Directory.systemTemp.createTemp('harmonia-'));
+  setUp(() async => dir = await Directory.systemTemp.createTemp('resonia-'));
   tearDown(() async {
     if (await dir.exists()) await dir.delete(recursive: true);
   });

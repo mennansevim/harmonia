@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'package:fake_async/fake_async.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/application/audio_lab_controller.dart';
-import 'package:harmonia/domain/audio/audio_capture.dart';
+import 'package:resonia/application/audio_lab_controller.dart';
+import 'package:resonia/domain/audio/audio_capture.dart';
 import '../support/fake_audio_lab_backend.dart';
 
 Future<void> flush() => Future<void>.delayed(Duration.zero);

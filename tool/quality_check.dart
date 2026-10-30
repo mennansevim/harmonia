@@ -59,8 +59,8 @@ Future<int> executeQualityPlan(
   return 0;
 }
 
-bool isHarmoniaPubspec(String contents) =>
-    RegExp(r'^name:\s*harmonia\s*$', multiLine: true).hasMatch(contents);
+bool isResoniaPubspec(String contents) =>
+    RegExp(r'^name:\s*resonia\s*$', multiLine: true).hasMatch(contents);
 
 Future<void> main(List<String> args) async {
   if (args.contains('--help')) {
@@ -81,8 +81,8 @@ Future<void> main(List<String> args) async {
   final root = File.fromUri(Platform.script).parent.parent;
   final pubspec = File('${root.path}/pubspec.yaml');
   if (!await pubspec.exists() ||
-      !isHarmoniaPubspec(await pubspec.readAsString())) {
-    stderr.writeln('Expected Harmonia repository; no checks executed.');
+      !isResoniaPubspec(await pubspec.readAsString())) {
+    stderr.writeln('Expected Resonia repository; no checks executed.');
     exitCode = 64;
     return;
   }

@@ -5,14 +5,14 @@ import 'dart:typed_data';
 
 import 'package:archive/archive_io.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/choir/app/piece_audio.dart';
-import 'package:harmonia/choir/data/choir_bundle.dart';
-import 'package:harmonia/choir/data/choir_store.dart';
-import 'package:harmonia/choir/domain/assignment.dart';
-import 'package:harmonia/choir/domain/choir.dart';
-import 'package:harmonia/choir/domain/resource.dart';
-import 'package:harmonia/choir/domain/submission.dart';
-import 'package:harmonia/choir/midi/part_renderer.dart';
+import 'package:resonia/choir/app/piece_audio.dart';
+import 'package:resonia/choir/data/choir_bundle.dart';
+import 'package:resonia/choir/data/choir_store.dart';
+import 'package:resonia/choir/domain/assignment.dart';
+import 'package:resonia/choir/domain/choir.dart';
+import 'package:resonia/choir/domain/resource.dart';
+import 'package:resonia/choir/domain/submission.dart';
+import 'package:resonia/choir/midi/part_renderer.dart';
 
 final t0 = DateTime.utc(2026, 11, 2, 18);
 
@@ -370,7 +370,7 @@ void main() {
       final path = await teacher.bundles.exportChoir(c);
       final input = InputFileStream(path);
       final archive = ZipDecoder().decodeStream(input);
-      final forged = '${tmp.path}/forged.harmonia';
+      final forged = '${tmp.path}/forged.resonia';
       final encoder = ZipFileEncoder()..create(forged);
       for (final entry in archive.files) {
         final bytes = entry.name == 'manifest.json'
@@ -408,7 +408,7 @@ void main() {
       ((assignment['pieces'] as List<Object?>).first
               as Map<String, Object?>)['midiReferenceId'] =
           '../../evil.dart';
-      final forged = '${tmp.path}/evil.harmonia';
+      final forged = '${tmp.path}/evil.resonia';
       final encoder = ZipFileEncoder()..create(forged);
       encoder.addArchiveFile(
         ArchiveFile.string('manifest.json', jsonEncode(manifest)),

@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:harmonia/domain/audio/audio_capture.dart';
+import 'package:resonia/domain/audio/audio_capture.dart';
 
 class FakeClipPlayer implements ReferenceClipPlayer {
   final calls = <String>[];

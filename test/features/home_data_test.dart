@@ -1,11 +1,11 @@
 import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/domain/learning/skill_graph.dart';
-import 'package:harmonia/domain/models/exercise_result.dart';
-import 'package:harmonia/domain/models/learner_profile.dart';
-import 'package:harmonia/domain/perception/pitch_comparison.dart';
-import 'package:harmonia/features/home/home_data.dart';
+import 'package:resonia/domain/learning/skill_graph.dart';
+import 'package:resonia/domain/models/exercise_result.dart';
+import 'package:resonia/domain/models/learner_profile.dart';
+import 'package:resonia/domain/perception/pitch_comparison.dart';
+import 'package:resonia/features/home/home_data.dart';
 
 ExerciseResult _perc(int level, DateTime at, {int wrong = 0}) {
   final round = PitchComparisonRound.generate(

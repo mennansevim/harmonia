@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:harmonia/trainer/domain/curriculum.dart';
-import 'package:harmonia/trainer/domain/trainers.dart';
-import 'package:harmonia/trainer/home/daily_route.dart';
-import 'package:harmonia/trainer/learn/session_end.dart';
-import 'package:harmonia/trainer/quiz/quiz.dart';
-import 'package:harmonia/trainer/quiz/quiz_view.dart';
-import 'package:harmonia/trainer/state/trainer_store.dart';
-import 'package:harmonia/trainer/ui/kit.dart';
+import 'package:resonia/trainer/domain/curriculum.dart';
+import 'package:resonia/trainer/domain/trainers.dart';
+import 'package:resonia/trainer/home/daily_route.dart';
+import 'package:resonia/trainer/learn/session_end.dart';
+import 'package:resonia/trainer/quiz/quiz.dart';
+import 'package:resonia/trainer/quiz/quiz_view.dart';
+import 'package:resonia/trainer/state/trainer_store.dart';
+import 'package:resonia/trainer/ui/kit.dart';
 
 import 'trainer_app_test.dart' show app, memoryStore, settle, tapKey;
 
