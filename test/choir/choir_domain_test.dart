@@ -34,7 +34,19 @@ Assignment assignment({
   choirId: 'c1',
   title: 'Gloria · ölçü 1–24',
   parts: parts,
-  referenceIds: refs,
+  pieces: [
+    for (final r in refs)
+      AssignmentPiece(
+        id: 'p-$r',
+        title: 'Gloria',
+        mode: PieceMode.solfege,
+        fromMeasure: 1,
+        toMeasure: 24,
+        midiReferenceId: r,
+      ),
+    if (refs.isEmpty)
+      AssignmentPiece(id: 'p1', title: 'Gloria', mode: PieceMode.lyrics),
+  ],
   createdAt: t0,
   dueAt: at(72),
 );
@@ -182,6 +194,41 @@ void main() {
       );
     });
 
+    test('a piece keeps its range honest and needs a MIDI to accompany', () {
+      expect(
+        () => AssignmentPiece(
+          id: 'p',
+          title: 'x',
+          mode: PieceMode.solfege,
+          fromMeasure: 9,
+        ),
+        throwsArgumentError,
+      );
+      expect(
+        () => AssignmentPiece(
+          id: 'p',
+          title: 'x',
+          mode: PieceMode.solfege,
+          fromMeasure: 9,
+          toMeasure: 3,
+        ),
+        throwsArgumentError,
+      );
+      expect(
+        () => AssignmentPiece(
+          id: 'p',
+          title: 'x',
+          mode: PieceMode.lyrics,
+          withAccompaniment: true,
+        ),
+        throwsArgumentError,
+      );
+      final two = assignment(refs: const ['same', 'same2']);
+      expect(two.referenceIds, ['same', 'same2']);
+      expect(two.piece('p-same')!.fromMeasure, 1);
+      expect(two.piece('nope'), isNull);
+    });
+
     test('recording cap is bounded and JSON round-trips', () {
       expect(
         () => Assignment(
@@ -189,7 +236,9 @@ void main() {
           choirId: 'c1',
           title: 'x',
           parts: const [ChoirPart.alto],
-          referenceIds: const [],
+          pieces: [
+            AssignmentPiece(id: 'p', title: 'x', mode: PieceMode.lyrics),
+          ],
           createdAt: t0,
           maxRecordingSeconds: 5,
         ),
@@ -207,6 +256,7 @@ void main() {
     Submission draft([ChoirMember? m]) => Submission.start(
       id: 's1',
       assignment: assignment(),
+      pieceId: 'p-r1',
       member: m ?? singer('ali', ChoirPart.bass),
     );
 
@@ -228,6 +278,7 @@ void main() {
         assignment: a,
         recordingId: 'rec-1',
         durationMs: 95000,
+        kind: TakeKind.unaccompanied,
       );
       s = s.submit(at(1));
       expect(s.status, SubmissionStatus.submitted);
@@ -237,6 +288,7 @@ void main() {
           assignment: a,
           recordingId: 'rec-x',
           durationMs: 1000,
+          kind: TakeKind.unaccompanied,
         ),
         throwsStateError,
       );
@@ -265,6 +317,7 @@ void main() {
             assignment: a,
             recordingId: 'rec-2',
             durationMs: 90000,
+            kind: TakeKind.unaccompanied,
           )
           .submit(at(30));
       // Reviewing a submitted take implies it was listened to.
@@ -295,11 +348,17 @@ void main() {
           assignment: a,
           recordingId: 'r',
           durationMs: 120001,
+          kind: TakeKind.unaccompanied,
         ),
         throwsArgumentError,
       );
       final cleared = draft()
-          .attachRecording(assignment: a, recordingId: 'r', durationMs: 1000)
+          .attachRecording(
+            assignment: a,
+            recordingId: 'r',
+            durationMs: 1000,
+            kind: TakeKind.unaccompanied,
+          )
           .clearRecording();
       expect(cleared.recordingId, isNull);
       expect(cleared.durationMs, isNull);
@@ -311,6 +370,7 @@ void main() {
             assignment: assignment(),
             recordingId: 'r',
             durationMs: 1000,
+            kind: TakeKind.unaccompanied,
           )
           .submit(at(1));
       final otherConductor = ChoirMember(
@@ -346,6 +406,7 @@ void main() {
             assignment: assignment(),
             recordingId: 'r',
             durationMs: 1000,
+            kind: TakeKind.unaccompanied,
           )
           .submit(at(1))
           .review(
@@ -388,11 +449,18 @@ void main() {
       singer('a2', ChoirPart.alto),
       singer('s1', ChoirPart.soprano),
     ];
-    Submission sent(String member) => Submission.start(
-      id: 'sub-$member',
-      assignment: a,
-      member: members.firstWhere((m) => m.userId == member),
-    ).attachRecording(assignment: a, recordingId: 'r', durationMs: 1000);
+    Submission sent(String member) =>
+        Submission.start(
+          id: 'sub-$member',
+          assignment: a,
+          pieceId: 'p-r1',
+          member: members.firstWhere((m) => m.userId == member),
+        ).attachRecording(
+          assignment: a,
+          recordingId: 'r',
+          durationMs: 1000,
+          kind: TakeKind.unaccompanied,
+        );
     final subs = [
       sent('b1').submit(at(1)),
       sent('b2'), // draft: not sent
@@ -415,6 +483,7 @@ void main() {
     ];
     final rows = assignmentProgress(
       assignment: a,
+      pieceId: 'p-r1',
       members: members,
       submissions: subs,
     );
@@ -433,6 +502,7 @@ void main() {
     ];
     final after = assignmentProgress(
       assignment: a,
+      pieceId: 'p-r1',
       members: moved,
       submissions: subs,
     );

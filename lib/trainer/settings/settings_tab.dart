@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 
 import '../../application/practice_preferences.dart';
 import '../../application/practice_reminder.dart';
+import '../../choir/app/choir_scope.dart';
+import '../../choir/app/choir_tab.dart';
 import '../app/scope.dart';
 import '../audio/synth.dart';
 import '../domain/music.dart';
@@ -207,6 +209,17 @@ class SettingsTab extends StatelessWidget {
                 const _Caption('ÜYELİK'),
                 _Group([
                   _Item(
+                    key: const Key('settings_choir'),
+                    icon: Icons.groups_outlined,
+                    title: 'Koro modülü',
+                    subtitle: 'Ödev, eşlikli kayıt, şefin geri bildirimi',
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => const ChoirTab(asTab: false),
+                      ),
+                    ),
+                  ),
+                  _Item(
                     key: const Key('settings_membership'),
                     icon: Icons.diamond_outlined,
                     title: 'Premium ve Plus',
@@ -240,7 +253,8 @@ class SettingsTab extends StatelessWidget {
                       context,
                       'Gizlilik',
                       'Cevapların, ilerlemen ve tercihlerin yalnız bu cihazda saklanır. Hesap, reklam ya da izleme yoktur. '
-                          'Mikrofon yalnız Ses Atölyesi\'nde kaydı sen başlattığında kullanılır; kayıtlar yüklenmez.',
+                          'Mikrofon yalnız kaydı sen başlattığında kullanılır; kayıtlar yüklenmez. '
+                          'Koro kayıtların yalnız sen paylaşırsan şefe gider.',
                     ),
                   ),
                   _Item(
@@ -302,7 +316,10 @@ class SettingsTab extends StatelessWidget {
       cancel: 'Vazgeç',
       confirm: 'Sil',
     );
-    if (ok) await store.resetAll();
+    if (!ok || !context.mounted) return;
+    final choir = ChoirScope.maybeOf(context)?.store;
+    await store.resetAll();
+    await choir?.clearAll();
   }
 
   static void _info(BuildContext context, String title, String body) =>

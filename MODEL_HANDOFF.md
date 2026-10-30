@@ -42,6 +42,10 @@ Agora tek sesler: `src/PitchTest/lib/audioPlayer.ts` →
 header mono PCM16/48 kHz, tüm etiket/hak zinciri doğrulanmadı. Repo MIT olsa da
 sample hakları varsayılmadı; Harmonia'ya kopyalanmadı.
 
+## 2e. 2026-10-30 — CHOIR-A0 Koro modülü (ADR-036)
+
+`lib/choir/app|audio|data|midi|domain`. Sunucu yok, `ChoirStore` + `.harmonia` paketleri; sunucu gelince `ChoirPersistence` ve paket taşıması değişir, ekranlar değil. Eşlikli kayıt tek telefonda: `part_renderer` → `PluginTakeCapture` → `mixTake`. `Isolate.run` closure'ı store veya controller yakalamamalı; üst düzey fonksiyon kullan. Hoparlörde eşlikli kayıt kapalı kalsın. Kayıt puanlanmaz. Metinler `choir_text.dart` (TR/EN); uygulamanın geri kalanı Türkçe, İngilizce cihazda karışık görünür. Gerçek cihaz/kulaklık/Android/pilot kapıları açık; ayrıntı CURRENT_ROADMAP.
+
 ## 2d. 2026-10-30 — ADR-035 Personal / Choir
 
 Plan: `PRODUCT_PLAN_PERSONAL_CHOIR.md`. Personal herkes içindir; eski “Koro” sekmesi **Ses** sekmesi (Ses Atölyesi, `KoroHub` sınıf adı korunuyor). Onboarding kişisel dille; aralık adımı atlanabilir; `focus` için `voice` id'si. Koro modülü (davet, ödev, kayıt gönderme, şef web paneli) yok ve sunucu/hesap/upload gerektirdiği için kullanıcı kararlarını (K1–K6) bekliyor. CHOIR-M1 (`lib/choir/domain/`) ve MIDI-01 (`lib/choir/midi/smf_reader.dart`) saf Dart + testli, hiçbir ekrana bağlı değil. Kararsız yapılabilecek kod bitti; sonraki adım K1–K6 kullanıcı kararları.

@@ -156,6 +156,8 @@ Sözleşmeler, benchmark ve iş sırası: [AUDIO_ENGINE_PLAN.md](./AUDIO_ENGINE_
 
 `choir_practice` modunda diğer parti track'leri kulaklıktan sürerken yalnız öğrencinin tek vokali mikrofondan alınabilir. Bu mod recall exam'den farklıdır; overlap yasağı bütün modlara yayılmaz. Rehber track gain/mute, playback timeline, kendi parti hedef event'leri ve latency kaydedilir. Hoparlör/bleed başarı sayılmamalı; cihaz fixture'ı ve kalite kontrolü gerekir. İlk sürüm ensemble multipitch ayrıştırma veya otomatik blend/tını/nefes tekniği skorlaması yapmaz.
 
+Uygulama (ADR-036): `lib/choir/midi/part_renderer.dart` parti miksini tek saatte üretir, `lib/choir/audio/plugin_take_engine.dart` kaydı başlatıp eşliği aynı anda çalar, `take_controller.dart` + `wav_io.dart` sesi eşlikle birleştirir. `RouteAdvice.speaker` eşlikli kaydı kapatır.
+
 ## Müfredat ve öğrenme kanıtı — önerilen
 
 `ExerciseDefinition` v2: referans nota/onset listesi, tuning bağlamı, tempo/ölçü, referans tekrar sayısı, gecikme, yanıt sıra/set kuralı, ipucu/mod, transpozisyon kuralı ve içerik sürümü. `SkillNode` önkoşul/öğrenme amacını; `MasteryEvidence` geçerli metrik örnekleri, algı/üretim, zorluk, destek, yeni soru ve gecikmeli kontrolü taşır.

@@ -1112,3 +1112,10 @@ hedeflerinde 5 sent içinde kalır; C5'in C4'e göre `octaveOffset` değeri +1 v
 mutlak farkı yaklaşık +1200 senttir. Full1043 + 1 koşullu skip; analyze/format
 temiz. Sentetik tonlar gerçek piyano/insan sesi, VAD, mikrofon, cihaz veya
 öğrenme doğrulaması değildir.
+
+## Koro: tek telefonda eşlikli kayıt (CHOIR-A0)
+
+Simülatör kanıtı: `integration_test/choir_journey_test.dart` gerçek eklentilerle çalma + kayıt + miks zincirini çalıştırır (önce `xcrun simctl privacy <id> grant microphone com.harmonia.harmonia`). Simülatörde kulaklık ve gerçek akustik yol yoktur; gecikme, bleed veya ses kalitesi kanıtı değildir.
+
+Gerçek cihazda bakılacaklar: kablolu kulaklıkla kayıt; eşlik mikrofona sızıyor mu; `_lagMs` tahmini kulakla ne kadar tutuyor, hizalama kaydırıcısı ne kadar gerekiyor; AirPods ile A2DP çıkış + telefon mikrofonu gerçekten açılıyor mu; kayıt sırasında kulaklık çıkınca kayıt iptal oluyor mu; arama gelince davranış; Android'de aynı anda çalma/kayıt ve ses odağı; 10 dakikalık kayıtta bellek.
+

@@ -2252,3 +2252,15 @@ Hiçbiri UI'ya, depolamaya veya sunucuya bağlı değil. Gerçek koro MIDI dosya
   gerçek insan sesi, VAD, mikrofon, cihaz, lisans veya pedagojik başarı kanıtı
   değildir. BENCH-01/CAL-02/VAD-01 kapıları açık.
 
+## 2026-10-30 — CHOIR-A0 koro modülü (ADR-036)
+
+- Domain: `AssignmentPiece` (solfej/sözlü, ölçü aralığı, yazılı bölüm, eşlik), `ReferenceAsset.trackParts`, `Submission.pieceId/takeKind/sentLate`, `Feedback.marks/voiceNoteId`, `FeedbackTag.breathLeak`, `ChoirResource`.
+- MIDI: `midi_section.dart` (parti adı önerisi, ölçü penceresi), `part_renderer.dart` (tek saatli parti miksi, tempo yeniden render, ön sayım, metronom; dalga tablosu sentezi, örnek ses yok).
+- Ses: `take_engine.dart`, `plugin_take_engine.dart` (kayıt + eşlik aynı anda; iOS'ta A2DP, hands-free kapalı), `take_controller.dart`, `wav_io.dart`.
+- Veri: `choir_store.dart` (cihazda JSON + medya, okunamayan veriyi ezmez), `choir_bundle.dart` (`.harmonia` zip; manifest, hash, kimlik deseni, aşamalı kurulum).
+- Arayüz: `lib/choir/app/`; sekme (rol korist/şef ya da koro varsa), Ayarlar girişi, Bugün son tarih kartı, Verilerimi sil koroyu da siler. TR/EN.
+- Simülatörde yakalanan hata: `Isolate.run` closure'ı store'u yakalıyordu, kayıt başlamıyordu; işler üst düzey fonksiyonlara alındı, regresyon testi eklendi. Birim testleri bunu fake render yüzünden görmemişti.
+- Gözden geçirmede düzeltildi: tekrar kaydedilen kaydın eski dosyası iki tarafta da siliniyor.
+- Doğrulama: `flutter test` 1095 geçti + 1 atlandı, analyze/format temiz, simülatör `choir_journey_test` ve `app_journeys_test` 6/6 geçti. Bir `quality_check` koşusu disk neredeyse doluyken sıfır CPU ile takıldı; öldürülüp aynı adımlar tek tek çalıştırıldı ve geçti, kök neden doğrulanmadı.
+- Fiziksel cihaz, kulaklık, Bluetooth, gecikme, bleed, Android ve insan pilotu yapılmadı. `flutter build ios --simulator` bu makinede Xcode 255 ile düşüyor (bilinen lipo sorunu); `flutter run/test -d` çalışıyor.
+

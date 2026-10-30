@@ -102,7 +102,7 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
       Ob.role => _choices(
         'Harmonia\'yı nasıl kullanacaksın?',
         'Ses, nefes ve kulak çalışması herkes için aynı. '
-            'Koro modülü ayrı ve henüz hazır değil.',
+            'Koro ödevleri ayrı bir sekmede açılır.',
         [
           (
             'solo',

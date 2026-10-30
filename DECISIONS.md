@@ -355,3 +355,13 @@ değildir ve geç kalan eski async okumalar generation kapısıyla elenir.
 
 **Sınırlar:** Choir C1 kayıtları puanlanmaz; otomatik değerlendirme BENCH-01/VAD-01/CHOIR-01 kapılarından önce açılmaz. Sunucu, hesap, upload, web yayını ve ödeme ayrı kullanıcı yetkisi ve ADR ister. Plan: [PRODUCT_PLAN_PERSONAL_CHOIR.md](./PRODUCT_PLAN_PERSONAL_CHOIR.md).
 
+## ADR-036 — Koro modülü önce cihazda: sunucusuz çalışma ve tek telefonda eşlikli kayıt
+
+**Tarih:** 2026-10-30 · **Durum:** kabul (kullanıcı: "bu geliştirmeyi de yap"; iş akışını anlattı). K2 backend kararının yerine geçmez, onu erteler.
+
+**Bağlam:** Kullanıcının korosunda şef ölçü aralığı, solfej/sözlü, son gün ve eşlik isteğiyle ödev verir; bir ödevde birden çok eser olabilir. Bugün MIDI bir cihazda çalınır, ikinci cihazla üstüne kaydedilir; şef yazıyla yorum yapar, gerekirse kendi sesiyle söyler, nefes kaçaklarına bakar. Ders kayıtları gelemeyenler için saklanır. Sunucu, hesap ve kayıt yükleme için yetki yok (AGENTS, K2).
+
+**Karar:** (1) Modül `ChoirStore` arkasında cihazda çalışır; şef ve korist `.harmonia` zip paketleriyle konuşur (koro/ödev, kayıt, geri bildirim). Paketi yalnız kişi kendi paylaşım eylemiyle gönderir; WhatsApp gibi mevcut kanallar taşır. Sunucu eklenince ekranlar değil `ChoirPersistence` ve paket taşıması değişir. (2) İki cihaz sorunu tek telefonda çözülür: MIDI uygulamada ses olarak üretilir, kulaklıktan çalar, mikrofon yalnız sesi alır, sonra tek dosyada birleşir (`accompaniedMix`). İkinci cihazda alınmış kayıt da dosya olarak eklenebilir (`imported`). (3) Hoparlörde eşlikli kayıt kapalı kalır (ARCHITECTURE `choir_practice`). (4) Kayıt puanlanmaz; nefes kaçağı dahil tüm işaretler şefindir. (5) `lib/choir/app` metinleri TR/EN; Türkçe olmayan cihazda EN.
+
+**Sınırlar:** Paketler imzalı değildir, şekil ve tutarlılık denetlenir; kimlik CHOIR-B1 ister. Hizalama yazılım tahmini + kulakla düzeltmedir, ölçülmüş gecikme değildir (CAL-03b). Sesler sentezdir, piyano kaydı değildir (MIDI-03). Korist listesi yalnız kayıt gönderenleri bilir. Küresel ölçek, davet linki, push ve şef web paneli sunucu kararından sonradır. Divisi (S1/S2) yok.
+

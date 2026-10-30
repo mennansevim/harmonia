@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../../choir/app/choir_scope.dart';
+import '../../choir/app/choir_screen.dart';
+import '../../choir/app/choir_tab.dart';
+import '../../choir/app/choir_text.dart';
 import '../app/scope.dart';
 import '../domain/curriculum.dart';
 import '../domain/trainers.dart';
@@ -24,47 +28,113 @@ class HomeShell extends StatefulWidget {
 }
 
 class _HomeShellState extends State<HomeShell> {
-  int _tab = 0;
+  String _tab = 'tab_0';
+
+  /// Koro shows for those who said they sing in or lead a choir, and for
+  /// anyone who already has one. Everyone else reaches it from Settings.
+  bool _showsChoir(TrainerStore store) {
+    final choir = ChoirScope.maybeOf(context);
+    if (choir == null) return false;
+    final role = store.answers['role'];
+    return role == 'singer' ||
+        role == 'conductor' ||
+        choir.store.choirs.isNotEmpty;
+  }
 
   @override
   Widget build(BuildContext context) {
     final store = TrainerScope.of(context).store;
     return ListenableBuilder(
       listenable: store,
-      builder: (context, _) => Scaffold(
-        backgroundColor: TC.canvas,
-        body: IndexedStack(
-          index: _tab,
-          children: const [
+      builder: (context, _) {
+        final items = <_Destination>[
+          const _Destination(
+            'tab_0',
+            Icons.wb_sunny_outlined,
+            Icons.wb_sunny_rounded,
+            'Bugün',
             PlayTab(),
+          ),
+          const _Destination(
+            'tab_1',
+            Icons.graphic_eq_outlined,
+            Icons.graphic_eq_rounded,
+            'Ses',
             KoroHub(asTab: true),
+          ),
+          if (_showsChoir(store))
+            _Destination(
+              'tab_koro',
+              Icons.groups_outlined,
+              Icons.groups_rounded,
+              CT.of(context).tabLabel,
+              const ChoirTab(),
+            ),
+          const _Destination(
+            'tab_2',
+            Icons.insights_outlined,
+            Icons.insights_rounded,
+            'İlerleme',
             StatsTab(),
+          ),
+          const _Destination(
+            'tab_3',
+            Icons.tune_outlined,
+            Icons.tune_rounded,
+            'Ayarlar',
             SettingsTab(),
-          ],
-        ),
-        bottomNavigationBar: _NavBar(
-          index: _tab,
-          onTap: (i) => setState(() => _tab = i),
-        ),
-      ),
+          ),
+        ];
+        final index = items.indexWhere((d) => d.key == _tab);
+        final selected = index < 0 ? 0 : index;
+        return Scaffold(
+          backgroundColor: TC.canvas,
+          body: IndexedStack(
+            index: selected,
+            children: [
+              for (final d in items)
+                KeyedSubtree(key: ValueKey(d.key), child: d.body),
+            ],
+          ),
+          bottomNavigationBar: _NavBar(
+            items: items,
+            index: selected,
+            onTap: (i) => setState(() => _tab = items[i].key),
+          ),
+        );
+      },
     );
   }
 }
 
-/// Four destinations. The voice workshop is for everyone (ADR-035); the
-/// invite-only choir module will add its own entry once it exists.
+class _Destination {
+  const _Destination(
+    this.key,
+    this.icon,
+    this.selectedIcon,
+    this.label,
+    this.body,
+  );
+  final String key;
+  final IconData icon;
+  final IconData selectedIcon;
+  final String label;
+  final Widget body;
+}
+
+/// Four destinations, five for choir members. The voice workshop is for
+/// everyone (ADR-035).
 class _NavBar extends StatelessWidget {
-  const _NavBar({required this.index, required this.onTap});
+  const _NavBar({
+    required this.items,
+    required this.index,
+    required this.onTap,
+  });
+  final List<_Destination> items;
   final int index;
   final ValueChanged<int> onTap;
   @override
   Widget build(BuildContext context) {
-    const items = [
-      (Icons.wb_sunny_outlined, Icons.wb_sunny_rounded, 'Bugün'),
-      (Icons.graphic_eq_outlined, Icons.graphic_eq_rounded, 'Ses'),
-      (Icons.insights_outlined, Icons.insights_rounded, 'İlerleme'),
-      (Icons.tune_outlined, Icons.tune_rounded, 'Ayarlar'),
-    ];
     return Container(
       color: Colors.white,
       child: SafeArea(
@@ -78,10 +148,10 @@ class _NavBar extends StatelessWidget {
                   child: Semantics(
                     selected: i == index,
                     button: true,
-                    label: items[i].$3,
+                    label: items[i].label,
                     excludeSemantics: true,
                     child: InkWell(
-                      key: Key('tab_$i'),
+                      key: Key(items[i].key),
                       borderRadius: BorderRadius.circular(14),
                       onTap: () {
                         tapHaptic();
@@ -101,12 +171,16 @@ class _NavBar extends StatelessWidget {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(
-                              i == index ? items[i].$2 : items[i].$1,
+                              i == index
+                                  ? items[i].selectedIcon
+                                  : items[i].icon,
                               color: i == index ? TC.primary : TC.muted,
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              items[i].$3,
+                              items[i].label,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                               style: TextStyle(
                                 fontSize: 11.5,
                                 fontWeight: i == index
@@ -238,6 +312,7 @@ class _PlayTabState extends State<PlayTab> {
           ),
           const SizedBox(height: 12),
           _WeekBar(store: store),
+          const _ChoirDue(),
           const SizedBox(height: 16),
           _DailyRoute(
             store: store,
@@ -250,6 +325,47 @@ class _PlayTabState extends State<PlayTab> {
           const SizedBox(height: 10),
           for (final k in TrainerKind.values) _SkillRow(kind: k, store: store),
         ],
+      ),
+    );
+  }
+}
+
+/// The nearest choir deadline, when there is work still to send.
+class _ChoirDue extends StatelessWidget {
+  const _ChoirDue();
+  @override
+  Widget build(BuildContext context) {
+    final store = ChoirScope.maybeOf(context)?.store;
+    final next = store?.nextDue();
+    if (store == null || next == null) return const SizedBox.shrink();
+    final (choir, assignment) = next;
+    final text = CT.of(context);
+    return Padding(
+      padding: const EdgeInsets.only(top: 14),
+      child: AppCard(
+        key: const Key('today_choir_due'),
+        padding: const EdgeInsets.all(14),
+        onTap: () => Navigator.of(context).push(
+          MaterialPageRoute<void>(
+            builder: (_) => ChoirScreen(choirId: choir.id),
+          ),
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.groups_rounded, color: TC.koro),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                text.dueToday(
+                  assignment.title,
+                  text.dueLabel(store.now, assignment.dueAt!),
+                ),
+                style: TT.title.copyWith(fontSize: 14.5),
+              ),
+            ),
+            const Icon(Icons.chevron_right_rounded, color: TC.faint),
+          ],
+        ),
       ),
     );
   }

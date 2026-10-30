@@ -30,6 +30,7 @@ enum FeedbackTag {
   rhythm('Ritim', 'rhythm'),
   entry('Giriş', 'rhythm'),
   breath('Nefes', 'breath'),
+  breathLeak('Nefes kaçağı', 'breath'),
   diction('Söz', null),
   dynamics('Nüans', null),
   wellDone('İyi iş', null);
@@ -39,6 +40,29 @@ enum FeedbackTag {
   final String? personalArea;
 }
 
+/// A moment in the take the conductor pointed at: "breath leaks here".
+class FeedbackMark {
+  FeedbackMark({required this.atMs, required this.tag, this.text = ''}) {
+    if (atMs < 0) throw ArgumentError('Mark before the take starts');
+  }
+
+  final int atMs;
+  final FeedbackTag tag;
+  final String text;
+
+  Map<String, Object?> toJson() => {
+    'atMs': atMs,
+    'tag': tag.name,
+    'text': text,
+  };
+
+  factory FeedbackMark.fromJson(Map<String, Object?> json) => FeedbackMark(
+    atMs: req<int>(json, 'atMs'),
+    tag: reqEnum(json, 'tag', FeedbackTag.values),
+    text: req<String>(json, 'text'),
+  );
+}
+
 class Feedback {
   Feedback({
     required this.authorId,
@@ -46,11 +70,19 @@ class Feedback {
     required this.attempt,
     this.text = '',
     List<FeedbackTag> tags = const [],
-  }) : tags = List.unmodifiable(tags.toSet().toList()) {
+    List<FeedbackMark> marks = const [],
+    this.voiceNoteId,
+  }) : tags = List.unmodifiable(tags.toSet().toList()),
+       marks = List.unmodifiable(
+         [...marks]..sort((a, b) => a.atMs.compareTo(b.atMs)),
+       ) {
     if (authorId.trim().isEmpty) throw ArgumentError('Feedback needs author');
     if (attempt < 1) throw ArgumentError('attempt starts at 1');
-    if (text.trim().isEmpty && this.tags.isEmpty) {
-      throw ArgumentError('Feedback needs text or at least one tag');
+    if (text.trim().isEmpty &&
+        this.tags.isEmpty &&
+        this.marks.isEmpty &&
+        voiceNoteId == null) {
+      throw ArgumentError('Feedback needs text, a tag, a mark or a voice note');
     }
   }
 
@@ -61,6 +93,10 @@ class Feedback {
   final int attempt;
   final String text;
   final List<FeedbackTag> tags;
+  final List<FeedbackMark> marks;
+
+  /// The conductor sang or spoke the correction; a real human recording.
+  final String? voiceNoteId;
 
   Map<String, Object?> toJson() => {
     'authorId': authorId,
@@ -68,6 +104,8 @@ class Feedback {
     'attempt': attempt,
     'text': text,
     'tags': [for (final t in tags) t.name],
+    'marks': [for (final m in marks) m.toJson()],
+    'voiceNoteId': voiceNoteId,
   };
 
   factory Feedback.fromJson(Map<String, Object?> json) => Feedback(
@@ -76,7 +114,28 @@ class Feedback {
     attempt: req<int>(json, 'attempt'),
     text: req<String>(json, 'text'),
     tags: enumList(json, 'tags', FeedbackTag.values),
+    marks: [
+      for (final m in req<List<Object?>>(json, 'marks'))
+        if (m is Map<String, Object?>)
+          FeedbackMark.fromJson(m)
+        else
+          throw const FormatException('choir: mark is not a map'),
+    ],
+    voiceNoteId: opt<String>(json, 'voiceNoteId'),
   );
+}
+
+/// How the take was made. Tells the conductor what they are hearing; it is
+/// a label, never a measurement.
+enum TakeKind {
+  /// Sung to the MIDI on headphones on this device, then mixed with it.
+  accompaniedMix,
+
+  /// Sung with no accompaniment.
+  unaccompanied,
+
+  /// A file from elsewhere, such as a second device.
+  imported,
 }
 
 enum ReviewOutcome { accepted, revisionRequested }
@@ -86,6 +145,7 @@ class Submission {
     required this.id,
     required this.choirId,
     required this.assignmentId,
+    required this.pieceId,
     required this.memberId,
     required this.part,
     required this.status,
@@ -93,18 +153,21 @@ class Submission {
     required List<Feedback> feedback,
     this.recordingId,
     this.durationMs,
+    this.takeKind,
     this.submittedAt,
     this.listenedAt,
   }) : feedback = List.unmodifiable(feedback) {
     if (id.trim().isEmpty ||
         choirId.trim().isEmpty ||
         assignmentId.trim().isEmpty ||
+        pieceId.trim().isEmpty ||
         memberId.trim().isEmpty) {
       throw ArgumentError('Submission needs ids');
     }
     if (attempt < 1) throw ArgumentError('attempt starts at 1');
-    if ((recordingId == null) != (durationMs == null)) {
-      throw ArgumentError('Recording id and duration go together');
+    if ((recordingId == null) != (durationMs == null) ||
+        (recordingId == null) != (takeKind == null)) {
+      throw ArgumentError('Recording id, duration and kind go together');
     }
     if (durationMs != null && durationMs! <= 0) {
       throw ArgumentError('durationMs must be positive');
@@ -118,13 +181,18 @@ class Submission {
     }
   }
 
-  /// A new, empty draft for [member]. Throws [ArgumentError] unless the
-  /// member is a singer of this choir whose part the assignment includes.
+  /// A new, empty draft of one piece for [member]. Throws [ArgumentError]
+  /// unless the member is a singer of this choir whose part the assignment
+  /// includes.
   factory Submission.start({
     required String id,
     required Assignment assignment,
+    required String pieceId,
     required ChoirMember member,
   }) {
+    if (assignment.piece(pieceId) == null) {
+      throw ArgumentError('Piece is not in this assignment');
+    }
     if (!member.isSinger) throw ArgumentError('Only singers submit');
     if (member.choirId != assignment.choirId) {
       throw ArgumentError('Member is not in this choir');
@@ -138,6 +206,7 @@ class Submission {
       id: id,
       choirId: assignment.choirId,
       assignmentId: assignment.id,
+      pieceId: pieceId,
       memberId: member.userId,
       part: part,
       status: SubmissionStatus.draft,
@@ -149,6 +218,7 @@ class Submission {
   final String id;
   final String choirId;
   final String assignmentId;
+  final String pieceId;
   final String memberId;
 
   /// The part the singer had when they started; kept even if reassigned.
@@ -157,6 +227,7 @@ class Submission {
   final int attempt;
   final String? recordingId;
   final int? durationMs;
+  final TakeKind? takeKind;
   final DateTime? submittedAt;
   final DateTime? listenedAt;
 
@@ -169,11 +240,16 @@ class Submission {
 
   Feedback? get latestFeedback => feedback.isEmpty ? null : feedback.last;
 
+  /// Sent after the due time. The conductor decides what that means.
+  bool sentLate(Assignment assignment) =>
+      submittedAt != null && assignment.isLate(submittedAt!);
+
   /// Replaces the draft's take. The cap comes from the assignment.
   Submission attachRecording({
     required Assignment assignment,
     required String recordingId,
     required int durationMs,
+    required TakeKind kind,
   }) {
     _require(SubmissionStatus.draft, 'attach a recording');
     _sameAssignment(assignment);
@@ -181,7 +257,11 @@ class Submission {
     if (durationMs > assignment.maxRecordingSeconds * 1000) {
       throw ArgumentError('Recording is longer than the assignment allows');
     }
-    return _copy(recordingId: recordingId, durationMs: durationMs);
+    return _copy(
+      recordingId: recordingId,
+      durationMs: durationMs,
+      takeKind: kind,
+    );
   }
 
   /// Drops the draft's take (the singer deletes it before sending).
@@ -212,6 +292,8 @@ class Submission {
     required DateTime now,
     String text = '',
     List<FeedbackTag> tags = const [],
+    List<FeedbackMark> marks = const [],
+    String? voiceNoteId,
   }) {
     _conductorOf(conductor);
     if (!awaitsConductor) {
@@ -223,6 +305,8 @@ class Submission {
       attempt: attempt,
       text: text,
       tags: tags,
+      marks: marks,
+      voiceNoteId: voiceNoteId,
     );
     return _copy(
       status: outcome == ReviewOutcome.accepted
@@ -241,6 +325,7 @@ class Submission {
       id: id,
       choirId: choirId,
       assignmentId: assignmentId,
+      pieceId: pieceId,
       memberId: memberId,
       part: part,
       status: SubmissionStatus.draft,
@@ -271,6 +356,7 @@ class Submission {
     SubmissionStatus? status,
     String? recordingId,
     int? durationMs,
+    TakeKind? takeKind,
     bool clearRecording = false,
     DateTime? submittedAt,
     DateTime? listenedAt,
@@ -279,12 +365,14 @@ class Submission {
     id: id,
     choirId: choirId,
     assignmentId: assignmentId,
+    pieceId: pieceId,
     memberId: memberId,
     part: part,
     status: status ?? this.status,
     attempt: attempt,
     recordingId: clearRecording ? null : recordingId ?? this.recordingId,
     durationMs: clearRecording ? null : durationMs ?? this.durationMs,
+    takeKind: clearRecording ? null : takeKind ?? this.takeKind,
     submittedAt: submittedAt ?? this.submittedAt,
     listenedAt: listenedAt ?? this.listenedAt,
     feedback: feedback ?? this.feedback,
@@ -294,12 +382,14 @@ class Submission {
     'id': id,
     'choirId': choirId,
     'assignmentId': assignmentId,
+    'pieceId': pieceId,
     'memberId': memberId,
     'part': part.name,
     'status': status.name,
     'attempt': attempt,
     'recordingId': recordingId,
     'durationMs': durationMs,
+    'takeKind': takeKind?.name,
     'submittedAt': submittedAt == null ? null : writeTime(submittedAt!),
     'listenedAt': listenedAt == null ? null : writeTime(listenedAt!),
     'feedback': [for (final f in feedback) f.toJson()],
@@ -309,12 +399,14 @@ class Submission {
     id: reqId(json, 'id'),
     choirId: reqId(json, 'choirId'),
     assignmentId: reqId(json, 'assignmentId'),
+    pieceId: reqId(json, 'pieceId'),
     memberId: reqId(json, 'memberId'),
     part: reqEnum(json, 'part', ChoirPart.values),
     status: reqEnum(json, 'status', SubmissionStatus.values),
     attempt: req<int>(json, 'attempt'),
     recordingId: opt<String>(json, 'recordingId'),
     durationMs: opt<int>(json, 'durationMs'),
+    takeKind: optEnum(json, 'takeKind', TakeKind.values),
     submittedAt: optTime(json, 'submittedAt'),
     listenedAt: optTime(json, 'listenedAt'),
     feedback: [
@@ -350,17 +442,19 @@ class PartProgress {
   final int revisionRequested;
 }
 
-/// Tracking rows for [assignment], one per assigned part, from the choir's
-/// current singers. A take sung for another part (the singer was moved
+/// Tracking rows for one piece of [assignment], one per assigned part, from
+/// the choir's current singers. A take sung for another part (the singer was moved
 /// since) does not count toward the new part: they owe a new one.
 List<PartProgress> assignmentProgress({
   required Assignment assignment,
+  required String pieceId,
   required List<ChoirMember> members,
   required List<Submission> submissions,
 }) {
   final byMember = <String, Submission>{
     for (final s in submissions)
-      if (s.assignmentId == assignment.id) s.memberId: s,
+      if (s.assignmentId == assignment.id && s.pieceId == pieceId)
+        s.memberId: s,
   };
   return [
     for (final part in assignment.parts)

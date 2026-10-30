@@ -1,9 +1,11 @@
 # Harmonia — Current Roadmap
 
-**Tarih:** 2026-10-30 (son güncelleme: AUDIO-01 referans motor sözleşmesi)
+**Tarih:** 2026-10-30 (son güncelleme: CHOIR-A0 koro modülü)
 **Durum:** Faz 1 — güvenilirlik sözleşmeleri, yerel kayıt laboratuvarı, deneysel DSP/worker, kalibrasyon/kalite kapısı ve misafir uygulama kabuğu kod-test seviyesinde. Tek ses skor ekranı hâlâ simülasyon; fiziksel cihaz, insan sesi benchmark'ı, eğitimci içerik onayı ve öğretim pilotu kapıları açık. **Hiçbir modül cihazda/pilotta doğrulanmış veya yayında değil.**
 **Sahip:** Mennan Sevim  
 **Platform:** Flutter mobil uygulama; ileride web ve öğretmen paneli
+
+**2026-10-30 — CHOIR-A0 Koro modülü (kod + simülatör, ADR-036):** Kullanıcının anlattığı iş akışı uygulandı. Şef: koro oluşturur, tek ödevde birden çok eser, her eser için solfej/sözlü, ölçü aralığı veya yazılı bölüm, eşlikli kayıt isteği, MIDI + kanal→parti eşlemesi + hak beyanı, son tarih; dinleme sırası, 1/1,25× hız, ana işaret (nefes kaçağı dahil), etiket, yazılı yorum, kendi sesiyle not, kabul/tekrar iste. Korist: pakete katılır, ödev/eser/son tarih görür, MIDI ile çalışır (kendi partisi öne, diğerleri kısık, %50–120 hız, metronom, ön sayım, döngü), tek telefonda eşlikli kayıt alır, hizalama kaydırıcısıyla düzeltir, başka cihaz kaydını dosyadan ekler, şefe gönderir, geri bildirimi ve şefin sesini dinler, Personal çalışmaya geçer. Kaynaklar: nota, ders kaydı, not. Bugün sekmesinde en yakın son tarih. Sunucu yok: `.harmonia` paketleri kişinin kendi paylaşımıyla taşınır; paket boyut/şema/hash/kimlik denetimli, bozuksa hiçbir şey kaydedilmez. TR/EN metin, yerel saat dilimi, yaygın dillerde parti adı önerisi. Yeni bağımlılıklar: `file_picker`, `share_plus`, `archive`, `open_filex`, `flutter_localizations`. **1095 test geçti**, 1 opt-in atlandı; analyze/format temiz. iPhone 17 Pro simülatöründe `integration_test/choir_journey_test.dart` (gerçek `record` + `just_audio` ile aynı anda çalma/kayıt, miks, hizalama, paket gidiş-dönüşü) ve `app_journeys_test.dart` 6/6 geçti; ekranlar elle gezildi, simülatör hoparlör rotasında engel doğru çıktı. **Kapılar açık:** gerçek telefonda kulaklık, bleed, gecikme ve Bluetooth (CAL-03b, CHOIR-01), Android derlemesi, gerçek koro MIDI'si, gerçek şef/koro pilotu, hukuk metni, paket imzası/kimlik, sunucu kararı (K2), son tarih bildirimi, divisi, AAC sıkıştırma (kayıt WAV, ~5 MB/2 dk). Modül ürün olarak bitmiş değildir.
 
 **2026-10-30 — AUDIO-01 kod kapısı:** Fixture manifesti → hash/header/sample
 rate/count doğrulaması → PCM16 decode → hedef bağımsız pitch frame zinciri tek

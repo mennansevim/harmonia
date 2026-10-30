@@ -108,6 +108,8 @@ burada yalnız değişen/eklenen işler var.
 | CHOIR-ADR | Backend, web paneli, veri bölgesi, saklama süresi, silme | Ka | ADR-036 |
 | CHOIR-M1 ✅ 2026-10-30 | Saf Dart domain: `Choir`, `ChoirMember` (rol + `VoicePart`), `Invite`, `ReferenceAsset` (kaynak/hak beyanı), `Assignment` (parti hedefi, son tarih), `Submission` (durum makinesi: taslak → gönderildi → dinlendi → geri bildirildi / tekrar istendi), `Feedback` (yazılı + hazır etiketler) | K | Backend'den bağımsız, JSON round-trip ve durum geçişleri testli; sunucu olmadan yazılabilir |
 
+> **2026-10-30 güncellemesi (ADR-036):** Sunucu beklemeden cihazda çalışan sürüm yapıldı (CHOIR-A0): ödev, çoklu eser, MIDI çalışma, tek telefonda eşlikli kayıt, şef dinleme/işaret/sesli not, kaynaklar; aktarım `.harmonia` paketleriyle. Aşağıdaki sunucu, davet linki ve web paneli işleri K2 kararını bekliyor. MIDI-02–05'in kod kısmı bu sürümde var, gerçek koro MIDI'siyle doğrulanmadı.
+
 #### C1 — Koro ve ödev yönetimi (Aralık–Ocak, ~6 hafta, ilk pilot)
 
 | ID | İş | Tür | Kabul / sınır |
