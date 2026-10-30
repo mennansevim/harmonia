@@ -104,14 +104,10 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
         'Ses, nefes ve kulak çalışması herkes için aynı. '
             'Koro ödevleri ayrı bir sekmede açılır.',
         [
-          (
-            'solo',
-            Icons.person_outline_rounded,
-            'Sesimi ve kulağımı geliştirmek istiyorum',
-          ),
-          ('musician', Icons.piano_outlined, 'Enstrüman çalıyorum'),
-          ('singer', Icons.mic_none_rounded, 'Bir koroda söylüyorum'),
-          ('conductor', Icons.groups_outlined, 'Koro şefi / eğitmeniyim'),
+          ('solo', Ic.userRound, 'Sesimi ve kulağımı geliştirmek istiyorum'),
+          ('musician', Ic.piano, 'Enstrüman çalıyorum'),
+          ('singer', Ic.mic, 'Bir koroda söylüyorum'),
+          ('conductor', Ic.users, 'Koro şefi / eğitmeniyim'),
         ],
         selected: [if (_answers['role'] is String) _answers['role'] as String],
         onTap: (id) {
@@ -124,10 +120,7 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
         'Sesin hangi aralığa yakın?',
         'Dersler bu aralıkta çalar; tenor ve bas bir oktav pesten duyar. '
             'Bilmiyorsan atla, Ses sekmesindeki testle sonra bulursun.',
-        [
-          for (final p in VoicePart.values)
-            (p.name, Icons.graphic_eq_rounded, p.title),
-        ],
+        [for (final p in VoicePart.values) (p.name, Ic.audioLines, p.title)],
         selected: [?store.voicePart],
         optional: true,
         onTap: (id) {
@@ -141,7 +134,7 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
         'Önce neye odaklanalım?',
         'Birden fazla seçebilirsin.',
         [
-          ('voice', Icons.graphic_eq_rounded, 'Ses: aralık, ritim, ezgi'),
+          ('voice', Ic.audioLines, 'Ses: aralık, ritim, ezgi'),
           for (final k in TrainerKind.values) (k.id, trainerIcon(k), k.title),
         ],
         selected: _list('focus'),
@@ -271,12 +264,8 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
                   Expanded(child: Text(label, style: TT.title)),
                   Icon(
                     selected.contains(id)
-                        ? (multi
-                              ? Icons.check_box_rounded
-                              : Icons.radio_button_checked_rounded)
-                        : (multi
-                              ? Icons.check_box_outline_blank_rounded
-                              : Icons.radio_button_unchecked_rounded),
+                        ? (multi ? Ic.squareCheck : Ic.circleDot)
+                        : (multi ? Ic.square : Ic.circle),
                     color: selected.contains(id) ? TC.primary : TC.faint,
                   ),
                 ],
@@ -496,7 +485,7 @@ class _ReminderState extends State<_Reminder> {
         BigButton(
           key: const Key('reminder_allow'),
           label: 'Hatırlat',
-          icon: Icons.notifications_active_outlined,
+          icon: Ic.bellRing,
           busy: _busy,
           onPressed: _allow,
         ),
@@ -527,17 +516,17 @@ class _Ready extends StatelessWidget {
     final role = store.answers['role'];
     final rows = [
       (
-        Icons.mic_none_rounded,
+        Ic.mic,
         'Aralık',
         store.part?.title ?? 'Seçilmedi · Ses sekmesinde test et',
       ),
       (trainerIcon(trainer), 'İlk ders', trainer.title),
       if (DailyRoute.forMinutes(store.dailyMinutes).voiceStep)
-        (Icons.graphic_eq_rounded, 'Ses', 'Rotanın sonunda bir ses adımı'),
-      (Icons.timer_outlined, 'Günlük', '${store.dailyMinutes} dakika'),
+        (Ic.audioLines, 'Ses', 'Rotanın sonunda bir ses adımı'),
+      (Ic.timer, 'Günlük', '${store.dailyMinutes} dakika'),
       // Honest about the choir module: not built yet (ADR-035).
       if (role == 'singer' || role == 'conductor')
-        (Icons.groups_outlined, 'Koro', 'Koro modülü henüz yok'),
+        (Ic.users, 'Koro', 'Koro modülü henüz yok'),
     ];
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
@@ -573,7 +562,7 @@ class _Ready extends StatelessWidget {
           BigButton(
             key: const Key('today_session_begin'),
             label: 'İlk derse başla',
-            icon: Icons.play_arrow_rounded,
+            icon: Ic.play,
             onPressed: onBegin,
           ),
           Center(child: TextLink('Ana sayfaya git', onTap: onLater)),

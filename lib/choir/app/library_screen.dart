@@ -29,9 +29,9 @@ class _LibraryScreenState extends State<LibraryScreen> {
   }
 
   IconData _icon(ResourceKind k) => switch (k) {
-    ResourceKind.score => Icons.description_outlined,
-    ResourceKind.rehearsalRecording => Icons.headphones_outlined,
-    ResourceKind.note => Icons.edit_note_rounded,
+    ResourceKind.score => Ic.fileMusic,
+    ResourceKind.rehearsalRecording => Ic.headphones,
+    ResourceKind.note => Ic.notebookPen,
   };
 
   @override
@@ -49,22 +49,11 @@ class _LibraryScreenState extends State<LibraryScreen> {
                 r.text.toLowerCase().contains(query)))
           r,
     ];
-    Widget chip(String label, ResourceKind? kind, String key) => Padding(
-      padding: const EdgeInsets.only(right: 6),
-      child: ChoiceChip(
-        key: Key(key),
-        label: Text(
-          label,
-          style: TextStyle(
-            color: _kind == kind ? Colors.white : TC.body,
-            fontWeight: FontWeight.w600,
-            fontSize: 13,
-          ),
-        ),
-        selected: _kind == kind,
-        checkmarkColor: Colors.white,
-        onSelected: (_) => setState(() => _kind = kind),
-      ),
+    Widget chip(String label, ResourceKind? kind, String key) => OptionChip(
+      key: Key(key),
+      label: label,
+      selected: _kind == kind,
+      onTap: () => setState(() => _kind = kind),
     );
     return ChoirPage(
       title: text.library,
@@ -72,7 +61,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
       bottom: BigButton(
         key: const Key('library_add'),
         label: text.addResourceCta,
-        icon: Icons.add_rounded,
+        icon: Ic.plus,
         onPressed: () => showTrainerSheet<void>(
           context,
           (_) => _AddSheet(choirId: widget.choirId),
@@ -83,22 +72,25 @@ class _LibraryScreenState extends State<LibraryScreen> {
           key: const Key('library_search'),
           controller: _search,
           onChanged: (_) => setState(() {}),
-          decoration: choirField(
-            text.searchLibrary,
-          ).copyWith(prefixIcon: const Icon(Icons.search_rounded)),
-        ),
-        const SizedBox(height: 12),
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            children: [
-              chip(text.filterAll, null, 'library_all'),
-              for (final k in ResourceKind.values)
-                chip(text.kindName(k), k, 'library_${k.name}'),
-            ],
+          decoration: choirField(text.searchLibrary).copyWith(
+            prefixIcon: const Icon(Ic.search, size: 18, color: TC.muted),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide.none,
+            ),
           ),
         ),
-        const SizedBox(height: 14),
+        const SizedBox(height: 20),
+        Wrap(
+          spacing: 7,
+          runSpacing: 7,
+          children: [
+            chip(text.filterAll, null, 'library_all'),
+            for (final k in ResourceKind.values)
+              chip(text.kindName(k), k, 'library_${k.name}'),
+          ],
+        ),
+        const SizedBox(height: 20),
         if (browsing) ...[
           HeroCard(
             child: Column(
@@ -111,31 +103,31 @@ class _LibraryScreenState extends State<LibraryScreen> {
                         text.caps(text.archiveEyebrow),
                         style: const TextStyle(
                           color: TC.sun,
-                          fontSize: 11,
+                          fontSize: 10,
                           fontWeight: FontWeight.w700,
                           letterSpacing: 1.5,
                         ),
                       ),
                     ),
-                    const Icon(
-                      Icons.library_books_outlined,
-                      color: TC.sun,
-                      size: 22,
-                    ),
+                    const Icon(Ic.library, color: TC.sun, size: 28),
                   ],
                 ),
                 const SizedBox(height: 12),
                 Text(
                   text.archiveHeadline,
-                  style: TT.display.copyWith(color: Colors.white, fontSize: 28),
+                  style: TT.display.copyWith(
+                    color: Colors.white,
+                    fontSize: 30,
+                    height: 1.15,
+                  ),
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 12),
                 Text(
                   text.archiveBody,
                   style: const TextStyle(
                     color: TC.heroMuted,
-                    fontSize: 13.5,
-                    height: 1.4,
+                    fontSize: 13,
+                    height: 1.5,
                   ),
                 ),
               ],
@@ -233,7 +225,7 @@ class _ItemState extends State<_Item> {
     final day = item.rehearsalOn?.toLocal();
     return ChoirRow(
       key: Key('resource_${item.id}'),
-      icon: _playing ? Icons.pause_rounded : widget.icon,
+      icon: _playing ? Ic.pause : widget.icon,
       title: item.title,
       subtitle: day == null ? null : materials.formatMediumDate(day),
       onTap: _open,
@@ -336,22 +328,15 @@ class _AddSheetState extends State<_AddSheet> {
           Text(text.addResourceCta, style: TT.h3),
           const SizedBox(height: 12),
           Wrap(
-            spacing: 8,
+            spacing: 7,
+            runSpacing: 7,
             children: [
               for (final k in ResourceKind.values)
-                ChoiceChip(
+                OptionChip(
                   key: Key('kind_${k.name}'),
-                  label: Text(
-                    text.kindName(k),
-                    style: TextStyle(
-                      color: _kind == k ? Colors.white : TC.body,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 13,
-                    ),
-                  ),
+                  label: text.kindName(k),
                   selected: _kind == k,
-                  checkmarkColor: Colors.white,
-                  onSelected: (_) => setState(() => _kind = k),
+                  onTap: () => setState(() => _kind = k),
                 ),
             ],
           ),
@@ -360,7 +345,7 @@ class _AddSheetState extends State<_AddSheet> {
             OutlinedButton.icon(
               key: const Key('resource_pick'),
               onPressed: _pick,
-              icon: const Icon(Icons.attach_file_rounded, size: 20),
+              icon: const Icon(Ic.paperclip, size: 18),
               label: Text(_file?.name ?? text.chooseFile),
             ),
             const SizedBox(height: 10),

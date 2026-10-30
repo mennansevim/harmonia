@@ -268,7 +268,7 @@ class _LessonFlowState extends State<LessonFlow> with WidgetsBindingObserver {
                   IconButton(
                     tooltip: 'Geri',
                     onPressed: () => Navigator.of(context).pop(false),
-                    icon: const Icon(Icons.close_rounded, color: TC.body),
+                    icon: const Icon(Ic.x, color: TC.body),
                   ),
                   Expanded(
                     child: Text(
@@ -343,7 +343,7 @@ class _LessonFlowState extends State<LessonFlow> with WidgetsBindingObserver {
     final steps = node.isGate
         ? [
             (
-              Icons.fact_check_outlined,
+              Ic.clipboardCheck,
               'Ayırt et',
               node.kind == NodeKind.finalExam
                   ? '20 soru · %80 ile tamamlanır'
@@ -352,19 +352,15 @@ class _LessonFlowState extends State<LessonFlow> with WidgetsBindingObserver {
           ]
         : [
             (
-              Icons.hearing_rounded,
+              Ic.ear,
               'Dinle',
               node.newItems.isEmpty
                   ? 'Bildiklerini yan yana çal'
                   : 'Yeni ${kind.unitWord}: ${node.newItems.map((i) => _label(i, long: false)).join(', ')}',
             ),
+            (Ic.mic, 'Söyle', 'Duyduğunu sesli tekrar et · ölçülmez'),
             (
-              Icons.mic_none_rounded,
-              'Söyle',
-              'Duyduğunu sesli tekrar et · ölçülmez',
-            ),
-            (
-              Icons.fact_check_outlined,
+              Ic.clipboardCheck,
               'Ayırt et',
               '${node.items.length} seçenekli kısa tur',
             ),
@@ -485,7 +481,7 @@ class _LessonFlowState extends State<LessonFlow> with WidgetsBindingObserver {
                   ),
                 ),
                 onPressed: () => _play(item),
-                icon: const Icon(Icons.play_arrow_rounded),
+                icon: const Icon(Ic.play),
                 label: const Text('Çal'),
               ),
             ),
@@ -505,7 +501,7 @@ class _LessonFlowState extends State<LessonFlow> with WidgetsBindingObserver {
                     setState(() => _root = _random.nextInt(12) - 5);
                     _play(item);
                   },
-                  icon: const Icon(Icons.shuffle_rounded),
+                  icon: const Icon(Ic.shuffle),
                   label: const Text('Başka yerden'),
                 ),
               ),
@@ -543,7 +539,7 @@ class _LessonFlowState extends State<LessonFlow> with WidgetsBindingObserver {
             onTap: () => _play(item),
             child: Row(
               children: [
-                Icon(Icons.play_circle_outline_rounded, color: color, size: 30),
+                Icon(Ic.circlePlay, color: color, size: 30),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
@@ -632,7 +628,7 @@ class _LessonFlowState extends State<LessonFlow> with WidgetsBindingObserver {
         children: [
           Row(
             children: [
-              Icon(Icons.mic_none_rounded, color: color),
+              Icon(Ic.mic, color: color),
               const SizedBox(width: 10),
               Expanded(
                 child: Text('İsteğe bağlı ses kontrolü', style: TT.title),
@@ -668,14 +664,14 @@ class _LessonFlowState extends State<LessonFlow> with WidgetsBindingObserver {
             OutlinedButton.icon(
               key: const Key('sing_cancel'),
               onPressed: () => session.cancel(),
-              icon: const Icon(Icons.stop_circle_outlined),
+              icon: const Icon(Ic.circleStop),
               label: const Text('Durdur'),
             )
           else if (!calibrated)
             OutlinedButton.icon(
               key: const Key('sing_calibrate'),
               onPressed: () => _calibrateSing(item),
-              icon: const Icon(Icons.tune_rounded),
+              icon: const Icon(Ic.settings2),
               label: const Text('Ortamı ölç ve hazırla'),
             )
           else
@@ -683,7 +679,7 @@ class _LessonFlowState extends State<LessonFlow> with WidgetsBindingObserver {
               key: const Key('sing_start'),
               style: FilledButton.styleFrom(backgroundColor: color),
               onPressed: () => _startSing(item),
-              icon: const Icon(Icons.mic_rounded),
+              icon: const Icon(Ic.mic),
               label: Text(outcome == null ? 'Dinle ve söyle' : 'Tekrar dene'),
             ),
         ],
@@ -720,7 +716,7 @@ class _LessonFlowState extends State<LessonFlow> with WidgetsBindingObserver {
               onTap: () => _play(item),
               child: Row(
                 children: [
-                  Icon(Icons.volume_up_outlined, color: color),
+                  Icon(Ic.volume2, color: color),
                   const SizedBox(width: 12),
                   Expanded(child: Text(_label(item), style: TT.title)),
                   const Text('Çal', style: TT.small),

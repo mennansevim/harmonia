@@ -101,7 +101,7 @@ class _AssignmentEditorState extends State<AssignmentEditor> {
         builder: (button) => BigButton(
           key: const Key('assignment_publish'),
           label: text.createWork,
-          icon: Icons.check_rounded,
+          icon: Ic.check,
           busy: _busy,
           onPressed: () => _publish(button),
         ),
@@ -124,7 +124,7 @@ class _AssignmentEditorState extends State<AssignmentEditor> {
         Caption(text.caps(text.dueDate)),
         ChoirRow(
           key: const Key('assignment_due'),
-          icon: Icons.event_outlined,
+          icon: Ic.calendarDays,
           title: due == null
               ? text.chooseDue
               : '${materials.formatMediumDate(due)} · '
@@ -136,21 +136,21 @@ class _AssignmentEditorState extends State<AssignmentEditor> {
         const SizedBox(height: 8),
         for (final (i, p) in _pieces.indexed)
           ChoirRow(
-            icon: Icons.music_note_outlined,
+            icon: Ic.music2,
             title: p.title,
             subtitle:
                 '${text.modeName(p.mode)} · ${text.sectionText(p)} · '
                 '${p.withAccompaniment ? text.accompanied : text.unaccompanied}',
             trailing: IconButton(
               tooltip: text.delete,
-              icon: const Icon(Icons.close_rounded, color: TC.muted),
+              icon: const Icon(Ic.x, color: TC.muted),
               onPressed: () => setState(() => _pieces.removeAt(i)),
             ),
           ),
         OutlinedButton.icon(
           key: const Key('assignment_add_piece'),
           onPressed: _addPiece,
-          icon: const Icon(Icons.add_rounded, size: 20),
+          icon: const Icon(Ic.plus, size: 18),
           label: Text(text.addPiece),
         ),
         Caption(text.caps(text.workNote)),
@@ -277,13 +277,13 @@ class _PieceEditorState extends State<PieceEditor> {
       bottom: BigButton(
         key: const Key('piece_save'),
         label: text.savePiece,
-        icon: Icons.add_rounded,
+        icon: Ic.plus,
         busy: _busy,
         onPressed: _title.text.trim().isNotEmpty && rightsOk ? _save : null,
       ),
       children: [
         Container(
-          padding: const EdgeInsets.all(18),
+          padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             color: TC.primarySoft,
             borderRadius: BorderRadius.circular(20),
@@ -293,17 +293,14 @@ class _PieceEditorState extends State<PieceEditor> {
             children: [
               Row(
                 children: [
-                  const Icon(
-                    Icons.queue_music_rounded,
-                    color: TC.primary,
-                    size: 28,
-                  ),
-                  const SizedBox(width: 12),
+                  const Icon(Ic.fileMusic, color: TC.primary, size: 27),
+                  const SizedBox(width: 14),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(text.startFromMidi, style: TT.title),
+                        const SizedBox(height: 3),
                         Text(
                           midi == null
                               ? text.midiHint
@@ -313,10 +310,7 @@ class _PieceEditorState extends State<PieceEditor> {
                                       .where((t) => t.notes.isNotEmpty)
                                       .length,
                                 ),
-                          style: const TextStyle(
-                            color: TC.body,
-                            fontSize: 12.5,
-                          ),
+                          style: TT.small.copyWith(fontSize: 11, height: 1.5),
                         ),
                       ],
                     ),
@@ -327,7 +321,7 @@ class _PieceEditorState extends State<PieceEditor> {
               OutlinedButton.icon(
                 key: const Key('piece_pick_midi'),
                 onPressed: _pickMidi,
-                icon: const Icon(Icons.upload_outlined, size: 20),
+                icon: const Icon(Ic.upload, size: 18),
                 label: Text(
                   _picked?.name ?? text.chooseMidi,
                   maxLines: 1,
@@ -346,43 +340,29 @@ class _PieceEditorState extends State<PieceEditor> {
         ),
         Caption(text.caps(text.voicingTitle)),
         Wrap(
-          spacing: 8,
+          spacing: 7,
+          runSpacing: 7,
           children: [
             for (final v in const ['SATB', 'SSAA', 'TTBB'])
-              ChoiceChip(
+              OptionChip(
                 key: Key('voicing_$v'),
-                label: Text(
-                  v,
-                  style: TextStyle(
-                    color: _voicing == v ? Colors.white : TC.body,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 13,
-                  ),
-                ),
+                label: v,
                 selected: _voicing == v,
-                checkmarkColor: Colors.white,
-                onSelected: (_) => setState(() => _voicing = v),
+                onTap: () => setState(() => _voicing = v),
               ),
           ],
         ),
         Caption(text.caps(text.howSung)),
         Wrap(
-          spacing: 8,
+          spacing: 7,
+          runSpacing: 7,
           children: [
             for (final m in PieceMode.values)
-              ChoiceChip(
+              OptionChip(
                 key: Key('piece_mode_${m.name}'),
-                label: Text(
-                  text.modeName(m),
-                  style: TextStyle(
-                    color: _mode == m ? Colors.white : TC.body,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 13,
-                  ),
-                ),
+                label: text.modeName(m),
                 selected: _mode == m,
-                checkmarkColor: Colors.white,
-                onSelected: (_) => setState(() => _mode = m),
+                onTap: () => setState(() => _mode = m),
               ),
           ],
         ),
@@ -390,22 +370,37 @@ class _PieceEditorState extends State<PieceEditor> {
         Text(text.modeHint(_mode), style: TT.small),
         Caption(text.caps(text.rangeHeading)),
         Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
-              child: TextField(
-                key: const Key('piece_from'),
-                controller: _from,
-                keyboardType: TextInputType.number,
-                decoration: choirField(text.rangeStart),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(text.caps(text.rangeStart), style: TT.caps),
+                  const SizedBox(height: 8),
+                  TextField(
+                    key: const Key('piece_from'),
+                    controller: _from,
+                    keyboardType: TextInputType.number,
+                    decoration: choirField(text.measureFrom),
+                  ),
+                ],
               ),
             ),
-            const SizedBox(width: 10),
+            const SizedBox(width: 12),
             Expanded(
-              child: TextField(
-                key: const Key('piece_to'),
-                controller: _to,
-                keyboardType: TextInputType.number,
-                decoration: choirField(text.rangeEnd),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(text.caps(text.rangeEnd), style: TT.caps),
+                  const SizedBox(height: 8),
+                  TextField(
+                    key: const Key('piece_to'),
+                    controller: _to,
+                    keyboardType: TextInputType.number,
+                    decoration: choirField(text.measureTo),
+                  ),
+                ],
               ),
             ),
           ],

@@ -291,7 +291,7 @@ class _TakeScreenState extends State<TakeScreen> with WidgetsBindingObserver {
       bottom: BigButton(
         key: const Key('take_start'),
         label: text.startTake,
-        icon: Icons.mic_none_rounded,
+        icon: Ic.mic,
         color: TC.sun,
         onPressed: _canRecord ? _start : null,
       ),
@@ -308,12 +308,12 @@ class _TakeScreenState extends State<TakeScreen> with WidgetsBindingObserver {
                   text.caps(text.setupCaption),
                   style: const TextStyle(
                     color: TC.heroMuted,
-                    fontSize: 11,
+                    fontSize: 10,
                     fontWeight: FontWeight.w700,
                     letterSpacing: 1.5,
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 12),
                 Text(
                   text.onePhoneHeadline,
                   style: TT.h2.copyWith(
@@ -321,19 +321,19 @@ class _TakeScreenState extends State<TakeScreen> with WidgetsBindingObserver {
                     fontWeight: FontWeight.w400,
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 12),
                 Text(
                   text.onePhoneBody,
                   style: const TextStyle(
                     color: TC.heroMuted,
-                    fontSize: 13.5,
-                    height: 1.4,
+                    fontSize: 13,
+                    height: 1.5,
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 20),
           if (advice != null) _routeBanner(text, advice),
           if (advice == RouteAdvice.unknown && !_headphonesConfirmed)
             Padding(
@@ -350,13 +350,16 @@ class _TakeScreenState extends State<TakeScreen> with WidgetsBindingObserver {
               child: OutlinedButton.icon(
                 key: const Key('take_check_route'),
                 onPressed: _checkRoute,
-                icon: const Icon(Icons.refresh_rounded, size: 20),
+                icon: const Icon(Ic.refreshCw, size: 18),
                 label: Text(text.checkAgain),
               ),
             ),
           Padding(
             padding: const EdgeInsets.only(bottom: 12),
-            child: Text(text.readyFor(piece.title), style: TT.small),
+            child: Text(
+              text.readyFor(piece.title),
+              style: TT.small.copyWith(fontSize: 11, height: 1.5),
+            ),
           ),
         ] else
           Padding(
@@ -366,7 +369,7 @@ class _TakeScreenState extends State<TakeScreen> with WidgetsBindingObserver {
         OutlinedButton.icon(
           key: const Key('take_import'),
           onPressed: _importTake,
-          icon: const Icon(Icons.upload_outlined, size: 20),
+          icon: const Icon(Ic.upload, size: 18),
           label: Text(text.addFromDevice),
         ),
       ],
@@ -376,25 +379,25 @@ class _TakeScreenState extends State<TakeScreen> with WidgetsBindingObserver {
   Widget _routeBanner(CT text, RouteAdvice advice) {
     final (icon, title, body, fill) = switch (advice) {
       RouteAdvice.ready => (
-        Icons.headphones_outlined,
+        Ic.headphones,
         text.wiredReady,
         text.readyToGo,
         TC.sun,
       ),
       RouteAdvice.bluetoothDelay => (
-        Icons.bluetooth_rounded,
+        Ic.bluetooth,
         text.btDelay,
         text.btHint,
         TC.warnSoft,
       ),
       RouteAdvice.speaker => (
-        Icons.volume_up_outlined,
+        Ic.volume2,
         text.speakerLeak,
         text.plugHeadphones,
         TC.warnSoft,
       ),
       RouteAdvice.unknown => (
-        Icons.headphones_outlined,
+        Ic.headphones,
         text.unknownRoute,
         text.unknownHint,
         TC.primarySoft,
@@ -402,7 +405,7 @@ class _TakeScreenState extends State<TakeScreen> with WidgetsBindingObserver {
     };
     return Padding(
       key: Key('take_route_${advice.name}'),
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.only(bottom: 20),
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
@@ -420,10 +423,14 @@ class _TakeScreenState extends State<TakeScreen> with WidgetsBindingObserver {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(title, style: TT.title),
-                    const SizedBox(height: 2),
+                    const SizedBox(height: 4),
                     Text(
                       body,
-                      style: const TextStyle(color: TC.ink, fontSize: 12.5),
+                      style: const TextStyle(
+                        color: TC.ink,
+                        fontSize: 12,
+                        height: 1.5,
+                      ),
                     ),
                   ],
                 ),
@@ -477,7 +484,7 @@ class _TakeScreenState extends State<TakeScreen> with WidgetsBindingObserver {
                     text.caps(text.recordingNow),
                     style: const TextStyle(
                       color: TC.sun,
-                      fontSize: 11,
+                      fontSize: 10,
                       fontWeight: FontWeight.w700,
                       letterSpacing: 1.5,
                     ),
@@ -512,11 +519,7 @@ class _TakeScreenState extends State<TakeScreen> with WidgetsBindingObserver {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(
-                          Icons.mic_none_rounded,
-                          color: TC.ink,
-                          size: 26,
-                        ),
+                        const Icon(Ic.mic, color: TC.ink, size: 26),
                         const SizedBox(height: 12),
                         Text(
                           time,
@@ -560,7 +563,7 @@ class _TakeScreenState extends State<TakeScreen> with WidgetsBindingObserver {
               BigButton(
                 key: const Key('take_stop'),
                 label: text.stopRecording,
-                icon: Icons.crop_square_rounded,
+                icon: Ic.square,
                 color: TC.sun,
                 onPressed: take.finish,
               ),
@@ -591,7 +594,7 @@ class _TakeScreenState extends State<TakeScreen> with WidgetsBindingObserver {
           BigButton(
             key: const Key('take_keep'),
             label: text.keepTake,
-            icon: Icons.check_rounded,
+            icon: Ic.check,
             busy: _keeping,
             onPressed: _keep,
           ),
@@ -599,7 +602,7 @@ class _TakeScreenState extends State<TakeScreen> with WidgetsBindingObserver {
           OutlinedButton.icon(
             key: const Key('take_again'),
             onPressed: _start,
-            icon: const Icon(Icons.replay_rounded, size: 20),
+            icon: const Icon(Ic.rotateCcw, size: 18),
             label: Text(text.recordAgain),
           ),
         ],
@@ -613,12 +616,12 @@ class _TakeScreenState extends State<TakeScreen> with WidgetsBindingObserver {
                 text.caps(text.yourTake),
                 style: const TextStyle(
                   color: TC.heroMuted,
-                  fontSize: 11,
+                  fontSize: 10,
                   fontWeight: FontWeight.w700,
                   letterSpacing: 1.5,
                 ),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 12),
               if (_peaks.isNotEmpty)
                 ChoirWave(
                   peaks: _peaks,
@@ -627,7 +630,7 @@ class _TakeScreenState extends State<TakeScreen> with WidgetsBindingObserver {
                     Duration(milliseconds: (total * f.clamp(0, 1)).round()),
                   ),
                 ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 12),
               Row(
                 children: [
                   Expanded(
@@ -656,9 +659,11 @@ class _TakeScreenState extends State<TakeScreen> with WidgetsBindingObserver {
         ),
         if (take.accompanied) ...[
           Caption(text.caps(text.alignHeading)),
-          Text(text.alignExplain, style: TT.small),
-          const SizedBox(height: 12),
+          Text(text.alignExplain, style: TT.body.copyWith(color: TC.muted)),
+          const SizedBox(height: 18),
           AppCard(
+            padding: const EdgeInsets.all(20),
+            radius: 20,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -672,10 +677,7 @@ class _TakeScreenState extends State<TakeScreen> with WidgetsBindingObserver {
                     ),
                     Text(
                       '${_sliderMs.round()} ms',
-                      style: const TextStyle(
-                        color: TC.primary,
-                        fontWeight: FontWeight.w600,
-                      ),
+                      style: const TextStyle(color: TC.primary, fontSize: 12),
                     ),
                   ],
                 ),
@@ -696,8 +698,8 @@ class _TakeScreenState extends State<TakeScreen> with WidgetsBindingObserver {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(text.earlier, style: TT.small),
-                    Text(text.later, style: TT.small),
+                    Text(text.earlier, style: TT.small.copyWith(fontSize: 10)),
+                    Text(text.later, style: TT.small.copyWith(fontSize: 10)),
                   ],
                 ),
               ],

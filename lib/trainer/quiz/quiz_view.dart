@@ -307,7 +307,7 @@ class _QuizViewState extends State<QuizView> {
         IconButton(
           tooltip: 'Geri',
           onPressed: _exit,
-          icon: const Icon(Icons.close_rounded, color: TC.body),
+          icon: const Icon(Ic.x, color: TC.body),
         ),
         Expanded(
           child: Column(
@@ -649,9 +649,7 @@ class ListenDisc extends StatelessWidget {
                       color: isPlaying ? color : soft(color),
                     ),
                     child: Icon(
-                      isPlaying
-                          ? Icons.graphic_eq_rounded
-                          : Icons.replay_rounded,
+                      isPlaying ? Ic.audioLines : Ic.rotateCcw,
                       size: 48,
                       color: isPlaying ? Colors.white : color,
                     ),
@@ -850,7 +848,7 @@ class _SoundRow extends StatelessWidget {
                 style: TT.title,
               ),
             ),
-            Icon(Icons.play_circle_outline_rounded, color: color),
+            Icon(Ic.circlePlay, color: color),
           ],
         ),
       ),
@@ -880,7 +878,7 @@ class _PlayPill extends StatelessWidget {
         padding: const EdgeInsets.all(10),
         child: Row(
           children: [
-            Icon(Icons.play_arrow_rounded, color: color),
+            Icon(Ic.play, color: color),
             const SizedBox(width: 6),
             Expanded(
               child: Column(

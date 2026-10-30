@@ -94,11 +94,7 @@ class _MembershipScreenState extends State<MembershipScreen> {
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Icon(
-                            Icons.check_rounded,
-                            color: TC.green,
-                            size: 20,
-                          ),
+                          const Icon(Ic.check, color: TC.green, size: 20),
                           const SizedBox(width: 9),
                           Expanded(
                             child: Text(

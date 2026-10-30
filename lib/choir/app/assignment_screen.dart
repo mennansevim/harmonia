@@ -113,7 +113,7 @@ class _AssignmentScreenState extends State<AssignmentScreen> {
       ),
       children: [
         _WorkHeader(assignment: a),
-        const SizedBox(height: 16),
+        const SizedBox(height: 20),
         HeroCard(
           key: Key('piece_${piece.id}'),
           child: Column(
@@ -126,7 +126,7 @@ class _AssignmentScreenState extends State<AssignmentScreen> {
                       text.caps(text.workingOnPiece),
                       style: const TextStyle(
                         color: TC.heroMuted,
-                        fontSize: 11,
+                        fontSize: 10,
                         fontWeight: FontWeight.w700,
                         letterSpacing: 1.5,
                       ),
@@ -147,41 +147,53 @@ class _AssignmentScreenState extends State<AssignmentScreen> {
               const SizedBox(height: 12),
               Text(
                 piece.title,
-                style: TT.display.copyWith(color: Colors.white, fontSize: 38),
+                style: TT.display.copyWith(color: Colors.white, fontSize: 37),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 12),
               Text(
                 '${piece.voicing} · ${text.modeName(piece.mode)} · '
                 '${text.sectionText(piece)} · '
                 '${piece.withAccompaniment ? text.accompanied : text.unaccompanied}',
-                style: const TextStyle(color: Colors.white, fontSize: 13.5),
+                style: const TextStyle(
+                  color: TC.heroMuted,
+                  fontSize: 12,
+                  height: 1.5,
+                ),
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 12),
               Text(
                 text.modeHint(piece.mode),
-                style: const TextStyle(color: TC.heroMuted, fontSize: 13.5),
+                style: const TextStyle(
+                  color: TC.heroMuted,
+                  fontSize: 12,
+                  height: 1.5,
+                ),
               ),
               if (s != null && s.sentLate(a))
                 Padding(
                   padding: const EdgeInsets.only(top: 4),
                   child: Text(
                     text.lateTag,
-                    style: const TextStyle(color: TC.heroMuted, fontSize: 13.5),
+                    style: const TextStyle(color: TC.heroMuted, fontSize: 12),
                   ),
                 ),
             ],
           ),
         ),
         if (feedback != null) ...[
-          const SizedBox(height: 12),
+          const SizedBox(height: 20),
           FeedbackView(feedback: feedback),
+        ],
+        if (pieceOpen(s)) ...[
+          const SizedBox(height: 20),
+          Text(text.workHint, style: TT.small.copyWith(height: 1.5)),
         ],
         if (others.isNotEmpty) ...[
           Caption(text.caps(text.otherPieces)),
           for (final p in others)
             ChoirRow(
               key: Key('piece_${p.id}'),
-              icon: Icons.music_note_outlined,
+              icon: Ic.music2,
               title: p.title,
               subtitle:
                   '${text.modeName(p.mode)} · ${text.sectionText(p)} · '
@@ -216,7 +228,7 @@ class _AssignmentScreenState extends State<AssignmentScreen> {
             builder: (button) => BigButton(
               key: Key('piece_send_${piece.id}'),
               label: text.sendToConductor,
-              icon: Icons.send_outlined,
+              icon: Ic.send,
               busy: _sending,
               onPressed: () => _send(button, s),
             ),
@@ -235,7 +247,7 @@ class _AssignmentScreenState extends State<AssignmentScreen> {
       return BigButton(
         key: Key('piece_practise_${piece.id}'),
         label: text.practiseWith(piece.title),
-        icon: Icons.play_arrow_outlined,
+        icon: Ic.play,
         onPressed: practise,
       );
     }
@@ -243,7 +255,7 @@ class _AssignmentScreenState extends State<AssignmentScreen> {
       return BigButton(
         key: Key('piece_record_${piece.id}'),
         label: text.startTake,
-        icon: Icons.mic_none_rounded,
+        icon: Ic.mic,
         color: TC.sun,
         onPressed: record,
       );
@@ -262,36 +274,32 @@ class _AssignmentScreenState extends State<AssignmentScreen> {
       bottom: BigButton(
         key: const Key('assignment_queue'),
         label: text.openQueue,
-        icon: Icons.headphones_outlined,
+        icon: Ic.headphones,
         onPressed: queue.isEmpty
             ? null
             : () => _push(ReviewScreen(submissionId: queue.first.id)),
       ),
       children: [
         _WorkHeader(assignment: a),
-        const SizedBox(height: 14),
+        const SizedBox(height: 20),
         Row(
           children: [
-            ChoiceChip(
+            _ViewTab(
               key: const Key('tab_submissions'),
-              label: Text(text.submissions),
+              label: text.submissions,
               selected: !_showInfo,
-              selectedColor: TC.sun,
-              showCheckmark: false,
-              onSelected: (_) => setState(() => _showInfo = false),
+              onTap: () => setState(() => _showInfo = false),
             ),
             const SizedBox(width: 8),
-            ChoiceChip(
+            _ViewTab(
               key: const Key('tab_info'),
-              label: Text(text.workInfo),
+              label: text.workInfo,
               selected: _showInfo,
-              selectedColor: TC.sun,
-              showCheckmark: false,
-              onSelected: (_) => setState(() => _showInfo = true),
+              onTap: () => setState(() => _showInfo = true),
             ),
           ],
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 20),
         for (final piece in a.pieces)
           _showInfo
               ? _PieceInfo(piece: piece)
@@ -299,6 +307,32 @@ class _AssignmentScreenState extends State<AssignmentScreen> {
       ],
     );
   }
+}
+
+/// Which side of a conductor's assignment is showing.
+class _ViewTab extends StatelessWidget {
+  const _ViewTab({
+    super.key,
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+    button: true,
+    selected: selected,
+    excludeSemantics: true,
+    label: label,
+    child: GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      child: TiltTag(label, color: selected ? TC.sun : Colors.white),
+    ),
+  );
 }
 
 /// Due line and note beside the lime tile.
@@ -313,7 +347,6 @@ class _WorkHeader extends StatelessWidget {
     final materials = MaterialLocalizations.of(context);
     final due = assignment.dueAt?.toLocal();
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(
           child: Column(
@@ -333,7 +366,7 @@ class _WorkHeader extends StatelessWidget {
           ),
         ),
         if (assignment.dueAt != null) ...[
-          const SizedBox(width: 12),
+          const SizedBox(width: 16),
           DueShape(now: store.now, due: assignment.dueAt!),
         ],
       ],
@@ -351,11 +384,12 @@ class _PieceInfo extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: AppCard(
-        padding: const EdgeInsets.all(18),
+        padding: const EdgeInsets.all(20),
+        radius: 20,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(piece.title, style: TT.display),
+            Text(piece.title, style: TT.display.copyWith(fontSize: 32)),
             const SizedBox(height: 8),
             Text(
               '${piece.voicing} · ${text.modeName(piece.mode)} · '
@@ -391,28 +425,34 @@ class _ConductorPiece extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         AppCard(
-          padding: const EdgeInsets.all(18),
+          padding: const EdgeInsets.all(20),
+          radius: 20,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 children: [
-                  Expanded(child: Text(piece.title, style: TT.display)),
-                  const Icon(Icons.music_note_outlined, color: TC.primary),
+                  Expanded(
+                    child: Text(
+                      piece.title,
+                      style: TT.display.copyWith(fontSize: 32),
+                    ),
+                  ),
+                  const Icon(Ic.music2, color: TC.primary, size: 20),
                 ],
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 12),
               Text(
                 '${piece.voicing} · ${text.modeName(piece.mode)} · '
                 '${text.sectionText(piece)}',
                 style: TT.small,
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 12),
               Text(text.caps(text.submissionSummary), style: TT.caps),
-              const SizedBox(height: 8),
+              const SizedBox(height: 10),
               for (final row in rows)
                 Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
+                  padding: const EdgeInsets.only(bottom: 10),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -424,7 +464,10 @@ class _ConductorPiece extends StatelessWidget {
                         ),
                       ),
                       Expanded(
-                        child: Text(text.partShort(row), style: TT.small),
+                        child: Text(
+                          text.partShort(row),
+                          style: TT.small.copyWith(fontSize: 11),
+                        ),
                       ),
                     ],
                   ),
@@ -436,7 +479,7 @@ class _ConductorPiece extends StatelessWidget {
         Caption(text.caps(text.takes)),
         for (final s in takes)
           ChoirRow(
-            icon: Icons.person_outline_rounded,
+            icon: Ic.userRound,
             title: _name(store, s),
             subtitle:
                 '${piece.title} · ${text.statusName(s.status)}'
@@ -492,7 +535,7 @@ class FeedbackView extends StatelessWidget {
         if (t.personalArea != null) t.personalArea!: t,
     };
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: TC.primarySoft,
         borderRadius: BorderRadius.circular(20),
@@ -502,41 +545,27 @@ class FeedbackView extends StatelessWidget {
         children: [
           Text(text.caps(text.conductorReplied), style: TT.crumb),
           if (feedback.text.isNotEmpty) ...[
-            const SizedBox(height: 8),
-            Text(feedback.text, style: TT.title.copyWith(height: 1.35)),
+            const SizedBox(height: 12),
+            Text(feedback.text, style: TT.title),
           ],
           if (feedback.marks.isNotEmpty) ...[
-            const SizedBox(height: 10),
+            const SizedBox(height: 12),
             Wrap(
-              spacing: 6,
-              runSpacing: 6,
+              spacing: 14,
+              runSpacing: 8,
               children: [
                 for (final m in feedback.marks)
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
-                    decoration: const ShapeDecoration(
-                      color: Colors.white,
-                      shape: StadiumBorder(),
-                    ),
-                    child: Text(
-                      '${clockText(Duration(milliseconds: m.atMs))} · '
-                      '${text.tagName(m.tag)}'
-                      '${m.text.isEmpty ? '' : ' · ${m.text}'}',
-                      style: const TextStyle(
-                        color: TC.ink,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+                  TiltTag(
+                    '${clockText(Duration(milliseconds: m.atMs))} · '
+                    '${text.tagName(m.tag)}'
+                    '${m.text.isEmpty ? '' : ' · ${m.text}'}',
+                    color: Colors.white,
                   ),
               ],
             ),
           ],
           if (feedback.voiceNoteId != null) ...[
-            const SizedBox(height: 10),
+            const SizedBox(height: 12),
             FilePlayButton(
               key: const Key('feedback_voice'),
               mediaId: feedback.voiceNoteId!,
@@ -544,7 +573,7 @@ class FeedbackView extends StatelessWidget {
             ),
           ],
           if (areas.isNotEmpty) ...[
-            const SizedBox(height: 10),
+            const SizedBox(height: 12),
             Wrap(
               spacing: 6,
               runSpacing: 6,
@@ -604,7 +633,7 @@ class _FilePlayButtonState extends State<FilePlayButton> {
   @override
   Widget build(BuildContext context) => OutlinedButton.icon(
     onPressed: _toggle,
-    icon: Icon(_playing ? Icons.pause_rounded : Icons.play_arrow_outlined),
+    icon: Icon(_playing ? Ic.pause : Ic.play),
     label: Text(widget.label),
   );
 }

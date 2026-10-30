@@ -1,8 +1,12 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:lucide_icons_flutter/lucide_icons_300.dart';
 
 import '../domain/trainers.dart';
+
+/// The design's line icons, at the thin stroke its Figma frames use.
+typedef Ic = LucideIcons300;
 
 /// Resonia visual system (A+C brand, see lib/app/theme): lavender canvas,
 /// indigo primary shared with the choir workshop, sun for streaks and one
@@ -52,11 +56,11 @@ Color trainerColor(TrainerKind kind) => switch (kind) {
 };
 
 IconData trainerIcon(TrainerKind kind) => switch (kind) {
-  TrainerKind.pitch => Icons.adjust_rounded,
-  TrainerKind.interval => Icons.height_rounded,
-  TrainerKind.chord => Icons.layers_rounded,
-  TrainerKind.scale => Icons.signal_cellular_alt_rounded,
-  TrainerKind.progression => Icons.route_rounded,
+  TrainerKind.pitch => Ic.circleDot,
+  TrainerKind.interval => Ic.moveVertical,
+  TrainerKind.chord => Ic.layers,
+  TrainerKind.scale => Ic.signal,
+  TrainerKind.progression => Ic.route,
 };
 
 Color _shade(Color c, double amount) {
@@ -108,9 +112,9 @@ ThemeData trainerTheme() {
       trackHeight: 6,
       activeTrackColor: TC.primary,
       inactiveTrackColor: TC.line,
-      thumbColor: Colors.white,
+      thumbColor: TC.primary,
       overlayShape: SliderComponentShape.noOverlay,
-      thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
+      thumbShape: const _ThumbDot(),
       tickMarkShape: SliderTickMarkShape.noTickMark,
     ),
     switchTheme: SwitchThemeData(
@@ -125,6 +129,7 @@ ThemeData trainerTheme() {
         minimumSize: const Size.fromHeight(52),
         foregroundColor: TC.ink,
         backgroundColor: Colors.white,
+        iconSize: 18,
         side: const BorderSide(color: TC.line),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         textStyle: const TextStyle(
@@ -135,6 +140,42 @@ ThemeData trainerTheme() {
       ),
     ),
   );
+}
+
+/// The design's slider handle: a primary dot in a white ring, no shadow.
+class _ThumbDot extends SliderComponentShape {
+  const _ThumbDot();
+
+  @override
+  Size getPreferredSize(bool isEnabled, bool isDiscrete) =>
+      const Size.square(16);
+
+  @override
+  void paint(
+    PaintingContext context,
+    Offset center, {
+    required Animation<double> activationAnimation,
+    required Animation<double> enableAnimation,
+    required bool isDiscrete,
+    required TextPainter labelPainter,
+    required RenderBox parentBox,
+    required SliderThemeData sliderTheme,
+    required TextDirection textDirection,
+    required double value,
+    required double textScaleFactor,
+    required Size sizeWithOverflow,
+  }) {
+    final canvas = context.canvas;
+    canvas.drawCircle(center, 8, Paint()..color = Colors.white);
+    canvas.drawCircle(
+      center,
+      6,
+      Paint()
+        ..color = enableAnimation.value == 0
+            ? TC.faint
+            : sliderTheme.thumbColor ?? TC.primary,
+    );
+  }
 }
 
 abstract final class TT {
@@ -174,13 +215,13 @@ abstract final class TT {
   static const body = TextStyle(fontSize: 13, color: TC.body, height: 1.5);
   static const small = TextStyle(fontSize: 12, color: TC.muted, height: 1.4);
   static const caps = TextStyle(
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: FontWeight.w700,
     color: TC.muted,
     letterSpacing: 1.5,
   );
   static const crumb = TextStyle(
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: FontWeight.w700,
     color: TC.primary,
     letterSpacing: 1.5,
@@ -255,18 +296,21 @@ class _BigButtonState extends State<BigButton> {
             decoration: BoxDecoration(
               color: fill,
               borderRadius: BorderRadius.circular(12),
+              border: widget.color == Colors.white
+                  ? Border.all(color: TC.line)
+                  : null,
             ),
             alignment: Alignment.center,
             child: widget.busy
                 ? _Dots(color: fg)
                 : Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    padding: const EdgeInsets.symmetric(horizontal: 18),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         if (widget.icon != null) ...[
-                          Icon(widget.icon, color: fg, size: 20),
-                          const SizedBox(width: 8),
+                          Icon(widget.icon, color: fg, size: 18),
+                          const SizedBox(width: 10),
                         ],
                         Flexible(
                           child: FittedBox(
@@ -284,7 +328,7 @@ class _BigButtonState extends State<BigButton> {
                         ),
                         if (widget.chevron) ...[
                           const SizedBox(width: 6),
-                          Icon(Icons.chevron_right_rounded, color: fg),
+                          Icon(Ic.chevronRight, color: fg),
                         ],
                       ],
                     ),
@@ -434,7 +478,7 @@ class BackSquare extends StatelessWidget {
   const BackSquare({
     super.key,
     this.onTap,
-    this.icon = Icons.chevron_left_rounded,
+    this.icon = Ic.chevronLeft,
     this.label = 'Geri',
   });
   final VoidCallback? onTap;
@@ -626,25 +670,74 @@ class AppCard extends StatelessWidget {
   );
 }
 
-/// Slightly tilted lime label: the app's signature for "look at this".
+/// Status pill; lime is the app's signature for "look at this".
 class TiltTag extends StatelessWidget {
-  const TiltTag(this.text, {super.key});
+  const TiltTag(this.text, {super.key, this.color = TC.sun});
   final String text;
+  final Color color;
   @override
-  Widget build(BuildContext context) => Transform.rotate(
-    angle: 0,
-    child: Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-      decoration: BoxDecoration(
-        color: TC.sun,
-        borderRadius: BorderRadius.circular(20),
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+    decoration: ShapeDecoration(color: color, shape: const StadiumBorder()),
+    child: Text(
+      text,
+      style: const TextStyle(
+        color: TC.ink,
+        fontSize: 11,
+        fontWeight: FontWeight.w600,
       ),
-      child: Text(
-        text,
-        style: const TextStyle(
-          color: TC.ink,
-          fontSize: 12,
-          fontWeight: FontWeight.w600,
+    ),
+  );
+}
+
+/// A choice in a wrapping row: primary with a check when on, white when off.
+class OptionChip extends StatelessWidget {
+  const OptionChip({
+    super.key,
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+    button: true,
+    selected: selected,
+    label: label,
+    excludeSemantics: true,
+    child: Material(
+      color: selected ? TC.primary : Colors.white,
+      shape: const StadiumBorder(),
+      child: InkWell(
+        customBorder: const StadiumBorder(),
+        onTap: () {
+          tapHaptic();
+          onTap();
+        },
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (selected) ...[
+                const Icon(Ic.check, color: Colors.white, size: 12),
+                const SizedBox(width: 5),
+              ],
+              Flexible(
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    color: selected ? Colors.white : TC.muted,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     ),
@@ -774,7 +867,7 @@ class _Indicator extends StatelessWidget {
       border: Border.all(color: selected ? color : TC.faint, width: 1.6),
     ),
     child: selected
-        ? const Icon(Icons.check_rounded, size: 16, color: Colors.white)
+        ? const Icon(Ic.check, size: 16, color: Colors.white)
         : null,
   );
 }

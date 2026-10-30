@@ -76,10 +76,7 @@ class SettingsTab extends StatelessWidget {
                           color: TC.primarySoft,
                           borderRadius: BorderRadius.circular(14),
                         ),
-                        child: const Icon(
-                          Icons.person_outline_rounded,
-                          color: TC.primary,
-                        ),
+                        child: const Icon(Ic.userRound, color: TC.primary),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
@@ -106,13 +103,13 @@ class SettingsTab extends StatelessWidget {
                 _Group([
                   _Item(
                     key: const Key('settings_part'),
-                    icon: Icons.mic_none_rounded,
+                    icon: Ic.mic,
                     title: 'Çalışma aralığım',
                     value: store.part?.title ?? 'Seçilmedi',
                     onTap: () => showVoicePartSheet(context),
                   ),
                   _Item(
-                    icon: Icons.graphic_eq_rounded,
+                    icon: Ic.audioLines,
                     title: 'Ses aralığım',
                     subtitle: 'Ses sekmesindeki testle ölçülür',
                     value: _rangeLabel(store) ?? 'Ölçülmedi',
@@ -121,7 +118,7 @@ class SettingsTab extends StatelessWidget {
                 const _Caption('TERCİHLER'),
                 _Group([
                   _Item(
-                    icon: Icons.music_note_outlined,
+                    icon: Ic.music2,
                     title: 'Nota gösterimi',
                     value: store.notation == NoteNotation.solfege
                         ? 'Solfej (Do Re Mi)'
@@ -140,7 +137,7 @@ class SettingsTab extends StatelessWidget {
                     ),
                   ),
                   _Item(
-                    icon: Icons.swap_horiz_rounded,
+                    icon: Ic.arrowLeftRight,
                     title: 'Transpozisyon',
                     subtitle: 'Yalnız pratik modu',
                     value: PitchClass.name(store.transposition, store.notation),
@@ -156,7 +153,7 @@ class SettingsTab extends StatelessWidget {
                     ),
                   ),
                   _Item(
-                    icon: Icons.volume_up_outlined,
+                    icon: Ic.volume2,
                     title: 'Ses',
                     value: store.timbre.label,
                     onTap: () => _pick<Timbre>(
@@ -174,7 +171,7 @@ class SettingsTab extends StatelessWidget {
                     ),
                   ),
                   _Toggle(
-                    icon: Icons.keyboard_outlined,
+                    icon: Ic.keyboard,
                     title: 'Klavye',
                     subtitle: 'Yalnız nota eğitimi',
                     value: store.keyboard,
@@ -183,7 +180,7 @@ class SettingsTab extends StatelessWidget {
                       ..save(),
                   ),
                   _Toggle(
-                    icon: Icons.lightbulb_outline_rounded,
+                    icon: Ic.lightbulb,
                     title: 'Cevap ipuçları',
                     subtitle: 'Kaçırınca seçtiğini doğru cevapla karşılaştır',
                     value: store.hints,
@@ -193,7 +190,7 @@ class SettingsTab extends StatelessWidget {
                   ),
                   _Toggle(
                     key: const Key('notifications_toggle'),
-                    icon: Icons.notifications_none_rounded,
+                    icon: Ic.bell,
                     title: 'Bildirimler',
                     subtitle: 'Her akşam 19:00 hatırlatma',
                     value: store.notifications,
@@ -210,7 +207,7 @@ class SettingsTab extends StatelessWidget {
                 _Group([
                   _Item(
                     key: const Key('settings_choir'),
-                    icon: Icons.groups_outlined,
+                    icon: Ic.users,
                     title: 'Koro modülü',
                     subtitle: 'Ödev, eşlikli kayıt, şefin geri bildirimi',
                     onTap: () => Navigator.of(context).push(
@@ -221,7 +218,7 @@ class SettingsTab extends StatelessWidget {
                   ),
                   _Item(
                     key: const Key('settings_membership'),
-                    icon: Icons.diamond_outlined,
+                    icon: Ic.gem,
                     title: 'Premium ve Plus',
                     subtitle: 'Bugün tüm çalışmalar ücretsiz',
                     value: 'Yakında',
@@ -235,7 +232,7 @@ class SettingsTab extends StatelessWidget {
                 const _Caption('HAKKINDA'),
                 _Group([
                   _Item(
-                    icon: Icons.help_outline_rounded,
+                    icon: Ic.circleHelp,
                     title: 'Nasıl çalışır?',
                     onTap: () => _info(
                       context,
@@ -247,7 +244,7 @@ class SettingsTab extends StatelessWidget {
                     ),
                   ),
                   _Item(
-                    icon: Icons.shield_outlined,
+                    icon: Ic.shield,
                     title: 'Gizlilik',
                     onTap: () => _info(
                       context,
@@ -258,7 +255,7 @@ class SettingsTab extends StatelessWidget {
                     ),
                   ),
                   _Item(
-                    icon: Icons.description_outlined,
+                    icon: Ic.fileMusic,
                     title: 'Kullanım koşulları',
                     onTap: () => _info(
                       context,
@@ -267,7 +264,7 @@ class SettingsTab extends StatelessWidget {
                     ),
                   ),
                   _Item(
-                    icon: Icons.favorite_border_rounded,
+                    icon: Ic.heart,
                     title: 'Teşekkürler',
                     onTap: () => _info(
                       context,
@@ -279,14 +276,14 @@ class SettingsTab extends StatelessWidget {
                 const SizedBox(height: 16),
                 _Group([
                   _Item(
-                    icon: Icons.logout_rounded,
+                    icon: Ic.logOut,
                     title: 'Baştan başla',
                     subtitle: 'Tanıtımı yeniden göster, ilerlemeyi sıfırla',
                     onTap: () => _reset(context, store),
                   ),
                   _Item(
                     key: const Key('delete_data'),
-                    icon: Icons.delete_outline_rounded,
+                    icon: Ic.trash2,
                     iconColor: TC.red,
                     title: 'Verilerimi sil',
                     onTap: () => _reset(context, store),
@@ -453,7 +450,7 @@ class _Item extends StatelessWidget {
               value!,
               style: const TextStyle(color: TC.body, fontSize: 13.5),
             ),
-          const Icon(Icons.chevron_right_rounded, color: TC.faint),
+          const Icon(Ic.chevronRight, color: TC.faint),
         ],
       ),
     ),

@@ -59,6 +59,14 @@ Future<void> _loadFonts() async {
     'assets/fonts/Lora-Regular.ttf',
     'assets/fonts/Lora-SemiBold.ttf',
   ]);
+  final packages = File('.dart_tool/package_config.json').readAsStringSync();
+  final lucide = RegExp(
+    r'"rootUri":\s*"(file:[^"]*lucide_icons_flutter[^"]*)"',
+  ).firstMatch(packages)!;
+  await load('packages/lucide_icons_flutter/Lucide300', [
+    '${Uri.parse(lucide[1]!).toFilePath()}/assets/build_font/'
+        'LucideVariable-w300.ttf',
+  ]);
   await load('MaterialIcons', [
     '$root/bin/cache/artifacts/material_fonts/MaterialIcons-Regular.otf',
   ]);
@@ -397,6 +405,12 @@ void main() {
       const AssignmentScreen(assignmentId: 'a1'),
       'korist_odev',
     );
+    await tester.scrollUntilVisible(
+      find.text('Kyrie'),
+      120,
+      scrollable: find.byType(Scrollable).last,
+    );
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Kyrie'));
     await shot('korist_eser');
     await show(

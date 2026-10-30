@@ -154,7 +154,7 @@ class _PracticeSetupScreenState extends State<PracticeSetupScreen> {
                   IconButton(
                     tooltip: 'Geri',
                     onPressed: () => Navigator.of(context).maybePop(),
-                    icon: const Icon(Icons.arrow_back_rounded, color: TC.ink),
+                    icon: const Icon(Ic.arrowLeft, color: TC.ink),
                   ),
                   Expanded(
                     child: Column(
@@ -312,7 +312,7 @@ class _PracticeSetupScreenState extends State<PracticeSetupScreen> {
               child: BigButton(
                 key: const Key('practice_now'),
                 label: 'Başlat',
-                icon: Icons.play_arrow_rounded,
+                icon: Ic.play,
                 color: color,
                 onPressed: _items.length >= 2 ? _start : null,
               ),

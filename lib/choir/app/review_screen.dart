@@ -268,7 +268,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
             ? BigButton(
                 key: const Key('review_send'),
                 label: text.sendFeedback,
-                icon: Icons.send_outlined,
+                icon: Ic.send,
                 busy: _busy,
                 onPressed: () => _send(button),
               )
@@ -285,12 +285,19 @@ class _ReviewScreenState extends State<ReviewScreen> {
       children: [
         Row(
           children: [
-            if (piece != null) Tag(piece.title, color: TC.primary),
-            const Spacer(),
-            if (assignment != null) Text(assignment.title, style: TT.small),
+            if (piece != null)
+              Flexible(child: TiltTag(piece.title, color: TC.primarySoft)),
+            const SizedBox(width: 8),
+            if (assignment != null)
+              Expanded(
+                child: Align(
+                  alignment: AlignmentDirectional.centerEnd,
+                  child: TiltTag(assignment.title, color: Colors.white),
+                ),
+              ),
           ],
         ),
-        const SizedBox(height: 6),
+        const SizedBox(height: 12),
         Text(
           '${text.partName(s.part)}'
           '${piece == null ? '' : ' · ${text.sectionText(piece)}'}'
@@ -298,7 +305,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
           '${assignment != null && s.sentLate(assignment) ? ' · ${text.lateTag}' : ''}',
           style: TT.small,
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 20),
         if (_openFailed)
           Padding(
             padding: const EdgeInsets.only(bottom: 8),
@@ -315,17 +322,13 @@ class _ReviewScreenState extends State<ReviewScreen> {
                       text.caps('$name · ${text.sentRecording}'),
                       style: const TextStyle(
                         color: TC.heroMuted,
-                        fontSize: 11,
+                        fontSize: 10,
                         fontWeight: FontWeight.w700,
                         letterSpacing: 1.5,
                       ),
                     ),
                   ),
-                  const Icon(
-                    Icons.headphones_outlined,
-                    color: TC.sun,
-                    size: 20,
-                  ),
+                  const Icon(Ic.headphones, color: TC.sun, size: 20),
                 ],
               ),
               const SizedBox(height: 12),
@@ -340,14 +343,18 @@ class _ReviewScreenState extends State<ReviewScreen> {
                   peaks: _peaks,
                   progress: progress,
                   onSeek: _seekFraction,
+                  marks: [
+                    if (total > 0)
+                      for (final m in _marks) m.atMs / total,
+                  ],
                 ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 12),
               Row(
                 children: [
                   Expanded(
                     child: Text(
                       clockText(_position),
-                      style: const TextStyle(color: Colors.white, fontSize: 13),
+                      style: const TextStyle(color: Colors.white, fontSize: 12),
                     ),
                   ),
                   LimePlay(
@@ -357,20 +364,32 @@ class _ReviewScreenState extends State<ReviewScreen> {
                     onTap: _toggle,
                   ),
                   Expanded(
-                    child: Align(
-                      alignment: AlignmentDirectional.centerEnd,
-                      child: TextButton(
-                        key: const Key('review_speed'),
-                        style: TextButton.styleFrom(
-                          foregroundColor: Colors.white,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        TextButton(
+                          key: const Key('review_speed'),
+                          style: TextButton.styleFrom(
+                            foregroundColor: Colors.white,
+                          ),
+                          onPressed: () {
+                            final next = _speed == 1 ? 1.25 : 1.0;
+                            setState(() => _speed = next);
+                            _player.setSpeed(next);
+                          },
+                          child: Text(_speed == 1 ? '1×' : '1,25×'),
                         ),
-                        onPressed: () {
-                          final next = _speed == 1 ? 1.25 : 1.0;
-                          setState(() => _speed = next);
-                          _player.setSpeed(next);
-                        },
-                        child: Text(_speed == 1 ? '1×' : '1,25×'),
-                      ),
+                        IconButton(
+                          key: const Key('review_restart'),
+                          tooltip: text.replayStart,
+                          onPressed: total == 0
+                              ? null
+                              : () => _player.seek(Duration.zero),
+                          color: Colors.white,
+                          disabledColor: TC.heroMuted,
+                          icon: const Icon(Ic.rotateCcw, size: 20),
+                        ),
+                      ],
                     ),
                   ),
                 ],
@@ -378,41 +397,34 @@ class _ReviewScreenState extends State<ReviewScreen> {
             ],
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 20),
         OutlinedButton.icon(
           key: const Key('review_add_mark'),
           onPressed: () => _addMark(text),
-          icon: const Icon(Icons.add_rounded, size: 20),
+          icon: const Icon(Ic.plus, size: 18),
           label: Text(text.addMomentNote),
+        ),
+        Caption(text.caps(text.feedbackHeading)),
+        TextField(
+          key: const Key('review_comment'),
+          controller: _comment,
+          maxLines: 4,
+          decoration: choirField(text.feedbackFor(name)),
         ),
         for (final (i, m) in _marks.indexed)
           Padding(
-            padding: const EdgeInsets.only(top: 10),
+            padding: const EdgeInsets.only(top: 20),
             child: Container(
-              padding: const EdgeInsets.fromLTRB(16, 10, 4, 10),
+              padding: const EdgeInsets.fromLTRB(20, 12, 8, 12),
               decoration: BoxDecoration(
                 color: TC.primarySoft,
-                borderRadius: BorderRadius.circular(18),
+                borderRadius: BorderRadius.circular(20),
               ),
               child: Row(
                 children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 4,
-                    ),
-                    decoration: const ShapeDecoration(
-                      color: Colors.white,
-                      shape: StadiumBorder(),
-                    ),
-                    child: Text(
-                      clockText(Duration(milliseconds: m.atMs)),
-                      style: const TextStyle(
-                        color: TC.ink,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+                  TiltTag(
+                    clockText(Duration(milliseconds: m.atMs)),
+                    color: Colors.white,
                   ),
                   const SizedBox(width: 10),
                   Expanded(
@@ -425,27 +437,17 @@ class _ReviewScreenState extends State<ReviewScreen> {
                   IconButton(
                     tooltip: text.delete,
                     onPressed: () => setState(() => _marks.removeAt(i)),
-                    icon: const Icon(Icons.close_rounded, size: 20),
+                    icon: const Icon(Ic.x, size: 20),
                   ),
                 ],
               ),
             ),
           ),
-        Caption(text.caps(text.feedbackHeading)),
-        TextField(
-          key: const Key('review_comment'),
-          controller: _comment,
-          maxLines: 4,
-          decoration: choirField(text.feedbackFor(name)),
-        ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 20),
         OutlinedButton.icon(
           key: const Key('review_voice'),
           onPressed: _toggleVoice,
-          icon: Icon(
-            _recordingVoice ? Icons.stop_rounded : Icons.mic_none_rounded,
-            size: 20,
-          ),
+          icon: Icon(_recordingVoice ? Ic.square : Ic.mic, size: 18),
           label: Text(_recordingVoice ? text.stopVoice : text.voiceFeedback),
         ),
         if (_voicePath != null && !_recordingVoice)

@@ -360,7 +360,7 @@ class _RangeTestScreenState extends State<RangeTestScreen> {
                   store.voicePart = part.name;
                   store.save();
                 }),
-                icon: const Icon(Icons.how_to_reg_outlined),
+                icon: const Icon(Ic.userCheck),
                 label: Text('${part.title} aralığında çalış'),
               ),
               const SizedBox(height: 12),

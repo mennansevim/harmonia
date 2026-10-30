@@ -48,39 +48,33 @@ class _HomeShellState extends State<HomeShell> {
       listenable: store,
       builder: (context, _) {
         final items = <_Destination>[
-          const _Destination(
-            'tab_0',
-            Icons.wb_sunny_outlined,
-            Icons.wb_sunny_outlined,
-            'Bugün',
-            PlayTab(),
-          ),
+          const _Destination('tab_0', Ic.sun, Ic.sun, 'Bugün', PlayTab()),
           const _Destination(
             'tab_1',
-            Icons.graphic_eq_outlined,
-            Icons.graphic_eq_outlined,
+            Ic.audioLines,
+            Ic.audioLines,
             'Ses',
             KoroHub(asTab: true),
           ),
           if (_showsChoir(store))
             _Destination(
               'tab_koro',
-              Icons.people_outline_rounded,
-              Icons.people_outline_rounded,
+              Ic.users,
+              Ic.users,
               CT.of(context).tabLabel,
               const ChoirTab(),
             ),
           const _Destination(
             'tab_2',
-            Icons.insights_outlined,
-            Icons.insights_outlined,
+            Ic.chartNoAxesCombined,
+            Ic.chartNoAxesCombined,
             'İlerleme',
             StatsTab(),
           ),
           const _Destination(
             'tab_3',
-            Icons.tune_outlined,
-            Icons.tune_outlined,
+            Ic.settings2,
+            Ic.settings2,
             'Ayarlar',
             SettingsTab(),
           ),
@@ -185,7 +179,7 @@ class _NavBar extends StatelessWidget {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                              fontSize: 11,
+                              fontSize: 9,
                               fontWeight: i == index
                                   ? FontWeight.w700
                                   : FontWeight.w500,
@@ -384,11 +378,7 @@ class _ChoirDue extends StatelessWidget {
                     color: TC.primarySoft,
                     borderRadius: BorderRadius.circular(11),
                   ),
-                  child: const Icon(
-                    Icons.music_note_outlined,
-                    color: TC.primary,
-                    size: 20,
-                  ),
+                  child: const Icon(Ic.music2, color: TC.primary, size: 20),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -404,7 +394,7 @@ class _ChoirDue extends StatelessWidget {
                     ],
                   ),
                 ),
-                const Icon(Icons.chevron_right_rounded, color: TC.muted),
+                const Icon(Ic.chevronRight, color: TC.muted),
               ],
             ),
           ),
@@ -431,11 +421,7 @@ class _StreakChip extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            Icons.wb_sunny_rounded,
-            size: 18,
-            color: days > 0 ? TC.onSun : TC.muted,
-          ),
+          Icon(Ic.sun, size: 18, color: days > 0 ? TC.onSun : TC.muted),
           const SizedBox(width: 5),
           Text(
             '$days gün',
@@ -520,7 +506,7 @@ class _DailyRoute extends StatelessWidget {
           title: 'Nefes',
           subtitle:
               '${route.breathSeconds ~/ 60} dk · yönlendirmeli, mikrofonsuz',
-          icon: Icons.air_rounded,
+          icon: Ic.wind,
           done: breathDone,
         ),
       _StepData(
@@ -541,7 +527,7 @@ class _DailyRoute extends StatelessWidget {
           subtitle: hasRange
               ? 'Ses · 2/3/4 sesli dokuyu ayırt et'
               : 'Ses · isteğe bağlı mikrofon, taslak ölçüm',
-          icon: hasRange ? Icons.layers_outlined : Icons.mic_none_rounded,
+          icon: hasRange ? Ic.layers : Ic.mic,
           done: false,
           onTap: () => Navigator.of(context).push(
             MaterialPageRoute<void>(
@@ -615,11 +601,7 @@ class _DailyRoute extends StatelessWidget {
                     color: TC.sun,
                     borderRadius: BorderRadius.circular(40),
                   ),
-                  child: const Icon(
-                    Icons.music_note_outlined,
-                    color: TC.ink,
-                    size: 38,
-                  ),
+                  child: const Icon(Ic.music2, color: TC.ink, size: 38),
                 ),
               ),
             ],
@@ -637,7 +619,7 @@ class _DailyRoute extends StatelessWidget {
         BigButton(
           key: const Key('today_begin'),
           label: action,
-          icon: Icons.auto_awesome_outlined,
+          icon: Ic.sparkles,
           onPressed: lessonDone
               ? null
               : lesson == null
@@ -691,7 +673,7 @@ class _PartLink extends StatelessWidget {
         minimumSize: const Size(0, 44),
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
       ),
-      icon: const Icon(Icons.graphic_eq_rounded, size: 18),
+      icon: const Icon(Ic.audioLines, size: 18),
       label: const Text(
         'Ses aralığını seç',
         style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
@@ -722,7 +704,7 @@ class _RouteStep extends StatelessWidget {
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(
-              data.done ? Icons.check_rounded : data.icon,
+              data.done ? Ic.check : data.icon,
               color: data.done ? Colors.white : TC.primary,
               size: 18,
             ),
@@ -754,7 +736,7 @@ class _RouteStep extends StatelessWidget {
               ),
             )
           else if (data.onTap != null)
-            const Icon(Icons.chevron_right_rounded, color: TC.muted),
+            const Icon(Ic.chevronRight, color: TC.muted),
         ],
       ),
     ),

@@ -175,7 +175,7 @@ class _BreathScreenState extends State<BreathScreen>
                             children: [
                               _done
                                   ? const Icon(
-                                      Icons.check_rounded,
+                                      Ic.check,
                                       size: 52,
                                       color: TC.green,
                                     )
@@ -253,7 +253,7 @@ class _BreathScreenState extends State<BreathScreen>
               children: [
                 Expanded(
                   child: _MiniCard(
-                    icon: Icons.air_rounded,
+                    icon: Ic.wind,
                     title: '$cycles döngü',
                     subtitle: 'Tamamlanan',
                   ),
@@ -261,7 +261,7 @@ class _BreathScreenState extends State<BreathScreen>
                 const SizedBox(width: 9),
                 const Expanded(
                   child: _MiniCard(
-                    icon: Icons.mic_off_outlined,
+                    icon: Ic.micOff,
                     title: 'Sessiz mod',
                     subtitle: 'Mikrofon kapalı',
                   ),
@@ -273,14 +273,14 @@ class _BreathScreenState extends State<BreathScreen>
               BigButton(
                 key: const Key('breath_continue'),
                 label: 'Derse geç',
-                icon: Icons.arrow_forward_rounded,
+                icon: Ic.arrowRight,
                 onPressed: () => Navigator.of(context).pop(true),
               )
             else ...[
               BigButton(
                 key: const Key('breath_pause'),
                 label: _paused ? 'Devam et' : 'Duraklat',
-                icon: _paused ? Icons.play_arrow_rounded : Icons.pause_rounded,
+                icon: _paused ? Ic.play : Ic.pause,
                 onPressed: () => setState(() => _paused = !_paused),
               ),
               const SizedBox(height: 8),

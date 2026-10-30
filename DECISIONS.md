@@ -371,6 +371,8 @@ değildir ve geç kalan eski async okumalar generation kapısıyla elenir.
 
 **Karar:** Ortak marka: mor + limon, Bricolage + Figtree, hap düğme, organik limon şekil (kalan gün, kayıt). Her ekranda tek ana eylem; limon yalnız en önemli eylem veya uyarıda. Platforma özgü davranış (geri, geçiş, kaydırma) Flutter'a bırakılır. Hareket gerçek veriye bağlıdır, süs döngüsü yoktur.
 
+**Güncelleme (DESIGN-06):** İkon seti Lucide'dır (`lucide_icons_flutter`, MIT, 300 çizgi kalınlığı). Figma ölçüleri esastır; gerçek veri veya işlev karşılığı olmayan öğeler (hesap avatarı, kayıt öncesi mikrofon göstergesi, Otomatik hizala, metin yapıştırma) eklenmez, muted metin okunabilirlik için koyu kalır.
+
 **Güncelleme:** Ana tasarım kullanıcının 18 ekranlık çıktısıdır (`design-exports/uxpilot/resonia-zip/`); renk, yazı ve şekil kararlarının yerine geçer: krem zemin, patlıcan kart, Inter + Lora. Tasarımda olup gerçek verisi olmayan öğeler uydurulmaz.
 
 **Sınırlar:** Limon üstünde beyaz yazı kullanılmaz. Yazı tipi eklerken lisans dosyası `assets/fonts` altında kalır.

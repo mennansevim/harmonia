@@ -2284,3 +2284,13 @@ Hiçbiri UI'ya, depolamaya veya sunucuya bağlı değil. Gerçek koro MIDI dosya
 - `Harmonia.zip` 18 ekranı uygulandı; tema `kit.dart`, tüm `lib/choir/app`, Bugün ve alt menü değişti. Yazı tipleri Inter + Lora Latin alt kümesi; renk ve ölçüler Figma dosyasından (SuYUG25GKXgGN4WjbIn1n6) okundu.
 - `AssignmentPiece.voicing` eklendi (eski kayıt okunurken SATB varsayılır). `TakeController.recentLevels` canlı dalgayı besler.
 - Doğrulama: tam paket, analyze ve simülatörde şef ekranı; gerçek WAV dalgası ve Inter ve serif başlık görüldü. Kayıt zinciri bu turda gerçek eklentiyle yeniden koşulmadı, gerçek cihaz yapılmadı.
+
+## 2026-10-30 — DESIGN-06 Figma karşılaştırması
+
+- Daha önce 4 ekranın ayrıntısı okunmuştu; kalan 14 ekran `get_design_context` ile okundu ve kodla karşılaştırıldı.
+- `lucide_icons_flutter` 4.0.1 (MIT) eklendi. `kit.dart` içindeki `Ic` takma adı `LucideIcons300`; `lib/choir` ve `lib/trainer` içinde Material ikon kalmadı. Paket 7 yazı tipi kaydeder; debug pakette 3,8 MB tutar, release boyutu ölçülmedi.
+- Yeni: `OptionChip`, `_ThumbDot`, `TiltTag.color`, `ChoirWave.marks`, `review_restart`, `workHint`, `measureFrom`, `measureTo`. `TT.caps` ve `TT.crumb` 10 pt, alt menü etiketi 9 pt, son tarih kutusu 27/9 pt oldu.
+- Geri bildirimde işaret kartları metin alanının altına indi (Figma sırası); ekran dar olunca eklenen işaret kaydırma gerektirir, dalga üzerindeki nokta anında görünür.
+- `OptionChip` yüksekliği Figma gereği yaklaşık 34 pt; 44 pt dokunma hedefinin altındadır, gerçek cihazda bakılmalı.
+- Testler: `test/choir/choir_design_widgets_test.dart` (dar ekranda satır kırma, seçili durum semantiği, işaret sayısı) eklendi; uzayan sayfalar için iki test ve ekran turu kaydırma ile güncellendi, tur Lucide yazı tipini yükler.
+- Doğrulama: `dart tool/quality_check.dart` geçti (1106 geçti, 2 atlandı, diğer oturumun AUDIO-03 dosyaları çalışma ağacındayken). Simülatörde uygulama açıldı, Lucide ikonu görüldü. `integration_test/choir_journey_test.dart` bu turda çalıştırılmadı.

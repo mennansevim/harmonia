@@ -264,6 +264,10 @@ class CT {
       _('Kulaklık görünmüyor.', 'No headphones detected.');
   String get unknownHint =>
       _('Takılıysa devam et.', 'Continue if they are plugged in.');
+  String get workHint =>
+      _('Çalış, kaydet ve gönder.', 'Practise, record and send.');
+  String get measureFrom => _('Ölçü', 'Bar');
+  String get measureTo => _('Ölçüye', 'To bar');
   String readyFor(String title) => _(
     'Hazır olduğunda $title için kayda geç.',
     'When ready, start recording $title.',

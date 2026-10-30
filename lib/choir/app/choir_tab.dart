@@ -211,7 +211,7 @@ class ChoirTab extends StatelessWidget {
           OutlinedButton.icon(
             key: const Key('choir_open_package'),
             onPressed: () => openBundleFlow(context),
-            icon: const Icon(Icons.file_open_outlined, size: 20),
+            icon: const Icon(Ic.fileInput, size: 18),
             label: Text(text.openInvite),
           ),
           const SizedBox(height: 12),
@@ -229,24 +229,31 @@ class ChoirTab extends StatelessWidget {
   }
 
   List<Widget> _empty(BuildContext context, CT text, VoidCallback create) => [
-    const SizedBox(height: 34),
+    const SizedBox(height: 56),
     const _Bars(),
-    const SizedBox(height: 28),
-    Text(text.emptyHeadline, textAlign: TextAlign.center, style: TT.display),
-    const SizedBox(height: 14),
-    Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8),
-      child: Text(text.emptyBody, style: TT.body),
+    const SizedBox(height: 26),
+    Text(
+      text.emptyHeadline,
+      textAlign: TextAlign.center,
+      style: TT.display.copyWith(height: 1.2),
     ),
-    const SizedBox(height: 22),
+    const SizedBox(height: 26),
+    Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      child: Text(
+        text.emptyBody,
+        style: TT.body.copyWith(color: TC.muted, fontSize: 14),
+      ),
+    ),
+    const SizedBox(height: 58),
     BigButton(
       key: const Key('choir_open_package'),
       label: text.openPackage,
-      icon: Icons.file_open_outlined,
+      icon: Ic.fileInput,
       onPressed: () => openBundleFlow(context),
     ),
     Caption(text.caps(text.howItWorks)),
-    Text(text.howBody, style: TT.body),
+    Text(text.howBody, style: TT.body.copyWith(color: TC.muted)),
     TextLink(text.createChoir, onTap: create),
   ];
 }
@@ -258,12 +265,12 @@ class _Bars extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Widget bar(double height, Color color, [Widget? child]) => Container(
-      width: 30,
+      width: 29,
       height: height,
       margin: const EdgeInsets.symmetric(horizontal: 6),
       decoration: BoxDecoration(
         color: color,
-        borderRadius: BorderRadius.circular(15),
+        borderRadius: BorderRadius.circular(24),
       ),
       child: child,
     );
@@ -273,7 +280,7 @@ class _Bars extends StatelessWidget {
         children: [
           bar(74, TC.primarySoft),
           bar(124, TC.primary),
-          bar(94, TC.sun, const Icon(Icons.music_note_outlined, size: 20)),
+          bar(94, TC.sun, const Icon(Ic.music2, size: 21)),
           bar(142, TC.primary),
           bar(74, TC.primarySoft),
         ],
@@ -302,30 +309,37 @@ class _ChoirCard extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Icon(
-                    Icons.people_outline_rounded,
-                    color: TC.sun,
-                    size: 30,
-                  ),
+                  const Icon(Ic.users, color: TC.sun, size: 32),
                   TiltTag(conductor ? text.conductorTag : text.memberTag),
                 ],
               ),
-              const SizedBox(height: 10),
-              Text(choir.name, style: TT.display.copyWith(color: Colors.white)),
-              const SizedBox(height: 6),
+              const SizedBox(height: 12),
+              Text(
+                choir.name,
+                style: TT.display.copyWith(
+                  color: Colors.white,
+                  fontSize: 34,
+                  height: 1.1,
+                ),
+              ),
+              const SizedBox(height: 12),
               Text(
                 conductor
                     ? text.queueCount(store.reviewQueue(choir.id).length)
                     : text.partName(
                         store.meIn(choir.id)?.part ?? ChoirPart.soprano,
                       ),
-                style: const TextStyle(color: TC.heroMuted, fontSize: 14),
+                style: const TextStyle(
+                  color: TC.heroMuted,
+                  fontSize: 13,
+                  height: 1.5,
+                ),
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 12),
               BigButton(
                 key: Key('choir_${choir.id}'),
                 label: text.goToChoir,
-                icon: Icons.north_east_rounded,
+                icon: Ic.arrowUpRight,
                 color: Colors.white,
                 onPressed: () => Navigator.of(context).push(
                   MaterialPageRoute<void>(
@@ -336,31 +350,17 @@ class _ChoirCard extends StatelessWidget {
             ],
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 20),
         if (work != null)
           ChoirRow(
-            icon: Icons.event_outlined,
+            icon: Ic.calendarDays,
             title: work.title,
             subtitle: work.note.isEmpty ? null : work.note,
             trailing: work.dueAt == null
                 ? null
-                : Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 5,
-                    ),
-                    decoration: const ShapeDecoration(
-                      color: TC.primarySoft,
-                      shape: StadiumBorder(),
-                    ),
-                    child: Text(
-                      text.dueLabel(store.now, work.dueAt!),
-                      style: const TextStyle(
-                        color: TC.ink,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+                : TiltTag(
+                    text.dueLabel(store.now, work.dueAt!),
+                    color: TC.primarySoft,
                   ),
             onTap: () => Navigator.of(context).push(
               MaterialPageRoute<void>(

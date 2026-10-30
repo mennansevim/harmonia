@@ -184,7 +184,11 @@ void main() {
     await tester.pumpWidget(app(const Scaffold(body: ChoirTab())));
     expect(find.textContaining('daha güçlü'), findsOneWidget);
     expect(find.byKey(const Key('choir_open_package')), findsOneWidget);
-    await tester.ensureVisible(find.text('Koro oluştur'));
+    await tester.scrollUntilVisible(
+      find.text('Koro oluştur'),
+      120,
+      scrollable: find.byType(Scrollable).first,
+    );
     await tester.pumpAndSettle();
     await tester.tap(find.text('Koro oluştur'));
     await tester.pumpAndSettle();
@@ -406,6 +410,11 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const Key('mark_breathLeak')));
       await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(
+        find.textContaining('Nefes kaçağı'),
+        120,
+        scrollable: find.byType(Scrollable).first,
+      );
       expect(find.textContaining('Nefes kaçağı'), findsWidgets);
       await tester.tap(find.byKey(const Key('review_send')));
       await tester.pumpAndSettle();

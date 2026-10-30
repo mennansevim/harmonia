@@ -65,7 +65,7 @@ class KoroHub extends StatelessWidget {
                 title: 'Ses Atölyesi',
                 titleIcon: TrainerBadge(
                   color: TC.koro,
-                  icon: Icons.graphic_eq_rounded,
+                  icon: Ic.audioLines,
                   size: 32,
                 ),
               ),
@@ -113,7 +113,7 @@ class KoroHub extends StatelessWidget {
                   const _Section('TEST'),
                   _Row(
                     key: const Key('koro_range'),
-                    icon: Icons.graphic_eq_rounded,
+                    icon: Ic.audioLines,
                     title: 'Ses aralığı testi',
                     subtitle: rangeText == null
                         ? 'En pes ve en tiz rahat notanı ölç'
@@ -123,7 +123,7 @@ class KoroHub extends StatelessWidget {
                   ),
                   const _Section('TEK SESLİ'),
                   _Row(
-                    icon: Icons.record_voice_over_outlined,
+                    icon: Ic.speech,
                     title: 'Dinle ve söyle',
                     subtitle: 'Tek notayı duy, aynı perdeyi söyle',
                     tag: 'DENEYSEL',
@@ -134,7 +134,7 @@ class KoroHub extends StatelessWidget {
                     ),
                   ),
                   _Row(
-                    icon: Icons.music_note_outlined,
+                    icon: Ic.music2,
                     title: 'Ezgi tekrarı',
                     subtitle: 'Kısa ezgiyi dinle, hafızandan söyle',
                     tag: 'DENEYSEL',
@@ -145,7 +145,7 @@ class KoroHub extends StatelessWidget {
                     ),
                   ),
                   _Row(
-                    icon: Icons.touch_app_outlined,
+                    icon: Ic.pointer,
                     title: 'Ritim tekrarı',
                     subtitle: 'Duyduğun ritmi dokunarak tekrar et',
                     tag: 'TASLAK',
@@ -157,7 +157,7 @@ class KoroHub extends StatelessWidget {
                   ),
                   _Row(
                     key: const Key('koro_aksak'),
-                    icon: Icons.timeline_rounded,
+                    icon: Ic.chartLine,
                     title: 'Aksak ritim',
                     subtitle: '5/8, 7/8, 9/8 ve 10/8 kalıpları',
                     tag: 'TASLAK',
@@ -173,14 +173,14 @@ class KoroHub extends StatelessWidget {
                   const _Section('ÇOK SESLİ (2 / 3 / 4)'),
                   _Row(
                     key: const Key('koro_voices'),
-                    icon: Icons.layers_outlined,
+                    icon: Ic.layers,
                     title: 'Kaç ses duyuyorsun?',
                     subtitle: '2, 3 ya da 4 sesli dokuyu ayırt et',
                     tag: 'DİNLEME',
                     onTap: () => _push(context, const VoiceCountScreen()),
                   ),
                   _Row(
-                    icon: Icons.piano_outlined,
+                    icon: Ic.piano,
                     title: '2 / 3 / 4 sesli tekrar',
                     subtitle: 'Piyano kaydındaki sesleri tek tek söyle',
                     tag: 'KAYIT BEKLENİYOR',
@@ -265,7 +265,7 @@ class _Row extends StatelessWidget {
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right_rounded, color: TC.faint),
+            const Icon(Ic.chevronRight, color: TC.faint),
           ],
         ),
       ),

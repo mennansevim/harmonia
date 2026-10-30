@@ -130,15 +130,20 @@ class ChoirPage extends StatelessWidget {
         child: Column(
           children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(8, 4, 16, 0),
+              padding: const EdgeInsets.fromLTRB(12, 4, 16, 0),
               child: Row(
                 children: [
                   IconButton(
                     tooltip: MaterialLocalizations.of(
                       context,
                     ).backButtonTooltip,
+                    constraints: const BoxConstraints.tightFor(
+                      width: 44,
+                      height: 44,
+                    ),
+                    padding: EdgeInsets.zero,
                     onPressed: () => Navigator.of(context).maybePop(),
-                    icon: const Icon(Icons.arrow_back_rounded, color: TC.ink),
+                    icon: const Icon(Ic.arrowLeft, color: TC.ink, size: 20),
                   ),
                   Expanded(
                     child: Text(
@@ -158,15 +163,28 @@ class ChoirPage extends StatelessWidget {
                   Semantics(header: true, child: Text(title, style: TT.h1)),
                   if (subtitle != null || trailing != null)
                     Padding(
-                      padding: const EdgeInsets.only(top: 12),
+                      padding: const EdgeInsets.only(top: 26),
                       child: Row(
                         children: [
-                          Expanded(child: Text(subtitle ?? '', style: TT.body)),
-                          if (trailing != null) Flexible(child: trailing!),
+                          Expanded(
+                            child: Text(
+                              subtitle ?? '',
+                              style: TT.body.copyWith(color: TC.muted),
+                            ),
+                          ),
+                          if (trailing != null)
+                            Flexible(
+                              child: Align(
+                                alignment: AlignmentDirectional.centerEnd,
+                                child: trailing,
+                              ),
+                            ),
                         ],
                       ),
                     ),
-                  const SizedBox(height: 16),
+                  SizedBox(
+                    height: subtitle != null || trailing != null ? 20 : 26,
+                  ),
                   ...children,
                 ],
               ),
@@ -202,7 +220,7 @@ class DueShape extends StatelessWidget {
         alignment: Alignment.center,
         decoration: BoxDecoration(
           color: now.isAfter(due) ? TC.primarySoft : TC.sun,
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(20),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -210,13 +228,18 @@ class DueShape extends StatelessWidget {
             if (count != null) ...[
               Text(
                 count.$1,
-                style: TT.h2.copyWith(fontWeight: FontWeight.w700),
+                style: const TextStyle(
+                  color: TC.ink,
+                  fontSize: 27,
+                  fontWeight: FontWeight.w700,
+                  height: 1.1,
+                ),
               ),
               Text(
                 count.$2,
                 style: const TextStyle(
                   color: TC.ink,
-                  fontSize: 10.5,
+                  fontSize: 9,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -251,6 +274,7 @@ class ChoirWave extends StatelessWidget {
     this.rest = const Color(0xFF594366),
     this.height = 84,
     this.onSeek,
+    this.marks = const [],
   });
 
   /// Bars across a phone-width card in the design.
@@ -263,28 +287,58 @@ class ChoirWave extends StatelessWidget {
   final double height;
   final ValueChanged<double>? onSeek;
 
+  /// Moments the conductor noted, as fractions of the take.
+  final List<double> marks;
+
   @override
   Widget build(BuildContext context) {
     final seek = onSeek;
     final bars = ExcludeSemantics(
       child: SizedBox(
         height: height,
-        child: Row(
+        child: Stack(
           children: [
-            for (final (i, p) in peaks.indexed)
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 1.5),
-                  child: Center(
-                    child: Container(
-                      height: 10 + p * (height - 16),
-                      decoration: BoxDecoration(
-                        color: (i + 0.5) / peaks.length <= progress
-                            ? played
-                            : rest,
-                        borderRadius: BorderRadius.circular(4),
+            Row(
+              children: [
+                for (final (i, p) in peaks.indexed)
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 1.5),
+                      child: Center(
+                        child: Container(
+                          height: 10 + p * (height - 16),
+                          decoration: BoxDecoration(
+                            color: (i + 0.5) / peaks.length <= progress
+                                ? played
+                                : rest,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                        ),
                       ),
                     ),
+                  ),
+              ],
+            ),
+            for (final m in marks)
+              Align(
+                alignment: Alignment(m.clamp(0, 1) * 2 - 1, -1),
+                child: SizedBox(
+                  width: 10,
+                  height: height,
+                  child: Stack(
+                    alignment: Alignment.topCenter,
+                    children: [
+                      Container(width: 2, height: height, color: Colors.white),
+                      Container(
+                        width: 10,
+                        height: 10,
+                        decoration: BoxDecoration(
+                          color: played,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: TC.hero, width: 2),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -331,8 +385,8 @@ class LimePlay extends StatelessWidget {
         customBorder: const CircleBorder(),
         onTap: onTap,
         child: SizedBox(
-          width: 46,
-          height: 46,
+          width: 48,
+          height: 48,
           child: busy
               ? const Padding(
                   padding: EdgeInsets.all(14),
@@ -341,10 +395,7 @@ class LimePlay extends StatelessWidget {
                     strokeWidth: 2.4,
                   ),
                 )
-              : Icon(
-                  playing ? Icons.pause_rounded : Icons.play_arrow_outlined,
-                  color: TC.ink,
-                ),
+              : Icon(playing ? Ic.pause : Ic.play, color: TC.ink, size: 20),
         ),
       ),
     ),
@@ -382,9 +433,9 @@ class ChoirRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final plain = color == Colors.white;
     return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.only(bottom: 9),
       child: AppCard(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(plain ? 16 : 20),
         onTap: onTap,
         color: color,
         radius: plain ? 12 : 20,
@@ -401,19 +452,21 @@ class ChoirRow extends StatelessWidget {
                 child: Icon(icon, color: TC.primary, size: 18),
               )
             else
-              Icon(icon, color: TC.ink, size: 26),
-            const SizedBox(width: 13),
+              Icon(icon, color: TC.ink, size: 29),
+            SizedBox(width: plain ? 13 : 14),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(title, style: TT.title),
                   if (subtitle != null) ...[
-                    const SizedBox(height: 2),
+                    const SizedBox(height: 3),
                     Text(
                       subtitle!,
                       style: TT.small.copyWith(
                         color: plain ? TC.muted : TC.ink,
+                        fontSize: plain ? 11 : 12,
+                        height: 1.5,
                       ),
                     ),
                   ],
@@ -424,11 +477,9 @@ class ChoirRow extends StatelessWidget {
                 (onTap == null
                     ? const SizedBox.shrink()
                     : Icon(
-                        plain
-                            ? Icons.chevron_right_rounded
-                            : Icons.north_east_rounded,
+                        plain ? Ic.chevronRight : Ic.arrowUpRight,
                         color: plain ? TC.muted : TC.ink,
-                        size: plain ? 24 : 20,
+                        size: plain ? 16 : 20,
                       )),
           ],
         ),
@@ -439,6 +490,8 @@ class ChoirRow extends StatelessWidget {
 
 InputDecoration choirField(String label) => InputDecoration(
   hintText: label.isEmpty ? null : label,
+  hintStyle: const TextStyle(color: TC.muted, fontSize: 14, height: 1.5),
+  contentPadding: const EdgeInsets.all(16),
   filled: true,
   fillColor: Colors.white,
   border: OutlineInputBorder(
@@ -483,23 +536,15 @@ class PartChips extends StatelessWidget {
   Widget build(BuildContext context) {
     final text = CT.of(context);
     return Wrap(
-      spacing: 8,
-      runSpacing: 8,
+      spacing: 7,
+      runSpacing: 7,
       children: [
         for (final p in parts)
-          ChoiceChip(
+          OptionChip(
             key: Key('part_chip_${p.name}'),
-            label: Text(
-              text.partName(p),
-              style: TextStyle(
-                color: selected.contains(p) ? Colors.white : TC.body,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
+            label: text.partName(p),
             selected: selected.contains(p),
-            selectedColor: TC.primary,
-            checkmarkColor: Colors.white,
-            onSelected: (_) => onTap(p),
+            onTap: () => onTap(p),
           ),
       ],
     );

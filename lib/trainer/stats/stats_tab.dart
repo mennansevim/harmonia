@@ -42,12 +42,12 @@ class StatsTab extends StatelessWidget {
 /// try). Role-neutral apprentice → master names: Personal is for everyone
 /// (ADR-035), not only choir singers.
 const practiceLevels = [
-  (0, 'Dinleyici', Icons.hearing_rounded),
-  (500, 'Çırak', Icons.mic_none_rounded),
-  (1500, 'Kalfa', Icons.record_voice_over_rounded),
-  (4000, 'Usta', Icons.star_outline_rounded),
-  (8000, 'Üstat', Icons.queue_music_rounded),
-  (15000, 'Maestro', Icons.workspace_premium_outlined),
+  (0, 'Dinleyici', Ic.ear),
+  (500, 'Çırak', Ic.mic),
+  (1500, 'Kalfa', Ic.speech),
+  (4000, 'Usta', Ic.star),
+  (8000, 'Üstat', Ic.fileMusic),
+  (15000, 'Maestro', Ic.crown),
 ];
 
 class _LevelCard extends StatelessWidget {
@@ -295,7 +295,7 @@ class _TrainerList extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 6),
-                  const Icon(Icons.chevron_right_rounded, color: TC.faint),
+                  const Icon(Ic.chevronRight, color: TC.faint),
                 ],
               ),
             ),
@@ -362,7 +362,7 @@ class TrainerStatsScreen extends StatelessWidget {
                 IconButton(
                   tooltip: 'Geri',
                   onPressed: () => Navigator.of(context).maybePop(),
-                  icon: const Icon(Icons.arrow_back_rounded, color: TC.ink),
+                  icon: const Icon(Ic.arrowLeft, color: TC.ink),
                 ),
                 Expanded(child: Text(trainer.title, style: TT.h3)),
               ],

@@ -55,13 +55,13 @@ class ChoirScreen extends StatelessWidget {
           ? BigButton(
               key: const Key('choir_new_assignment'),
               label: text.newAssignment,
-              icon: Icons.add_rounded,
+              icon: Ic.plus,
               onPressed: () => push(AssignmentEditor(choir: choir)),
             )
           : OutlinedButton.icon(
               key: const Key('choir_open_file'),
               onPressed: () => openBundleFlow(context),
-              icon: const Icon(Icons.file_open_outlined, size: 20),
+              icon: const Icon(Ic.fileInput, size: 18),
               label: Text(text.openWorkFile),
             ),
       children: [
@@ -69,7 +69,7 @@ class ChoirScreen extends StatelessWidget {
           ChoirRow(
             key: const Key('choir_queue'),
             color: TC.sun,
-            icon: Icons.headphones_outlined,
+            icon: Ic.headphones,
             title: text.listeningQueue,
             subtitle: text.queueCount(queue.length),
             onTap: queue.isEmpty
@@ -81,10 +81,13 @@ class ChoirScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Expanded(child: Text(text.caps(text.workspace), style: TT.caps)),
-              Tag(text.memberTag, color: TC.primary),
+              TiltTag(text.memberTag, color: TC.primarySoft),
             ],
           ),
-        Caption(text.caps(conductor ? text.latestWork : text.assignments)),
+        if (conductor)
+          Caption(text.caps(text.latestWork))
+        else
+          const SizedBox(height: 20),
         if (latest == null)
           Padding(
             padding: const EdgeInsets.only(bottom: 10),
@@ -99,11 +102,11 @@ class ChoirScreen extends StatelessWidget {
             conductor: conductor,
             onTap: () => push(AssignmentScreen(assignmentId: latest.id)),
           ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 20),
         for (final a in others)
           ChoirRow(
             key: Key('assignment_${a.id}'),
-            icon: Icons.event_outlined,
+            icon: Ic.calendarDays,
             title: a.title,
             subtitle: a.dueAt == null
                 ? text.noDue
@@ -112,13 +115,13 @@ class ChoirScreen extends StatelessWidget {
           ),
         ChoirRow(
           key: const Key('choir_library'),
-          icon: Icons.library_music_outlined,
+          icon: Ic.library,
           title: text.library,
           subtitle: text.librarySub,
           onTap: () => push(LibraryScreen(choirId: choirId)),
         ),
         if (!conductor && latest != null) ...[
-          const SizedBox(height: 4),
+          const SizedBox(height: 11),
           for (final p in latest.pieces) _PieceCard(piece: p, text: text),
           Text(text.deviceOnly, style: TT.small),
         ],
@@ -126,7 +129,7 @@ class ChoirScreen extends StatelessWidget {
           Builder(
             builder: (context) => ChoirRow(
               key: const Key('choir_share'),
-              icon: Icons.share_outlined,
+              icon: Ic.share2,
               title: text.shareChoir,
               subtitle: text.shareChoirSub,
               onTap: () => shareChoirPackage(context, choir),
@@ -136,7 +139,7 @@ class ChoirScreen extends StatelessWidget {
           if (singers.isEmpty) Text(text.singersEmpty, style: TT.small),
           for (final s in singers)
             ChoirRow(
-              icon: Icons.person_outline_rounded,
+              icon: Ic.userRound,
               title: s.displayName,
               subtitle: s.part == null ? null : text.partName(s.part!),
             ),
@@ -173,23 +176,29 @@ class _PieceCard extends StatelessWidget {
   Widget build(BuildContext context) => Padding(
     padding: const EdgeInsets.only(bottom: 10),
     child: AppCard(
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(20),
+      radius: 20,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(text.caps(text.thisPiece), style: TT.caps),
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
           Row(
             children: [
-              Expanded(child: Text(piece.title, style: TT.display)),
-              const Icon(Icons.music_note_outlined, color: TC.primary),
+              Expanded(
+                child: Text(
+                  piece.title,
+                  style: TT.display.copyWith(fontSize: 28),
+                ),
+              ),
+              const Icon(Ic.music2, color: TC.primary, size: 20),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
           Text(
             '${piece.voicing} · ${text.modeName(piece.mode)} · '
             '${text.sectionText(piece)}',
-            style: TT.small,
+            style: TT.body.copyWith(color: TC.muted),
           ),
         ],
       ),
@@ -234,20 +243,31 @@ class _LatestWork extends StatelessWidget {
             text.caps(conductor ? text.workSummary : text.latestWork),
             style: TextStyle(
               color: conductor ? TC.heroMuted : TC.sun,
-              fontSize: 11,
+              fontSize: 10,
               fontWeight: FontWeight.w700,
               letterSpacing: 1.5,
             ),
           ),
-          const SizedBox(height: 8),
-          Text(a.title, style: TT.display.copyWith(color: Colors.white)),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
+          Text(
+            a.title,
+            style: TT.display.copyWith(
+              color: Colors.white,
+              fontSize: 30,
+              height: 1.2,
+            ),
+          ),
+          const SizedBox(height: 12),
           Row(
             children: [
               Expanded(
                 child: Text(
                   detail,
-                  style: const TextStyle(color: TC.heroMuted, fontSize: 13.5),
+                  style: const TextStyle(
+                    color: TC.heroMuted,
+                    fontSize: 12,
+                    height: 1.5,
+                  ),
                 ),
               ),
               Flexible(
@@ -264,11 +284,11 @@ class _LatestWork extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 12),
           BigButton(
             key: const Key('choir_open_work'),
             label: conductor ? text.seeSubmissions : text.openWork,
-            icon: Icons.north_east_rounded,
+            icon: Ic.arrowUpRight,
             color: Colors.white,
             onPressed: onTap,
           ),

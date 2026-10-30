@@ -182,7 +182,7 @@ class SessionEnd extends StatelessWidget {
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.wb_sunny_rounded, color: TC.onSun),
+                          const Icon(Ic.sun, color: TC.onSun),
                           const SizedBox(width: 10),
                           Expanded(
                             child: Text(
@@ -244,10 +244,7 @@ class SessionEnd extends StatelessWidget {
                       ),
                       child: Row(
                         children: [
-                          const Icon(
-                            Icons.auto_awesome_rounded,
-                            color: TC.primary,
-                          ),
+                          const Icon(Ic.sparkles, color: TC.primary),
                           const SizedBox(width: 10),
                           Expanded(
                             child: Column(

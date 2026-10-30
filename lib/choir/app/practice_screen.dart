@@ -184,7 +184,7 @@ class _PracticeScreenState extends State<PracticeScreen>
           : BigButton(
               key: const Key('practice_ready'),
               label: text.goToSetup,
-              icon: Icons.mic_none_rounded,
+              icon: Ic.mic,
               onPressed: () {
                 _player.pause();
                 widget.onReady!();
@@ -193,25 +193,24 @@ class _PracticeScreenState extends State<PracticeScreen>
       children: [
         Text(text.caps(text.partLabel), style: TT.caps),
         const SizedBox(height: 8),
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            children: [
-              _PartChip(
-                key: const Key('practice_full'),
-                label: text.fullChoir,
-                selected: own == null,
-                onTap: () => _changed(() => _own = null),
+        Wrap(
+          spacing: 7,
+          runSpacing: 7,
+          children: [
+            OptionChip(
+              key: const Key('practice_full'),
+              label: text.fullChoir,
+              selected: own == null,
+              onTap: () => _changed(() => _own = null),
+            ),
+            for (final p in ChoirPart.values)
+              OptionChip(
+                key: Key('practice_part_${p.name}'),
+                label: text.partName(p),
+                selected: own == p,
+                onTap: () => _changed(() => _own = p),
               ),
-              for (final p in ChoirPart.values)
-                _PartChip(
-                  key: Key('practice_part_${p.name}'),
-                  label: text.partName(p),
-                  selected: own == p,
-                  onTap: () => _changed(() => _own = p),
-                ),
-            ],
-          ),
+          ],
         ),
         const SizedBox(height: 12),
         AppCard(
@@ -267,7 +266,7 @@ class _PracticeScreenState extends State<PracticeScreen>
                     width: 52,
                     child: Text(
                       clockText(_position),
-                      style: const TextStyle(color: TC.heroMuted, fontSize: 13),
+                      style: const TextStyle(color: Colors.white, fontSize: 12),
                     ),
                   ),
                   const Spacer(),
@@ -277,7 +276,7 @@ class _PracticeScreenState extends State<PracticeScreen>
                     onPressed: ms == 0 ? null : _restart,
                     color: Colors.white,
                     disabledColor: TC.muted,
-                    icon: const Icon(Icons.skip_previous_outlined),
+                    icon: const Icon(Ic.skipBack),
                   ),
                   const SizedBox(width: 10),
                   LimePlay(
@@ -294,11 +293,8 @@ class _PracticeScreenState extends State<PracticeScreen>
                     isSelected: _loop,
                     onPressed: () => _changed(() => _loop = !_loop),
                     color: Colors.white,
-                    selectedIcon: const Icon(
-                      Icons.repeat_on_rounded,
-                      color: TC.sun,
-                    ),
-                    icon: const Icon(Icons.repeat_rounded),
+                    selectedIcon: const Icon(Ic.repeat, color: TC.sun),
+                    icon: const Icon(Ic.repeat),
                   ),
                   const Spacer(),
                   const SizedBox(width: 52),
@@ -317,36 +313,6 @@ class _PracticeScreenState extends State<PracticeScreen>
       ],
     );
   }
-}
-
-class _PartChip extends StatelessWidget {
-  const _PartChip({
-    super.key,
-    required this.label,
-    required this.selected,
-    required this.onTap,
-  });
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.only(right: 6),
-    child: ChoiceChip(
-      label: Text(
-        label,
-        style: TextStyle(
-          color: selected ? Colors.white : TC.body,
-          fontWeight: FontWeight.w600,
-          fontSize: 13,
-        ),
-      ),
-      selected: selected,
-      checkmarkColor: Colors.white,
-      onSelected: (_) => onTap(),
-    ),
-  );
 }
 
 class _Level extends StatelessWidget {

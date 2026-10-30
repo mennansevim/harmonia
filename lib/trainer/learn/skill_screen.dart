@@ -72,7 +72,7 @@ class _SkillScreenState extends State<SkillScreen> {
                 IconButton(
                   tooltip: 'Geri',
                   onPressed: () => Navigator.of(context).maybePop(),
-                  icon: const Icon(Icons.arrow_back_rounded, color: TC.ink),
+                  icon: const Icon(Ic.arrowLeft, color: TC.ink),
                 ),
                 Expanded(child: Text(kind.title, style: TT.h3)),
                 IconButton(
@@ -83,7 +83,7 @@ class _SkillScreenState extends State<SkillScreen> {
                       builder: (_) => TrainerStatsScreen(trainer: kind),
                     ),
                   ),
-                  icon: const Icon(Icons.insights_rounded, color: TC.body),
+                  icon: const Icon(Ic.chartNoAxesCombined, color: TC.body),
                 ),
               ],
             ),
@@ -171,7 +171,7 @@ class _Summary extends StatelessWidget {
           label: next == null
               ? 'Tüm dersler tamam'
               : 'Sıradaki: ${next!.title}',
-          icon: Icons.play_arrow_rounded,
+          icon: Ic.play,
           color: color,
           onPressed: onNext,
         ),
@@ -180,7 +180,7 @@ class _Summary extends StatelessWidget {
           key: const Key('skill_free'),
           onPressed: onFree,
           style: TextButton.styleFrom(foregroundColor: color),
-          icon: const Icon(Icons.tune_rounded),
+          icon: const Icon(Ic.settings2),
           label: const Text(
             'Serbest çalışma',
             style: TextStyle(fontWeight: FontWeight.w800),
@@ -223,18 +223,16 @@ class _LessonRow extends StatelessWidget {
     final complete = progress != null;
     final open = complete || current || node.isGate || unlocked;
     final (IconData icon, Color fg, Color bg) = complete
-        ? (Icons.check_rounded, Colors.white, TC.green)
+        ? (Ic.check, Colors.white, TC.green)
         : current
-        ? (Icons.play_arrow_rounded, Colors.white, color)
+        ? (Ic.play, Colors.white, color)
         : node.isGate
         ? (
-            node.kind == NodeKind.finalExam
-                ? Icons.music_note_rounded
-                : Icons.fact_check_outlined,
+            node.kind == NodeKind.finalExam ? Ic.music2 : Ic.clipboardCheck,
             color,
             soft(color),
           )
-        : (Icons.lock_outline_rounded, TC.muted, TC.line);
+        : (Ic.lock, TC.muted, TC.line);
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Opacity(
