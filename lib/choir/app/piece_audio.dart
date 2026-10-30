@@ -47,3 +47,19 @@ Future<RenderedPart> _renderOff(
 
 Future<Uint8List> encodeRendered(RenderedPart part) =>
     Isolate.run(() => encodeWav(part.samples, part.sampleRateHz));
+
+Future<List<double>> peaksOfPart(RenderedPart part, int bars) =>
+    Isolate.run(() => wavePeaks(part.samples, bars));
+
+/// Empty when the file is not a WAV the outline can read.
+Future<List<double>> peaksOfFile(String path, int bars) async {
+  if (!path.endsWith('.wav')) return const [];
+  final bytes = await File(path).readAsBytes();
+  return Isolate.run(() {
+    try {
+      return wavePeaks(readWav(bytes).samples, bars);
+    } on FormatException {
+      return const <double>[];
+    }
+  });
+}

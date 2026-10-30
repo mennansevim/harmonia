@@ -2271,3 +2271,16 @@ Hiçbiri UI'ya, depolamaya veya sunucuya bağlı değil. Gerçek koro MIDI dosya
 - Koro: `assignment_screen.dart` öne çıkan tek eser ve üstte geri bildirim balonu; `take_screen.dart` koyu kayıt ekranı, şekil gerçek mikrofon seviyesine bağlı; `review_screen.dart` tekrar eden etiketler kaldırıldı; `DueShape`.
 - Türkçe büyük harf hatası `CT.caps` ile düzeltildi; `choir_screenshot_tour_test.dart` opt-in görsel tur.
 - Doğrulama: birlikte çalışma alanında 1102 geçti + 2 atlandı, analyze/format temiz; simülatörde yazı tipleri görüldü. Kayıt mantığı değişmedi; gerçek cihaz yapılmadı.
+
+## 2026-10-30 — DESIGN-04 UX Pilot akışı
+
+- 8 ekran kullanıcının PDF'inden uygulandı; `piece_screen.dart` yeni, `assignment_screen.dart` eser listesine indi, `practice_screen.dart` ve `review_screen.dart` yeniden yazıldı, `home_shell.dart` Bugün ekranı değişti.
+- `wavePeaks` gerçek örneklerden yükseklik çıkarır; kalite yorumu değildir.
+- Gerçek veri olmayan öğeler (söz satırı, foto, arkadaş sayısı, BPM, üç nokta) eklenmedi.
+- Üretim sırasında disk bir kez doldu (ENOSPC) ve kendiliğinden açıldı; proje dosyası kaybı görülmedi.
+
+## 2026-10-30 — DESIGN-05 ana tasarım
+
+- `Harmonia.zip` 18 ekranı uygulandı; tema `kit.dart`, tüm `lib/choir/app`, Bugün ve alt menü değişti. Yazı tipleri Inter + Lora Latin alt kümesi; renk ve ölçüler Figma dosyasından (SuYUG25GKXgGN4WjbIn1n6) okundu.
+- `AssignmentPiece.voicing` eklendi (eski kayıt okunurken SATB varsayılır). `TakeController.recentLevels` canlı dalgayı besler.
+- Doğrulama: tam paket, analyze ve simülatörde şef ekranı; gerçek WAV dalgası ve Inter ve serif başlık görüldü. Kayıt zinciri bu turda gerçek eklentiyle yeniden koşulmadı, gerçek cihaz yapılmadı.

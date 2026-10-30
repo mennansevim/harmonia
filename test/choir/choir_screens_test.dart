@@ -182,8 +182,10 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(app(const Scaffold(body: ChoirTab())));
-    expect(find.text('Koronun tek yeri'), findsOneWidget);
+    expect(find.textContaining('daha güçlü'), findsOneWidget);
     expect(find.byKey(const Key('choir_open_package')), findsOneWidget);
+    await tester.ensureVisible(find.text('Koro oluştur'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Koro oluştur'));
     await tester.pumpAndSettle();
     await tester.enterText(find.byKey(const Key('create_choir_name')), 'Oda');
@@ -205,14 +207,18 @@ void main() {
     expect(find.text('2'), findsOneWidget);
     expect(find.text('Gloria'), findsOneWidget);
     expect(
-      find.textContaining('Solfej · Ölçü 12–30 · Eşlikli'),
+      find.textContaining('SATB · Solfej · Ölçü 12–30 · Eşlikli'),
       findsOneWidget,
     );
     expect(find.text('Nota değerleriyle oku.'), findsOneWidget);
     expect(find.byKey(const Key('piece_practise_p1')), findsOneWidget);
+
     await tester.scrollUntilVisible(find.text('Kyrie'), 100);
     expect(find.textContaining('Sözlü · Tamamı · Eşliksiz'), findsOneWidget);
+    await tester.tap(find.text('Kyrie'));
+    await tester.pumpAndSettle();
     expect(find.byKey(const Key('piece_practise_p2')), findsNothing);
+    expect(find.byKey(const Key('piece_record_p2')), findsOneWidget);
   });
 
   testWidgets('it reads in English on a non-Turkish device', (tester) async {
@@ -246,7 +252,8 @@ void main() {
       final (_, a) = await singerSetup();
       await open(tester, a);
       expect(find.byKey(const Key('take_route_ready')), findsOneWidget);
-      expect(find.text('Tek telefon yeter'), findsOneWidget);
+      expect(find.text('Tek telefon yeter.'), findsOneWidget);
+      expect(find.text('Kablolu kulaklık bağlı.'), findsOneWidget);
       expect(startEnabled(tester), isTrue);
     });
 
@@ -269,7 +276,7 @@ void main() {
       output = AudioRouteKind.bluetooth;
       final (_, a) = await singerSetup();
       await open(tester, a);
-      expect(find.textContaining('gecikme ekler'), findsOneWidget);
+      expect(find.text('Bluetooth kulaklık gecikme ekler.'), findsOneWidget);
       expect(startEnabled(tester), isTrue);
     });
 
@@ -371,7 +378,11 @@ void main() {
       await tester.pumpWidget(app(const ChoirScreen(choirId: 'c1')));
       await tester.pump();
       expect(find.text('1 kayıt bekliyor'), findsOneWidget);
-      await tester.scrollUntilVisible(find.text('Mert'), 150);
+      await tester.scrollUntilVisible(
+        find.text('Mert'),
+        150,
+        scrollable: find.byType(Scrollable).last,
+      );
       expect(find.text('Mert'), findsOneWidget);
     });
 
@@ -382,34 +393,33 @@ void main() {
       await tester.pumpWidget(app(const ReviewScreen(submissionId: 's1')));
       await tester.pump();
       expect(find.textContaining('Eşlikli'), findsWidgets);
-      await tester.dragUntilVisible(
-        find.byKey(const Key('review_redo')),
-        find.byType(ListView),
-        const Offset(0, -200),
-      );
-      await tester.tap(find.byKey(const Key('review_redo')));
+      await tester.tap(find.byKey(const Key('review_send')));
       await tester.pump();
       expect(find.textContaining('Yorum, etiket'), findsOneWidget);
       expect(store.submissions.single.status, SubmissionStatus.submitted);
+      ScaffoldMessenger.of(
+        tester.element(find.byType(ReviewScreen)),
+      ).removeCurrentSnackBar();
+      await tester.pumpAndSettle();
 
-      await tester.dragUntilVisible(
-        find.byKey(const Key('mark_breathLeak')),
-        find.byType(ListView),
-        const Offset(0, 200),
-      );
+      await tester.tap(find.byKey(const Key('review_add_mark')));
+      await tester.pumpAndSettle();
       await tester.tap(find.byKey(const Key('mark_breathLeak')));
-      await tester.pump();
+      await tester.pumpAndSettle();
       expect(find.textContaining('Nefes kaçağı'), findsWidgets);
-      await tester.dragUntilVisible(
-        find.byKey(const Key('review_redo')),
-        find.byType(ListView),
-        const Offset(0, -200),
-      );
+      await tester.tap(find.byKey(const Key('review_send')));
+      await tester.pumpAndSettle();
       await tester.runAsync(() async {
         await tester.tap(find.byKey(const Key('review_redo')));
         await tester.pump();
         await Future<void>.delayed(const Duration(milliseconds: 300));
       });
+      for (var i = 0; i < 6; i++) {
+        await tester.pump(const Duration(milliseconds: 100));
+        await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 100)),
+        );
+      }
       await tester.pump();
       final s = store.submissions.single;
       expect(s.status, SubmissionStatus.revisionRequested);
@@ -447,7 +457,12 @@ void main() {
       await tester.pumpWidget(shell(await trainer('singer')));
       await tester.pump();
       expect(find.byKey(const Key('tab_koro')), findsOneWidget);
-      expect(find.textContaining('Koro ödevi: Hafta ödevi'), findsOneWidget);
+      await tester.scrollUntilVisible(
+        find.byKey(const Key('today_choir_due')),
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      expect(find.text('Hafta ödevi'), findsOneWidget);
       await tester.tap(find.byKey(const Key('tab_koro')));
       await tester.pump();
       expect(find.text('Oda Korosu'), findsOneWidget);

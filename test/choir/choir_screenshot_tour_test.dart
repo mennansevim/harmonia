@@ -51,13 +51,13 @@ Future<void> _loadFonts() async {
     await loader.load();
   }
 
-  await load('Figtree', [
-    for (final w in ['Regular', 'Medium', 'SemiBold', 'Bold', 'ExtraBold'])
-      'assets/fonts/Figtree-$w.ttf',
+  await load('Inter', [
+    for (final w in ['Regular', 'Medium', 'SemiBold', 'Bold'])
+      'assets/fonts/Inter-$w.ttf',
   ]);
-  await load('Bricolage', [
-    'assets/fonts/Bricolage-Bold.ttf',
-    'assets/fonts/Bricolage-ExtraBold.ttf',
+  await load('Lora', [
+    'assets/fonts/Lora-Regular.ttf',
+    'assets/fonts/Lora-SemiBold.ttf',
   ]);
   await load('MaterialIcons', [
     '$root/bin/cache/artifacts/material_fonts/MaterialIcons-Regular.otf',
@@ -397,15 +397,16 @@ void main() {
       const AssignmentScreen(assignmentId: 'a1'),
       'korist_odev',
     );
-    await tester.scrollUntilVisible(
-      find.text('Şefin geri bildirimi'),
-      300,
-      scrollable: find.byType(Scrollable).last,
-    );
-    await shot('korist_geri_bildirim');
+    await tester.tap(find.text('Kyrie'));
+    await shot('korist_eser');
     await show(
       singer,
-      PracticeScreen(piece: gloria, part: ChoirPart.alto),
+      PracticeScreen(
+        piece: gloria,
+        part: ChoirPart.alto,
+        crumb: 'Oda Korosu / Çalış',
+        onReady: () {},
+      ),
       'korist_midi_calisma',
     );
 
@@ -470,13 +471,18 @@ void main() {
       ReviewScreen(submissionId: teacher.submissions.single.id),
       'sef_dinleme',
     );
+    await tester.tap(find.byKey(const Key('review_add_mark')));
+    await shot('sef_not_ekle');
     await tester.tap(find.byKey(const Key('mark_breathLeak')));
-    await tester.scrollUntilVisible(
-      find.byKey(const Key('review_redo')),
-      300,
-      scrollable: find.byType(Scrollable).last,
+    await shot('sef_dinleme_isaret');
+    await tester.tap(find.byKey(const Key('review_comment')));
+    await tester.enterText(
+      find.byKey(const Key('review_comment')),
+      'Girişler çok iyi.',
     );
-    await shot('sef_dinleme_alt');
+    await tester.ensureVisible(find.byKey(const Key('review_send')));
+    await tester.tap(find.byKey(const Key('review_send')));
+    await shot('sef_karar');
     await show(singer, LibraryScreen(choirId: choirId), 'kaynaklar');
     await tester.pumpWidget(const SizedBox());
     await tester.runAsync(() => tmp.delete(recursive: true));

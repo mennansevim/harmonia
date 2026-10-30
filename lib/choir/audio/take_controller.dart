@@ -49,6 +49,10 @@ class TakeController extends ChangeNotifier {
   int? resultDurationMs;
   double levelDb = -60;
 
+  /// Newest last: the real microphone level for the live wave.
+  final recentLevels = <double>[];
+  static const levelHistory = 46;
+
   static const alignmentRangeMs = 500;
 
   RenderedPart? _part;
@@ -94,6 +98,7 @@ class TakeController extends ChangeNotifier {
     interruption = null;
     alignmentMs = 0;
     resultDurationMs = null;
+    recentLevels.clear();
     _set(TakePhase.preparing);
     try {
       final make = render;
@@ -108,6 +113,8 @@ class TakeController extends ChangeNotifier {
       _interruptions = capture.interruptions.listen(_onInterrupted);
       _levels = capture.levelsDb.listen((db) {
         levelDb = db;
+        recentLevels.add(((db + 60) / 60).clamp(0.0, 1.0));
+        if (recentLevels.length > levelHistory) recentLevels.removeAt(0);
         notifyListeners();
       });
       _lagMs = await capture.start(

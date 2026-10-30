@@ -18,13 +18,13 @@ import 'practice_screen.dart';
 import 'review_screen.dart';
 import 'take_screen.dart';
 
-bool _open(Submission? s) =>
+bool pieceOpen(Submission? s) =>
     s == null ||
     s.status == SubmissionStatus.draft ||
     s.status == SubmissionStatus.revisionRequested;
 
-/// One assignment. For a singer one piece stands out, the next thing to do;
-/// a conductor follows who sent what. "Not sent" stays a neutral state.
+/// One assignment: for a singer the piece to work on now, what the conductor
+/// said and the next step; for a conductor who sent what.
 class AssignmentScreen extends StatefulWidget {
   const AssignmentScreen({super.key, required this.assignmentId});
   final String assignmentId;
@@ -34,196 +34,8 @@ class AssignmentScreen extends StatefulWidget {
 
 class _AssignmentScreenState extends State<AssignmentScreen> {
   String? _chosen;
-
-  @override
-  Widget build(BuildContext context) {
-    final store = ChoirScope.of(context).store;
-    final text = CT.of(context);
-    final a = store.assignments
-        .where((x) => x.id == widget.assignmentId)
-        .firstOrNull;
-    if (a == null) return const ChoirPage(title: '', children: []);
-    final choir = store.choir(a.choirId)!;
-    final conductor = store.isConductor(choir);
-    final materials = MaterialLocalizations.of(context);
-    final due = a.dueAt?.toLocal();
-    final next = a.pieces
-        .where((p) => _open(store.mySubmission(a.id, p.id)))
-        .firstOrNull;
-    final focused = _chosen ?? next?.id ?? a.pieces.first.id;
-    return ChoirPage(
-      title: a.title,
-      trailing: a.dueAt == null
-          ? null
-          : DueShape(now: store.now, due: a.dueAt!),
-      children: [
-        if (due != null)
-          Padding(
-            padding: const EdgeInsets.only(left: 4, bottom: 4),
-            child: Text(
-              '${text.dueDate}: ${materials.formatMediumDate(due)} · '
-              '${materials.formatTimeOfDay(TimeOfDay.fromDateTime(due))}',
-              style: TT.small,
-            ),
-          ),
-        if (a.note.isNotEmpty)
-          Padding(
-            padding: const EdgeInsets.only(left: 4, bottom: 12),
-            child: Text(a.note, style: TT.body),
-          ),
-        for (final piece in a.pieces)
-          if (conductor)
-            _ConductorPiece(assignment: a, piece: piece)
-          else if (piece.id == focused)
-            _FocusedPiece(assignment: a, piece: piece)
-          else
-            _QuietPiece(
-              assignment: a,
-              piece: piece,
-              onTap: () => setState(() => _chosen = piece.id),
-            ),
-      ],
-    );
-  }
-}
-
-class _ConductorPiece extends StatelessWidget {
-  const _ConductorPiece({required this.assignment, required this.piece});
-  final Assignment assignment;
-  final AssignmentPiece piece;
-
-  @override
-  Widget build(BuildContext context) {
-    final store = ChoirScope.of(context).store;
-    final text = CT.of(context);
-    final a = assignment;
-    final rows = assignmentProgress(
-      assignment: a,
-      pieceId: piece.id,
-      members: store.singersOf(a.choirId),
-      submissions: store.submissionsOf(a.id),
-    );
-    final takes = store.submissionsOf(a.id).where((s) => s.pieceId == piece.id);
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: AppCard(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(piece.title, style: TT.h3),
-            Text(
-              '${text.modeName(piece.mode)} · ${text.sectionText(piece)}',
-              style: TT.small,
-            ),
-            const SizedBox(height: 10),
-            for (final row in rows)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 6),
-                child: Text(
-                  '${text.partName(row.part)}: ${text.partProgress(row)}',
-                  style: TT.small,
-                ),
-              ),
-            Text(text.rosterLimit, style: TT.small),
-            for (final s in takes)
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                title: Text(_name(store, s), style: TT.title),
-                subtitle: Text(
-                  '${text.statusName(s.status)}'
-                  '${s.sentLate(a) ? ' · ${text.lateTag}' : ''}',
-                  style: TT.small,
-                ),
-                trailing: const Icon(Icons.chevron_right_rounded),
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute<void>(
-                    builder: (_) => ReviewScreen(submissionId: s.id),
-                  ),
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  String _name(ChoirStore store, Submission s) {
-    for (final m in store.singersOf(s.choirId)) {
-      if (m.userId == s.memberId) return m.displayName;
-    }
-    return s.part.title;
-  }
-}
-
-/// A piece that is not the current step: one tonal line, tap to bring it up.
-class _QuietPiece extends StatelessWidget {
-  const _QuietPiece({
-    required this.assignment,
-    required this.piece,
-    required this.onTap,
-  });
-  final Assignment assignment;
-  final AssignmentPiece piece;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final store = ChoirScope.of(context).store;
-    final text = CT.of(context);
-    final s = store.mySubmission(assignment.id, piece.id);
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: AppCard(
-        key: Key('piece_${piece.id}'),
-        color: TC.primarySoft,
-        border: TC.primarySoft,
-        radius: 28,
-        onTap: onTap,
-        padding: const EdgeInsets.fromLTRB(20, 14, 14, 14),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(piece.title, style: TT.h3),
-                  Text(
-                    '${text.modeName(piece.mode)} · ${text.sectionText(piece)}'
-                    ' · '
-                    '${piece.withAccompaniment ? text.accompanied : text.unaccompanied}',
-                    style: const TextStyle(color: TC.body, fontSize: 13.5),
-                  ),
-                  Text(
-                    text.statusName(s?.status),
-                    style: const TextStyle(
-                      color: TC.ink,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const Icon(Icons.chevron_right_rounded, color: TC.ink),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// The current piece: violet, with the conductor's words first and one lime
-/// action.
-class _FocusedPiece extends StatefulWidget {
-  const _FocusedPiece({required this.assignment, required this.piece});
-  final Assignment assignment;
-  final AssignmentPiece piece;
-  @override
-  State<_FocusedPiece> createState() => _FocusedPieceState();
-}
-
-class _FocusedPieceState extends State<_FocusedPiece> {
   var _sending = false;
+  var _showInfo = false;
 
   Future<void> _send(BuildContext button, Submission draft) async {
     final scope = ChoirScope.read(context);
@@ -248,172 +60,411 @@ class _FocusedPieceState extends State<_FocusedPiece> {
   Widget build(BuildContext context) {
     final store = ChoirScope.of(context).store;
     final text = CT.of(context);
-    final a = widget.assignment;
-    final piece = widget.piece;
-    final me = store.meIn(a.choirId);
+    final a = store.assignments
+        .where((x) => x.id == widget.assignmentId)
+        .firstOrNull;
+    if (a == null) return const ChoirPage(title: '', children: []);
+    final choirRow = store.choir(a.choirId)!;
+    if (store.isConductor(choirRow)) return _conductor(store, text, a);
+
+    final next = a.pieces
+        .where((p) => pieceOpen(store.mySubmission(a.id, p.id)))
+        .firstOrNull;
+    final focusedId = _chosen ?? next?.id ?? a.pieces.first.id;
+    final piece = a.piece(focusedId) ?? a.pieces.first;
     final s = store.mySubmission(a.id, piece.id);
+    final me = store.meIn(a.choirId);
     final status = s?.status;
     final hasDraft = status == SubmissionStatus.draft && s!.recordingId != null;
     final feedback = s?.latestFeedback;
     final hasMidi = piece.midiReferenceId != null;
+    final others = a.pieces.where((p) => p.id != piece.id);
+
     void record() => _push(TakeScreen(assignment: a, piece: piece));
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(34),
-        child: ColoredBox(
+    void practise() => Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (route) => PracticeScreen(
+          piece: piece,
+          part: me?.part,
+          crumb: text.crumbPractice(choirRow.name),
+          onReady: pieceOpen(s)
+              ? () => Navigator.of(route).pushReplacement(
+                  MaterialPageRoute<void>(
+                    builder: (_) => TakeScreen(assignment: a, piece: piece),
+                  ),
+                )
+              : null,
+        ),
+      ),
+    );
+
+    return ChoirPage(
+      title: a.title,
+      crumb: text.crumbWork(choirRow.name),
+      bottom: _singerActions(
+        text,
+        a: a,
+        piece: piece,
+        s: s,
+        hasDraft: hasDraft,
+        hasMidi: hasMidi,
+        practise: practise,
+        record: record,
+      ),
+      children: [
+        _WorkHeader(assignment: a),
+        const SizedBox(height: 16),
+        HeroCard(
           key: Key('piece_${piece.id}'),
-          color: TC.primary,
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Text(
-                  text.statusName(status),
-                  style: const TextStyle(
-                    color: Color(0xFFEFE8FF),
-                    fontSize: 13.5,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                Text(
-                  piece.title,
-                  style: TT.h1.copyWith(color: Colors.white, fontSize: 34),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  '${text.modeName(piece.mode)} · ${text.sectionText(piece)} · '
-                  '${piece.withAccompaniment ? text.accompanied : text.unaccompanied}',
-                  style: const TextStyle(color: Colors.white, fontSize: 14),
-                ),
-                Text(
-                  text.modeHint(piece.mode),
-                  style: const TextStyle(
-                    color: Color(0xFFEFE8FF),
-                    fontSize: 13.5,
-                  ),
-                ),
-                if (s != null && s.sentLate(a))
-                  Text(
-                    text.lateTag,
-                    style: const TextStyle(
-                      color: Color(0xFFEFE8FF),
-                      fontSize: 13.5,
-                    ),
-                  ),
-                if (feedback != null) ...[
-                  const SizedBox(height: 14),
-                  FeedbackView(feedback: feedback),
-                ],
-                const SizedBox(height: 14),
-                if (hasDraft) ...[
-                  _FilePlayButton(mediaId: s.recordingId!, label: text.listen),
-                  const SizedBox(height: 10),
-                  Builder(
-                    builder: (button) => BigButton(
-                      key: Key('piece_send_${piece.id}'),
-                      label: text.sendToConductor,
-                      icon: Icons.ios_share_rounded,
-                      color: TC.sun,
-                      busy: _sending,
-                      onPressed: () => _send(button, s),
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      _LightLink(text.recordAgain, record),
-                      _LightLink(text.deleteTake, () => store.discardTake(s)),
-                    ],
-                  ),
-                ] else if (_open(s))
-                  Row(
-                    children: [
-                      Expanded(
-                        child: BigButton(
-                          key: Key('piece_record_${piece.id}'),
-                          label: status == SubmissionStatus.revisionRequested
-                              ? text.recordAgain
-                              : text.record,
-                          icon: Icons.mic_rounded,
-                          color: TC.sun,
-                          onPressed: record,
-                        ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      text.caps(text.workingOnPiece),
+                      style: const TextStyle(
+                        color: TC.heroMuted,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 1.5,
                       ),
-                      if (hasMidi) ...[
-                        const SizedBox(width: 8),
-                        _PractiseButton(
-                          key: Key('piece_practise_${piece.id}'),
-                          label: text.practise,
-                          onTap: () => _push(
-                            PracticeScreen(piece: piece, part: me?.part),
-                          ),
-                        ),
-                      ],
-                    ],
-                  )
-                else if (hasMidi)
-                  _PractiseButton(
-                    key: Key('piece_practise_${piece.id}'),
-                    label: text.practise,
-                    onTap: () =>
-                        _push(PracticeScreen(piece: piece, part: me?.part)),
+                    ),
                   ),
-              ],
+                  Flexible(
+                    child: Align(
+                      alignment: AlignmentDirectional.centerEnd,
+                      child: TiltTag(
+                        feedback != null
+                            ? text.feedbackTagLabel
+                            : text.statusName(status),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Text(
+                piece.title,
+                style: TT.display.copyWith(color: Colors.white, fontSize: 38),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                '${piece.voicing} · ${text.modeName(piece.mode)} · '
+                '${text.sectionText(piece)} · '
+                '${piece.withAccompaniment ? text.accompanied : text.unaccompanied}',
+                style: const TextStyle(color: Colors.white, fontSize: 13.5),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                text.modeHint(piece.mode),
+                style: const TextStyle(color: TC.heroMuted, fontSize: 13.5),
+              ),
+              if (s != null && s.sentLate(a))
+                Padding(
+                  padding: const EdgeInsets.only(top: 4),
+                  child: Text(
+                    text.lateTag,
+                    style: const TextStyle(color: TC.heroMuted, fontSize: 13.5),
+                  ),
+                ),
+            ],
+          ),
+        ),
+        if (feedback != null) ...[
+          const SizedBox(height: 12),
+          FeedbackView(feedback: feedback),
+        ],
+        if (others.isNotEmpty) ...[
+          Caption(text.caps(text.otherPieces)),
+          for (final p in others)
+            ChoirRow(
+              key: Key('piece_${p.id}'),
+              icon: Icons.music_note_outlined,
+              title: p.title,
+              subtitle:
+                  '${text.modeName(p.mode)} · ${text.sectionText(p)} · '
+                  '${p.withAccompaniment ? text.accompanied : text.unaccompanied}'
+                  ' · ${text.statusName(store.mySubmission(a.id, p.id)?.status)}',
+              onTap: () => setState(() => _chosen = p.id),
+            ),
+        ],
+      ],
+    );
+  }
+
+  Widget _singerActions(
+    CT text, {
+    required Assignment a,
+    required AssignmentPiece piece,
+    required Submission? s,
+    required bool hasDraft,
+    required bool hasMidi,
+    required VoidCallback practise,
+    required VoidCallback record,
+  }) {
+    final store = ChoirScope.read(context).store;
+    if (hasDraft) {
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          FilePlayButton(mediaId: s!.recordingId!, label: text.listen),
+          const SizedBox(height: 8),
+          Builder(
+            builder: (button) => BigButton(
+              key: Key('piece_send_${piece.id}'),
+              label: text.sendToConductor,
+              icon: Icons.send_outlined,
+              busy: _sending,
+              onPressed: () => _send(button, s),
             ),
           ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              TextLink(text.recordAgain, onTap: record),
+              TextLink(text.deleteTake, onTap: () => store.discardTake(s)),
+            ],
+          ),
+        ],
+      );
+    }
+    if (hasMidi) {
+      return BigButton(
+        key: Key('piece_practise_${piece.id}'),
+        label: text.practiseWith(piece.title),
+        icon: Icons.play_arrow_outlined,
+        onPressed: practise,
+      );
+    }
+    if (pieceOpen(s)) {
+      return BigButton(
+        key: Key('piece_record_${piece.id}'),
+        label: text.startTake,
+        icon: Icons.mic_none_rounded,
+        color: TC.sun,
+        onPressed: record,
+      );
+    }
+    return const SizedBox.shrink();
+  }
+
+  Widget _conductor(ChoirStore store, CT text, Assignment a) {
+    final choirRow = store.choir(a.choirId)!;
+    final queue = store
+        .reviewQueue(a.choirId)
+        .where((s) => s.assignmentId == a.id);
+    return ChoirPage(
+      title: a.title,
+      crumb: text.crumbConductorOf(choirRow.name),
+      bottom: BigButton(
+        key: const Key('assignment_queue'),
+        label: text.openQueue,
+        icon: Icons.headphones_outlined,
+        onPressed: queue.isEmpty
+            ? null
+            : () => _push(ReviewScreen(submissionId: queue.first.id)),
+      ),
+      children: [
+        _WorkHeader(assignment: a),
+        const SizedBox(height: 14),
+        Row(
+          children: [
+            ChoiceChip(
+              key: const Key('tab_submissions'),
+              label: Text(text.submissions),
+              selected: !_showInfo,
+              selectedColor: TC.sun,
+              showCheckmark: false,
+              onSelected: (_) => setState(() => _showInfo = false),
+            ),
+            const SizedBox(width: 8),
+            ChoiceChip(
+              key: const Key('tab_info'),
+              label: Text(text.workInfo),
+              selected: _showInfo,
+              selectedColor: TC.sun,
+              showCheckmark: false,
+              onSelected: (_) => setState(() => _showInfo = true),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        for (final piece in a.pieces)
+          _showInfo
+              ? _PieceInfo(piece: piece)
+              : _ConductorPiece(assignment: a, piece: piece),
+      ],
+    );
+  }
+}
+
+/// Due line and note beside the lime tile.
+class _WorkHeader extends StatelessWidget {
+  const _WorkHeader({required this.assignment});
+  final Assignment assignment;
+
+  @override
+  Widget build(BuildContext context) {
+    final store = ChoirScope.of(context).store;
+    final text = CT.of(context);
+    final materials = MaterialLocalizations.of(context);
+    final due = assignment.dueAt?.toLocal();
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (due != null)
+                Text(
+                  '${text.dueDate}: ${materials.formatMediumDate(due)} · '
+                  '${materials.formatTimeOfDay(TimeOfDay.fromDateTime(due))}',
+                  style: TT.small,
+                ),
+              if (assignment.note.isNotEmpty) ...[
+                const SizedBox(height: 6),
+                Text(assignment.note, style: TT.body.copyWith(color: TC.ink)),
+              ],
+            ],
+          ),
+        ),
+        if (assignment.dueAt != null) ...[
+          const SizedBox(width: 12),
+          DueShape(now: store.now, due: assignment.dueAt!),
+        ],
+      ],
+    );
+  }
+}
+
+class _PieceInfo extends StatelessWidget {
+  const _PieceInfo({required this.piece});
+  final AssignmentPiece piece;
+
+  @override
+  Widget build(BuildContext context) {
+    final text = CT.of(context);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: AppCard(
+        padding: const EdgeInsets.all(18),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(piece.title, style: TT.display),
+            const SizedBox(height: 8),
+            Text(
+              '${piece.voicing} · ${text.modeName(piece.mode)} · '
+              '${text.sectionText(piece)} · '
+              '${piece.withAccompaniment ? text.accompanied : text.unaccompanied}',
+              style: TT.small,
+            ),
+          ],
         ),
       ),
     );
   }
 }
 
-class _LightLink extends StatelessWidget {
-  const _LightLink(this.label, this.onTap);
-  final String label;
-  final VoidCallback onTap;
-  @override
-  Widget build(BuildContext context) => TextButton(
-    onPressed: onTap,
-    style: TextButton.styleFrom(foregroundColor: Colors.white),
-    child: Text(label, style: const TextStyle(fontWeight: FontWeight.w700)),
-  );
-}
+class _ConductorPiece extends StatelessWidget {
+  const _ConductorPiece({required this.assignment, required this.piece});
+  final Assignment assignment;
+  final AssignmentPiece piece;
 
-/// The round "practise" control beside the main action.
-class _PractiseButton extends StatelessWidget {
-  const _PractiseButton({super.key, required this.label, required this.onTap});
-  final String label;
-  final VoidCallback onTap;
   @override
-  Widget build(BuildContext context) => Semantics(
-    button: true,
-    label: label,
-    excludeSemantics: true,
-    child: Tooltip(
-      message: label,
-      child: Material(
-        color: TC.primaryDeep,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: onTap,
-          child: const SizedBox(
-            width: 56,
-            height: 56,
-            child: Icon(Icons.queue_music_rounded, color: Colors.white),
+  Widget build(BuildContext context) {
+    final store = ChoirScope.of(context).store;
+    final text = CT.of(context);
+    final a = assignment;
+    final rows = assignmentProgress(
+      assignment: a,
+      pieceId: piece.id,
+      members: store.singersOf(a.choirId),
+      submissions: store.submissionsOf(a.id),
+    );
+    final takes = store.submissionsOf(a.id).where((s) => s.pieceId == piece.id);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        AppCard(
+          padding: const EdgeInsets.all(18),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(child: Text(piece.title, style: TT.display)),
+                  const Icon(Icons.music_note_outlined, color: TC.primary),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Text(
+                '${piece.voicing} · ${text.modeName(piece.mode)} · '
+                '${text.sectionText(piece)}',
+                style: TT.small,
+              ),
+              const SizedBox(height: 14),
+              Text(text.caps(text.submissionSummary), style: TT.caps),
+              const SizedBox(height: 8),
+              for (final row in rows)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(
+                        width: 72,
+                        child: Text(
+                          text.partName(row.part),
+                          style: TT.body.copyWith(color: TC.ink),
+                        ),
+                      ),
+                      Expanded(
+                        child: Text(text.partShort(row), style: TT.small),
+                      ),
+                    ],
+                  ),
+                ),
+              Text(text.rosterLimit, style: TT.small),
+            ],
           ),
         ),
-      ),
-    ),
-  );
+        Caption(text.caps(text.takes)),
+        for (final s in takes)
+          ChoirRow(
+            icon: Icons.person_outline_rounded,
+            title: _name(store, s),
+            subtitle:
+                '${piece.title} · ${text.statusName(s.status)}'
+                '${s.sentLate(a) ? ' · ${text.lateTag}' : ''}',
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) => ReviewScreen(submissionId: s.id),
+              ),
+            ),
+          ),
+        Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: Text(text.openForFeedback, style: TT.small),
+        ),
+      ],
+    );
+  }
+
+  String _name(ChoirStore store, Submission s) {
+    for (final m in store.singersOf(s.choirId)) {
+      if (m.userId == s.memberId) return m.displayName;
+    }
+    return s.part.title;
+  }
 }
 
-/// What the conductor said, as a speech bubble, with the way on to Personal
-/// practice for labels that have one (the conductor's judgement, nothing the
-/// app detected).
+/// What the conductor said, with the way on to Personal practice for labels
+/// that have one (the conductor's judgement, nothing the app detected).
 class FeedbackView extends StatelessWidget {
   const FeedbackView({super.key, required this.feedback});
   final choir.Feedback feedback;
@@ -441,58 +492,65 @@ class FeedbackView extends StatelessWidget {
         if (t.personalArea != null) t.personalArea!: t,
     };
     return Container(
-      padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(6),
-          topRight: Radius.circular(22),
-          bottomLeft: Radius.circular(22),
-          bottomRight: Radius.circular(22),
-        ),
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: TC.primarySoft,
+        borderRadius: BorderRadius.circular(20),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(
-            text.feedbackTitle,
-            style: const TextStyle(
-              color: TC.muted,
-              fontSize: 12.5,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
+          Text(text.caps(text.conductorReplied), style: TT.crumb),
           if (feedback.text.isNotEmpty) ...[
-            const SizedBox(height: 3),
+            const SizedBox(height: 8),
             Text(feedback.text, style: TT.title.copyWith(height: 1.35)),
           ],
-          for (final m in feedback.marks)
-            Padding(
-              padding: const EdgeInsets.only(top: 5),
-              child: Text(
-                '${clockText(Duration(milliseconds: m.atMs))} · '
-                '${text.tagName(m.tag)}'
-                '${m.text.isEmpty ? '' : ' · ${m.text}'}',
-                style: TT.small,
-              ),
-            ),
-          if (feedback.voiceNoteId != null) ...[
+          if (feedback.marks.isNotEmpty) ...[
             const SizedBox(height: 10),
-            _FilePlayButton(
-              key: const Key('feedback_voice'),
-              mediaId: feedback.voiceNoteId!,
-              label: text.playVoiceNote,
-              onLight: true,
-            ),
-          ],
-          if (areas.isNotEmpty) ...[
-            const SizedBox(height: 10),
-            Text(text.practiseThis, style: TT.small),
-            const SizedBox(height: 4),
             Wrap(
               spacing: 6,
               runSpacing: 6,
               children: [
+                for (final m in feedback.marks)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    decoration: const ShapeDecoration(
+                      color: Colors.white,
+                      shape: StadiumBorder(),
+                    ),
+                    child: Text(
+                      '${clockText(Duration(milliseconds: m.atMs))} · '
+                      '${text.tagName(m.tag)}'
+                      '${m.text.isEmpty ? '' : ' · ${m.text}'}',
+                      style: const TextStyle(
+                        color: TC.ink,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ],
+          if (feedback.voiceNoteId != null) ...[
+            const SizedBox(height: 10),
+            FilePlayButton(
+              key: const Key('feedback_voice'),
+              mediaId: feedback.voiceNoteId!,
+              label: text.playVoiceNote,
+            ),
+          ],
+          if (areas.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 6,
+              runSpacing: 6,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                Text(text.practiseThis, style: TT.small),
                 for (final area in areas.entries)
                   ActionChip(
                     label: Text(text.tagName(area.value)),
@@ -507,21 +565,15 @@ class FeedbackView extends StatelessWidget {
   }
 }
 
-class _FilePlayButton extends StatefulWidget {
-  const _FilePlayButton({
-    super.key,
-    required this.mediaId,
-    required this.label,
-    this.onLight = false,
-  });
+class FilePlayButton extends StatefulWidget {
+  const FilePlayButton({super.key, required this.mediaId, required this.label});
   final String mediaId;
   final String label;
-  final bool onLight;
   @override
-  State<_FilePlayButton> createState() => _FilePlayButtonState();
+  State<FilePlayButton> createState() => _FilePlayButtonState();
 }
 
-class _FilePlayButtonState extends State<_FilePlayButton> {
+class _FilePlayButtonState extends State<FilePlayButton> {
   ChoirPlayer? _player;
   StreamSubscription<bool>? _sub;
   var _playing = false;
@@ -551,14 +603,8 @@ class _FilePlayButtonState extends State<_FilePlayButton> {
 
   @override
   Widget build(BuildContext context) => OutlinedButton.icon(
-    style: widget.onLight
-        ? null
-        : OutlinedButton.styleFrom(
-            foregroundColor: Colors.white,
-            side: const BorderSide(color: Colors.white70),
-          ),
     onPressed: _toggle,
-    icon: Icon(_playing ? Icons.pause_rounded : Icons.play_arrow_rounded),
+    icon: Icon(_playing ? Icons.pause_rounded : Icons.play_arrow_outlined),
     label: Text(widget.label),
   );
 }

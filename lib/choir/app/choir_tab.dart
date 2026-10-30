@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-import '../../trainer/stats/stats_tab.dart';
 import '../../trainer/ui/kit.dart';
 import '../data/choir_bundle.dart';
 import '../domain/choir.dart';
+import 'assignment_screen.dart';
 import 'choir_scope.dart';
 import 'choir_screen.dart';
 import 'choir_text.dart';
@@ -177,7 +177,7 @@ class _CreateSheetState extends State<_CreateSheet> {
   }
 }
 
-/// The Koro tab: the person's choirs, or how to start one.
+/// The Koro tab: the person's choirs, or how to begin.
 class ChoirTab extends StatelessWidget {
   const ChoirTab({super.key, this.asTab = true});
   final bool asTab;
@@ -186,91 +186,189 @@ class ChoirTab extends StatelessWidget {
   Widget build(BuildContext context) {
     final store = ChoirScope.of(context).store;
     final text = CT.of(context);
-    final list = ListView(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 28),
+    void create() =>
+        showTrainerSheet<void>(context, (_) => const _CreateSheet());
+    final body = ListView(
+      padding: const EdgeInsets.fromLTRB(24, 14, 24, 28),
       children: [
+        Text(text.caps(text.eyebrowChoir), style: TT.crumb),
+        const SizedBox(height: 10),
+        Text(text.tabLabel, style: TT.h1),
         if (store.loadError != null)
           Padding(
-            padding: const EdgeInsets.only(bottom: 12),
+            padding: const EdgeInsets.only(top: 12),
             child: AppCard(
-              border: TC.coral,
+              border: TC.peach,
               child: Text(text.loadErrorBody, style: TT.body),
             ),
           ),
         if (store.choirs.isEmpty)
-          HeroCard(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  text.introTitle,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 22,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                const SizedBox(height: 7),
-                Text(
-                  text.introBody,
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.88),
-                    fontSize: 14,
-                    height: 1.42,
-                  ),
-                ),
-              ],
-            ),
+          ..._empty(context, text, create)
+        else ...[
+          Caption(text.caps(text.myChoirs)),
+          for (final choir in store.choirs) _ChoirCard(choir: choir),
+          Caption(text.caps(text.joinAnother)),
+          OutlinedButton.icon(
+            key: const Key('choir_open_package'),
+            onPressed: () => openBundleFlow(context),
+            icon: const Icon(Icons.file_open_outlined, size: 20),
+            label: Text(text.openInvite),
           ),
-        for (final choir in store.choirs)
-          ChoirRow(
-            key: Key('choir_${choir.id}'),
-            icon: Icons.groups_rounded,
-            title: choir.name,
-            subtitle: _subtitle(context, choir),
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute<void>(
-                builder: (_) => ChoirScreen(choirId: choir.id),
-              ),
-            ),
-          ),
-        const SizedBox(height: 14),
-        BigButton(
-          key: const Key('choir_open_package'),
-          label: store.choirs.isEmpty ? text.openPackage : text.openFile,
-          icon: Icons.file_open_outlined,
-          onPressed: () => openBundleFlow(context),
-        ),
-        TextLink(
-          text.createChoir,
-          onTap: () =>
-              showTrainerSheet<void>(context, (_) => const _CreateSheet()),
-        ),
-        const SizedBox(height: 6),
-        Text(text.howSharing, textAlign: TextAlign.center, style: TT.small),
+          const SizedBox(height: 12),
+          Text(text.inviteHint, style: TT.small),
+          TextLink(text.createChoir, onTap: create),
+        ],
       ],
     );
-    if (!asTab) return ChoirPage(title: text.tabLabel, children: [list]);
-    return SafeArea(
-      bottom: false,
-      child: Column(
+    if (asTab) return SafeArea(bottom: false, child: body);
+    return Scaffold(
+      backgroundColor: TC.canvas,
+      appBar: AppBar(backgroundColor: TC.canvas),
+      body: body,
+    );
+  }
+
+  List<Widget> _empty(BuildContext context, CT text, VoidCallback create) => [
+    const SizedBox(height: 34),
+    const _Bars(),
+    const SizedBox(height: 28),
+    Text(text.emptyHeadline, textAlign: TextAlign.center, style: TT.display),
+    const SizedBox(height: 14),
+    Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      child: Text(text.emptyBody, style: TT.body),
+    ),
+    const SizedBox(height: 22),
+    BigButton(
+      key: const Key('choir_open_package'),
+      label: text.openPackage,
+      icon: Icons.file_open_outlined,
+      onPressed: () => openBundleFlow(context),
+    ),
+    Caption(text.caps(text.howItWorks)),
+    Text(text.howBody, style: TT.body),
+    TextLink(text.createChoir, onTap: create),
+  ];
+}
+
+/// Five voices of different heights, one lime: the empty state's picture.
+class _Bars extends StatelessWidget {
+  const _Bars();
+
+  @override
+  Widget build(BuildContext context) {
+    Widget bar(double height, Color color, [Widget? child]) => Container(
+      width: 30,
+      height: height,
+      margin: const EdgeInsets.symmetric(horizontal: 6),
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(15),
+      ),
+      child: child,
+    );
+    return ExcludeSemantics(
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          tabHeader(text.tabLabel, text.hubSubtitle),
-          Expanded(child: list),
+          bar(74, TC.primarySoft),
+          bar(124, TC.primary),
+          bar(94, TC.sun, const Icon(Icons.music_note_outlined, size: 20)),
+          bar(142, TC.primary),
+          bar(74, TC.primarySoft),
         ],
       ),
     );
   }
+}
 
-  String _subtitle(BuildContext context, Choir choir) {
-    final scope = ChoirScope.of(context);
+class _ChoirCard extends StatelessWidget {
+  const _ChoirCard({required this.choir});
+  final Choir choir;
+
+  @override
+  Widget build(BuildContext context) {
+    final store = ChoirScope.of(context).store;
     final text = CT.of(context);
-    final store = scope.store;
-    if (store.isConductor(choir)) {
-      return '${text.conductorRole} · '
-          '${text.queueCount(store.reviewQueue(choir.id).length)}';
-    }
-    final part = store.meIn(choir.id)?.part;
-    return part == null ? text.tabLabel : text.partName(part);
+    final conductor = store.isConductor(choir);
+    final work = store.assignmentsOf(choir.id).firstOrNull;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        HeroCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Icon(
+                    Icons.people_outline_rounded,
+                    color: TC.sun,
+                    size: 30,
+                  ),
+                  TiltTag(conductor ? text.conductorTag : text.memberTag),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Text(choir.name, style: TT.display.copyWith(color: Colors.white)),
+              const SizedBox(height: 6),
+              Text(
+                conductor
+                    ? text.queueCount(store.reviewQueue(choir.id).length)
+                    : text.partName(
+                        store.meIn(choir.id)?.part ?? ChoirPart.soprano,
+                      ),
+                style: const TextStyle(color: TC.heroMuted, fontSize: 14),
+              ),
+              const SizedBox(height: 14),
+              BigButton(
+                key: Key('choir_${choir.id}'),
+                label: text.goToChoir,
+                icon: Icons.north_east_rounded,
+                color: Colors.white,
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => ChoirScreen(choirId: choir.id),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+        if (work != null)
+          ChoirRow(
+            icon: Icons.event_outlined,
+            title: work.title,
+            subtitle: work.note.isEmpty ? null : work.note,
+            trailing: work.dueAt == null
+                ? null
+                : Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 5,
+                    ),
+                    decoration: const ShapeDecoration(
+                      color: TC.primarySoft,
+                      shape: StadiumBorder(),
+                    ),
+                    child: Text(
+                      text.dueLabel(store.now, work.dueAt!),
+                      style: const TextStyle(
+                        color: TC.ink,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) => AssignmentScreen(assignmentId: work.id),
+              ),
+            ),
+          ),
+      ],
+    );
   }
 }

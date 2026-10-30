@@ -11,44 +11,166 @@ import 'choir_text.dart';
 /// Scores, rehearsal recordings for those who missed it, and notes. What the
 /// conductor adds goes out with the choir package; what a singer adds stays
 /// on their own device.
-class LibraryScreen extends StatelessWidget {
+class LibraryScreen extends StatefulWidget {
   const LibraryScreen({super.key, required this.choirId});
   final String choirId;
+  @override
+  State<LibraryScreen> createState() => _LibraryScreenState();
+}
+
+class _LibraryScreenState extends State<LibraryScreen> {
+  final _search = TextEditingController();
+  ResourceKind? _kind;
+
+  @override
+  void dispose() {
+    _search.dispose();
+    super.dispose();
+  }
+
+  IconData _icon(ResourceKind k) => switch (k) {
+    ResourceKind.score => Icons.description_outlined,
+    ResourceKind.rehearsalRecording => Icons.headphones_outlined,
+    ResourceKind.note => Icons.edit_note_rounded,
+  };
 
   @override
   Widget build(BuildContext context) {
     final store = ChoirScope.of(context).store;
     final text = CT.of(context);
-    final items = store.resourcesOf(choirId);
+    final choir = store.choir(widget.choirId);
+    final query = _search.text.trim().toLowerCase();
+    final browsing = _kind == null && query.isEmpty;
+    final items = [
+      for (final r in store.resourcesOf(widget.choirId))
+        if ((_kind == null || r.kind == _kind) &&
+            (query.isEmpty ||
+                r.title.toLowerCase().contains(query) ||
+                r.text.toLowerCase().contains(query)))
+          r,
+    ];
+    Widget chip(String label, ResourceKind? kind, String key) => Padding(
+      padding: const EdgeInsets.only(right: 6),
+      child: ChoiceChip(
+        key: Key(key),
+        label: Text(
+          label,
+          style: TextStyle(
+            color: _kind == kind ? Colors.white : TC.body,
+            fontWeight: FontWeight.w600,
+            fontSize: 13,
+          ),
+        ),
+        selected: _kind == kind,
+        checkmarkColor: Colors.white,
+        onSelected: (_) => setState(() => _kind = kind),
+      ),
+    );
     return ChoirPage(
       title: text.library,
+      crumb: text.crumbArchive(choir?.name ?? ''),
       bottom: BigButton(
         key: const Key('library_add'),
-        label: text.addResource,
+        label: text.addResourceCta,
         icon: Icons.add_rounded,
-        onPressed: () =>
-            showTrainerSheet<void>(context, (_) => _AddSheet(choirId: choirId)),
+        onPressed: () => showTrainerSheet<void>(
+          context,
+          (_) => _AddSheet(choirId: widget.choirId),
+        ),
       ),
       children: [
-        Text(text.libraryHint, style: TT.small),
-        if (items.isEmpty) ...[
-          const SizedBox(height: 24),
-          Text(text.libraryEmpty, textAlign: TextAlign.center, style: TT.body),
-        ],
-        for (final kind in ResourceKind.values)
-          if (items.any((r) => r.kind == kind)) ...[
-            Caption(text.caps(text.kindName(kind))),
-            for (final item in items.where((r) => r.kind == kind))
-              _Item(item: item),
-          ],
+        TextField(
+          key: const Key('library_search'),
+          controller: _search,
+          onChanged: (_) => setState(() {}),
+          decoration: choirField(
+            text.searchLibrary,
+          ).copyWith(prefixIcon: const Icon(Icons.search_rounded)),
+        ),
+        const SizedBox(height: 12),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: [
+              chip(text.filterAll, null, 'library_all'),
+              for (final k in ResourceKind.values)
+                chip(text.kindName(k), k, 'library_${k.name}'),
+            ],
+          ),
+        ),
+        const SizedBox(height: 14),
+        if (browsing) ...[
+          HeroCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        text.caps(text.archiveEyebrow),
+                        style: const TextStyle(
+                          color: TC.sun,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 1.5,
+                        ),
+                      ),
+                    ),
+                    const Icon(
+                      Icons.library_books_outlined,
+                      color: TC.sun,
+                      size: 22,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  text.archiveHeadline,
+                  style: TT.display.copyWith(color: Colors.white, fontSize: 28),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  text.archiveBody,
+                  style: const TextStyle(
+                    color: TC.heroMuted,
+                    fontSize: 13.5,
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Caption(text.caps(text.resourceTypes)),
+          for (final k in ResourceKind.values)
+            ChoirRow(
+              key: Key('library_type_${k.name}'),
+              icon: _icon(k),
+              title: text.kindName(k),
+              subtitle: text.kindHint(k),
+              onTap: () => setState(() => _kind = k),
+            ),
+          Text(text.libraryHint, style: TT.small),
+        ] else if (items.isEmpty)
+          Padding(
+            padding: const EdgeInsets.only(top: 18),
+            child: Text(
+              query.isEmpty ? text.libraryEmpty : text.noMatches,
+              textAlign: TextAlign.center,
+              style: TT.body,
+            ),
+          )
+        else
+          for (final item in items) _Item(item: item, icon: _icon(item.kind)),
       ],
     );
   }
 }
 
 class _Item extends StatefulWidget {
-  const _Item({required this.item});
+  const _Item({required this.item, required this.icon});
   final ChoirResource item;
+  final IconData icon;
   @override
   State<_Item> createState() => _ItemState();
 }
@@ -111,12 +233,7 @@ class _ItemState extends State<_Item> {
     final day = item.rehearsalOn?.toLocal();
     return ChoirRow(
       key: Key('resource_${item.id}'),
-      icon: switch (item.kind) {
-        ResourceKind.score => Icons.description_outlined,
-        ResourceKind.rehearsalRecording =>
-          _playing ? Icons.pause_rounded : Icons.play_arrow_rounded,
-        ResourceKind.note => Icons.sticky_note_2_outlined,
-      },
+      icon: _playing ? Icons.pause_rounded : widget.icon,
       title: item.title,
       subtitle: day == null ? null : materials.formatMediumDate(day),
       onTap: _open,
@@ -216,7 +333,7 @@ class _AddSheetState extends State<_AddSheet> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(text.addResource, style: TT.h3),
+          Text(text.addResourceCta, style: TT.h3),
           const SizedBox(height: 12),
           Wrap(
             spacing: 8,
@@ -224,8 +341,16 @@ class _AddSheetState extends State<_AddSheet> {
               for (final k in ResourceKind.values)
                 ChoiceChip(
                   key: Key('kind_${k.name}'),
-                  label: Text(text.kindName(k)),
+                  label: Text(
+                    text.kindName(k),
+                    style: TextStyle(
+                      color: _kind == k ? Colors.white : TC.body,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 13,
+                    ),
+                  ),
                   selected: _kind == k,
+                  checkmarkColor: Colors.white,
                   onSelected: (_) => setState(() => _kind = k),
                 ),
             ],
@@ -235,7 +360,7 @@ class _AddSheetState extends State<_AddSheet> {
             OutlinedButton.icon(
               key: const Key('resource_pick'),
               onPressed: _pick,
-              icon: const Icon(Icons.attach_file_rounded),
+              icon: const Icon(Icons.attach_file_rounded, size: 20),
               label: Text(_file?.name ?? text.chooseFile),
             ),
             const SizedBox(height: 10),

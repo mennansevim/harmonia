@@ -135,3 +135,24 @@ Int16List mixTake({
   }
   return out;
 }
+
+/// Loudness outline of a take in [bars] buckets, 0–1. Drawn from the real
+/// samples; a loud or quiet bar means only that, nothing about the singing.
+List<double> wavePeaks(Int16List samples, int bars) {
+  if (samples.isEmpty || bars < 1) return const [];
+  final peaks = List<double>.filled(bars, 0);
+  final step = samples.length / bars;
+  var top = 1;
+  for (var b = 0; b < bars; b++) {
+    final from = (b * step).floor();
+    final to = ((b + 1) * step).floor();
+    var peak = 0;
+    for (var i = from; i < to; i += 16) {
+      final v = samples[i].abs();
+      if (v > peak) peak = v;
+    }
+    peaks[b] = peak.toDouble();
+    if (peak > top) top = peak;
+  }
+  return [for (final p in peaks) p / top];
+}

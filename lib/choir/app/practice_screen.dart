@@ -12,12 +12,24 @@ import 'choir_scope.dart';
 import 'choir_text.dart';
 import 'piece_audio.dart';
 
+const _bars = ChoirWave.barCount;
+
 /// Own part forward, the rest behind, at any tempo: the MIDI work a singer
 /// does before recording. Also serves as the player for a second device.
 class PracticeScreen extends StatefulWidget {
-  const PracticeScreen({super.key, required this.piece, required this.part});
+  const PracticeScreen({
+    super.key,
+    required this.piece,
+    required this.part,
+    this.crumb = '',
+    this.onReady,
+  });
   final AssignmentPiece piece;
   final ChoirPart? part;
+  final String crumb;
+
+  /// Moves on to recording; null once the piece is sent.
+  final VoidCallback? onReady;
   @override
   State<PracticeScreen> createState() => _PracticeScreenState();
 }
@@ -38,6 +50,7 @@ class _PracticeScreenState extends State<PracticeScreen>
   var _stale = true;
   Directory? _dir;
   String? _error;
+  List<double> _peaks = const [];
   Duration _position = Duration.zero;
   Duration _length = Duration.zero;
   final _subs = <StreamSubscription<Object?>>[];
@@ -86,6 +99,7 @@ class _PracticeScreenState extends State<PracticeScreen>
   }
 
   Future<void> _toggle() async {
+    if (_busy) return;
     if (_playing) {
       await _player.pause();
       return;
@@ -115,6 +129,7 @@ class _PracticeScreenState extends State<PracticeScreen>
         ),
       );
       final bytes = await encodeRendered(part);
+      final peaks = await peaksOfPart(part, _bars);
       if (!mounted || generation != _generation) return;
       final dir = _dir ??= await (await scope.workDirectory()).createTemp(
         'choir-practice-',
@@ -125,6 +140,7 @@ class _PracticeScreenState extends State<PracticeScreen>
       if (!mounted || generation != _generation) return;
       setState(() {
         _length = length ?? part.duration;
+        _peaks = peaks;
         _stale = false;
         _busy = false;
       });
@@ -146,123 +162,253 @@ class _PracticeScreenState extends State<PracticeScreen>
     }
   }
 
+  void _restart() {
+    _player.seek(Duration.zero);
+  }
+
   @override
   Widget build(BuildContext context) {
     final text = CT.of(context);
     final piece = widget.piece;
     final ms = _length.inMilliseconds;
+    final progress = ms == 0 ? 0.0 : _position.inMilliseconds / ms;
+    final own = _own;
     return ChoirPage(
       title: piece.title,
-      bottom: BigButton(
-        key: const Key('practice_play'),
-        label: _playing ? text.pause : text.play,
-        icon: _playing ? Icons.pause_rounded : Icons.play_arrow_rounded,
-        busy: _busy,
-        onPressed: _toggle,
-      ),
-      children: [
-        Text(
-          '${text.modeName(piece.mode)} · ${text.sectionText(piece)}',
-          style: TT.title,
-        ),
-        const SizedBox(height: 10),
-        ProgressBar(
-          value: ms == 0 ? 0 : _position.inMilliseconds / ms,
-          color: TC.koro,
-          height: 6,
-        ),
-        const SizedBox(height: 4),
-        Text(
-          '${clockText(_position)} / ${clockText(_length)}',
-          style: TT.small,
-        ),
-        if (_error != null) ...[
-          const SizedBox(height: 8),
-          Text(_error!, style: TT.body),
-        ],
-        Caption(text.caps(text.myPart)),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: [
-            ChoiceChip(
-              key: const Key('practice_full'),
-              label: Text(text.fullChoir),
-              selected: _own == null,
-              onSelected: (_) => _changed(() => _own = null),
+      crumb: widget.crumb,
+      subtitle:
+          '${piece.voicing} · ${text.modeName(piece.mode)} · '
+          '${text.sectionText(piece)}',
+      bottom: widget.onReady == null
+          ? null
+          : BigButton(
+              key: const Key('practice_ready'),
+              label: text.goToSetup,
+              icon: Icons.mic_none_rounded,
+              onPressed: () {
+                _player.pause();
+                widget.onReady!();
+              },
             ),
-            for (final p in ChoirPart.values)
-              ChoiceChip(
-                key: Key('practice_part_${p.name}'),
-                label: Text(text.partName(p)),
-                selected: _own == p,
-                onSelected: (_) => _changed(() => _own = p),
-              ),
-          ],
-        ),
+      children: [
+        Text(text.caps(text.partLabel), style: TT.caps),
         const SizedBox(height: 8),
-        if (_own != null)
-          _Level(
-            label: text.ownVolume,
-            value: _ownGain,
-            onChanged: (v) => _changed(() => _ownGain = v),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: [
+              _PartChip(
+                key: const Key('practice_full'),
+                label: text.fullChoir,
+                selected: own == null,
+                onTap: () => _changed(() => _own = null),
+              ),
+              for (final p in ChoirPart.values)
+                _PartChip(
+                  key: Key('practice_part_${p.name}'),
+                  label: text.partName(p),
+                  selected: own == p,
+                  onTap: () => _changed(() => _own = p),
+                ),
+            ],
           ),
-        _Level(
-          label: text.othersVolume,
-          value: _othersGain,
-          onChanged: (v) => _changed(() => _othersGain = v),
         ),
-        Text(text.tempoLabel(_tempo), style: TT.title),
-        Slider(
-          key: const Key('practice_tempo'),
-          value: _tempo.toDouble(),
-          min: 50,
-          max: 120,
-          divisions: 14,
-          label: '$_tempo',
-          onChanged: (v) => _changed(() => _tempo = v.round()),
+        const SizedBox(height: 12),
+        AppCard(
+          padding: const EdgeInsets.fromLTRB(18, 14, 18, 8),
+          child: Column(
+            children: [
+              if (own != null)
+                _Level(
+                  label: text.ownVolume,
+                  value: _ownGain,
+                  onChanged: (v) => _changed(() => _ownGain = v),
+                ),
+              _Level(
+                label: text.othersVolume,
+                value: _othersGain,
+                onChanged: (v) => _changed(() => _othersGain = v),
+              ),
+              _Level(
+                key: const Key('practice_tempo'),
+                label: text.tempoCaption,
+                value: (_tempo - 50) / 70,
+                shown: '%$_tempo',
+                divisions: 14,
+                onChanged: (v) =>
+                    _changed(() => _tempo = 50 + (v * 14).round() * 5),
+              ),
+              _Switch(
+                label: text.metronome,
+                value: _metronome,
+                onChanged: (v) => _changed(() => _metronome = v),
+              ),
+              _Switch(
+                label: text.countIn,
+                value: _countIn,
+                onChanged: (v) => _changed(() => _countIn = v),
+              ),
+            ],
+          ),
         ),
-        SwitchListTile(
-          contentPadding: EdgeInsets.zero,
-          value: _metronome,
-          onChanged: (v) => _changed(() => _metronome = v),
-          title: Text(text.metronome, style: TT.title),
+        const SizedBox(height: 12),
+        HeroCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              ChoirWave(
+                peaks: _peaks.isEmpty ? List.filled(_bars, 0.08) : _peaks,
+                progress: progress,
+              ),
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  SizedBox(
+                    width: 52,
+                    child: Text(
+                      clockText(_position),
+                      style: const TextStyle(color: TC.heroMuted, fontSize: 13),
+                    ),
+                  ),
+                  const Spacer(),
+                  IconButton(
+                    key: const Key('practice_restart'),
+                    tooltip: text.replayStart,
+                    onPressed: ms == 0 ? null : _restart,
+                    color: Colors.white,
+                    disabledColor: TC.muted,
+                    icon: const Icon(Icons.skip_previous_outlined),
+                  ),
+                  const SizedBox(width: 10),
+                  LimePlay(
+                    key: const Key('practice_play'),
+                    playing: _playing,
+                    busy: _busy,
+                    label: _playing ? text.pause : text.play,
+                    onTap: _toggle,
+                  ),
+                  const SizedBox(width: 10),
+                  IconButton(
+                    key: const Key('practice_loop'),
+                    tooltip: text.loop,
+                    isSelected: _loop,
+                    onPressed: () => _changed(() => _loop = !_loop),
+                    color: Colors.white,
+                    selectedIcon: const Icon(
+                      Icons.repeat_on_rounded,
+                      color: TC.sun,
+                    ),
+                    icon: const Icon(Icons.repeat_rounded),
+                  ),
+                  const Spacer(),
+                  const SizedBox(width: 52),
+                ],
+              ),
+            ],
+          ),
         ),
-        SwitchListTile(
-          contentPadding: EdgeInsets.zero,
-          value: _countIn,
-          onChanged: (v) => _changed(() => _countIn = v),
-          title: Text(text.countIn, style: TT.title),
-        ),
-        SwitchListTile(
-          contentPadding: EdgeInsets.zero,
-          value: _loop,
-          onChanged: (v) => _changed(() => _loop = v),
-          title: Text(text.loop, style: TT.title),
-        ),
-        const SizedBox(height: 4),
+        if (_error != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: Text(_error!, style: TT.body),
+          ),
+        const SizedBox(height: 10),
         Text(text.synthNotice, style: TT.small),
       ],
     );
   }
 }
 
+class _PartChip extends StatelessWidget {
+  const _PartChip({
+    super.key,
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(right: 6),
+    child: ChoiceChip(
+      label: Text(
+        label,
+        style: TextStyle(
+          color: selected ? Colors.white : TC.body,
+          fontWeight: FontWeight.w600,
+          fontSize: 13,
+        ),
+      ),
+      selected: selected,
+      checkmarkColor: Colors.white,
+      onSelected: (_) => onTap(),
+    ),
+  );
+}
+
 class _Level extends StatelessWidget {
   const _Level({
+    super.key,
+    required this.label,
+    required this.value,
+    required this.onChanged,
+    this.shown,
+    this.divisions,
+  });
+  final String label;
+  final double value;
+  final String? shown;
+  final int? divisions;
+  final ValueChanged<double> onChanged;
+  @override
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      Row(
+        children: [
+          Expanded(
+            child: Text(label, style: TT.body.copyWith(color: TC.ink)),
+          ),
+          Text(
+            shown ?? '%${(value * 100).round()}',
+            style: const TextStyle(
+              color: TC.primary,
+              fontWeight: FontWeight.w600,
+              fontSize: 13.5,
+            ),
+          ),
+        ],
+      ),
+      Slider(
+        value: value,
+        divisions: divisions,
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        onChanged: onChanged,
+      ),
+    ],
+  );
+}
+
+class _Switch extends StatelessWidget {
+  const _Switch({
     required this.label,
     required this.value,
     required this.onChanged,
   });
   final String label;
-  final double value;
-  final ValueChanged<double> onChanged;
+  final bool value;
+  final ValueChanged<bool> onChanged;
+
   @override
   Widget build(BuildContext context) => Row(
     children: [
-      SizedBox(width: 108, child: Text(label, style: TT.body)),
       Expanded(
-        child: Slider(value: value, onChanged: onChanged),
+        child: Text(label, style: TT.body.copyWith(color: TC.ink)),
       ),
+      Switch(value: value, onChanged: onChanged),
     ],
   );
 }

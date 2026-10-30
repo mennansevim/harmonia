@@ -42,6 +42,10 @@ Agora tek sesler: `src/PitchTest/lib/audioPlayer.ts` →
 header mono PCM16/48 kHz, tüm etiket/hak zinciri doğrulanmadı. Repo MIT olsa da
 sample hakları varsayılmadı; Harmonia'ya kopyalanmadı.
 
+## 2g. 2026-10-30 — Ana tasarım (DESIGN-05)
+
+Referans Figma dosyası `SuYUG25GKXgGN4WjbIn1n6` (18 ekran; kopyalar `design-exports/uxpilot/harmonia-zip/`). 2f'deki İfade renk ve yazıları geçersiz: krem zemin, patlıcan kart, Inter + Lora, `kit.dart` değerleri Figma'dan. Tasarımda olup gerçek verisi veya gerçek işlevi olmayan öğeler (otomatik hizala, kayıt öncesi mikrofon göstergesi, arkadaş sayısı) eklenmez.
+
 ## 2f. 2026-10-30 — İfade tasarımı (ADR-037)
 
 `lib/trainer/ui/kit.dart` ortak tema; yeni ekranda `TC`, `TT`, `BigButton`, `DueShape` kullan. Görsel kontrol: `flutter test test/choir/choir_screenshot_tour_test.dart --dart-define=TOUR_DIR=<mutlak klasör>`. Eski A+C (`features/`) kabuğu açılışta kullanılmıyor, değişmedi.

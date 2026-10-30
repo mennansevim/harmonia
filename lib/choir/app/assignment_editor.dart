@@ -96,15 +96,19 @@ class _AssignmentEditorState extends State<AssignmentEditor> {
     final due = _due;
     return ChoirPage(
       title: text.newAssignment,
+      crumb: text.crumbConductorOf(widget.choir.name),
       bottom: Builder(
         builder: (button) => BigButton(
           key: const Key('assignment_publish'),
-          label: text.publish,
+          label: text.createWork,
+          icon: Icons.check_rounded,
           busy: _busy,
           onPressed: () => _publish(button),
         ),
       ),
       children: [
+        Text(text.caps(text.assignmentTitle), style: TT.caps),
+        const SizedBox(height: 8),
         TextField(
           key: const Key('assignment_title'),
           controller: _title,
@@ -120,7 +124,7 @@ class _AssignmentEditorState extends State<AssignmentEditor> {
         Caption(text.caps(text.dueDate)),
         ChoirRow(
           key: const Key('assignment_due'),
-          icon: Icons.event_rounded,
+          icon: Icons.event_outlined,
           title: due == null
               ? text.chooseDue
               : '${materials.formatMediumDate(due)} · '
@@ -128,11 +132,11 @@ class _AssignmentEditorState extends State<AssignmentEditor> {
           onTap: _pickDue,
         ),
         Caption(text.caps(text.pieces)),
-        Text(text.addPieceHint, style: TT.small),
+        Text(text.piecesHint, style: TT.small),
         const SizedBox(height: 8),
         for (final (i, p) in _pieces.indexed)
           ChoirRow(
-            icon: Icons.music_note_rounded,
+            icon: Icons.music_note_outlined,
             title: p.title,
             subtitle:
                 '${text.modeName(p.mode)} · ${text.sectionText(p)} · '
@@ -146,15 +150,15 @@ class _AssignmentEditorState extends State<AssignmentEditor> {
         OutlinedButton.icon(
           key: const Key('assignment_add_piece'),
           onPressed: _addPiece,
-          icon: const Icon(Icons.add_rounded),
+          icon: const Icon(Icons.add_rounded, size: 20),
           label: Text(text.addPiece),
         ),
-        const SizedBox(height: 16),
+        Caption(text.caps(text.workNote)),
         TextField(
           key: const Key('assignment_note'),
           controller: _note,
-          maxLines: 3,
-          decoration: choirField(text.noteToChoir),
+          maxLines: 4,
+          decoration: choirField(text.workNoteHint),
         ),
       ],
     );
@@ -175,6 +179,7 @@ class _PieceEditorState extends State<PieceEditor> {
   final _to = TextEditingController();
   final _section = TextEditingController();
   var _mode = PieceMode.solfege;
+  var _voicing = 'SATB';
   var _accompanied = true;
   PickedFile? _picked;
   MidiFile? _midi;
@@ -254,6 +259,7 @@ class _PieceEditorState extends State<PieceEditor> {
         sectionNote: _section.text.trim(),
         withAccompaniment: _accompanied && ref != null,
         midiReferenceId: ref?.id,
+        voicing: _voicing,
       ),
     );
   }
@@ -267,49 +273,122 @@ class _PieceEditorState extends State<PieceEditor> {
         (_rights != null && _rights != RightsDeclaration.unknown);
     return ChoirPage(
       title: text.addPiece,
+      crumb: text.crumbNewPiece,
       bottom: BigButton(
         key: const Key('piece_save'),
         label: text.savePiece,
+        icon: Icons.add_rounded,
         busy: _busy,
         onPressed: _title.text.trim().isNotEmpty && rightsOk ? _save : null,
       ),
       children: [
-        OutlinedButton.icon(
-          key: const Key('piece_pick_midi'),
-          onPressed: _pickMidi,
-          icon: const Icon(Icons.queue_music_rounded),
-          label: Text(_picked?.name ?? text.chooseMidi),
-        ),
-        if (midi != null) ...[
-          const SizedBox(height: 6),
-          Text(
-            text.midiSummary(
-              midi.measureStarts().length,
-              midi.tracks.where((t) => t.notes.isNotEmpty).length,
-            ),
-            style: TT.small,
+        Container(
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(
+            color: TC.primarySoft,
+            borderRadius: BorderRadius.circular(20),
           ),
-        ],
-        const SizedBox(height: 14),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                children: [
+                  const Icon(
+                    Icons.queue_music_rounded,
+                    color: TC.primary,
+                    size: 28,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(text.startFromMidi, style: TT.title),
+                        Text(
+                          midi == null
+                              ? text.midiHint
+                              : text.midiSummary(
+                                  midi.measureStarts().length,
+                                  midi.tracks
+                                      .where((t) => t.notes.isNotEmpty)
+                                      .length,
+                                ),
+                          style: const TextStyle(
+                            color: TC.body,
+                            fontSize: 12.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              OutlinedButton.icon(
+                key: const Key('piece_pick_midi'),
+                onPressed: _pickMidi,
+                icon: const Icon(Icons.upload_outlined, size: 20),
+                label: Text(
+                  _picked?.name ?? text.chooseMidi,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+        ),
+        Caption(text.caps(text.pieceTitle)),
         TextField(
           key: const Key('piece_title'),
           controller: _title,
           onChanged: (_) => setState(() {}),
           decoration: choirField(text.pieceTitle),
         ),
-        Caption(text.caps(text.howSung)),
-        SegmentedButton<PieceMode>(
-          key: const Key('piece_mode'),
-          segments: [
-            for (final m in PieceMode.values)
-              ButtonSegment(value: m, label: Text(text.modeName(m))),
+        Caption(text.caps(text.voicingTitle)),
+        Wrap(
+          spacing: 8,
+          children: [
+            for (final v in const ['SATB', 'SSAA', 'TTBB'])
+              ChoiceChip(
+                key: Key('voicing_$v'),
+                label: Text(
+                  v,
+                  style: TextStyle(
+                    color: _voicing == v ? Colors.white : TC.body,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 13,
+                  ),
+                ),
+                selected: _voicing == v,
+                checkmarkColor: Colors.white,
+                onSelected: (_) => setState(() => _voicing = v),
+              ),
           ],
-          selected: {_mode},
-          onSelectionChanged: (s) => setState(() => _mode = s.first),
+        ),
+        Caption(text.caps(text.howSung)),
+        Wrap(
+          spacing: 8,
+          children: [
+            for (final m in PieceMode.values)
+              ChoiceChip(
+                key: Key('piece_mode_${m.name}'),
+                label: Text(
+                  text.modeName(m),
+                  style: TextStyle(
+                    color: _mode == m ? Colors.white : TC.body,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 13,
+                  ),
+                ),
+                selected: _mode == m,
+                checkmarkColor: Colors.white,
+                onSelected: (_) => setState(() => _mode = m),
+              ),
+          ],
         ),
         const SizedBox(height: 6),
         Text(text.modeHint(_mode), style: TT.small),
-        Caption(text.caps(text.range)),
+        Caption(text.caps(text.rangeHeading)),
         Row(
           children: [
             Expanded(
@@ -317,7 +396,7 @@ class _PieceEditorState extends State<PieceEditor> {
                 key: const Key('piece_from'),
                 controller: _from,
                 keyboardType: TextInputType.number,
-                decoration: choirField(text.fromMeasure),
+                decoration: choirField(text.rangeStart),
               ),
             ),
             const SizedBox(width: 10),
@@ -326,7 +405,7 @@ class _PieceEditorState extends State<PieceEditor> {
                 key: const Key('piece_to'),
                 controller: _to,
                 keyboardType: TextInputType.number,
-                decoration: choirField(text.toMeasure),
+                decoration: choirField(text.rangeEnd),
               ),
             ),
           ],

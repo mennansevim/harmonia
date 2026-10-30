@@ -8,10 +8,13 @@ import '../audio/take_engine.dart';
 import '../domain/submission.dart';
 import 'choir_scope.dart';
 import 'choir_text.dart';
+import 'piece_audio.dart';
 
-/// The conductor listens, marks moments (a breath leak here), speaks or sings
-/// the correction, and decides. Everything here is the conductor's own
-/// judgement; the app measures nothing in the take.
+const _waveBars = ChoirWave.barCount;
+
+/// The conductor listens, notes moments (a breath leak here), sings the
+/// correction, and decides. Everything here is the conductor's own judgement;
+/// the app measures nothing in the take. The wave shows loudness only.
 class ReviewScreen extends StatefulWidget {
   const ReviewScreen({super.key, required this.submissionId});
   final String submissionId;
@@ -23,11 +26,11 @@ class _ReviewScreenState extends State<ReviewScreen> {
   late final ChoirPlayer _player;
   late final TakeCapture _capture;
   final _comment = TextEditingController();
-  final _tags = <FeedbackTag>{};
   final _marks = <FeedbackMark>[];
   final _subs = <StreamSubscription<Object?>>[];
   var _position = Duration.zero;
   Duration? _length;
+  List<double> _peaks = const [];
   var _playing = false;
   var _speed = 1.0;
   var _openFailed = false;
@@ -66,8 +69,11 @@ class _ReviewScreenState extends State<ReviewScreen> {
     final id = _submission?.recordingId;
     if (id == null) return;
     try {
-      final length = await _player.open(await store.mediaPath(id));
+      final path = await store.mediaPath(id);
+      final length = await _player.open(path);
       if (mounted) setState(() => _length = length);
+      final peaks = await peaksOfFile(path, _waveBars);
+      if (mounted) setState(() => _peaks = peaks);
     } catch (_) {
       if (mounted) setState(() => _openFailed = true);
     }
@@ -100,10 +106,52 @@ class _ReviewScreenState extends State<ReviewScreen> {
     }
   }
 
-  void _mark(FeedbackTag tag) {
-    setState(() {
-      _marks.add(FeedbackMark(atMs: _position.inMilliseconds, tag: tag));
-    });
+  void _addMark(CT text) {
+    final at = _position;
+    final note = TextEditingController();
+    showTrainerSheet<void>(
+      context,
+      (sheet) => Padding(
+        padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(sheet).bottom),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(text.addMomentNote, style: TT.h3),
+            Text(clockText(at), style: TT.small),
+            const SizedBox(height: 12),
+            TextField(
+              key: const Key('mark_note'),
+              controller: note,
+              decoration: choirField(text.momentNoteHint),
+            ),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final t in FeedbackTag.values)
+                  ActionChip(
+                    key: Key('mark_${t.name}'),
+                    label: Text(text.tagName(t)),
+                    onPressed: () {
+                      setState(() {
+                        _marks.add(
+                          FeedbackMark(
+                            atMs: at.inMilliseconds,
+                            tag: t,
+                            text: note.text.trim(),
+                          ),
+                        );
+                      });
+                      Navigator.pop(sheet);
+                    },
+                  ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    ).whenComplete(note.dispose);
   }
 
   Future<void> _toggleVoice() async {
@@ -132,19 +180,43 @@ class _ReviewScreenState extends State<ReviewScreen> {
     }
   }
 
-  Future<void> _decide(BuildContext button, ReviewOutcome outcome) async {
-    final scope = ChoirScope.read(context);
+  /// One send button, then the decision the singer needs to see.
+  Future<void> _send(BuildContext button) async {
     final text = CT.of(context);
-    final s = _submission;
-    if (s == null) return;
-    final comment = _comment.text.trim();
-    if (comment.isEmpty &&
-        _tags.isEmpty &&
-        _marks.isEmpty &&
-        _voicePath == null) {
+    if (_comment.text.trim().isEmpty && _marks.isEmpty && _voicePath == null) {
       toast(context, text.needFeedback);
       return;
     }
+    final outcome = await showTrainerSheet<ReviewOutcome>(
+      context,
+      (sheet) => Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(text.howDidItGo, style: TT.h3),
+          const SizedBox(height: 14),
+          BigButton(
+            key: const Key('review_accept'),
+            label: text.accept,
+            color: TC.sun,
+            onPressed: () => Navigator.pop(sheet, ReviewOutcome.accepted),
+          ),
+          const SizedBox(height: 8),
+          OutlinedButton(
+            key: const Key('review_redo'),
+            onPressed: () =>
+                Navigator.pop(sheet, ReviewOutcome.revisionRequested),
+            child: Text(text.askRedo),
+          ),
+        ],
+      ),
+    );
+    if (outcome != null && button.mounted) await _decide(button, outcome);
+  }
+
+  Future<void> _decide(BuildContext button, ReviewOutcome outcome) async {
+    final scope = ChoirScope.read(context);
+    final s = _submission;
+    if (s == null) return;
     setState(() => _busy = true);
     final nav = Navigator.of(context);
     final origin = shareOrigin(button);
@@ -155,14 +227,20 @@ class _ReviewScreenState extends State<ReviewScreen> {
     final reviewed = await scope.store.review(
       submission: s,
       outcome: outcome,
-      text: comment,
-      tags: _tags.toList(),
+      text: _comment.text.trim(),
       marks: _marks,
       voiceNoteId: voice,
     );
     final path = await scope.bundles.exportFeedback(reviewed);
     await scope.files.share(path, origin: origin);
     nav.pop();
+  }
+
+  void _seekFraction(double f) {
+    final total = _length?.inMilliseconds ?? 0;
+    if (total > 0) {
+      _player.seek(Duration(milliseconds: (total * f.clamp(0, 1)).round()));
+    }
   }
 
   @override
@@ -180,198 +258,200 @@ class _ReviewScreenState extends State<ReviewScreen> {
         .firstOrNull;
     final piece = assignment?.piece(s.pieceId);
     final total = _length?.inMilliseconds ?? 0;
+    final name = singer?.displayName ?? text.partName(s.part);
+    final progress = total == 0 ? 0.0 : _position.inMilliseconds / total;
     return ChoirPage(
-      title: singer?.displayName ?? text.reviewTake,
+      title: name,
+      crumb: text.crumbReview,
+      bottom: Builder(
+        builder: (button) => s.awaitsConductor
+            ? BigButton(
+                key: const Key('review_send'),
+                label: text.sendFeedback,
+                icon: Icons.send_outlined,
+                busy: _busy,
+                onPressed: () => _send(button),
+              )
+            : BigButton(
+                label: text.resendFeedback,
+                onPressed: () async {
+                  final scope = ChoirScope.read(context);
+                  final origin = shareOrigin(button);
+                  final path = await scope.bundles.exportFeedback(s);
+                  await scope.files.share(path, origin: origin);
+                },
+              ),
+      ),
       children: [
-        Text(
-          '${text.partName(s.part)} · ${piece?.title ?? ''}',
-          style: TT.title,
+        Row(
+          children: [
+            if (piece != null) Tag(piece.title, color: TC.primary),
+            const Spacer(),
+            if (assignment != null) Text(assignment.title, style: TT.small),
+          ],
         ),
-        if (piece != null)
-          Text(
-            '${text.modeName(piece.mode)} · ${text.sectionText(piece)} · '
-            '${text.takeKindName(s.takeKind!)}',
-            style: TT.small,
+        const SizedBox(height: 6),
+        Text(
+          '${text.partName(s.part)}'
+          '${piece == null ? '' : ' · ${text.sectionText(piece)}'}'
+          '${s.takeKind == null ? '' : ' · ${text.takeKindName(s.takeKind!)}'}'
+          '${assignment != null && s.sentLate(assignment) ? ' · ${text.lateTag}' : ''}',
+          style: TT.small,
+        ),
+        const SizedBox(height: 12),
+        if (_openFailed)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Text(text.cannotOpen, style: TT.body),
           ),
-        if (assignment != null && s.sentLate(assignment))
-          Text(text.lateTag, style: TT.small),
-        const SizedBox(height: 10),
-        if (_openFailed) Text(text.cannotOpen, style: TT.body),
-        AppCard(
-          padding: const EdgeInsets.fromLTRB(12, 10, 12, 8),
+        HeroCard(
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Row(
                 children: [
-                  IconButton.filled(
-                    key: const Key('review_play'),
-                    tooltip: _playing ? text.pause : text.listen,
-                    onPressed: _toggle,
-                    icon: Icon(
-                      _playing ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                  Expanded(
+                    child: Text(
+                      text.caps('$name · ${text.sentRecording}'),
+                      style: const TextStyle(
+                        color: TC.heroMuted,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 1.5,
+                      ),
                     ),
                   ),
-                  Expanded(
-                    child: Slider(
-                      key: const Key('review_seek'),
-                      value: total == 0
-                          ? 0
-                          : _position.inMilliseconds.clamp(0, total).toDouble(),
-                      max: total == 0 ? 1 : total.toDouble(),
-                      onChanged: total == 0
-                          ? null
-                          : (v) =>
-                                _player.seek(Duration(milliseconds: v.round())),
-                    ),
+                  const Icon(
+                    Icons.headphones_outlined,
+                    color: TC.sun,
+                    size: 20,
                   ),
                 ],
               ),
+              const SizedBox(height: 12),
+              if (_peaks.isEmpty)
+                Slider(
+                  key: const Key('review_seek'),
+                  value: progress.clamp(0, 1),
+                  onChanged: total == 0 ? null : _seekFraction,
+                )
+              else
+                ChoirWave(
+                  peaks: _peaks,
+                  progress: progress,
+                  onSeek: _seekFraction,
+                ),
+              const SizedBox(height: 10),
               Row(
                 children: [
-                  Text(
-                    '${clockText(_position)} / '
-                    '${clockText(_length ?? Duration.zero)}',
-                    style: TT.small,
-                  ),
-                  const Spacer(),
-                  Text('${text.speed} ', style: TT.small),
-                  SegmentedButton<double>(
-                    showSelectedIcon: false,
-                    style: const ButtonStyle(
-                      visualDensity: VisualDensity.compact,
+                  Expanded(
+                    child: Text(
+                      clockText(_position),
+                      style: const TextStyle(color: Colors.white, fontSize: 13),
                     ),
-                    segments: const [
-                      ButtonSegment(value: 1, label: Text('1×')),
-                      ButtonSegment(value: 1.25, label: Text('1,25×')),
-                    ],
-                    selected: {_speed},
-                    onSelectionChanged: (v) {
-                      setState(() => _speed = v.first);
-                      _player.setSpeed(v.first);
-                    },
+                  ),
+                  LimePlay(
+                    key: const Key('review_play'),
+                    playing: _playing,
+                    label: _playing ? text.pause : text.listen,
+                    onTap: _toggle,
+                  ),
+                  Expanded(
+                    child: Align(
+                      alignment: AlignmentDirectional.centerEnd,
+                      child: TextButton(
+                        key: const Key('review_speed'),
+                        style: TextButton.styleFrom(
+                          foregroundColor: Colors.white,
+                        ),
+                        onPressed: () {
+                          final next = _speed == 1 ? 1.25 : 1.0;
+                          setState(() => _speed = next);
+                          _player.setSpeed(next);
+                        },
+                        child: Text(_speed == 1 ? '1×' : '1,25×'),
+                      ),
+                    ),
                   ),
                 ],
               ),
             ],
           ),
         ),
-        Caption(text.caps(text.markHere)),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: [
-            ActionChip(
-              key: const Key('mark_breathLeak'),
-              avatar: const Icon(Icons.air_rounded, size: 18),
-              label: Text(text.tagName(FeedbackTag.breathLeak)),
-              onPressed: () => _mark(FeedbackTag.breathLeak),
-            ),
-            for (final t in const [
-              FeedbackTag.pitch,
-              FeedbackTag.rhythm,
-              FeedbackTag.entry,
-              FeedbackTag.diction,
-            ])
-              ActionChip(
-                label: Text(text.tagName(t)),
-                onPressed: () => _mark(t),
-              ),
-          ],
+        const SizedBox(height: 12),
+        OutlinedButton.icon(
+          key: const Key('review_add_mark'),
+          onPressed: () => _addMark(text),
+          icon: const Icon(Icons.add_rounded, size: 20),
+          label: Text(text.addMomentNote),
         ),
         for (final (i, m) in _marks.indexed)
-          ListTile(
-            dense: true,
-            contentPadding: EdgeInsets.zero,
-            title: Text(
-              '${clockText(Duration(milliseconds: m.atMs))} · '
-              '${text.tagName(m.tag)}',
-            ),
-            trailing: IconButton(
-              tooltip: text.delete,
-              icon: const Icon(Icons.close_rounded),
-              onPressed: () => setState(() => _marks.removeAt(i)),
+          Padding(
+            padding: const EdgeInsets.only(top: 10),
+            child: Container(
+              padding: const EdgeInsets.fromLTRB(16, 10, 4, 10),
+              decoration: BoxDecoration(
+                color: TC.primarySoft,
+                borderRadius: BorderRadius.circular(18),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
+                    decoration: const ShapeDecoration(
+                      color: Colors.white,
+                      shape: StadiumBorder(),
+                    ),
+                    child: Text(
+                      clockText(Duration(milliseconds: m.atMs)),
+                      style: const TextStyle(
+                        color: TC.ink,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      '${text.tagName(m.tag)}'
+                      '${m.text.isEmpty ? '' : ' · ${m.text}'}',
+                      style: TT.body.copyWith(color: TC.ink),
+                    ),
+                  ),
+                  IconButton(
+                    tooltip: text.delete,
+                    onPressed: () => setState(() => _marks.removeAt(i)),
+                    icon: const Icon(Icons.close_rounded, size: 20),
+                  ),
+                ],
+              ),
             ),
           ),
-        Caption(text.caps(text.generalTags)),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: [
-            for (final t in const [
-              FeedbackTag.breath,
-              FeedbackTag.dynamics,
-              FeedbackTag.wellDone,
-            ])
-              FilterChip(
-                key: Key('tag_${t.name}'),
-                label: Text(text.tagName(t)),
-                selected: _tags.contains(t),
-                onSelected: (_) => setState(() {
-                  if (!_tags.remove(t)) _tags.add(t);
-                }),
-              ),
-          ],
-        ),
-        const SizedBox(height: 10),
+        Caption(text.caps(text.feedbackHeading)),
         TextField(
           key: const Key('review_comment'),
           controller: _comment,
-          maxLines: 3,
-          decoration: choirField(text.yourComment),
+          maxLines: 4,
+          decoration: choirField(text.feedbackFor(name)),
         ),
-        Caption(text.caps(text.voiceNote)),
-        Text(text.voiceNoteHint, style: TT.small),
-        const SizedBox(height: 6),
+        const SizedBox(height: 12),
         OutlinedButton.icon(
           key: const Key('review_voice'),
           onPressed: _toggleVoice,
-          icon: Icon(_recordingVoice ? Icons.stop_rounded : Icons.mic_rounded),
-          label: Text(_recordingVoice ? text.stopVoice : text.recordVoice),
+          icon: Icon(
+            _recordingVoice ? Icons.stop_rounded : Icons.mic_none_rounded,
+            size: 20,
+          ),
+          label: Text(_recordingVoice ? text.stopVoice : text.voiceFeedback),
         ),
         if (_voicePath != null && !_recordingVoice)
           TextLink(
             text.removeVoice,
             onTap: () => setState(() => _voicePath = null),
-          ),
-        const SizedBox(height: 18),
-        if (s.awaitsConductor)
-          Builder(
-            builder: (button) => Row(
-              children: [
-                Expanded(
-                  child: BigButton(
-                    key: const Key('review_redo'),
-                    label: text.askRedo,
-                    color: TC.primary,
-                    busy: _busy,
-                    onPressed: () =>
-                        _decide(button, ReviewOutcome.revisionRequested),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: BigButton(
-                    key: const Key('review_accept'),
-                    label: text.accept,
-                    color: TC.sun,
-                    busy: _busy,
-                    onPressed: () => _decide(button, ReviewOutcome.accepted),
-                  ),
-                ),
-              ],
-            ),
-          )
-        else
-          Builder(
-            builder: (button) => BigButton(
-              label: text.resendFeedback,
-              onPressed: () async {
-                final scope = ChoirScope.read(context);
-                final origin = shareOrigin(button);
-                final path = await scope.bundles.exportFeedback(s);
-                await scope.files.share(path, origin: origin);
-              },
-            ),
           ),
       ],
     );

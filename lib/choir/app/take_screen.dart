@@ -13,6 +13,8 @@ import 'choir_scope.dart';
 import 'choir_text.dart';
 import 'piece_audio.dart';
 
+const _reviewBars = ChoirWave.barCount;
+
 /// Records one piece. With a MIDI on headphones this replaces the second
 /// phone: playback and capture run here, then join into one file.
 class TakeScreen extends StatefulWidget {
@@ -35,8 +37,11 @@ class _TakeScreenState extends State<TakeScreen> with WidgetsBindingObserver {
   var _playing = false;
   var _sliderMs = 0.0;
   var _elapsed = Duration.zero;
+  var _position = Duration.zero;
+  List<double> _peaks = const [];
   Timer? _ticker;
   StreamSubscription<bool>? _playingSub;
+  StreamSubscription<Duration>? _positionSub;
 
   bool get _accompanied => widget.piece.withAccompaniment;
 
@@ -49,6 +54,9 @@ class _TakeScreenState extends State<TakeScreen> with WidgetsBindingObserver {
     _player = scope.newPlayer();
     _playingSub = _player.playingChanges.listen((p) {
       if (mounted) setState(() => _playing = p);
+    });
+    _positionSub = _player.positions.listen((p) {
+      if (mounted) setState(() => _position = p);
     });
     _checkRoute();
     WidgetsBinding.instance.addPostFrameCallback((_) => _askConsent());
@@ -72,6 +80,7 @@ class _TakeScreenState extends State<TakeScreen> with WidgetsBindingObserver {
     WidgetsBinding.instance.removeObserver(this);
     _ticker?.cancel();
     _playingSub?.cancel();
+    _positionSub?.cancel();
     _take?.dispose();
     _player.close();
     _capture.close().catchError((Object _) {});
@@ -174,7 +183,11 @@ class _TakeScreenState extends State<TakeScreen> with WidgetsBindingObserver {
     final phase = _take?.phase;
     if (phase != TakePhase.recording) _ticker?.cancel();
     if (phase == TakePhase.review) {
-      _player.open(_take!.resultPath);
+      final path = _take!.resultPath;
+      _player.open(path);
+      peaksOfFile(path, _reviewBars).then((peaks) {
+        if (mounted) setState(() => _peaks = peaks);
+      });
     }
     setState(() {});
   }
@@ -236,16 +249,16 @@ class _TakeScreenState extends State<TakeScreen> with WidgetsBindingObserver {
     final take = _take;
     final phase = take?.phase ?? TakePhase.idle;
     if (phase == TakePhase.recording) return _recording(text, take!);
-    return ChoirPage(
-      title: widget.piece.title,
-      children: switch (phase) {
-        TakePhase.preparing => [_status(text.preparing)],
-        TakePhase.mixing => [_status(text.mixing)],
-        TakePhase.review => _review(text, take!),
-        _ => _setup(text, phase),
-      },
-    );
+    return switch (phase) {
+      TakePhase.review => _reviewPage(text, take!),
+      TakePhase.preparing => _waiting(text.preparing),
+      TakePhase.mixing => _waiting(text.mixing),
+      _ => _setupPage(text, phase),
+    };
   }
+
+  Widget _waiting(String label) =>
+      ChoirPage(title: widget.piece.title, children: [_status(label)]);
 
   Widget _status(String label) => Padding(
     padding: const EdgeInsets.symmetric(vertical: 60),
@@ -258,66 +271,168 @@ class _TakeScreenState extends State<TakeScreen> with WidgetsBindingObserver {
     ),
   );
 
-  List<Widget> _setup(CT text, TakePhase phase) {
+  /// The recording setup: what the route allows, and the one action.
+  Widget _setupPage(CT text, TakePhase phase) {
     final advice = _route;
-    return [
-      Text(
-        '${text.modeName(widget.piece.mode)} · '
-        '${text.sectionText(widget.piece)}',
-        style: TT.title,
-      ),
-      const SizedBox(height: 4),
-      Text(text.modeHint(widget.piece.mode), style: TT.small),
-      const SizedBox(height: 12),
-      if (phase == TakePhase.interrupted) _notice(text.interrupted),
-      if (phase == TakePhase.failed) _notice(text.takeFailed),
-      if (_denied) _notice(text.micDenied),
-      if (_accompanied) ...[
-        AppCard(
-          color: TC.primarySoft,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(text.headphonesTitle, style: TT.title),
-              const SizedBox(height: 6),
-              Text(text.headphonesBody, style: TT.body),
-            ],
-          ),
-        ),
-        const SizedBox(height: 12),
-        if (advice != null)
-          ChoirRow(
-            key: Key('take_route_${advice.name}'),
-            icon: advice == RouteAdvice.speaker
-                ? Icons.headset_off_rounded
-                : Icons.headphones_rounded,
-            title: text.routeText(advice.index),
-          ),
-        if (advice == RouteAdvice.unknown && !_headphonesConfirmed)
-          OutlinedButton(
-            key: const Key('take_confirm_headphones'),
-            onPressed: () => setState(() => _headphonesConfirmed = true),
-            child: Text(text.headphonesOn),
-          ),
-        if (advice == RouteAdvice.speaker)
-          OutlinedButton(
-            key: const Key('take_check_route'),
-            onPressed: _checkRoute,
-            child: Text(text.checkAgain),
-          ),
-        const SizedBox(height: 10),
-        Text(text.singHint, style: TT.small),
-      ],
-      const SizedBox(height: 14),
-      BigButton(
+    final piece = widget.piece;
+    final crumb = !_accompanied
+        ? text.crumbSetup
+        : switch (advice) {
+            RouteAdvice.speaker => text.crumbNeedsHeadphones,
+            RouteAdvice.bluetoothDelay => text.crumbBluetooth,
+            _ => text.crumbSetup,
+          };
+    return ChoirPage(
+      title: piece.title,
+      crumb: crumb,
+      subtitle:
+          '${piece.voicing} · ${text.modeName(piece.mode)} · '
+          '${text.sectionText(piece)}',
+      bottom: BigButton(
         key: const Key('take_start'),
-        label: text.startRecording,
-        icon: Icons.fiber_manual_record_rounded,
+        label: text.startTake,
+        icon: Icons.mic_none_rounded,
         color: TC.sun,
         onPressed: _canRecord ? _start : null,
       ),
-      TextLink(text.addFromDevice, onTap: _importTake),
-    ];
+      children: [
+        if (phase == TakePhase.interrupted) _notice(text.interrupted),
+        if (phase == TakePhase.failed) _notice(text.takeFailed),
+        if (_denied) _notice(text.micDenied),
+        if (_accompanied) ...[
+          HeroCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  text.caps(text.setupCaption),
+                  style: const TextStyle(
+                    color: TC.heroMuted,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 1.5,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  text.onePhoneHeadline,
+                  style: TT.h2.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  text.onePhoneBody,
+                  style: const TextStyle(
+                    color: TC.heroMuted,
+                    fontSize: 13.5,
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
+          if (advice != null) _routeBanner(text, advice),
+          if (advice == RouteAdvice.unknown && !_headphonesConfirmed)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: OutlinedButton(
+                key: const Key('take_confirm_headphones'),
+                onPressed: () => setState(() => _headphonesConfirmed = true),
+                child: Text(text.headphonesOn),
+              ),
+            ),
+          if (advice == RouteAdvice.speaker)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: OutlinedButton.icon(
+                key: const Key('take_check_route'),
+                onPressed: _checkRoute,
+                icon: const Icon(Icons.refresh_rounded, size: 20),
+                label: Text(text.checkAgain),
+              ),
+            ),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: Text(text.readyFor(piece.title), style: TT.small),
+          ),
+        ] else
+          Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: Text(text.modeHint(piece.mode), style: TT.body),
+          ),
+        OutlinedButton.icon(
+          key: const Key('take_import'),
+          onPressed: _importTake,
+          icon: const Icon(Icons.upload_outlined, size: 20),
+          label: Text(text.addFromDevice),
+        ),
+      ],
+    );
+  }
+
+  Widget _routeBanner(CT text, RouteAdvice advice) {
+    final (icon, title, body, fill) = switch (advice) {
+      RouteAdvice.ready => (
+        Icons.headphones_outlined,
+        text.wiredReady,
+        text.readyToGo,
+        TC.sun,
+      ),
+      RouteAdvice.bluetoothDelay => (
+        Icons.bluetooth_rounded,
+        text.btDelay,
+        text.btHint,
+        TC.warnSoft,
+      ),
+      RouteAdvice.speaker => (
+        Icons.volume_up_outlined,
+        text.speakerLeak,
+        text.plugHeadphones,
+        TC.warnSoft,
+      ),
+      RouteAdvice.unknown => (
+        Icons.headphones_outlined,
+        text.unknownRoute,
+        text.unknownHint,
+        TC.primarySoft,
+      ),
+    };
+    return Padding(
+      key: Key('take_route_${advice.name}'),
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: fill,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, size: 28, color: fill == TC.warnSoft ? TC.warn : TC.ink),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Semantics(
+                liveRegion: true,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(title, style: TT.title),
+                    const SizedBox(height: 2),
+                    Text(
+                      body,
+                      style: const TextStyle(color: TC.ink, fontSize: 12.5),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _notice(String message) => Padding(
@@ -328,76 +443,125 @@ class _TakeScreenState extends State<TakeScreen> with WidgetsBindingObserver {
     ),
   );
 
-  /// The one dark screen: nothing competes with singing. The shape breathes
-  /// with the real microphone level, not a decorative loop.
+  /// The one dark screen: nothing competes with singing. The wave is the
+  /// real microphone level, not a decorative loop.
   Widget _recording(CT text, TakeController take) {
-    final level = ((take.levelDb + 60) / 60).clamp(0.0, 1.0);
     final count = take.countIn;
     final inCount = _elapsed < count;
-    final still = MediaQuery.disableAnimationsOf(context);
     final time = clockText(inCount ? Duration.zero : _elapsed - count);
     final stage = inCount ? text.countIn : text.recording;
+    final part = ChoirScope.of(
+      context,
+    ).store.meIn(widget.assignment.choirId)?.part;
+    final levels = take.recentLevels;
     return Scaffold(
-      backgroundColor: TC.ink,
+      backgroundColor: TC.hero,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 18, 20, 16),
+          padding: const EdgeInsets.fromLTRB(24, 18, 24, 14),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              Row(
+                children: [
+                  Container(
+                    width: 7,
+                    height: 7,
+                    decoration: const BoxDecoration(
+                      color: TC.sun,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    text.caps(text.recordingNow),
+                    style: const TextStyle(
+                      color: TC.sun,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 1.5,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 18),
               Text(
                 widget.piece.title,
-                style: TT.h2.copyWith(color: Colors.white),
+                style: TT.display.copyWith(color: Colors.white, fontSize: 43),
               ),
+              const SizedBox(height: 4),
               Text(
-                text.sectionText(widget.piece),
-                style: const TextStyle(color: TC.navPill, fontSize: 15),
+                '${part == null ? '' : '${text.partName(part)} · '}'
+                '${text.sectionText(widget.piece)}',
+                style: const TextStyle(color: TC.heroMuted, fontSize: 14),
               ),
-              Expanded(
-                child: Center(
-                  child: AnimatedScale(
-                    scale: still ? 1 : 0.92 + level * 0.14,
-                    duration: const Duration(milliseconds: 120),
-                    child: Container(
-                      width: 262,
-                      height: 262,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: inCount ? TC.navPill : TC.sun,
-                        borderRadius: const BorderRadius.only(
-                          topLeft: Radius.elliptical(115, 136),
-                          topRight: Radius.elliptical(147, 105),
-                          bottomLeft: Radius.elliptical(105, 157),
-                          bottomRight: Radius.elliptical(157, 126),
+              const Spacer(),
+              Center(
+                child: Container(
+                  width: 242,
+                  height: 242,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: inCount ? TC.navPill : TC.sun,
+                  ),
+                  child: Semantics(
+                    liveRegion: true,
+                    label: '$stage $time',
+                    excludeSemantics: true,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.mic_none_rounded,
+                          color: TC.ink,
+                          size: 26,
                         ),
-                      ),
-                      child: Semantics(
-                        liveRegion: true,
-                        label: '$stage $time',
-                        excludeSemantics: true,
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(time, style: TT.h1.copyWith(fontSize: 58)),
-                            Text(
-                              stage,
-                              style: const TextStyle(
-                                color: TC.ink,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ],
+                        const SizedBox(height: 12),
+                        Text(
+                          time,
+                          style: TT.h1.copyWith(
+                            fontSize: 55,
+                            letterSpacing: -3,
+                          ),
                         ),
-                      ),
+                        const SizedBox(height: 12),
+                        Text(
+                          stage,
+                          style: const TextStyle(
+                            color: TC.ink,
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
               ),
+              const Spacer(),
+              ChoirWave(
+                peaks: [
+                  ...List.filled(
+                    TakeController.levelHistory - levels.length,
+                    0.0,
+                  ),
+                  ...levels,
+                ],
+                progress: 1,
+              ),
+              const SizedBox(height: 14),
+              Text(
+                text.singAlong,
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: TC.heroMuted, fontSize: 13.5),
+              ),
+              const Spacer(),
               BigButton(
                 key: const Key('take_stop'),
                 label: text.stopRecording,
-                icon: Icons.stop_rounded,
-                color: TC.peach,
+                icon: Icons.crop_square_rounded,
+                color: TC.sun,
                 onPressed: take.finish,
               ),
             ],
@@ -407,55 +571,140 @@ class _TakeScreenState extends State<TakeScreen> with WidgetsBindingObserver {
     );
   }
 
-  List<Widget> _review(CT text, TakeController take) => [
-    AppCard(
-      child: Row(
+  Widget _reviewPage(CT text, TakeController take) {
+    final total = take.resultDurationMs ?? 0;
+    final progress = total == 0 ? 0.0 : _position.inMilliseconds / total;
+    final part = ChoirScope.of(
+      context,
+    ).store.meIn(widget.assignment.choirId)?.part;
+    return ChoirPage(
+      title: text.listenBack,
+      crumb: '${widget.piece.title} / ${text.crumbTakeCheck}',
+      subtitle:
+          '${widget.piece.title}'
+          '${part == null ? '' : ' · ${text.partName(part)}'}',
+      trailing: TiltTag(text.takeReady),
+      bottom: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          IconButton.filled(
-            key: const Key('take_play'),
-            tooltip: _playing ? text.pause : text.listen,
-            onPressed: _playing ? _player.pause : _player.play,
-            icon: Icon(
-              _playing ? Icons.pause_rounded : Icons.play_arrow_rounded,
-            ),
+          BigButton(
+            key: const Key('take_keep'),
+            label: text.keepTake,
+            icon: Icons.check_rounded,
+            busy: _keeping,
+            onPressed: _keep,
           ),
-          const SizedBox(width: 12),
-          Text(
-            clockText(Duration(milliseconds: take.resultDurationMs ?? 0)),
-            style: TT.title,
+          const SizedBox(height: 8),
+          OutlinedButton.icon(
+            key: const Key('take_again'),
+            onPressed: _start,
+            icon: const Icon(Icons.replay_rounded, size: 20),
+            label: Text(text.recordAgain),
           ),
         ],
       ),
-    ),
-    if (take.accompanied) ...[
-      Caption(text.caps(text.alignTitle)),
-      Text(text.alignBody, style: TT.small),
-      Slider(
-        key: const Key('take_align'),
-        value: _sliderMs,
-        min: -TakeController.alignmentRangeMs.toDouble(),
-        max: TakeController.alignmentRangeMs.toDouble(),
-        divisions: 40,
-        label: text.alignValue(_sliderMs.round()),
-        onChanged: (v) => setState(() => _sliderMs = v),
-        onChangeEnd: (v) async {
-          await _player.pause();
-          await take.setAlignment(v.round());
-        },
-      ),
-      Text(
-        text.alignValue(_sliderMs.round()),
-        textAlign: TextAlign.center,
-        style: TT.small,
-      ),
-    ],
-    const SizedBox(height: 18),
-    BigButton(
-      key: const Key('take_keep'),
-      label: text.keepTake,
-      busy: _keeping,
-      onPressed: _keep,
-    ),
-    TextLink(text.recordAgain, onTap: _start),
-  ];
+      children: [
+        HeroCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                text.caps(text.yourTake),
+                style: const TextStyle(
+                  color: TC.heroMuted,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 1.5,
+                ),
+              ),
+              const SizedBox(height: 10),
+              if (_peaks.isNotEmpty)
+                ChoirWave(
+                  peaks: _peaks,
+                  progress: progress,
+                  onSeek: (f) => _player.seek(
+                    Duration(milliseconds: (total * f.clamp(0, 1)).round()),
+                  ),
+                ),
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      clockText(_position),
+                      style: const TextStyle(color: Colors.white, fontSize: 13),
+                    ),
+                  ),
+                  LimePlay(
+                    key: const Key('take_play'),
+                    playing: _playing,
+                    label: _playing ? text.pause : text.listen,
+                    onTap: _playing ? _player.pause : _player.play,
+                  ),
+                  Expanded(
+                    child: Text(
+                      clockText(Duration(milliseconds: total)),
+                      textAlign: TextAlign.end,
+                      style: const TextStyle(color: TC.heroMuted, fontSize: 13),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+        if (take.accompanied) ...[
+          Caption(text.caps(text.alignHeading)),
+          Text(text.alignExplain, style: TT.small),
+          const SizedBox(height: 12),
+          AppCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        text.alignLabel,
+                        style: TT.body.copyWith(color: TC.ink),
+                      ),
+                    ),
+                    Text(
+                      '${_sliderMs.round()} ms',
+                      style: const TextStyle(
+                        color: TC.primary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+                Slider(
+                  key: const Key('take_align'),
+                  value: _sliderMs,
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  min: -TakeController.alignmentRangeMs.toDouble(),
+                  max: TakeController.alignmentRangeMs.toDouble(),
+                  divisions: 40,
+                  label: text.alignValue(_sliderMs.round()),
+                  onChanged: (v) => setState(() => _sliderMs = v),
+                  onChangeEnd: (v) async {
+                    await _player.pause();
+                    await take.setAlignment(v.round());
+                  },
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(text.earlier, style: TT.small),
+                    Text(text.later, style: TT.small),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ],
+    );
+  }
 }

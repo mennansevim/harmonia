@@ -30,7 +30,7 @@ class ChoirScreen extends StatelessWidget {
     final store = ChoirScope.of(context).store;
     final text = CT.of(context);
     final choir = store.choir(choirId);
-    if (choir == null) return ChoirPage(title: '', children: const []);
+    if (choir == null) return const ChoirPage(title: '', children: []);
     final conductor = store.isConductor(choir);
     final me = store.meIn(choirId);
     final work = store.assignmentsOf(choirId);
@@ -46,46 +46,70 @@ class ChoirScreen extends StatelessWidget {
       context,
     ).push(MaterialPageRoute<void>(builder: (_) => screen));
 
+    final latest = mine.firstOrNull;
+    final others = mine.skip(1);
     return ChoirPage(
       title: choir.name,
+      crumb: conductor ? text.crumbConductor : text.crumbMember,
+      bottom: conductor
+          ? BigButton(
+              key: const Key('choir_new_assignment'),
+              label: text.newAssignment,
+              icon: Icons.add_rounded,
+              onPressed: () => push(AssignmentEditor(choir: choir)),
+            )
+          : OutlinedButton.icon(
+              key: const Key('choir_open_file'),
+              onPressed: () => openBundleFlow(context),
+              icon: const Icon(Icons.file_open_outlined, size: 20),
+              label: Text(text.openWorkFile),
+            ),
       children: [
-        if (conductor && queue.isNotEmpty)
+        if (conductor)
           ChoirRow(
             key: const Key('choir_queue'),
             color: TC.sun,
-            icon: Icons.headphones_rounded,
+            icon: Icons.headphones_outlined,
             title: text.listeningQueue,
             subtitle: text.queueCount(queue.length),
             onTap: queue.isEmpty
                 ? null
                 : () => push(ReviewScreen(submissionId: queue.first.id)),
           ),
-        Caption(text.caps(text.assignments)),
-        if (mine.isEmpty)
+        if (!conductor)
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(child: Text(text.caps(text.workspace), style: TT.caps)),
+              Tag(text.memberTag, color: TC.primary),
+            ],
+          ),
+        Caption(text.caps(conductor ? text.latestWork : text.assignments)),
+        if (latest == null)
           Padding(
             padding: const EdgeInsets.only(bottom: 10),
             child: Text(
               conductor ? text.noAssignments : text.noAssignmentsSinger,
               style: TT.small,
             ),
-          ),
-        for (final a in mine)
-          _AssignmentCard(
-            assignment: a,
+          )
+        else
+          _LatestWork(
+            assignment: latest,
             conductor: conductor,
+            onTap: () => push(AssignmentScreen(assignmentId: latest.id)),
+          ),
+        const SizedBox(height: 12),
+        for (final a in others)
+          ChoirRow(
+            key: Key('assignment_${a.id}'),
+            icon: Icons.event_outlined,
+            title: a.title,
+            subtitle: a.dueAt == null
+                ? text.noDue
+                : text.dueLabel(store.now, a.dueAt!),
             onTap: () => push(AssignmentScreen(assignmentId: a.id)),
           ),
-        if (conductor)
-          Padding(
-            padding: const EdgeInsets.only(top: 4),
-            child: BigButton(
-              key: const Key('choir_new_assignment'),
-              label: text.newAssignment,
-              icon: Icons.add_rounded,
-              onPressed: () => push(AssignmentEditor(choir: choir)),
-            ),
-          ),
-        const SizedBox(height: 8),
         ChoirRow(
           key: const Key('choir_library'),
           icon: Icons.library_music_outlined,
@@ -93,11 +117,16 @@ class ChoirScreen extends StatelessWidget {
           subtitle: text.librarySub,
           onTap: () => push(LibraryScreen(choirId: choirId)),
         ),
+        if (!conductor && latest != null) ...[
+          const SizedBox(height: 4),
+          for (final p in latest.pieces) _PieceCard(piece: p, text: text),
+          Text(text.deviceOnly, style: TT.small),
+        ],
         if (conductor) ...[
           Builder(
             builder: (context) => ChoirRow(
               key: const Key('choir_share'),
-              icon: Icons.ios_share_rounded,
+              icon: Icons.share_outlined,
               title: text.shareChoir,
               subtitle: text.shareChoirSub,
               onTap: () => shareChoirPackage(context, choir),
@@ -111,13 +140,8 @@ class ChoirScreen extends StatelessWidget {
               title: s.displayName,
               subtitle: s.part == null ? null : text.partName(s.part!),
             ),
-        ] else
-          ChoirRow(
-            icon: Icons.file_open_outlined,
-            title: text.openFile,
-            onTap: () => openBundleFlow(context),
-          ),
-        const SizedBox(height: 10),
+        ],
+        const SizedBox(height: 6),
         TextLink(
           text.leaveChoir,
           onTap: () async {
@@ -140,8 +164,41 @@ class ChoirScreen extends StatelessWidget {
   }
 }
 
-class _AssignmentCard extends StatelessWidget {
-  const _AssignmentCard({
+class _PieceCard extends StatelessWidget {
+  const _PieceCard({required this.piece, required this.text});
+  final AssignmentPiece piece;
+  final CT text;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(bottom: 10),
+    child: AppCard(
+      padding: const EdgeInsets.all(18),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(text.caps(text.thisPiece), style: TT.caps),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(child: Text(piece.title, style: TT.display)),
+              const Icon(Icons.music_note_outlined, color: TC.primary),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '${piece.voicing} · ${text.modeName(piece.mode)} · '
+            '${text.sectionText(piece)}',
+            style: TT.small,
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+class _LatestWork extends StatelessWidget {
+  const _LatestWork({
     required this.assignment,
     required this.conductor,
     required this.onTap,
@@ -154,6 +211,7 @@ class _AssignmentCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final store = ChoirScope.of(context).store;
     final text = CT.of(context);
+    final materials = MaterialLocalizations.of(context);
     final a = assignment;
     final due = a.dueAt;
     final sent = a.pieces.where((p) {
@@ -162,30 +220,59 @@ class _AssignmentCard extends StatelessWidget {
           s.status != SubmissionStatus.draft &&
           s.status != SubmissionStatus.revisionRequested;
     }).length;
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: AppCard(
-        key: Key('assignment_${a.id}'),
-        padding: const EdgeInsets.all(14),
-        onTap: onTap,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(a.title, style: TT.title),
-            const SizedBox(height: 6),
-            Tag(
-              due == null ? text.noDue : text.dueLabel(store.now, due),
-              color: due != null && a.isLate(store.now) ? TC.muted : TC.primary,
+    final detail = conductor
+        ? due == null
+              ? text.noDue
+              : text.endsOn(materials.formatShortMonthDay(due.toLocal()))
+        : text.piecesDone(sent, a.pieces.length);
+    return HeroCard(
+      key: Key('assignment_${a.id}'),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            text.caps(conductor ? text.workSummary : text.latestWork),
+            style: TextStyle(
+              color: conductor ? TC.heroMuted : TC.sun,
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 1.5,
             ),
-            const SizedBox(height: 6),
-            Text(
-              conductor
-                  ? a.parts.map(text.partName).join(' · ')
-                  : text.piecesDone(sent, a.pieces.length),
-              style: TT.small,
-            ),
-          ],
-        ),
+          ),
+          const SizedBox(height: 8),
+          Text(a.title, style: TT.display.copyWith(color: Colors.white)),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  detail,
+                  style: const TextStyle(color: TC.heroMuted, fontSize: 13.5),
+                ),
+              ),
+              Flexible(
+                child: Align(
+                  alignment: AlignmentDirectional.centerEnd,
+                  child: TiltTag(
+                    conductor
+                        ? text.conductorWork
+                        : due == null
+                        ? text.noDue
+                        : text.dueLabel(store.now, due),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          BigButton(
+            key: const Key('choir_open_work'),
+            label: conductor ? text.seeSubmissions : text.openWork,
+            icon: Icons.north_east_rounded,
+            color: Colors.white,
+            onPressed: onTap,
+          ),
+        ],
       ),
     );
   }

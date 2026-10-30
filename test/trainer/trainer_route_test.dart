@@ -74,7 +74,7 @@ void main() {
     expect(find.byKey(const Key('route_breath')), findsNothing);
     expect(find.byKey(const Key('route_voice')), findsNothing);
     expect(find.text('Derse başla'), findsOneWidget);
-    expect(find.text('~3 DAKİKA'), findsOneWidget);
+    expect(find.textContaining('~3 dakika'), findsOneWidget);
   });
 
   testWidgets('a longer day is Nefes → lesson → Ses', (tester) async {
@@ -86,7 +86,6 @@ void main() {
     expect(find.byKey(const Key('route_lesson')), findsOneWidget);
     expect(find.byKey(const Key('route_voice')), findsOneWidget);
     expect(find.text('Çalışmaya başla'), findsOneWidget);
-    expect(find.text('ŞİMDİ'), findsOneWidget);
   });
 
   testWidgets('finishing the breathing guide ticks the step, then the '

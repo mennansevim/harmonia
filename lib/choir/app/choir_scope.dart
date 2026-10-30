@@ -100,67 +100,90 @@ class ChoirScope extends InheritedNotifier<ChoirStore> {
 
 // Small pieces shared by the choir screens.
 
+/// A pushed choir screen: a back arrow with where you are, a large title,
+/// the content, and one action held at the bottom.
 class ChoirPage extends StatelessWidget {
   const ChoirPage({
     super.key,
     required this.title,
     required this.children,
+    this.crumb = '',
     this.bottom,
     this.trailing,
+    this.subtitle,
   });
   final String title;
+  final String crumb;
   final List<Widget> children;
   final Widget? bottom;
 
-  /// Sits beside the big page title (the due shape).
+  /// Sits beside the page's subtitle (a status tag).
   final Widget? trailing;
+  final String? subtitle;
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-    backgroundColor: TC.canvas,
-    body: SafeArea(
-      child: Column(
-        children: [
-          const TopBar(),
-          Expanded(
-            child: ListView(
-              padding: const EdgeInsets.fromLTRB(16, 2, 16, 24),
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(4, 0, 0, 14),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Expanded(
-                        child: Semantics(
-                          header: true,
-                          child: Text(title, style: TT.h1),
-                        ),
-                      ),
-                      if (trailing != null) ...[
-                        const SizedBox(width: 12),
-                        trailing!,
-                      ],
-                    ],
-                  ),
-                ),
-                ...children,
-              ],
-            ),
-          ),
-          if (bottom != null)
+  Widget build(BuildContext context) {
+    final text = CT.of(context);
+    return Scaffold(
+      backgroundColor: TC.canvas,
+      body: SafeArea(
+        child: Column(
+          children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-              child: bottom,
+              padding: const EdgeInsets.fromLTRB(8, 4, 16, 0),
+              child: Row(
+                children: [
+                  IconButton(
+                    tooltip: MaterialLocalizations.of(
+                      context,
+                    ).backButtonTooltip,
+                    onPressed: () => Navigator.of(context).maybePop(),
+                    icon: const Icon(Icons.arrow_back_rounded, color: TC.ink),
+                  ),
+                  Expanded(
+                    child: Text(
+                      text.caps(crumb),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TT.crumb,
+                    ),
+                  ),
+                ],
+              ),
             ),
-        ],
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(24, 4, 24, 20),
+                children: [
+                  Semantics(header: true, child: Text(title, style: TT.h1)),
+                  if (subtitle != null || trailing != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 12),
+                      child: Row(
+                        children: [
+                          Expanded(child: Text(subtitle ?? '', style: TT.body)),
+                          if (trailing != null) Flexible(child: trailing!),
+                        ],
+                      ),
+                    ),
+                  const SizedBox(height: 16),
+                  ...children,
+                ],
+              ),
+            ),
+            if (bottom != null)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 8, 24, 12),
+                child: bottom,
+              ),
+          ],
+        ),
       ),
-    ),
-  );
+    );
+  }
 }
 
-/// The app's signature: a lime, slightly tilted organic shape saying how long
-/// is left.
+/// How long is left, in a lime tile.
 class DueShape extends StatelessWidget {
   const DueShape({super.key, required this.now, required this.due});
   final DateTime now;
@@ -170,57 +193,162 @@ class DueShape extends StatelessWidget {
   Widget build(BuildContext context) {
     final text = CT.of(context);
     final count = text.dueCount(now, due);
-    final late = now.isAfter(due);
     return Semantics(
       label: text.dueLabel(now, due),
       excludeSemantics: true,
-      child: Transform.rotate(
-        angle: -0.1,
-        child: Container(
-          constraints: const BoxConstraints(minWidth: 92, minHeight: 92),
-          padding: const EdgeInsets.all(10),
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: late ? TC.primarySoft : TC.sun,
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(34),
-              topRight: Radius.circular(58),
-              bottomLeft: Radius.circular(40),
-              bottomRight: Radius.circular(60),
-            ),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (count != null) ...[
-                Text(count.$1, style: TT.h1.copyWith(fontSize: 34)),
-                Text(
-                  count.$2,
+      child: Container(
+        constraints: const BoxConstraints(minWidth: 66, minHeight: 66),
+        padding: const EdgeInsets.all(8),
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: now.isAfter(due) ? TC.primarySoft : TC.sun,
+          borderRadius: BorderRadius.circular(18),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (count != null) ...[
+              Text(
+                count.$1,
+                style: TT.h2.copyWith(fontWeight: FontWeight.w700),
+              ),
+              Text(
+                count.$2,
+                style: const TextStyle(
+                  color: TC.ink,
+                  fontSize: 10.5,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ] else
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 62),
+                child: Text(
+                  text.dueLabel(now, due),
+                  textAlign: TextAlign.center,
                   style: const TextStyle(
                     color: TC.ink,
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-              ] else
-                ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 76),
-                  child: Text(
-                    text.dueLabel(now, due),
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: TC.ink,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                ),
-            ],
-          ),
+              ),
+          ],
         ),
       ),
     );
   }
+}
+
+/// Bars drawn from real audio: a take's or a render's loudness, or the live
+/// microphone level. Height means loudness only, never quality.
+class ChoirWave extends StatelessWidget {
+  const ChoirWave({
+    super.key,
+    required this.peaks,
+    this.progress = 0,
+    this.played = TC.sun,
+    this.rest = const Color(0xFF594366),
+    this.height = 84,
+    this.onSeek,
+  });
+
+  /// Bars across a phone-width card in the design.
+  static const barCount = 46;
+
+  final List<double> peaks;
+  final double progress;
+  final Color played;
+  final Color rest;
+  final double height;
+  final ValueChanged<double>? onSeek;
+
+  @override
+  Widget build(BuildContext context) {
+    final seek = onSeek;
+    final bars = ExcludeSemantics(
+      child: SizedBox(
+        height: height,
+        child: Row(
+          children: [
+            for (final (i, p) in peaks.indexed)
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 1.5),
+                  child: Center(
+                    child: Container(
+                      height: 10 + p * (height - 16),
+                      decoration: BoxDecoration(
+                        color: (i + 0.5) / peaks.length <= progress
+                            ? played
+                            : rest,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+    if (seek == null) return bars;
+    return LayoutBuilder(
+      builder: (context, box) => GestureDetector(
+        key: const Key('choir_wave'),
+        behavior: HitTestBehavior.opaque,
+        onTapDown: (d) => seek(d.localPosition.dx / box.maxWidth),
+        onHorizontalDragUpdate: (d) => seek(d.localPosition.dx / box.maxWidth),
+        child: bars,
+      ),
+    );
+  }
+}
+
+/// Lime round play control on the dark player.
+class LimePlay extends StatelessWidget {
+  const LimePlay({
+    super.key,
+    required this.playing,
+    required this.label,
+    required this.onTap,
+    this.busy = false,
+  });
+  final bool playing;
+  final bool busy;
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+    button: true,
+    label: label,
+    excludeSemantics: true,
+    child: Material(
+      color: TC.sun,
+      shape: const CircleBorder(),
+      child: InkWell(
+        customBorder: const CircleBorder(),
+        onTap: onTap,
+        child: SizedBox(
+          width: 46,
+          height: 46,
+          child: busy
+              ? const Padding(
+                  padding: EdgeInsets.all(14),
+                  child: CircularProgressIndicator(
+                    color: TC.ink,
+                    strokeWidth: 2.4,
+                  ),
+                )
+              : Icon(
+                  playing ? Icons.pause_rounded : Icons.play_arrow_outlined,
+                  color: TC.ink,
+                ),
+        ),
+      ),
+    ),
+  );
 }
 
 class Caption extends StatelessWidget {
@@ -228,7 +356,7 @@ class Caption extends StatelessWidget {
   final String text;
   @override
   Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.fromLTRB(2, 18, 0, 8),
+    padding: const EdgeInsets.fromLTRB(0, 16, 0, 8),
     child: Semantics(header: true, child: Text(text, style: TT.caps)),
   );
 }
@@ -251,49 +379,74 @@ class ChoirRow extends StatelessWidget {
   final VoidCallback? onTap;
 
   @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.only(bottom: 10),
-    child: AppCard(
-      padding: const EdgeInsets.all(14),
-      onTap: onTap,
-      color: color,
-      border: color == Colors.white ? null : color,
-      child: Row(
-        children: [
-          TrainerBadge(color: TC.koro, icon: icon, size: 40),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: TT.title),
-                if (subtitle != null) ...[
-                  const SizedBox(height: 2),
-                  Text(subtitle!, style: TT.small),
+  Widget build(BuildContext context) {
+    final plain = color == Colors.white;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: AppCard(
+        padding: const EdgeInsets.all(16),
+        onTap: onTap,
+        color: color,
+        radius: plain ? 12 : 20,
+        child: Row(
+          children: [
+            if (plain)
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: TC.primarySoft,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(icon, color: TC.primary, size: 18),
+              )
+            else
+              Icon(icon, color: TC.ink, size: 26),
+            const SizedBox(width: 13),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: TT.title),
+                  if (subtitle != null) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle!,
+                      style: TT.small.copyWith(
+                        color: plain ? TC.muted : TC.ink,
+                      ),
+                    ),
+                  ],
                 ],
-              ],
+              ),
             ),
-          ),
-          trailing ??
-              (onTap == null
-                  ? const SizedBox.shrink()
-                  : const Icon(Icons.chevron_right_rounded, color: TC.faint)),
-        ],
+            trailing ??
+                (onTap == null
+                    ? const SizedBox.shrink()
+                    : Icon(
+                        plain
+                            ? Icons.chevron_right_rounded
+                            : Icons.north_east_rounded,
+                        color: plain ? TC.muted : TC.ink,
+                        size: plain ? 24 : 20,
+                      )),
+          ],
+        ),
       ),
-    ),
-  );
+    );
+  }
 }
 
 InputDecoration choirField(String label) => InputDecoration(
-  labelText: label,
+  hintText: label.isEmpty ? null : label,
   filled: true,
   fillColor: Colors.white,
   border: OutlineInputBorder(
-    borderRadius: BorderRadius.circular(14),
+    borderRadius: BorderRadius.circular(12),
     borderSide: const BorderSide(color: TC.line),
   ),
   enabledBorder: OutlineInputBorder(
-    borderRadius: BorderRadius.circular(14),
+    borderRadius: BorderRadius.circular(12),
     borderSide: const BorderSide(color: TC.line),
   ),
 );
@@ -336,8 +489,16 @@ class PartChips extends StatelessWidget {
         for (final p in parts)
           ChoiceChip(
             key: Key('part_chip_${p.name}'),
-            label: Text(text.partName(p)),
+            label: Text(
+              text.partName(p),
+              style: TextStyle(
+                color: selected.contains(p) ? Colors.white : TC.body,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
             selected: selected.contains(p),
+            selectedColor: TC.primary,
+            checkmarkColor: Colors.white,
             onSelected: (_) => onTap(p),
           ),
       ],

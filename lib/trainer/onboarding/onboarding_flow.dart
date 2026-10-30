@@ -378,11 +378,10 @@ class _Welcome extends StatelessWidget {
         const Text(
           'Sesini ve kulağını\nher gün geliştir',
           style: TextStyle(
-            fontFamily: 'Bricolage',
+            fontFamily: 'Lora',
             fontSize: 34,
             height: 1.1,
-            fontWeight: FontWeight.w800,
-            letterSpacing: -0.8,
+            fontWeight: FontWeight.w400,
             color: TC.ink,
           ),
         ),

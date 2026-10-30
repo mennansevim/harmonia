@@ -123,7 +123,7 @@ class CT {
   String get listeningQueue => _('Dinleme sırası', 'Listening queue');
   String queueCount(int n) => n == 0
       ? _('Bekleyen kayıt yok', 'No takes waiting')
-      : _('$n kayıt bekliyor', '$n takes waiting');
+      : _('$n kayıt bekliyor', n == 1 ? '1 take waiting' : '$n takes waiting');
   String get shareChoir => _('Koro paketini paylaş', 'Share the choir package');
   String get shareChoirSub => _(
     'Ödevleri, MIDI\'leri ve kaynakları koroya gönder',
@@ -170,6 +170,221 @@ class CT {
   }
 
   String get generalTags => _('Genel', 'Overall');
+  String get replayStart => _('Başa dön', 'Back to the start');
+  String get eyebrowChoir => _('Birlikte söyle', 'Sing together');
+  String get myChoirs => _('Korolarım', 'My choirs');
+  String get memberTag => _('Üye', 'Member');
+  String get conductorTag => _('Şef', 'Conductor');
+  String get goToChoir => _('Koroya git', 'Go to the choir');
+  String get joinAnother => _('Başka bir koroya katıl', 'Join another choir');
+  String get openInvite => _('Davet dosyasını aç', 'Open the invite file');
+  String get inviteHint => _(
+    'Davet dosyasını açarak koronun çalışma alanına katıl.',
+    'Open the invite file to join your choir\'s space.',
+  );
+  String get emptyHeadline =>
+      _('Sesin, birlikte\ndaha güçlü.', 'Your voice,\nstronger together.');
+  String get emptyBody => _(
+    'Henüz bir koroya katılmadın. Şefinden gelen davet dosyasını açarak başlayabilirsin.',
+    'You have not joined a choir yet. Open the invite file from your conductor to begin.',
+  );
+  String get howItWorks => _('Nasıl çalışır?', 'How does it work?');
+  String get howBody => _(
+    'Davet dosyası koronun eserlerini ve ödevlerini bu çalışma alanına getirir.',
+    'The invite file brings your choir\'s works and assignments here.',
+  );
+  String get workspace => _('Çalışma alanın', 'Your space');
+  String get latestWork => _('Son ödev', 'Latest assignment');
+  String get openWork => _('Ödevi aç', 'Open assignment');
+  String get thisPiece => _('Bu ödevdeki eser', 'In this assignment');
+  String get thisPieces => _('Bu ödevdeki eserler', 'In this assignment');
+  String get deviceOnly => _('Bu cihazdaki bilgiler', 'Stored on this device');
+  String get openWorkFile => _('Ödev dosyası aç', 'Open an assignment file');
+  String get crumbMember => _('Koro / Üye', 'Choir / Member');
+  String get crumbConductor =>
+      _('Koro / Şef çalışma alanı', 'Choir / Conductor');
+  String crumbWork(String choir) => _('$choir / Ödev', '$choir / Assignment');
+  String crumbPractice(String choir) =>
+      _('$choir / Çalış', '$choir / Practice');
+  String crumbArchive(String choir) => _('$choir / Arşiv', '$choir / Archive');
+  String crumbConductorOf(String choir) =>
+      _('$choir / Şef', '$choir / Conductor');
+  String get crumbNewPiece => _('Yeni ödev / Eser', 'New assignment / Piece');
+  String get crumbReview =>
+      _('Şef / Kayıt değerlendirme', 'Conductor / Review');
+  String get workSummary => _('Ödev özeti', 'Assignment summary');
+  String get conductorWork => _('Şefin ödevi', 'Your assignment');
+  String get seeSubmissions => _('Gönderimleri gör', 'See submissions');
+  String endsOn(String date) => _('Bitiş: $date', 'Ends $date');
+  String get submissions => _('Gönderimler', 'Submissions');
+  String get workInfo => _('Ödev bilgileri', 'Details');
+  String get submissionSummary => _('Gönderim özeti', 'Submission summary');
+  String get takes => _('Kayıtlar', 'Takes');
+  String get openForFeedback =>
+      _('Geri bildirim için bir kayıt aç.', 'Open a take to give feedback.');
+  String get openQueue => _('Dinleme sırasını aç', 'Open the listening queue');
+  String partShort(PartProgress p) => _(
+    '${p.toReview} bekliyor · ${p.accepted} kabul · ${p.notSent} gönderilmedi',
+    '${p.toReview} waiting · ${p.accepted} accepted · ${p.notSent} not sent',
+  );
+  String get workingOnPiece => _('Eser üzerinde çalış', 'Work on this piece');
+  String get feedbackTagLabel => _('Geri bildirim', 'Feedback');
+  String get conductorReplied =>
+      _('Şefin geri bildirdi', 'Your conductor replied');
+  String practiseWith(String title) => _('$title ile çalış', 'Practise $title');
+  String get otherPieces => _('Diğer eserler', 'Other pieces');
+  String get partLabel => _('Partin', 'Your part');
+  String get goToSetup => _('Kayıt hazırlığına geç', 'Go to recording setup');
+  String get crumbSetup => _('Kayıt / Hazırlık', 'Recording / Setup');
+  String get crumbNeedsHeadphones =>
+      _('Kayıt / Kulaklık gerekli', 'Recording / Headphones needed');
+  String get crumbBluetooth => _('Kayıt / Bluetooth', 'Recording / Bluetooth');
+  String get setupCaption => _('Kayıt hazırlığı', 'Recording setup');
+  String get onePhoneHeadline =>
+      _('Tek telefon yeter.', 'One phone is enough.');
+  String get onePhoneBody => _(
+    'MIDI kulaklığından çalar, mikrofon sadece sesini alır. Kayıt sırasında kulaklığını takılı tut.',
+    'The MIDI plays in your headphones and the mic takes only your voice. Keep them on while recording.',
+  );
+  String get wiredReady =>
+      _('Kablolu kulaklık bağlı.', 'Wired headphones connected.');
+  String get readyToGo => _('Kayıt için hazırsın.', 'You are ready to record.');
+  String get speakerLeak => _(
+    'Hoparlörden yayın mikrofonuna girer.',
+    'Speaker sound leaks into the mic.',
+  );
+  String get plugHeadphones => _('Kulaklık tak.', 'Plug in headphones.');
+  String get btDelay =>
+      _('Bluetooth kulaklık gecikme ekler.', 'Bluetooth headphones add delay.');
+  String get btHint => _(
+    'Gerekirse kayıttan sonra hizalarsın.',
+    'You can align the take afterwards if needed.',
+  );
+  String get unknownRoute =>
+      _('Kulaklık görünmüyor.', 'No headphones detected.');
+  String get unknownHint =>
+      _('Takılıysa devam et.', 'Continue if they are plugged in.');
+  String readyFor(String title) => _(
+    'Hazır olduğunda $title için kayda geç.',
+    'When ready, start recording $title.',
+  );
+  String get recordingNow => _('Kayıt alınıyor', 'Recording');
+  String get singAlong => _(
+    'Kendi partini dinle, koronla söyle.',
+    'Listen to your part and sing along.',
+  );
+  String get listenBack => _('Kaydını dinle', 'Listen to your take');
+  String get crumbTakeCheck => _('Kayıt kontrolü', 'Take check');
+  String get takeReady => _('Kayıt hazır', 'Take ready');
+  String get yourTake => _('Kaydın', 'Your take');
+  String get alignHeading =>
+      _('Kayıt ile eşliği hizala', 'Align take and accompaniment');
+  String get alignExplain => _(
+    'Girişin geç kaldıysa sağa, erkense sola al. Başlangıç noktası yazılım tahminidir; kulağınla ayarla.',
+    'If you come in late move right, early move left. The start is a software estimate; set it by ear.',
+  );
+  String get alignLabel => _('Hizalama', 'Alignment');
+  String get earlier => _('Daha erken', 'Earlier');
+  String get later => _('Daha geç', 'Later');
+  String get sentRecording => _('Gönderilen kayıt', 'Submitted take');
+  String get addMomentNote =>
+      _('Bu ana geri bildirim ekle', 'Add feedback at this moment');
+  String feedbackFor(String name) => _(
+    '$name için geri bildiriminizi yazın…',
+    'Write your feedback for $name…',
+  );
+  String get voiceFeedback =>
+      _('Sesli geri bildirim kaydet', 'Record voice feedback');
+  String get sendFeedback => _('Geri bildirimi gönder', 'Send feedback');
+  String get howDidItGo =>
+      _('Bu kayıt için kararın?', 'Your decision on this take?');
+  String get momentNoteHint =>
+      _('Bu an için not (isteğe bağlı)', 'A note for this moment (optional)');
+  String get searchLibrary => _('Kaynaklarda ara', 'Search the library');
+  String get filterAll => _('Tümü', 'All');
+  String get archiveEyebrow => _('Koro arşivi', 'Choir archive');
+  String get archiveHeadline =>
+      _('Çalışmanın\nyanında dursun.', 'Keep it close\nto your practice.');
+  String get archiveBody => _(
+    'Notalar, ders kayıtları ve notlar; koronun kaynakları tek yerde.',
+    'Scores, rehearsal recordings and notes; your choir\'s resources in one place.',
+  );
+  String get resourceTypes => _('Kaynak türleri', 'Resource types');
+  String kindHint(ResourceKind k) => switch (k) {
+    ResourceKind.score => _('Eserlerin notaları', 'Scores of the works'),
+    ResourceKind.rehearsalRecording => _(
+      'Provaları yeniden dinle',
+      'Hear rehearsals again',
+    ),
+    ResourceKind.note => _('Koro çalışma notları', 'Choir working notes'),
+  };
+  String get addResourceCta => _('Kaynak ekle', 'Add a resource');
+  String get noMatches => _('Eşleşen kaynak yok.', 'Nothing matches.');
+  String get startFromMidi => _('MIDI\'den başla', 'Start from MIDI');
+  String get midiHint => _(
+    'Eseri ve partileri dosyadan aktar.',
+    'Bring the work and parts from a file.',
+  );
+  String get voicingTitle => _('Sesler / Düzenleme', 'Voices / Scoring');
+  String get rangeHeading => _('Ölçü aralığı', 'Bar range');
+  String get rangeStart => _('Başlangıç', 'Start');
+  String get rangeEnd => _('Bitiş', 'End');
+  String get workNote => _('Ödev notu', 'Assignment note');
+  String get workNoteHint =>
+      _('Korona bir not ekle…', 'Add a note for your choir…');
+  String get createWork => _('Ödevi oluştur', 'Create assignment');
+  String get piecesHint => _(
+    'Birden fazla eser ekleyebilir, her biri için ölçü aralığı seçebilirsin.',
+    'Add several pieces and choose a bar range for each.',
+  );
+  String get choirUpdates => _('Koro güncellemeleri', 'Choir updates');
+  String get seeAssignment => _('Ödevi gör', 'See assignment');
+  String get practiseMixer =>
+      _('Pratik yap (MIDI mikser)', 'Practise (MIDI mixer)');
+  String get practiceTitle => _('Pratik', 'Practice');
+  String get readyToRecord => _('Kayıt için hazırım', 'Ready to record');
+  String get startTake => _('Kaydı başlat', 'Start recording');
+  String get notSentYet => _('Henüz gönderilmedi', 'Not sent yet');
+  String get dueShort => _('Son gönderim', 'Due');
+  String get choirLabel => _('Koro', 'Choir');
+  String get beforeTitle => _('Kayıttan önce', 'Before you record');
+  String get beforeBody => _(
+    'En iyi sonuç için birkaç küçük kontrol yapalım.',
+    'A few quick checks for the best take.',
+  );
+  String get bluetoothCardTitle => _('Kablolu mu?', 'Wired?');
+  String get bluetoothCardBody => _(
+    'Bluetooth gecikme yapabilir. Varsa kablolu kulaklığı tercih et.',
+    'Bluetooth can add delay. Prefer wired headphones if you have them.',
+  );
+  String get bluetoothWarnTitle => _('Kulaklık uyarısı', 'Headphone note');
+  String get speakerTitle => _('Hoparlör kapalı olmalı', 'Speaker must be off');
+  String get headphonesReadyTitle =>
+      _('Kulaklık bağlı', 'Headphones connected');
+  String get headphonesUnknownTitle =>
+      _('Kulaklık takılı mı?', 'Headphones on?');
+  String get reviewReady => _(
+    'Kaydın hazır. Dinle ve kontrol et.',
+    'Your take is ready. Listen and check.',
+  );
+  String get accompaniedPreview =>
+      _('Eşlikli önizleme', 'Preview with accompaniment');
+  String get alignEarly => _('Önde', 'Early');
+  String get alignCentre => _('Hizalı', 'In time');
+  String get alignLate => _('Geride', 'Late');
+  String get listenTitle => _('Ödevi dinle', 'Listen to the take');
+  String get feedbackHeading => _('Geri bildirim', 'Feedback');
+  String get addMark => _('Not ekle', 'Add a note');
+  String get markThisMoment => _('Bu ana not ekle', 'Note this moment');
+  String get voiceCorrection =>
+      _('Sesli not ile düzeltme oku', 'Sing the correction as a voice note');
+  String get commentOptional =>
+      _('Yorumun (isteğe bağlı)', 'Your comment (optional)');
+  String get titleExample => _('Örn: Kasım 1. hafta', 'For example: Week 1');
+  String get publishShort => _('Ödevi yayınla', 'Publish assignment');
+  String tempoPercent(int p) => '%$p';
+  String get tempoCaption => _('Hız', 'Tempo');
+  String get otherParts => _('Diğer partiler', 'Other parts');
   String get noDue => _('Son tarih yok', 'No due date');
   String dueToday(String title, String label) =>
       _('Koro ödevi: $title · $label', 'Choir work: $title · $label');
@@ -291,7 +506,7 @@ class CT {
   // Practice
   String get myPart => _('Partim', 'My part');
   String get fullChoir => _('Tüm koro', 'Full choir');
-  String get ownVolume => _('Kendi partim', 'My part');
+  String get ownVolume => _('Kendi partin', 'Your part');
   String get othersVolume => _('Diğer sesler', 'Other voices');
   String get metronome => _('Metronom', 'Metronome');
   String tempoLabel(int percent) => _('Hız %$percent', 'Tempo $percent%');

@@ -8,15 +8,17 @@ import '../domain/trainers.dart';
 /// indigo primary shared with the choir workshop, sun for streaks and one
 /// accent colour per skill.
 abstract final class TC {
-  static const primary = Color(0xFF6A3DE8);
+  static const primary = Color(0xFF7040E8);
   static const primaryDeep = Color(0xFF4A22BE);
-  static const primarySoft = Color(0xFFE9E0FF);
+  static const primarySoft = Color(0xFFEEE7FB);
   static const koro = primary;
 
   /// Lime: the one bright accent. Always carries ink, never white.
-  static const sun = Color(0xFFD8F36A);
-  static const onSun = Color(0xFF24104F);
+  static const sun = Color(0xFFDDF780);
+  static const onSun = Color(0xFF261831);
   static const peach = Color(0xFFFF8A6B);
+  static const warnSoft = Color(0xFFFFF0DE);
+  static const warn = Color(0xFFB4561F);
   static const coral = Color(0xFFE5483A);
   static const teal = Color(0xFF0F9D8A);
   static const magenta = Color(0xFFC2307A);
@@ -24,15 +26,21 @@ abstract final class TC {
   static const sky = Color(0xFF1E88E5);
   static const green = Color(0xFF1AA874);
   static const red = Color(0xFFD92D20);
-  static const ink = Color(0xFF24104F);
-  static const body = Color(0xFF45396A);
-  static const muted = Color(0xFF65597F);
-  static const faint = Color(0xFFC9BFE0);
-  static const line = Color(0xFFE6DEF7);
-  static const canvas = Color(0xFFF5F1FF);
+
+  /// Aubergine: the dark hero surface and the darkest text.
+  static const ink = Color(0xFF261831);
+
+  /// Dark hero cards: a touch bluer than the text ink.
+  static const hero = Color(0xFF27153E);
+  static const body = Color(0xFF4D4957);
+  static const muted = Color(0xFF6C6776);
+  static const faint = Color(0xFFBDB8C6);
+  static const line = Color(0xFFE8E3EB);
+  static const canvas = Color(0xFFF8F7F3);
   static const card = Colors.white;
-  static const navBar = Color(0xFFECE4FF);
-  static const navPill = Color(0xFFCDBDFF);
+  static const heroMuted = Color(0xFFC6B8D9);
+  static const navBar = Colors.white;
+  static const navPill = Color(0xFFEEE7FB);
 }
 
 Color trainerColor(TrainerKind kind) => switch (kind) {
@@ -62,7 +70,7 @@ Color soft(Color c) =>
 ThemeData trainerTheme() {
   final base = ThemeData(
     useMaterial3: true,
-    fontFamily: 'Figtree',
+    fontFamily: 'Inter',
     colorScheme: ColorScheme.fromSeed(
       seedColor: TC.primary,
       primary: TC.primary,
@@ -86,25 +94,43 @@ ThemeData trainerTheme() {
       surfaceTintColor: Colors.transparent,
     ),
     chipTheme: base.chipTheme.copyWith(
-      shape: const StadiumBorder(side: BorderSide(color: TC.faint)),
+      shape: const StadiumBorder(side: BorderSide(color: Colors.transparent)),
+      side: BorderSide.none,
       backgroundColor: Colors.white,
-      selectedColor: TC.navPill,
+      selectedColor: TC.primary,
       labelStyle: const TextStyle(
         color: TC.ink,
-        fontWeight: FontWeight.w700,
-        fontFamily: 'Figtree',
+        fontWeight: FontWeight.w600,
+        fontFamily: 'Inter',
       ),
+    ),
+    sliderTheme: base.sliderTheme.copyWith(
+      trackHeight: 6,
+      activeTrackColor: TC.primary,
+      inactiveTrackColor: TC.line,
+      thumbColor: Colors.white,
+      overlayShape: SliderComponentShape.noOverlay,
+      thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
+      tickMarkShape: SliderTickMarkShape.noTickMark,
+    ),
+    switchTheme: SwitchThemeData(
+      trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
+      trackColor: WidgetStateProperty.resolveWith(
+        (s) => s.contains(WidgetState.selected) ? TC.primary : TC.line,
+      ),
+      thumbColor: WidgetStateProperty.all(Colors.white),
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
-        foregroundColor: TC.primary,
-        minimumSize: const Size.fromHeight(50),
-        side: const BorderSide(color: TC.faint),
-        shape: const StadiumBorder(),
+        minimumSize: const Size.fromHeight(52),
+        foregroundColor: TC.ink,
+        backgroundColor: Colors.white,
+        side: const BorderSide(color: TC.line),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         textStyle: const TextStyle(
-          fontWeight: FontWeight.w700,
-          fontSize: 15,
-          fontFamily: 'Figtree',
+          fontWeight: FontWeight.w600,
+          fontSize: 14,
+          fontFamily: 'Inter',
         ),
       ),
     ),
@@ -112,39 +138,52 @@ ThemeData trainerTheme() {
 }
 
 abstract final class TT {
-  static const _display = 'Bricolage';
-  static const h1 = TextStyle(
-    fontFamily: _display,
-    fontSize: 32,
-    fontWeight: FontWeight.w800,
+  /// Serif for the words a screen is about: a work, a choir, a promise.
+  static const display = TextStyle(
+    fontFamily: 'Lora',
+    fontSize: 31,
+    fontWeight: FontWeight.w400,
     color: TC.ink,
-    height: 1.08,
+    height: 1.12,
   );
-  static const h2 = TextStyle(
-    fontFamily: _display,
-    fontSize: 25,
-    fontWeight: FontWeight.w800,
+  static const h1 = TextStyle(
+    fontSize: 32,
+    fontWeight: FontWeight.w400,
     color: TC.ink,
     height: 1.15,
+    letterSpacing: -1.4,
+  );
+  static const h2 = TextStyle(
+    fontSize: 23,
+    fontWeight: FontWeight.w500,
+    color: TC.ink,
+    height: 1.15,
+    letterSpacing: -0.8,
   );
   static const h3 = TextStyle(
-    fontFamily: _display,
-    fontSize: 19,
-    fontWeight: FontWeight.w800,
-    color: TC.ink,
-  );
-  static const title = TextStyle(
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: FontWeight.w700,
     color: TC.ink,
   );
-  static const body = TextStyle(fontSize: 15, color: TC.body, height: 1.45);
-  static const small = TextStyle(fontSize: 13, color: TC.muted, height: 1.35);
+  static const title = TextStyle(
+    fontSize: 14,
+    fontWeight: FontWeight.w600,
+    color: TC.ink,
+    height: 1.5,
+  );
+  static const body = TextStyle(fontSize: 13, color: TC.body, height: 1.5);
+  static const small = TextStyle(fontSize: 12, color: TC.muted, height: 1.4);
   static const caps = TextStyle(
-    fontSize: 11.5,
-    fontWeight: FontWeight.w800,
+    fontSize: 11,
+    fontWeight: FontWeight.w700,
     color: TC.muted,
-    letterSpacing: 1.2,
+    letterSpacing: 1.5,
+  );
+  static const crumb = TextStyle(
+    fontSize: 11,
+    fontWeight: FontWeight.w700,
+    color: TC.primary,
+    letterSpacing: 1.5,
   );
 }
 
@@ -185,7 +224,7 @@ class _BigButtonState extends State<BigButton> {
   Widget build(BuildContext context) {
     final enabled = widget.onPressed != null && !widget.busy;
     final lit = enabled || widget.busy;
-    final fill = lit ? widget.color : const Color(0xFFE4DDF3);
+    final fill = lit ? widget.color : const Color(0xFFE3DFE7);
     final light = widget.color.computeLuminance() > 0.35;
     final fg = !lit
         ? TC.muted
@@ -212,10 +251,10 @@ class _BigButtonState extends State<BigButton> {
           scale: enabled && _down ? 0.97 : 1,
           duration: const Duration(milliseconds: 90),
           child: Container(
-            height: 56,
-            decoration: ShapeDecoration(
+            height: 52,
+            decoration: BoxDecoration(
               color: fill,
-              shape: const StadiumBorder(),
+              borderRadius: BorderRadius.circular(12),
             ),
             alignment: Alignment.center,
             child: widget.busy
@@ -237,8 +276,8 @@ class _BigButtonState extends State<BigButton> {
                               maxLines: 1,
                               style: TextStyle(
                                 color: fg,
-                                fontSize: 16.5,
-                                fontWeight: FontWeight.w700,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
                           ),
@@ -332,20 +371,18 @@ class SoftButton extends StatelessWidget {
         foregroundColor: TC.primary,
         backgroundColor: TC.primarySoft,
         minimumSize: const Size.fromHeight(50),
-        shape: const StadiumBorder(),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
       child: Text(
         label,
         textAlign: TextAlign.center,
-        style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15),
+        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
       ),
     ),
   );
 }
 
-/// Solid violet surface for the one thing a screen is about (today's route,
-/// a session's headline result). The lime shape stays out of the
-/// accessibility tree.
+/// Aubergine surface for the one thing a screen is about.
 class HeroCard extends StatelessWidget {
   const HeroCard({
     super.key,
@@ -355,47 +392,17 @@ class HeroCard extends StatelessWidget {
   });
   final Widget child;
   final EdgeInsets padding;
+
+  /// Kept for callers that want no decoration; the card itself is plain now.
   final bool ring;
   @override
-  Widget build(BuildContext context) => ClipRRect(
-    borderRadius: BorderRadius.circular(34),
-    child: ColoredBox(
-      color: TC.primary,
-      child: Stack(
-        children: [
-          if (ring)
-            Positioned(
-              right: -18,
-              top: -20,
-              child: ExcludeSemantics(
-                child: Transform.rotate(
-                  angle: -0.1,
-                  child: Container(
-                    width: 112,
-                    height: 112,
-                    decoration: const BoxDecoration(
-                      color: TC.sun,
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(46),
-                        topRight: Radius.circular(66),
-                        bottomLeft: Radius.circular(70),
-                        bottomRight: Radius.circular(48),
-                      ),
-                    ),
-                    alignment: Alignment.center,
-                    child: const Icon(
-                      Icons.music_note_rounded,
-                      size: 38,
-                      color: TC.ink,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          Padding(padding: padding, child: child),
-        ],
-      ),
+  Widget build(BuildContext context) => Container(
+    padding: padding,
+    decoration: BoxDecoration(
+      color: TC.hero,
+      borderRadius: BorderRadius.circular(20),
     ),
+    child: child,
   );
 }
 
@@ -422,25 +429,33 @@ class HeroPill extends StatelessWidget {
   );
 }
 
-/// Grey rounded back square used on every pushed screen.
+/// White round back button used on every pushed screen.
 class BackSquare extends StatelessWidget {
-  const BackSquare({super.key, this.onTap});
+  const BackSquare({
+    super.key,
+    this.onTap,
+    this.icon = Icons.chevron_left_rounded,
+    this.label = 'Geri',
+  });
   final VoidCallback? onTap;
+  final IconData icon;
+  final String label;
   @override
   Widget build(BuildContext context) => Semantics(
     button: true,
-    label: 'Geri',
-    child: InkWell(
-      customBorder: const CircleBorder(),
-      onTap: onTap ?? () => Navigator.of(context).maybePop(),
-      child: Container(
-        width: 44,
-        height: 44,
-        decoration: const BoxDecoration(
-          color: TC.primarySoft,
-          shape: BoxShape.circle,
+    label: label,
+    excludeSemantics: true,
+    child: Material(
+      color: Colors.white,
+      shape: const CircleBorder(side: BorderSide(color: TC.line)),
+      child: InkWell(
+        customBorder: const CircleBorder(),
+        onTap: onTap ?? () => Navigator.of(context).maybePop(),
+        child: SizedBox(
+          width: 44,
+          height: 44,
+          child: Icon(icon, color: TC.ink),
         ),
-        child: const Icon(Icons.chevron_left_rounded, color: TC.ink),
       ),
     ),
   );
@@ -580,7 +595,7 @@ class AppCard extends StatelessWidget {
     this.onTap,
     this.color = Colors.white,
     this.border,
-    this.radius = 24,
+    this.radius = 12,
   });
   final Widget child;
   final EdgeInsets padding;
@@ -593,10 +608,7 @@ class AppCard extends StatelessWidget {
     decoration: BoxDecoration(
       color: color,
       borderRadius: BorderRadius.circular(radius),
-      // Direction C: thin hairline cards instead of floating shadows.
-      border: border == null
-          ? Border.all(color: TC.line)
-          : Border.all(color: border!, width: 1.5),
+      border: border == null ? null : Border.all(color: border!, width: 1.5),
     ),
     child: Material(
       type: MaterialType.transparency,
@@ -609,6 +621,31 @@ class AppCard extends StatelessWidget {
                 onTap!();
               },
         child: Padding(padding: padding, child: child),
+      ),
+    ),
+  );
+}
+
+/// Slightly tilted lime label: the app's signature for "look at this".
+class TiltTag extends StatelessWidget {
+  const TiltTag(this.text, {super.key});
+  final String text;
+  @override
+  Widget build(BuildContext context) => Transform.rotate(
+    angle: 0,
+    child: Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+      decoration: BoxDecoration(
+        color: TC.sun,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        text,
+        style: const TextStyle(
+          color: TC.ink,
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+        ),
       ),
     ),
   );
@@ -908,7 +945,7 @@ class Tag extends StatelessWidget {
       style: TextStyle(
         color: _shade(color, -0.08),
         fontSize: 12,
-        fontWeight: FontWeight.w700,
+        fontWeight: FontWeight.w600,
       ),
     ),
   );

@@ -104,6 +104,7 @@ class AssignmentPiece {
     this.sectionNote = '',
     this.withAccompaniment = false,
     this.midiReferenceId,
+    this.voicing = 'SATB',
   }) {
     if (id.trim().isEmpty) throw ArgumentError('Piece needs an id');
     if (title.trim().isEmpty) throw ArgumentError('Piece needs a title');
@@ -133,6 +134,9 @@ class AssignmentPiece {
   final bool withAccompaniment;
   final String? midiReferenceId;
 
+  /// How the work is scored, as the conductor labels it (SATB, SSAA…).
+  final String voicing;
+
   Map<String, Object?> toJson() => {
     'id': id,
     'title': title,
@@ -142,6 +146,7 @@ class AssignmentPiece {
     'sectionNote': sectionNote,
     'withAccompaniment': withAccompaniment,
     'midiReferenceId': midiReferenceId,
+    'voicing': voicing,
   };
 
   factory AssignmentPiece.fromJson(Map<String, Object?> json) =>
@@ -154,6 +159,7 @@ class AssignmentPiece {
         sectionNote: req<String>(json, 'sectionNote'),
         withAccompaniment: req<bool>(json, 'withAccompaniment'),
         midiReferenceId: opt<String>(json, 'midiReferenceId'),
+        voicing: opt<String>(json, 'voicing') ?? 'SATB',
       );
 }
 

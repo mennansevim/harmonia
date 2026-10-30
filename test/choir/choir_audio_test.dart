@@ -271,6 +271,16 @@ void main() {
     });
   });
 
+  test('wave outline follows real loudness and handles nothing', () {
+    final quietThenLoud = Int16List(1000);
+    for (var i = 500; i < 1000; i++) {
+      quietThenLoud[i] = 20000;
+    }
+    final peaks = wavePeaks(quietThenLoud, 2);
+    expect(peaks, [0, 1]);
+    expect(wavePeaks(Int16List(0), 4), isEmpty);
+  });
+
   test('route advice keeps accompanied takes off the speaker', () {
     RouteAdvice of(AudioRouteKind output) => adviseRoute(
       AudioRouteSnapshot(input: AudioRouteKind.builtIn, output: output),
