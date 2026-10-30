@@ -110,14 +110,14 @@ class _AssignmentEditorState extends State<AssignmentEditor> {
           controller: _title,
           decoration: choirField(text.assignmentTitle),
         ),
-        Caption(text.parts.toUpperCase()),
+        Caption(text.caps(text.parts)),
         PartChips(
           selected: _parts,
           onTap: (p) => setState(() {
             if (!_parts.remove(p)) _parts.add(p);
           }),
         ),
-        Caption(text.dueDate.toUpperCase()),
+        Caption(text.caps(text.dueDate)),
         ChoirRow(
           key: const Key('assignment_due'),
           icon: Icons.event_rounded,
@@ -127,7 +127,7 @@ class _AssignmentEditorState extends State<AssignmentEditor> {
                     '${materials.formatTimeOfDay(TimeOfDay.fromDateTime(due))}',
           onTap: _pickDue,
         ),
-        Caption(text.pieces.toUpperCase()),
+        Caption(text.caps(text.pieces)),
         Text(text.addPieceHint, style: TT.small),
         const SizedBox(height: 8),
         for (final (i, p) in _pieces.indexed)
@@ -297,7 +297,7 @@ class _PieceEditorState extends State<PieceEditor> {
           onChanged: (_) => setState(() {}),
           decoration: choirField(text.pieceTitle),
         ),
-        Caption(text.howSung.toUpperCase()),
+        Caption(text.caps(text.howSung)),
         SegmentedButton<PieceMode>(
           key: const Key('piece_mode'),
           segments: [
@@ -309,7 +309,7 @@ class _PieceEditorState extends State<PieceEditor> {
         ),
         const SizedBox(height: 6),
         Text(text.modeHint(_mode), style: TT.small),
-        Caption(text.range.toUpperCase()),
+        Caption(text.caps(text.range)),
         Row(
           children: [
             Expanded(
@@ -348,7 +348,7 @@ class _PieceEditorState extends State<PieceEditor> {
             title: Text(text.withAccompaniment, style: TT.title),
             subtitle: Text(text.accompanimentHint, style: TT.small),
           ),
-          Caption(text.partMap.toUpperCase()),
+          Caption(text.caps(text.partMap)),
           for (final track in midi.tracks)
             if (track.notes.isNotEmpty)
               Padding(
@@ -384,7 +384,7 @@ class _PieceEditorState extends State<PieceEditor> {
                   ],
                 ),
               ),
-          Caption(text.rightsTitle.toUpperCase()),
+          Caption(text.caps(text.rightsTitle)),
           for (final r in RightsDeclaration.values)
             ChoiceTile(
               key: Key('rights_${r.name}'),

@@ -37,7 +37,7 @@ class LibraryScreen extends StatelessWidget {
         ],
         for (final kind in ResourceKind.values)
           if (items.any((r) => r.kind == kind)) ...[
-            Caption(text.kindName(kind).toUpperCase()),
+            Caption(text.caps(text.kindName(kind))),
             for (final item in items.where((r) => r.kind == kind))
               _Item(item: item),
           ],

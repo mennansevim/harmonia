@@ -7,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:harmonia/choir/app/assignment_screen.dart';
 import 'package:harmonia/choir/app/choir_scope.dart';
 import 'package:harmonia/choir/app/choir_screen.dart';
+import 'package:harmonia/choir/app/choir_text.dart';
 import 'package:harmonia/choir/app/choir_tab.dart';
 import 'package:harmonia/choir/app/review_screen.dart';
 import 'package:harmonia/choir/app/take_screen.dart';
@@ -168,6 +169,15 @@ void main() {
     return (choir, a);
   }
 
+  test('section labels capitalise Turkish correctly', () {
+    expect(const CT(false).caps('Hangi bölüm?'), 'HANGİ BÖLÜM?');
+    expect(
+      const CT(false).caps('Sesin eşlikle aynı mı?'),
+      'SESİN EŞLİKLE AYNI MI?',
+    );
+    expect(const CT(true).caps('Which passage?'), 'WHICH PASSAGE?');
+  });
+
   testWidgets('with no choir the tab explains itself and offers both ways', (
     tester,
   ) async {
@@ -191,7 +201,8 @@ void main() {
     await singerSetup();
     await tester.pumpWidget(app(const AssignmentScreen(assignmentId: 'a1')));
     await tester.pump();
-    expect(find.text('2 gün kaldı'), findsOneWidget);
+    expect(find.text('gün kaldı'), findsOneWidget);
+    expect(find.text('2'), findsOneWidget);
     expect(find.text('Gloria'), findsOneWidget);
     expect(
       find.textContaining('Solfej · Ölçü 12–30 · Eşlikli'),
@@ -213,7 +224,7 @@ void main() {
       ),
     );
     await tester.pump();
-    expect(find.text('2 days left'), findsOneWidget);
+    expect(find.text('days left'), findsOneWidget);
     expect(find.textContaining('Bars 12–30'), findsOneWidget);
   });
 

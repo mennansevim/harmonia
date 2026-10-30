@@ -255,7 +255,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
             ],
           ),
         ),
-        Caption(text.markHere.toUpperCase()),
+        Caption(text.caps(text.markHere)),
         Wrap(
           spacing: 8,
           runSpacing: 8,
@@ -292,12 +292,16 @@ class _ReviewScreenState extends State<ReviewScreen> {
               onPressed: () => setState(() => _marks.removeAt(i)),
             ),
           ),
-        Caption(text.yourComment.toUpperCase()),
+        Caption(text.caps(text.generalTags)),
         Wrap(
           spacing: 8,
           runSpacing: 8,
           children: [
-            for (final t in FeedbackTag.values)
+            for (final t in const [
+              FeedbackTag.breath,
+              FeedbackTag.dynamics,
+              FeedbackTag.wellDone,
+            ])
               FilterChip(
                 key: Key('tag_${t.name}'),
                 label: Text(text.tagName(t)),
@@ -315,7 +319,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
           maxLines: 3,
           decoration: choirField(text.yourComment),
         ),
-        Caption(text.voiceNote.toUpperCase()),
+        Caption(text.caps(text.voiceNote)),
         Text(text.voiceNoteHint, style: TT.small),
         const SizedBox(height: 6),
         OutlinedButton.icon(
@@ -338,7 +342,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
                   child: BigButton(
                     key: const Key('review_redo'),
                     label: text.askRedo,
-                    color: TC.amber,
+                    color: TC.primary,
                     busy: _busy,
                     onPressed: () =>
                         _decide(button, ReviewOutcome.revisionRequested),
@@ -349,7 +353,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
                   child: BigButton(
                     key: const Key('review_accept'),
                     label: text.accept,
-                    color: TC.green,
+                    color: TC.sun,
                     busy: _busy,
                     onPressed: () => _decide(button, ReviewOutcome.accepted),
                   ),

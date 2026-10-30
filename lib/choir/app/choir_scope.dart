@@ -106,10 +106,14 @@ class ChoirPage extends StatelessWidget {
     required this.title,
     required this.children,
     this.bottom,
+    this.trailing,
   });
   final String title;
   final List<Widget> children;
   final Widget? bottom;
+
+  /// Sits beside the big page title (the due shape).
+  final Widget? trailing;
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -117,11 +121,31 @@ class ChoirPage extends StatelessWidget {
     body: SafeArea(
       child: Column(
         children: [
-          TopBar(title: title),
+          const TopBar(),
           Expanded(
             child: ListView(
-              padding: const EdgeInsets.fromLTRB(16, 14, 16, 24),
-              children: children,
+              padding: const EdgeInsets.fromLTRB(16, 2, 16, 24),
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(4, 0, 0, 14),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Expanded(
+                        child: Semantics(
+                          header: true,
+                          child: Text(title, style: TT.h1),
+                        ),
+                      ),
+                      if (trailing != null) ...[
+                        const SizedBox(width: 12),
+                        trailing!,
+                      ],
+                    ],
+                  ),
+                ),
+                ...children,
+              ],
             ),
           ),
           if (bottom != null)
@@ -133,6 +157,70 @@ class ChoirPage extends StatelessWidget {
       ),
     ),
   );
+}
+
+/// The app's signature: a lime, slightly tilted organic shape saying how long
+/// is left.
+class DueShape extends StatelessWidget {
+  const DueShape({super.key, required this.now, required this.due});
+  final DateTime now;
+  final DateTime due;
+
+  @override
+  Widget build(BuildContext context) {
+    final text = CT.of(context);
+    final count = text.dueCount(now, due);
+    final late = now.isAfter(due);
+    return Semantics(
+      label: text.dueLabel(now, due),
+      excludeSemantics: true,
+      child: Transform.rotate(
+        angle: -0.1,
+        child: Container(
+          constraints: const BoxConstraints(minWidth: 92, minHeight: 92),
+          padding: const EdgeInsets.all(10),
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: late ? TC.primarySoft : TC.sun,
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(34),
+              topRight: Radius.circular(58),
+              bottomLeft: Radius.circular(40),
+              bottomRight: Radius.circular(60),
+            ),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (count != null) ...[
+                Text(count.$1, style: TT.h1.copyWith(fontSize: 34)),
+                Text(
+                  count.$2,
+                  style: const TextStyle(
+                    color: TC.ink,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ] else
+                ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 76),
+                  child: Text(
+                    text.dueLabel(now, due),
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: TC.ink,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class Caption extends StatelessWidget {
@@ -153,7 +241,9 @@ class ChoirRow extends StatelessWidget {
     this.subtitle,
     this.trailing,
     this.onTap,
+    this.color = Colors.white,
   });
+  final Color color;
   final IconData icon;
   final String title;
   final String? subtitle;
@@ -166,6 +256,8 @@ class ChoirRow extends StatelessWidget {
     child: AppCard(
       padding: const EdgeInsets.all(14),
       onTap: onTap,
+      color: color,
+      border: color == Colors.white ? null : color,
       child: Row(
         children: [
           TrainerBadge(color: TC.koro, icon: icon, size: 40),

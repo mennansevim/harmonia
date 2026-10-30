@@ -365,3 +365,11 @@ değildir ve geç kalan eski async okumalar generation kapısıyla elenir.
 
 **Sınırlar:** Paketler imzalı değildir, şekil ve tutarlılık denetlenir; kimlik CHOIR-B1 ister. Hizalama yazılım tahmini + kulakla düzeltmedir, ölçülmüş gecikme değildir (CAL-03b). Sesler sentezdir, piyano kaydı değildir (MIDI-03). Korist listesi yalnız kayıt gönderenleri bilir. Küresel ölçek, davet linki, push ve şef web paneli sunucu kararından sonradır. Divisi (S1/S2) yok.
 
+## ADR-037 — İfade tasarım dili
+
+**Tarih:** 2026-10-30 · **Durum:** kabul (kullanıcı 10 yön arasından 4'ü seçti: "4 güzel"). ADR-026'nın A+C görsel dilini `lib/trainer` için yerine geçer; eski `lib/app/theme` kabuğu değişmedi.
+
+**Karar:** Ortak marka: mor + limon, Bricolage + Figtree, hap düğme, organik limon şekil (kalan gün, kayıt). Her ekranda tek ana eylem; limon yalnız en önemli eylem veya uyarıda. Platforma özgü davranış (geri, geçiş, kaydırma) Flutter'a bırakılır. Hareket gerçek veriye bağlıdır, süs döngüsü yoktur.
+
+**Sınırlar:** Limon üstünde beyaz yazı kullanılmaz. Yazı tipi eklerken lisans dosyası `assets/fonts` altında kalır.
+

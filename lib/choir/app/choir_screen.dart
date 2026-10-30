@@ -49,9 +49,10 @@ class ChoirScreen extends StatelessWidget {
     return ChoirPage(
       title: choir.name,
       children: [
-        if (conductor)
+        if (conductor && queue.isNotEmpty)
           ChoirRow(
             key: const Key('choir_queue'),
+            color: TC.sun,
             icon: Icons.headphones_rounded,
             title: text.listeningQueue,
             subtitle: text.queueCount(queue.length),
@@ -59,7 +60,7 @@ class ChoirScreen extends StatelessWidget {
                 ? null
                 : () => push(ReviewScreen(submissionId: queue.first.id)),
           ),
-        Caption(text.assignments.toUpperCase()),
+        Caption(text.caps(text.assignments)),
         if (mine.isEmpty)
           Padding(
             padding: const EdgeInsets.only(bottom: 10),
@@ -84,7 +85,7 @@ class ChoirScreen extends StatelessWidget {
               onPressed: () => push(AssignmentEditor(choir: choir)),
             ),
           ),
-        Caption(text.library.toUpperCase()),
+        const SizedBox(height: 8),
         ChoirRow(
           key: const Key('choir_library'),
           icon: Icons.library_music_outlined,
@@ -102,7 +103,7 @@ class ChoirScreen extends StatelessWidget {
               onTap: () => shareChoirPackage(context, choir),
             ),
           ),
-          Caption(text.singers.toUpperCase()),
+          Caption(text.caps(text.singers)),
           if (singers.isEmpty) Text(text.singersEmpty, style: TT.small),
           for (final s in singers)
             ChoirRow(

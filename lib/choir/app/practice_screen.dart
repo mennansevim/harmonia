@@ -180,7 +180,7 @@ class _PracticeScreenState extends State<PracticeScreen>
           const SizedBox(height: 8),
           Text(_error!, style: TT.body),
         ],
-        Caption(text.myPart.toUpperCase()),
+        Caption(text.caps(text.myPart)),
         Wrap(
           spacing: 8,
           runSpacing: 8,

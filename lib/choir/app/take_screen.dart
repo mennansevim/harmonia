@@ -235,10 +235,10 @@ class _TakeScreenState extends State<TakeScreen> with WidgetsBindingObserver {
     final text = CT.of(context);
     final take = _take;
     final phase = take?.phase ?? TakePhase.idle;
+    if (phase == TakePhase.recording) return _recording(text, take!);
     return ChoirPage(
       title: widget.piece.title,
       children: switch (phase) {
-        TakePhase.recording => _recording(text, take!),
         TakePhase.preparing => [_status(text.preparing)],
         TakePhase.mixing => [_status(text.mixing)],
         TakePhase.review => _review(text, take!),
@@ -313,7 +313,7 @@ class _TakeScreenState extends State<TakeScreen> with WidgetsBindingObserver {
         key: const Key('take_start'),
         label: text.startRecording,
         icon: Icons.fiber_manual_record_rounded,
-        color: TC.coral,
+        color: TC.sun,
         onPressed: _canRecord ? _start : null,
       ),
       TextLink(text.addFromDevice, onTap: _importTake),
@@ -328,44 +328,83 @@ class _TakeScreenState extends State<TakeScreen> with WidgetsBindingObserver {
     ),
   );
 
-  List<Widget> _recording(CT text, TakeController take) {
+  /// The one dark screen: nothing competes with singing. The shape breathes
+  /// with the real microphone level, not a decorative loop.
+  Widget _recording(CT text, TakeController take) {
     final level = ((take.levelDb + 60) / 60).clamp(0.0, 1.0);
     final count = take.countIn;
     final inCount = _elapsed < count;
-    return [
-      const SizedBox(height: 30),
-      Icon(
-        Icons.fiber_manual_record_rounded,
-        color: inCount ? TC.amber : TC.coral,
-        size: 42,
-      ),
-      const SizedBox(height: 10),
-      Semantics(
-        liveRegion: true,
-        child: Text(
-          inCount ? text.countIn : text.recording,
-          textAlign: TextAlign.center,
-          style: TT.h3,
+    final still = MediaQuery.disableAnimationsOf(context);
+    final time = clockText(inCount ? Duration.zero : _elapsed - count);
+    final stage = inCount ? text.countIn : text.recording;
+    return Scaffold(
+      backgroundColor: TC.ink,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 18, 20, 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                widget.piece.title,
+                style: TT.h2.copyWith(color: Colors.white),
+              ),
+              Text(
+                text.sectionText(widget.piece),
+                style: const TextStyle(color: TC.navPill, fontSize: 15),
+              ),
+              Expanded(
+                child: Center(
+                  child: AnimatedScale(
+                    scale: still ? 1 : 0.92 + level * 0.14,
+                    duration: const Duration(milliseconds: 120),
+                    child: Container(
+                      width: 262,
+                      height: 262,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: inCount ? TC.navPill : TC.sun,
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.elliptical(115, 136),
+                          topRight: Radius.elliptical(147, 105),
+                          bottomLeft: Radius.elliptical(105, 157),
+                          bottomRight: Radius.elliptical(157, 126),
+                        ),
+                      ),
+                      child: Semantics(
+                        liveRegion: true,
+                        label: '$stage $time',
+                        excludeSemantics: true,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(time, style: TT.h1.copyWith(fontSize: 58)),
+                            Text(
+                              stage,
+                              style: const TextStyle(
+                                color: TC.ink,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              BigButton(
+                key: const Key('take_stop'),
+                label: text.stopRecording,
+                icon: Icons.stop_rounded,
+                color: TC.peach,
+                onPressed: take.finish,
+              ),
+            ],
+          ),
         ),
       ),
-      const SizedBox(height: 6),
-      Text(
-        clockText(inCount ? Duration.zero : _elapsed - count),
-        textAlign: TextAlign.center,
-        style: TT.h1,
-      ),
-      const SizedBox(height: 20),
-      ExcludeSemantics(
-        child: ProgressBar(value: level, color: TC.green, height: 8),
-      ),
-      const SizedBox(height: 30),
-      BigButton(
-        key: const Key('take_stop'),
-        label: text.stopRecording,
-        icon: Icons.stop_rounded,
-        onPressed: take.finish,
-      ),
-    ];
+    );
   }
 
   List<Widget> _review(CT text, TakeController take) => [
@@ -389,7 +428,7 @@ class _TakeScreenState extends State<TakeScreen> with WidgetsBindingObserver {
       ),
     ),
     if (take.accompanied) ...[
-      Caption(text.alignTitle.toUpperCase()),
+      Caption(text.caps(text.alignTitle)),
       Text(text.alignBody, style: TT.small),
       Slider(
         key: const Key('take_align'),

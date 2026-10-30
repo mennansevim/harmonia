@@ -8,12 +8,15 @@ import '../domain/trainers.dart';
 /// indigo primary shared with the choir workshop, sun for streaks and one
 /// accent colour per skill.
 abstract final class TC {
-  static const primary = Color(0xFF5B46F5);
-  static const primaryDeep = Color(0xFF3B2BBF);
-  static const primarySoft = Color(0xFFEEEBFF);
+  static const primary = Color(0xFF6A3DE8);
+  static const primaryDeep = Color(0xFF4A22BE);
+  static const primarySoft = Color(0xFFE9E0FF);
   static const koro = primary;
-  static const sun = Color(0xFFFFC531);
-  static const onSun = Color(0xFF3D2C00);
+
+  /// Lime: the one bright accent. Always carries ink, never white.
+  static const sun = Color(0xFFD8F36A);
+  static const onSun = Color(0xFF24104F);
+  static const peach = Color(0xFFFF8A6B);
   static const coral = Color(0xFFE5483A);
   static const teal = Color(0xFF0F9D8A);
   static const magenta = Color(0xFFC2307A);
@@ -21,13 +24,15 @@ abstract final class TC {
   static const sky = Color(0xFF1E88E5);
   static const green = Color(0xFF1AA874);
   static const red = Color(0xFFD92D20);
-  static const ink = Color(0xFF17183A);
-  static const body = Color(0xFF45486A);
-  static const muted = Color(0xFF6E7294);
-  static const faint = Color(0xFFC4C3D9);
-  static const line = Color(0xFFE4E3EF);
-  static const canvas = Color(0xFFF7F7FC);
+  static const ink = Color(0xFF24104F);
+  static const body = Color(0xFF45396A);
+  static const muted = Color(0xFF65597F);
+  static const faint = Color(0xFFC9BFE0);
+  static const line = Color(0xFFE6DEF7);
+  static const canvas = Color(0xFFF5F1FF);
   static const card = Colors.white;
+  static const navBar = Color(0xFFECE4FF);
+  static const navPill = Color(0xFFCDBDFF);
 }
 
 Color trainerColor(TrainerKind kind) => switch (kind) {
@@ -57,9 +62,11 @@ Color soft(Color c) =>
 ThemeData trainerTheme() {
   final base = ThemeData(
     useMaterial3: true,
+    fontFamily: 'Figtree',
     colorScheme: ColorScheme.fromSeed(
       seedColor: TC.primary,
       primary: TC.primary,
+      secondaryContainer: TC.navPill,
       surface: Colors.white,
     ),
     scaffoldBackgroundColor: TC.canvas,
@@ -78,24 +85,51 @@ ThemeData trainerTheme() {
       backgroundColor: Colors.white,
       surfaceTintColor: Colors.transparent,
     ),
+    chipTheme: base.chipTheme.copyWith(
+      shape: const StadiumBorder(side: BorderSide(color: TC.faint)),
+      backgroundColor: Colors.white,
+      selectedColor: TC.navPill,
+      labelStyle: const TextStyle(
+        color: TC.ink,
+        fontWeight: FontWeight.w700,
+        fontFamily: 'Figtree',
+      ),
+    ),
+    outlinedButtonTheme: OutlinedButtonThemeData(
+      style: OutlinedButton.styleFrom(
+        foregroundColor: TC.primary,
+        minimumSize: const Size.fromHeight(50),
+        side: const BorderSide(color: TC.faint),
+        shape: const StadiumBorder(),
+        textStyle: const TextStyle(
+          fontWeight: FontWeight.w700,
+          fontSize: 15,
+          fontFamily: 'Figtree',
+        ),
+      ),
+    ),
   );
 }
 
 abstract final class TT {
+  static const _display = 'Bricolage';
   static const h1 = TextStyle(
-    fontSize: 28,
+    fontFamily: _display,
+    fontSize: 32,
     fontWeight: FontWeight.w800,
     color: TC.ink,
-    height: 1.2,
+    height: 1.08,
   );
   static const h2 = TextStyle(
-    fontSize: 24,
+    fontFamily: _display,
+    fontSize: 25,
     fontWeight: FontWeight.w800,
     color: TC.ink,
-    height: 1.25,
+    height: 1.15,
   );
   static const h3 = TextStyle(
-    fontSize: 18,
+    fontFamily: _display,
+    fontSize: 19,
     fontWeight: FontWeight.w800,
     color: TC.ink,
   );
@@ -116,8 +150,8 @@ abstract final class TT {
 
 void tapHaptic() => HapticFeedback.selectionClick();
 
-/// Full-width chunky call to action: flat fill on a darker base edge that
-/// presses down on tap (Harmonia direction A).
+/// Full-width pill call to action. Pressing squeezes it slightly. A light
+/// fill (lime) carries ink text, a deep one white.
 class BigButton extends StatefulWidget {
   const BigButton({
     super.key,
@@ -141,7 +175,6 @@ class BigButton extends StatefulWidget {
 }
 
 class _BigButtonState extends State<BigButton> {
-  static const _edge = 4.0;
   bool _down = false;
 
   void _press(bool down) {
@@ -152,10 +185,13 @@ class _BigButtonState extends State<BigButton> {
   Widget build(BuildContext context) {
     final enabled = widget.onPressed != null && !widget.busy;
     final lit = enabled || widget.busy;
-    final fill = lit ? widget.color : const Color(0xFFE4E3EF);
-    final base = lit ? _shade(widget.color, -0.16) : const Color(0xFFCFCEE0);
-    final fg = lit ? Colors.white : TC.muted;
-    final drop = enabled && _down ? _edge : 0.0;
+    final fill = lit ? widget.color : const Color(0xFFE4DDF3);
+    final light = widget.color.computeLuminance() > 0.35;
+    final fg = !lit
+        ? TC.muted
+        : light
+        ? TC.ink
+        : Colors.white;
     return Semantics(
       button: true,
       enabled: enabled,
@@ -172,68 +208,48 @@ class _BigButtonState extends State<BigButton> {
                 widget.onPressed!();
               }
             : null,
-        child: SizedBox(
-          height: 54 + _edge,
-          child: Stack(
-            children: [
-              Positioned.fill(
-                top: _edge,
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: base,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                ),
-              ),
-              AnimatedPositioned(
-                duration: const Duration(milliseconds: 70),
-                left: 0,
-                right: 0,
-                top: drop,
-                height: 54,
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: fill,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Center(
-                    child: widget.busy
-                        ? const _Dots()
-                        : Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 12),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                if (widget.icon != null) ...[
-                                  Icon(widget.icon, color: fg, size: 20),
-                                  const SizedBox(width: 8),
-                                ],
-                                Flexible(
-                                  child: FittedBox(
-                                    fit: BoxFit.scaleDown,
-                                    child: Text(
-                                      widget.label,
-                                      maxLines: 1,
-                                      style: TextStyle(
-                                        color: fg,
-                                        fontSize: 16.5,
-                                        fontWeight: FontWeight.w800,
-                                        letterSpacing: 0.2,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                if (widget.chevron) ...[
-                                  const SizedBox(width: 6),
-                                  Icon(Icons.chevron_right_rounded, color: fg),
-                                ],
-                              ],
+        child: AnimatedScale(
+          scale: enabled && _down ? 0.97 : 1,
+          duration: const Duration(milliseconds: 90),
+          child: Container(
+            height: 56,
+            decoration: ShapeDecoration(
+              color: fill,
+              shape: const StadiumBorder(),
+            ),
+            alignment: Alignment.center,
+            child: widget.busy
+                ? _Dots(color: fg)
+                : Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (widget.icon != null) ...[
+                          Icon(widget.icon, color: fg, size: 20),
+                          const SizedBox(width: 8),
+                        ],
+                        Flexible(
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              widget.label,
+                              maxLines: 1,
+                              style: TextStyle(
+                                color: fg,
+                                fontSize: 16.5,
+                                fontWeight: FontWeight.w700,
+                              ),
                             ),
                           ),
+                        ),
+                        if (widget.chevron) ...[
+                          const SizedBox(width: 6),
+                          Icon(Icons.chevron_right_rounded, color: fg),
+                        ],
+                      ],
+                    ),
                   ),
-                ),
-              ),
-            ],
           ),
         ),
       ),
@@ -242,7 +258,8 @@ class _BigButtonState extends State<BigButton> {
 }
 
 class _Dots extends StatefulWidget {
-  const _Dots();
+  const _Dots({this.color = Colors.white});
+  final Color color;
   @override
   State<_Dots> createState() => _DotsState();
 }
@@ -271,7 +288,7 @@ class _DotsState extends State<_Dots> with SingleTickerProviderStateMixin {
             height: 8,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: Colors.white.withValues(
+              color: widget.color.withValues(
                 alpha: ((_c.value * 3 - i) % 3) < 1 ? 1 : 0.45,
               ),
             ),
@@ -315,7 +332,7 @@ class SoftButton extends StatelessWidget {
         foregroundColor: TC.primary,
         backgroundColor: TC.primarySoft,
         minimumSize: const Size.fromHeight(50),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: const StadiumBorder(),
       ),
       child: Text(
         label,
@@ -326,9 +343,9 @@ class SoftButton extends StatelessWidget {
   );
 }
 
-/// Indigo gradient surface for the one thing a screen is about (today's
-/// route, a session's headline result). Decorative ring stays out of
-/// the accessibility tree.
+/// Solid violet surface for the one thing a screen is about (today's route,
+/// a session's headline result). The lime shape stays out of the
+/// accessibility tree.
 class HeroCard extends StatelessWidget {
   const HeroCard({
     super.key,
@@ -341,39 +358,35 @@ class HeroCard extends StatelessWidget {
   final bool ring;
   @override
   Widget build(BuildContext context) => ClipRRect(
-    borderRadius: BorderRadius.circular(24),
-    child: DecoratedBox(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [TC.primary, TC.primaryDeep],
-        ),
-      ),
+    borderRadius: BorderRadius.circular(34),
+    child: ColoredBox(
+      color: TC.primary,
       child: Stack(
         children: [
           if (ring)
             Positioned(
-              right: -31,
-              top: -24,
+              right: -18,
+              top: -20,
               child: ExcludeSemantics(
                 child: Transform.rotate(
-                  angle: 0.2,
+                  angle: -0.1,
                   child: Container(
-                    width: 152,
-                    height: 152,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.12),
-                        width: 24,
+                    width: 112,
+                    height: 112,
+                    decoration: const BoxDecoration(
+                      color: TC.sun,
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(46),
+                        topRight: Radius.circular(66),
+                        bottomLeft: Radius.circular(70),
+                        bottomRight: Radius.circular(48),
                       ),
                     ),
                     alignment: Alignment.center,
-                    child: Icon(
+                    child: const Icon(
                       Icons.music_note_rounded,
-                      size: 40,
-                      color: Colors.white.withValues(alpha: 0.9),
+                      size: 38,
+                      color: TC.ink,
                     ),
                   ),
                 ),
@@ -418,14 +431,14 @@ class BackSquare extends StatelessWidget {
     button: true,
     label: 'Geri',
     child: InkWell(
-      borderRadius: BorderRadius.circular(10),
+      customBorder: const CircleBorder(),
       onTap: onTap ?? () => Navigator.of(context).maybePop(),
       child: Container(
-        width: 36,
-        height: 36,
-        decoration: BoxDecoration(
-          color: const Color(0xFFEFEEF8),
-          borderRadius: BorderRadius.circular(10),
+        width: 44,
+        height: 44,
+        decoration: const BoxDecoration(
+          color: TC.primarySoft,
+          shape: BoxShape.circle,
         ),
         child: const Icon(Icons.chevron_left_rounded, color: TC.ink),
       ),
@@ -448,7 +461,7 @@ class ProgressBar extends StatelessWidget {
     borderRadius: BorderRadius.circular(height),
     child: Stack(
       children: [
-        Container(height: height, color: const Color(0xFFE4E3EF)),
+        Container(height: height, color: TC.line),
         AnimatedFractionallySizedBox(
           duration: const Duration(milliseconds: 350),
           curve: Curves.easeOutCubic,
@@ -485,7 +498,7 @@ class TopBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Container(
     decoration: BoxDecoration(
-      color: Colors.white,
+      color: shadow ? Colors.white : Colors.transparent,
       borderRadius: shadow
           ? const BorderRadius.vertical(bottom: Radius.circular(22))
           : null,
@@ -503,7 +516,7 @@ class TopBar extends StatelessWidget {
     child: Column(
       children: [
         SizedBox(
-          height: 40,
+          height: 44,
           child: Row(
             children: [
               leading ?? BackSquare(onTap: onBack),
@@ -523,17 +536,13 @@ class TopBar extends StatelessWidget {
                         title ?? '',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w800,
-                          color: TC.ink,
-                        ),
+                        style: TT.h3,
                       ),
                     ),
                   ],
                 ),
               ),
-              if (titleIcon == null) const SizedBox(width: 48),
+              if (titleIcon == null) const SizedBox(width: 56),
             ],
           ),
         ),
@@ -571,7 +580,7 @@ class AppCard extends StatelessWidget {
     this.onTap,
     this.color = Colors.white,
     this.border,
-    this.radius = 18,
+    this.radius = 24,
   });
   final Widget child;
   final EdgeInsets padding;
@@ -898,9 +907,8 @@ class Tag extends StatelessWidget {
       text,
       style: TextStyle(
         color: _shade(color, -0.08),
-        fontSize: 10.5,
-        fontWeight: FontWeight.w900,
-        letterSpacing: 1,
+        fontSize: 12,
+        fontWeight: FontWeight.w700,
       ),
     ),
   );

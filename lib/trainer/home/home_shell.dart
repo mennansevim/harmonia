@@ -135,12 +135,12 @@ class _NavBar extends StatelessWidget {
   final ValueChanged<int> onTap;
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: Colors.white,
+    return ColoredBox(
+      color: TC.navBar,
       child: SafeArea(
         top: false,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(10, 6, 10, 6),
+          padding: const EdgeInsets.fromLTRB(6, 8, 6, 6),
           child: Row(
             children: [
               for (var i = 0; i < items.length; i++)
@@ -152,45 +152,47 @@ class _NavBar extends StatelessWidget {
                     excludeSemantics: true,
                     child: InkWell(
                       key: Key(items[i].key),
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(16),
                       onTap: () {
                         tapHaptic();
                         onTap(i);
                       },
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
-                        margin: const EdgeInsets.symmetric(horizontal: 3),
-                        padding: const EdgeInsets.symmetric(vertical: 7),
-                        decoration: BoxDecoration(
-                          color: i == index
-                              ? TC.primarySoft
-                              : Colors.transparent,
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          AnimatedContainer(
+                            duration: const Duration(milliseconds: 220),
+                            curve: Curves.easeOutBack,
+                            width: i == index ? 58 : 44,
+                            height: 32,
+                            decoration: ShapeDecoration(
+                              color: i == index
+                                  ? TC.navPill
+                                  : Colors.transparent,
+                              shape: const StadiumBorder(),
+                            ),
+                            child: Icon(
                               i == index
                                   ? items[i].selectedIcon
                                   : items[i].icon,
-                              color: i == index ? TC.primary : TC.muted,
+                              color: TC.ink,
+                              size: 22,
                             ),
-                            const SizedBox(height: 2),
-                            Text(
-                              items[i].label,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontSize: 11.5,
-                                fontWeight: i == index
-                                    ? FontWeight.w800
-                                    : FontWeight.w600,
-                                color: i == index ? TC.primary : TC.muted,
-                              ),
+                          ),
+                          const SizedBox(height: 3),
+                          Text(
+                            items[i].label,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 11.5,
+                              fontWeight: i == index
+                                  ? FontWeight.w800
+                                  : FontWeight.w600,
+                              color: i == index ? TC.ink : TC.body,
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ),
                   ),

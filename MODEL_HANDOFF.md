@@ -42,6 +42,10 @@ Agora tek sesler: `src/PitchTest/lib/audioPlayer.ts` →
 header mono PCM16/48 kHz, tüm etiket/hak zinciri doğrulanmadı. Repo MIT olsa da
 sample hakları varsayılmadı; Harmonia'ya kopyalanmadı.
 
+## 2f. 2026-10-30 — İfade tasarımı (ADR-037)
+
+`lib/trainer/ui/kit.dart` ortak tema; yeni ekranda `TC`, `TT`, `BigButton`, `DueShape` kullan. Görsel kontrol: `flutter test test/choir/choir_screenshot_tour_test.dart --dart-define=TOUR_DIR=<mutlak klasör>`. Eski A+C (`features/`) kabuğu açılışta kullanılmıyor, değişmedi.
+
 ## 2e. 2026-10-30 — CHOIR-A0 Koro modülü (ADR-036)
 
 `lib/choir/app|audio|data|midi|domain`. Sunucu yok, `ChoirStore` + `.harmonia` paketleri; sunucu gelince `ChoirPersistence` ve paket taşıması değişir, ekranlar değil. Eşlikli kayıt tek telefonda: `part_renderer` → `PluginTakeCapture` → `mixTake`. `Isolate.run` closure'ı store veya controller yakalamamalı; üst düzey fonksiyon kullan. Hoparlörde eşlikli kayıt kapalı kalsın. Kayıt puanlanmaz. Metinler `choir_text.dart` (TR/EN); uygulamanın geri kalanı Türkçe, İngilizce cihazda karışık görünür. Gerçek cihaz/kulaklık/Android/pilot kapıları açık; ayrıntı CURRENT_ROADMAP.

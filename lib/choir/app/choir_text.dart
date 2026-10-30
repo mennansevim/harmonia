@@ -18,6 +18,12 @@ class CT {
 
   String _(String tr, String english) => en ? english : tr;
 
+  /// Section labels in capitals. Dart's toUpperCase ignores Turkish, where
+  /// i capitalises to İ and ı to I.
+  String caps(String label) => en
+      ? label.toUpperCase()
+      : label.replaceAll('i', 'İ').replaceAll('ı', 'I').toUpperCase();
+
   // Hub
   String get tabLabel => _('Koro', 'Choir');
   String get hubSubtitle => _(
@@ -150,6 +156,20 @@ class CT {
     return _('$days gün kaldı', '$days days left');
   }
 
+  /// (big number, the words under it) for the due shape; null when the
+  /// sentence itself is the message (today, tomorrow, past due).
+  (String, String)? dueCount(DateTime now, DateTime due) {
+    final local = due.toLocal();
+    final days = DateTime(
+      local.year,
+      local.month,
+      local.day,
+    ).difference(DateTime(now.year, now.month, now.day)).inDays;
+    if (now.isAfter(due) || days < 2) return null;
+    return ('$days', _('gün kaldı', 'days left'));
+  }
+
+  String get generalTags => _('Genel', 'Overall');
   String get noDue => _('Son tarih yok', 'No due date');
   String dueToday(String title, String label) =>
       _('Koro ödevi: $title · $label', 'Choir work: $title · $label');

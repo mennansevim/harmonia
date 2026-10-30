@@ -2264,3 +2264,10 @@ Hiçbiri UI'ya, depolamaya veya sunucuya bağlı değil. Gerçek koro MIDI dosya
 - Doğrulama: `flutter test` 1095 geçti + 1 atlandı, analyze/format temiz, simülatör `choir_journey_test` ve `app_journeys_test` 6/6 geçti. Bir `quality_check` koşusu disk neredeyse doluyken sıfır CPU ile takıldı; öldürülüp aynı adımlar tek tek çalıştırıldı ve geçti, kök neden doğrulanmadı.
 - Fiziksel cihaz, kulaklık, Bluetooth, gecikme, bleed, Android ve insan pilotu yapılmadı. `flutter build ios --simulator` bu makinede Xcode 255 ile düşüyor (bilinen lipo sorunu); `flutter run/test -d` çalışıyor.
 
+## 2026-10-30 — DESIGN-03 İfade tasarım dili (ADR-037)
+
+- `lib/trainer/ui/kit.dart`: mor + limon renkler, Bricolage + Figtree, hap düğme, düz `HeroCard`, tonal alt menü (`home_shell.dart`).
+- `assets/fonts`: Google Fonts değişken kaynaklarından statik kesimler, SIL OFL lisans dosyalarıyla. Türkçe karakterler kontrol edildi.
+- Koro: `assignment_screen.dart` öne çıkan tek eser ve üstte geri bildirim balonu; `take_screen.dart` koyu kayıt ekranı, şekil gerçek mikrofon seviyesine bağlı; `review_screen.dart` tekrar eden etiketler kaldırıldı; `DueShape`.
+- Türkçe büyük harf hatası `CT.caps` ile düzeltildi; `choir_screenshot_tour_test.dart` opt-in görsel tur.
+- Doğrulama: birlikte çalışma alanında 1102 geçti + 2 atlandı, analyze/format temiz; simülatörde yazı tipleri görüldü. Kayıt mantığı değişmedi; gerçek cihaz yapılmadı.
