@@ -20,9 +20,13 @@ class StatsTab extends StatelessWidget {
       child: ListView(
         padding: EdgeInsets.zero,
         children: [
-          const _Header('İlerleme', 'Yalnız bu cihazdaki kendi kanıtın'),
+          const _Header(
+            'Bu cihazda',
+            'İlerleme',
+            'Yalnız bu cihazdaki kendi kanıtın',
+          ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+            padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -65,70 +69,60 @@ class _LevelCard extends StatelessWidget {
     final progress = next == null
         ? 1.0
         : (xp - level.$1) / (next.$1 - level.$1);
-    return Container(
+    return HeroCard(
       key: const Key('level_card'),
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: TC.primary,
-        borderRadius: BorderRadius.circular(20),
-      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: const BoxDecoration(
-                  color: TC.sun,
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(level.$3, color: TC.onSun),
-              ),
-              const SizedBox(width: 14),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'SEVİYE ${i + 1} · $xp XP',
-                      style: const TextStyle(
-                        color: Colors.white70,
-                        fontWeight: FontWeight.w800,
-                        fontSize: 11.5,
-                        letterSpacing: 1.1,
-                      ),
-                    ),
+                    Text('SEVİYE ${i + 1} · $xp XP', style: TT.heroCaps),
+                    const SizedBox(height: 10),
                     Text(
                       level.$2,
-                      style: const TextStyle(
+                      style: TT.display.copyWith(
                         color: Colors.white,
-                        fontSize: 22,
-                        fontWeight: FontWeight.w800,
+                        fontSize: 30,
+                        height: 1.2,
                       ),
                     ),
                   ],
                 ),
               ),
+              ExcludeSemantics(
+                child: Container(
+                  width: 56,
+                  height: 64,
+                  decoration: BoxDecoration(
+                    color: TC.sun,
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                  child: Icon(level.$3, color: TC.onSun, size: 28),
+                ),
+              ),
             ],
           ),
-          const SizedBox(height: 14),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(5),
-            child: LinearProgressIndicator(
-              value: progress.clamp(0.0, 1.0),
-              minHeight: 8,
-              color: TC.sun,
-              backgroundColor: Colors.white24,
-            ),
+          const SizedBox(height: 16),
+          ProgressBar(
+            value: progress,
+            color: TC.sun,
+            height: 8,
+            track: Colors.white24,
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 10),
           Text(
             next == null
                 ? 'En üst seviyedesin · bu hafta ${store.weeklyXp()} XP'
                 : '${next.$2} için ${next.$1 - xp} XP · bu hafta ${store.weeklyXp()} XP',
-            style: const TextStyle(color: Colors.white, fontSize: 13),
+            style: const TextStyle(
+              color: TC.heroMuted,
+              fontSize: 12,
+              height: 1.5,
+            ),
           ),
         ],
       ),
@@ -137,34 +131,30 @@ class _LevelCard extends StatelessWidget {
 }
 
 class _Header extends StatelessWidget {
-  const _Header(this.title, this.subtitle, {this.trailing});
+  const _Header(this.eyebrow, this.title, this.subtitle);
+  final String eyebrow;
   final String title;
   final String subtitle;
-  final Widget? trailing;
   @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.fromLTRB(20, 16, 16, 14),
-    child: Row(
+  Widget build(BuildContext context) => Container(
+    width: double.infinity,
+    padding: const EdgeInsets.fromLTRB(24, 14, 24, 10),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(title, style: TT.h1),
-              const SizedBox(height: 2),
-              Text(subtitle, style: TT.small),
-            ],
-          ),
-        ),
-        ?trailing,
+        Text(trCaps(eyebrow), style: TT.crumb),
+        const SizedBox(height: 10),
+        Semantics(header: true, child: Text(title, style: TT.h1)),
+        const SizedBox(height: 2),
+        Text(subtitle, style: TT.small),
       ],
     ),
   );
 }
 
-/// Shared tab header.
-Widget tabHeader(String title, String subtitle, {Widget? trailing}) =>
-    _Header(title, subtitle, trailing: trailing);
+/// Shared tab header: a violet eyebrow, the tab's title, one muted line.
+Widget tabHeader(String eyebrow, String title, String subtitle) =>
+    _Header(eyebrow, title, subtitle);
 
 class _Unlocked extends StatelessWidget {
   const _Unlocked({required this.store});
@@ -354,104 +344,112 @@ class TrainerStatsScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: TC.canvas,
       body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(8, 4, 16, 32),
+        child: Column(
           children: [
-            Row(
-              children: [
-                IconButton(
-                  tooltip: 'Geri',
-                  onPressed: () => Navigator.of(context).maybePop(),
-                  icon: const Icon(Ic.arrowLeft, color: TC.ink),
-                ),
-                Expanded(child: Text(trainer.title, style: TT.h3)),
-              ],
-            ),
-            Padding(
-              padding: const EdgeInsets.only(left: 8),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
+            const CrumbBar(crumb: 'İLERLEME / BECERİ'),
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(24, 4, 24, 32),
                 children: [
-                  AppCard(
-                    child: Row(
-                      children: [
-                        _Figure(
-                          attempts == 0
-                              ? '—'
-                              : '%${(correct * 100 / attempts).round()}',
-                          'doğruluk',
-                          color,
-                        ),
-                        _Figure('$attempts', 'cevap', TC.ink),
-                        _Figure(
-                          week.isEmpty ? '—' : '%${(week.last * 100).round()}',
-                          'son gün',
-                          TC.ink,
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  const Text('ÖĞE BAZINDA · ZAYIFTAN GÜÇLÜYE', style: TT.caps),
-                  const SizedBox(height: 8),
-                  AppCard(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 6,
-                    ),
+                  PageTitle(trainer.title),
+                  const SizedBox(height: 26),
+                  Padding(
+                    padding: EdgeInsets.zero,
                     child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        for (final (id, st) in rows)
-                          Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 8),
-                            child: Row(
-                              children: [
-                                SizedBox(
-                                  width: 96,
-                                  child: Text(
-                                    itemLabel(
-                                      trainer,
-                                      id,
-                                      notation: store.notation,
-                                      long: true,
-                                    ),
-                                    style: TT.title.copyWith(
-                                      color: st == null ? TC.muted : TC.ink,
-                                    ),
-                                  ),
-                                ),
-                                Expanded(
-                                  child: ProgressBar(
-                                    value: st?.accuracy ?? 0,
-                                    color: (st?.accuracy ?? 0) >= 0.8
-                                        ? TC.green
-                                        : color,
-                                    height: 8,
-                                  ),
-                                ),
-                                const SizedBox(width: 10),
-                                SizedBox(
-                                  width: 44,
-                                  child: Text(
-                                    st == null
-                                        ? '—'
-                                        : '${st.correct}/${st.attempts}',
-                                    textAlign: TextAlign.right,
-                                    style: TT.small.copyWith(
-                                      fontWeight: FontWeight.w800,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
+                        AppCard(
+                          child: Row(
+                            children: [
+                              _Figure(
+                                attempts == 0
+                                    ? '—'
+                                    : '%${(correct * 100 / attempts).round()}',
+                                'doğruluk',
+                                color,
+                              ),
+                              _Figure('$attempts', 'cevap', TC.ink),
+                              _Figure(
+                                week.isEmpty
+                                    ? '—'
+                                    : '%${(week.last * 100).round()}',
+                                'son gün',
+                                TC.ink,
+                              ),
+                            ],
                           ),
+                        ),
+                        const SizedBox(height: 20),
+                        const Text(
+                          'ÖĞE BAZINDA · ZAYIFTAN GÜÇLÜYE',
+                          style: TT.caps,
+                        ),
+                        const SizedBox(height: 8),
+                        AppCard(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 6,
+                          ),
+                          child: Column(
+                            children: [
+                              for (final (id, st) in rows)
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 8,
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      SizedBox(
+                                        width: 96,
+                                        child: Text(
+                                          itemLabel(
+                                            trainer,
+                                            id,
+                                            notation: store.notation,
+                                            long: true,
+                                          ),
+                                          style: TT.title.copyWith(
+                                            color: st == null
+                                                ? TC.muted
+                                                : TC.ink,
+                                          ),
+                                        ),
+                                      ),
+                                      Expanded(
+                                        child: ProgressBar(
+                                          value: st?.accuracy ?? 0,
+                                          color: (st?.accuracy ?? 0) >= 0.8
+                                              ? TC.green
+                                              : color,
+                                          height: 8,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 10),
+                                      SizedBox(
+                                        width: 44,
+                                        child: Text(
+                                          st == null
+                                              ? '—'
+                                              : '${st.correct}/${st.attempts}',
+                                          textAlign: TextAlign.right,
+                                          style: TT.small.copyWith(
+                                            fontWeight: FontWeight.w800,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+                        const Text(
+                          'Yalnız bu cihazdaki dinleme cevapları; sınav ya da eğitimci değerlendirmesi değildir.',
+                          style: TT.small,
+                        ),
                       ],
                     ),
-                  ),
-                  const SizedBox(height: 14),
-                  const Text(
-                    'Yalnız bu cihazdaki dinleme cevapları; sınav ya da eğitimci değerlendirmesi değildir.',
-                    style: TT.small,
                   ),
                 ],
               ),

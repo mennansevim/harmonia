@@ -147,31 +147,13 @@ class _PracticeSetupScreenState extends State<PracticeSetupScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(8, 4, 16, 0),
-              child: Row(
-                children: [
-                  IconButton(
-                    tooltip: 'Geri',
-                    onPressed: () => Navigator.of(context).maybePop(),
-                    icon: const Icon(Ic.arrowLeft, color: TC.ink),
-                  ),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text('Serbest çalışma', style: TT.h3),
-                        Text(kind.title, style: TT.small),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            CrumbBar(crumb: trCaps('${kind.title} / Serbest')),
             Expanded(
               child: ListView(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+                padding: const EdgeInsets.fromLTRB(24, 4, 24, 24),
                 children: [
+                  const PageTitle('Serbest çalışma'),
+                  const SizedBox(height: 10),
                   if (kind == TrainerKind.pitch) ...[
                     const _Section('DİZİ'),
                     SingleChildScrollView(
@@ -363,10 +345,9 @@ class _Chip extends StatelessWidget {
         height: big ? 44 : 40,
         padding: const EdgeInsets.symmetric(horizontal: 14),
         alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: selected ? soft(color) : Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: selected ? color : TC.line, width: 1.5),
+        decoration: ShapeDecoration(
+          color: selected ? color : Colors.white,
+          shape: const StadiumBorder(),
         ),
         child: FittedBox(
           fit: BoxFit.scaleDown,
@@ -374,8 +355,8 @@ class _Chip extends StatelessWidget {
             label,
             style: TextStyle(
               fontWeight: FontWeight.w600,
-              fontSize: 15,
-              color: selected ? color : TC.ink,
+              fontSize: 14,
+              color: selected ? Colors.white : TC.body,
             ),
           ),
         ),

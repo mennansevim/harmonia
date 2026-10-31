@@ -216,12 +216,12 @@ class _RangeTestScreenState extends State<RangeTestScreen> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    backgroundColor: Colors.white,
+    backgroundColor: TC.canvas,
     body: SafeArea(
       child: Column(
         children: [
           TopBar(
-            title: 'Ses aralığı testi',
+            title: 'Ses / Aralık testi',
             progress: switch (_stage) {
               _Stage.intro || _Stage.denied => 0.05,
               _Stage.result => 1,
@@ -241,7 +241,7 @@ class _RangeTestScreenState extends State<RangeTestScreen> {
     switch (_stage) {
       case _Stage.intro:
         return _Page(
-          emoji: '🎤',
+          icon: Ic.mic,
           title: 'Ses aralığını bul',
           body:
               'Önce en pes, sonra en tiz rahat sesini "aa" ile 3 saniye tut. Resonia\'nın ses tespit çekirdeği her kaydın temsilî perdesini ölçer.\n\nKayıtlar cihazdan çıkmaz ve analizden sonra silinir. Sonuç deneyseldir; ses tipini bir eğitmen ya da koro şefi belirler.',
@@ -250,7 +250,7 @@ class _RangeTestScreenState extends State<RangeTestScreen> {
         );
       case _Stage.denied:
         return _Page(
-          emoji: '🔒',
+          icon: Ic.lock,
           title: 'Mikrofon izni gerekli',
           body:
               'Ses aralığını ölçmek için mikrofon izni ver. iOS Ayarlar > Resonia > Mikrofon\'dan açabilirsin.',
@@ -259,7 +259,7 @@ class _RangeTestScreenState extends State<RangeTestScreen> {
         );
       case _Stage.ready:
         return _Page(
-          emoji: _high ? '⬆️' : '⬇️',
+          icon: _high ? Ic.arrowUp : Ic.arrowDown,
           title: _high ? 'En tiz rahat sesin' : 'En pes rahat sesin',
           body: _high
               ? 'Zorlamadan çıkabildiğin en tiz notayı "aa" ile 3 saniye tut.'
@@ -270,14 +270,14 @@ class _RangeTestScreenState extends State<RangeTestScreen> {
         );
       case _Stage.recording:
         return _Page(
-          emoji: '🔴',
+          icon: Ic.audioLines,
           title: 'Dinliyorum… $_secondsLeft',
           body: 'Sesini sabit tut.',
           footer: _LevelBar(db: _level),
         );
       case _Stage.analyzing:
         return const _Page(
-          emoji: '⏳',
+          icon: Ic.hourglass,
           title: 'Ölçülüyor…',
           body: 'Kayıt cihazda çözümleniyor.',
         );
@@ -285,7 +285,7 @@ class _RangeTestScreenState extends State<RangeTestScreen> {
         final take = _lastTake!;
         if (take.hz == null) {
           return _Page(
-            emoji: '🤔',
+            icon: Ic.circleHelp,
             title: 'Ölçülemedi',
             body: '${take.failure}\nBu deneme sonuç sayılmadı.',
             button: 'Tekrar kaydet',
@@ -294,7 +294,7 @@ class _RangeTestScreenState extends State<RangeTestScreen> {
         }
         final midi = hzToMidi(take.hz!).round();
         return _Page(
-          emoji: '🎯',
+          icon: Ic.target,
           title: PitchClass.midiName(midi, notation),
           body:
               '${take.hz!.toStringAsFixed(1)} Hz civarı. Doğru duyuluyor mu? Değilse tekrar kaydet.',
@@ -308,7 +308,7 @@ class _RangeTestScreenState extends State<RangeTestScreen> {
         final high = _highMidi!;
         if (high <= low) {
           return _Page(
-            emoji: '↕️',
+            icon: Ic.moveVertical,
             title: 'Sonuç tutarsız',
             body:
                 'Tiz kayıt pes kayıttan daha pes ölçüldü (oktav karışmış olabilir). Bu sonuç kaydedilmedi; testi tekrarla.',
@@ -320,7 +320,7 @@ class _RangeTestScreenState extends State<RangeTestScreen> {
         return ListView(
           padding: const EdgeInsets.all(24),
           children: [
-            const Center(child: Text('🎶', style: TextStyle(fontSize: 56))),
+            const Center(child: _IconTile(Ic.music2)),
             const SizedBox(height: 8),
             Text(
               '${PitchClass.midiName(low, notation)} – ${PitchClass.midiName(high, notation)}',
@@ -379,7 +379,7 @@ class _RangeTestScreenState extends State<RangeTestScreen> {
 
 class _Page extends StatelessWidget {
   const _Page({
-    required this.emoji,
+    required this.icon,
     required this.title,
     required this.body,
     this.button,
@@ -388,7 +388,7 @@ class _Page extends StatelessWidget {
     this.secondary,
     this.onSecondary,
   });
-  final String emoji;
+  final IconData icon;
   final String title;
   final String body;
   final String? button;
@@ -405,19 +405,23 @@ class _Page extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(emoji, style: const TextStyle(fontSize: 60)),
-              const SizedBox(height: 14),
+              _IconTile(icon),
+              const SizedBox(height: 18),
               Semantics(
                 liveRegion: true,
                 child: Text(
                   title,
                   key: const Key('range_title'),
                   textAlign: TextAlign.center,
-                  style: TT.h2,
+                  style: TT.display,
                 ),
               ),
               const SizedBox(height: 10),
-              Text(body, textAlign: TextAlign.center, style: TT.body),
+              Text(
+                body,
+                textAlign: TextAlign.center,
+                style: TT.body.copyWith(color: TC.muted, fontSize: 14),
+              ),
               if (footer != null) ...[const SizedBox(height: 26), footer!],
             ],
           ),
@@ -426,6 +430,24 @@ class _Page extends StatelessWidget {
           BigButton(label: button!, color: TC.koro, onPressed: onPressed),
         if (secondary != null) TextLink(secondary!, onTap: onSecondary!),
       ],
+    ),
+  );
+}
+
+/// The lime tile the choir screens use for a page's one picture.
+class _IconTile extends StatelessWidget {
+  const _IconTile(this.icon);
+  final IconData icon;
+  @override
+  Widget build(BuildContext context) => ExcludeSemantics(
+    child: Container(
+      width: 72,
+      height: 86,
+      decoration: BoxDecoration(
+        color: TC.sun,
+        borderRadius: BorderRadius.circular(40),
+      ),
+      child: Icon(icon, color: TC.ink, size: 34),
     ),
   );
 }

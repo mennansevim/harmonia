@@ -60,9 +60,9 @@ class SettingsTab extends StatelessWidget {
       child: ListView(
         padding: EdgeInsets.zero,
         children: [
-          tabHeader('Ayarlar', 'Deneyimini özelleştir'),
+          tabHeader('Senin düzenin', 'Ayarlar', 'Deneyimini özelleştir'),
           Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [

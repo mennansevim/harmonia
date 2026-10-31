@@ -55,57 +55,40 @@ class KoroHub extends StatelessWidget {
           children: [
             if (asTab)
               tabHeader(
+                'Sesini tanı',
                 'Ses Atölyesi',
                 store.part == null
                     ? 'Ses aralığı, ritim, ezgi, çok seslilik'
                     : '${store.part!.title} aralığında çalışma',
               )
             else
-              const TopBar(
-                title: 'Ses Atölyesi',
-                titleIcon: TrainerBadge(
-                  color: TC.koro,
-                  icon: Ic.audioLines,
-                  size: 32,
-                ),
-              ),
+              const TopBar(title: 'Ses Atölyesi'),
             Expanded(
               child: ListView(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+                padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
                 children: [
-                  Container(
-                    padding: const EdgeInsets.all(18),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(22),
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF7C6CF8), TC.koro],
-                      ),
-                    ),
-                    child: const Column(
+                  HeroCard(
+                    child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          'SES ÇALIŞMASI',
-                          style: TextStyle(
-                            color: Colors.white70,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: 1.2,
-                            fontSize: 11.5,
-                          ),
-                        ),
-                        SizedBox(height: 6),
+                        const Text('SES ÇALIŞMASI', style: TT.heroCaps),
+                        const SizedBox(height: 12),
                         Text(
                           'Tek sesliden dört sesliye',
-                          style: TextStyle(
+                          style: TT.display.copyWith(
                             color: Colors.white,
-                            fontSize: 22,
-                            fontWeight: FontWeight.w800,
+                            fontSize: 28,
+                            height: 1.2,
                           ),
                         ),
-                        SizedBox(height: 6),
-                        Text(
+                        const SizedBox(height: 10),
+                        const Text(
                           'Sesini tanı, ritmi ve ezgiyi tekrar et, aksak ölçülere alış, çok sesli dokuyu duy.',
-                          style: TextStyle(color: Colors.white, height: 1.4),
+                          style: TextStyle(
+                            color: TC.heroMuted,
+                            fontSize: 13,
+                            height: 1.5,
+                          ),
                         ),
                       ],
                     ),

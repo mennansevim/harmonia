@@ -129,32 +129,9 @@ class ChoirPage extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(12, 4, 16, 0),
-              child: Row(
-                children: [
-                  IconButton(
-                    tooltip: MaterialLocalizations.of(
-                      context,
-                    ).backButtonTooltip,
-                    constraints: const BoxConstraints.tightFor(
-                      width: 44,
-                      height: 44,
-                    ),
-                    padding: EdgeInsets.zero,
-                    onPressed: () => Navigator.of(context).maybePop(),
-                    icon: const Icon(Ic.arrowLeft, color: TC.ink, size: 20),
-                  ),
-                  Expanded(
-                    child: Text(
-                      text.caps(crumb),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TT.crumb,
-                    ),
-                  ),
-                ],
-              ),
+            CrumbBar(
+              crumb: text.caps(crumb),
+              backLabel: MaterialLocalizations.of(context).backButtonTooltip,
             ),
             Expanded(
               child: ListView(

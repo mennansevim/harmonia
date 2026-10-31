@@ -265,17 +265,16 @@ class _LessonFlowState extends State<LessonFlow> with WidgetsBindingObserver {
               padding: const EdgeInsets.fromLTRB(12, 8, 16, 0),
               child: Row(
                 children: [
-                  IconButton(
-                    tooltip: 'Geri',
-                    onPressed: () => Navigator.of(context).pop(false),
-                    icon: const Icon(Ic.x, color: TC.body),
+                  BackSquare(
+                    icon: Ic.x,
+                    onTap: () => Navigator.of(context).pop(false),
                   ),
                   Expanded(
                     child: Text(
-                      kind.title,
+                      trCaps(kind.title),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: TT.title,
+                      style: TT.crumb,
                     ),
                   ),
                   if (!_intro && !node.isGate) _phaseDots(),
@@ -292,7 +291,7 @@ class _LessonFlowState extends State<LessonFlow> with WidgetsBindingObserver {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+              padding: const EdgeInsets.fromLTRB(24, 4, 24, 16),
               child: BigButton(
                 key: const Key('lesson_next'),
                 label: button,
@@ -366,7 +365,7 @@ class _LessonFlowState extends State<LessonFlow> with WidgetsBindingObserver {
             ),
           ];
     return ListView(
-      padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
+      padding: const EdgeInsets.fromLTRB(24, 12, 24, 16),
       children: [
         Text(switch (node.kind) {
           NodeKind.checkpoint => 'ARA DURAK',
@@ -374,7 +373,7 @@ class _LessonFlowState extends State<LessonFlow> with WidgetsBindingObserver {
           _ => 'BASAMAK $stage',
         }, style: TT.caps.copyWith(color: color)),
         const SizedBox(height: 4),
-        Text(node.title, style: TT.h2),
+        Text(node.title, style: TT.h1),
         const SizedBox(height: 6),
         Text(node.subtitle, style: TT.body),
         const SizedBox(height: 24),
@@ -404,11 +403,11 @@ class _LessonFlowState extends State<LessonFlow> with WidgetsBindingObserver {
   }
 
   Widget _introPage(IntroSlide s) => ListView(
-    padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
+    padding: const EdgeInsets.fromLTRB(24, 12, 24, 16),
     children: [
       Text('${_page + 1} / $_pageCount', style: TT.caps.copyWith(color: color)),
       const SizedBox(height: 4),
-      Text(s.title, style: TT.h2),
+      Text(s.title, style: TT.h1),
       const SizedBox(height: 8),
       Text(s.body, style: TT.body),
       const SizedBox(height: 20),
@@ -435,14 +434,14 @@ class _LessonFlowState extends State<LessonFlow> with WidgetsBindingObserver {
   Widget _meetPage(String item) {
     final store = TrainerScope.of(context).store;
     return ListView(
-      padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
+      padding: const EdgeInsets.fromLTRB(24, 12, 24, 16),
       children: [
         Text(
           'DİNLE · ${_page + 1} / $_pageCount',
           style: TT.caps.copyWith(color: color),
         ),
         const SizedBox(height: 4),
-        Text(_label(item), style: TT.h2),
+        Text(_label(item), style: TT.h1),
         const SizedBox(height: 6),
         Text(itemFeel(kind, item), style: TT.body),
         const SizedBox(height: 18),
@@ -521,11 +520,11 @@ class _LessonFlowState extends State<LessonFlow> with WidgetsBindingObserver {
   }
 
   Widget _comparePage() => ListView(
-    padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
+    padding: const EdgeInsets.fromLTRB(24, 12, 24, 16),
     children: [
       Text('DİNLE · YAN YANA', style: TT.caps.copyWith(color: color)),
       const SizedBox(height: 4),
-      Text(node.title.replaceFirst(RegExp(r'^\d+\. '), ''), style: TT.h2),
+      Text(node.title.replaceFirst(RegExp(r'^\d+\. '), ''), style: TT.h1),
       const SizedBox(height: 6),
       const Text(
         'Her birini çal; aradaki farkı tek cümleyle kendine söyle.',
@@ -695,11 +694,11 @@ class _LessonFlowState extends State<LessonFlow> with WidgetsBindingObserver {
     final diagnosticAvailable =
         kind == TrainerKind.pitch && TrainerScope.of(context).liveAudio;
     return ListView(
-      padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
+      padding: const EdgeInsets.fromLTRB(24, 12, 24, 16),
       children: [
         Text('SÖYLE', style: TT.caps.copyWith(color: color)),
         const SizedBox(height: 4),
-        const Text('Duy, sonra kendi sesinle tekrar et', style: TT.h2),
+        const Text('Duy, sonra kendi sesinle tekrar et', style: TT.h1),
         const SizedBox(height: 6),
         Text(switch (kind) {
           TrainerKind.interval => 'İki notayı sırayla, la-la diye söyle.',

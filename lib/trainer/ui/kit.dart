@@ -47,13 +47,9 @@ abstract final class TC {
   static const navPill = Color(0xFFEEE7FB);
 }
 
-Color trainerColor(TrainerKind kind) => switch (kind) {
-  TrainerKind.pitch => TC.coral,
-  TrainerKind.interval => TC.teal,
-  TrainerKind.chord => TC.magenta,
-  TrainerKind.scale => TC.amber,
-  TrainerKind.progression => TC.sky,
-};
+/// One accent for every skill, as on the choir screens; the icon tells
+/// skills apart.
+Color trainerColor(TrainerKind kind) => TC.primary;
 
 IconData trainerIcon(TrainerKind kind) => switch (kind) {
   TrainerKind.pitch => Ic.circleDot,
@@ -226,7 +222,19 @@ abstract final class TT {
     color: TC.primary,
     letterSpacing: 1.5,
   );
+
+  /// The lime label at the top of a hero card.
+  static const heroCaps = TextStyle(
+    fontSize: 10,
+    fontWeight: FontWeight.w700,
+    color: TC.sun,
+    letterSpacing: 1.5,
+  );
 }
+
+/// Turkish capitals for labels: Dart's toUpperCase maps i to I.
+String trCaps(String label) =>
+    label.replaceAll('i', 'İ').replaceAll('ı', 'I').toUpperCase();
 
 void tapHaptic() => HapticFeedback.selectionClick();
 
@@ -473,35 +481,78 @@ class HeroPill extends StatelessWidget {
   );
 }
 
-/// White round back button used on every pushed screen.
+/// The back arrow every pushed screen starts with.
 class BackSquare extends StatelessWidget {
   const BackSquare({
     super.key,
     this.onTap,
-    this.icon = Ic.chevronLeft,
+    this.icon = Ic.arrowLeft,
     this.label = 'Geri',
   });
   final VoidCallback? onTap;
   final IconData icon;
   final String label;
   @override
-  Widget build(BuildContext context) => Semantics(
-    button: true,
-    label: label,
-    excludeSemantics: true,
-    child: Material(
-      color: Colors.white,
-      shape: const CircleBorder(side: BorderSide(color: TC.line)),
-      child: InkWell(
-        customBorder: const CircleBorder(),
-        onTap: onTap ?? () => Navigator.of(context).maybePop(),
-        child: SizedBox(
-          width: 44,
-          height: 44,
-          child: Icon(icon, color: TC.ink),
+  Widget build(BuildContext context) => IconButton(
+    tooltip: label,
+    constraints: const BoxConstraints.tightFor(width: 44, height: 44),
+    padding: EdgeInsets.zero,
+    onPressed: onTap ?? () => Navigator.of(context).maybePop(),
+    icon: Icon(icon, color: TC.ink, size: 20),
+  );
+}
+
+/// Top line of a pushed screen: the back arrow and where you are, in
+/// violet capitals. Pass [crumb] already capitalised.
+class CrumbBar extends StatelessWidget {
+  const CrumbBar({
+    super.key,
+    required this.crumb,
+    this.onBack,
+    this.backIcon = Ic.arrowLeft,
+    this.backLabel = 'Geri',
+    this.trailing,
+  });
+  final String crumb;
+  final VoidCallback? onBack;
+  final IconData backIcon;
+  final String backLabel;
+  final Widget? trailing;
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.fromLTRB(12, 4, 16, 0),
+    child: Row(
+      children: [
+        BackSquare(onTap: onBack, icon: backIcon, label: backLabel),
+        Expanded(
+          child: Text(
+            crumb,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TT.crumb,
+          ),
         ),
-      ),
+        ?trailing,
+      ],
     ),
+  );
+}
+
+/// Large title of a page, with an optional muted line under it.
+class PageTitle extends StatelessWidget {
+  const PageTitle(this.title, {super.key, this.subtitle});
+  final String title;
+  final String? subtitle;
+  @override
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Semantics(header: true, child: Text(title, style: TT.h1)),
+      if (subtitle != null) ...[
+        const SizedBox(height: 6),
+        Text(subtitle!, style: TT.body.copyWith(color: TC.muted)),
+      ],
+    ],
   );
 }
 
@@ -511,16 +562,18 @@ class ProgressBar extends StatelessWidget {
     required this.value,
     this.color = TC.primary,
     this.height = 6,
+    this.track = TC.line,
   });
   final double value;
   final Color color;
   final double height;
+  final Color track;
   @override
   Widget build(BuildContext context) => ClipRRect(
     borderRadius: BorderRadius.circular(height),
     child: Stack(
       children: [
-        Container(height: height, color: TC.line),
+        Container(height: height, color: track),
         AnimatedFractionallySizedBox(
           duration: const Duration(milliseconds: 350),
           curve: Curves.easeOutCubic,
@@ -532,7 +585,8 @@ class ProgressBar extends StatelessWidget {
   );
 }
 
-/// Header of a pushed screen: back square, centred title, optional progress.
+/// Header of a focused pushed screen: back arrow, where you are in violet
+/// capitals, optional progress.
 class TopBar extends StatelessWidget {
   const TopBar({
     super.key,
@@ -542,8 +596,7 @@ class TopBar extends StatelessWidget {
     this.progressColor = TC.primary,
     this.counter,
     this.onBack,
-    this.titleIcon,
-    this.shadow = false,
+    this.trailing,
   });
   final String? title;
   final Widget? leading;
@@ -551,27 +604,11 @@ class TopBar extends StatelessWidget {
   final Color progressColor;
   final String? counter;
   final VoidCallback? onBack;
-  final Widget? titleIcon;
-  final bool shadow;
+  final Widget? trailing;
 
   @override
-  Widget build(BuildContext context) => Container(
-    decoration: BoxDecoration(
-      color: shadow ? Colors.white : Colors.transparent,
-      borderRadius: shadow
-          ? const BorderRadius.vertical(bottom: Radius.circular(22))
-          : null,
-      boxShadow: shadow
-          ? [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.05),
-                blurRadius: 16,
-                offset: const Offset(0, 6),
-              ),
-            ]
-          : null,
-    ),
-    padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.fromLTRB(12, 4, 16, 8),
     child: Column(
       children: [
         SizedBox(
@@ -579,51 +616,40 @@ class TopBar extends StatelessWidget {
           child: Row(
             children: [
               leading ?? BackSquare(onTap: onBack),
-              const SizedBox(width: 12),
               Expanded(
-                child: Row(
-                  mainAxisAlignment: titleIcon == null
-                      ? MainAxisAlignment.center
-                      : MainAxisAlignment.start,
-                  children: [
-                    if (titleIcon != null) ...[
-                      titleIcon!,
-                      const SizedBox(width: 10),
-                    ],
-                    Flexible(
-                      child: Text(
-                        title ?? '',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TT.h3,
-                      ),
-                    ),
-                  ],
+                child: Text(
+                  trCaps(title ?? ''),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TT.crumb,
                 ),
               ),
-              if (titleIcon == null) const SizedBox(width: 56),
+              ?trailing,
             ],
           ),
         ),
         if (progress != null) ...[
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: ProgressBar(value: progress!, color: progressColor),
-              ),
-              if (counter != null) ...[
-                const SizedBox(width: 10),
-                Text(
-                  counter!,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    color: TC.body,
-                  ),
+          const SizedBox(height: 8),
+          Padding(
+            padding: const EdgeInsets.only(left: 12),
+            child: Row(
+              children: [
+                Expanded(
+                  child: ProgressBar(value: progress!, color: progressColor),
                 ),
+                if (counter != null) ...[
+                  const SizedBox(width: 10),
+                  Text(
+                    counter!,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: TC.body,
+                    ),
+                  ),
+                ],
               ],
-            ],
+            ),
           ),
         ],
       ],

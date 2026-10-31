@@ -64,37 +64,33 @@ class _SkillScreenState extends State<SkillScreen> {
       backgroundColor: TC.canvas,
       body: SafeArea(
         bottom: false,
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(8, 4, 16, 40),
+        child: Column(
           children: [
-            Row(
-              children: [
-                IconButton(
-                  tooltip: 'Geri',
-                  onPressed: () => Navigator.of(context).maybePop(),
-                  icon: const Icon(Ic.arrowLeft, color: TC.ink),
-                ),
-                Expanded(child: Text(kind.title, style: TT.h3)),
-                IconButton(
-                  key: const Key('skill_stats'),
-                  tooltip: 'İstatistik',
-                  onPressed: () => Navigator.of(context).push(
-                    MaterialPageRoute<void>(
-                      builder: (_) => TrainerStatsScreen(trainer: kind),
-                    ),
+            CrumbBar(
+              crumb: trCaps('Beceriler / ${kind.shortTitle}'),
+              trailing: IconButton(
+                key: const Key('skill_stats'),
+                tooltip: 'İstatistik',
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => TrainerStatsScreen(trainer: kind),
                   ),
-                  icon: const Icon(Ic.chartNoAxesCombined, color: TC.body),
                 ),
-              ],
+                icon: const Icon(
+                  Ic.chartNoAxesCombined,
+                  color: TC.body,
+                  size: 20,
+                ),
+              ),
             ),
-            Padding(
-              padding: const EdgeInsets.only(left: 8),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(24, 4, 24, 40),
                 children: [
+                  PageTitle(kind.title),
+                  const SizedBox(height: 26),
                   _Summary(
                     kind: kind,
-                    color: color,
                     mastery: store.mastery(kind),
                     done: done,
                     total: path.lessonCount,
@@ -106,7 +102,7 @@ class _SkillScreenState extends State<SkillScreen> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 12),
                   const Text(
                     'Ara duraklar her zaman açık: %80 ile geçersen öncesindeki dersler tamamlanır.',
                     style: TT.small,
@@ -125,7 +121,6 @@ class _SkillScreenState extends State<SkillScreen> {
 class _Summary extends StatelessWidget {
   const _Summary({
     required this.kind,
-    required this.color,
     required this.mastery,
     required this.done,
     required this.total,
@@ -134,7 +129,6 @@ class _Summary extends StatelessWidget {
     required this.onFree,
   });
   final TrainerKind kind;
-  final Color color;
   final double mastery;
   final int done;
   final int total;
@@ -142,48 +136,56 @@ class _Summary extends StatelessWidget {
   final VoidCallback? onNext;
   final VoidCallback onFree;
   @override
-  Widget build(BuildContext context) => AppCard(
+  Widget build(BuildContext context) => HeroCard(
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Row(
           children: [
-            TrainerBadge(color: color, icon: trainerIcon(kind), size: 48),
-            const SizedBox(width: 14),
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(kind.tagline, style: TT.title),
-                  Text('$done / $total ders tamam', style: TT.small),
-                ],
+              child: Text(
+                next == null ? 'TÜM DERSLER TAMAM' : 'SIRADAKİ DERS',
+                style: TT.heroCaps,
               ),
             ),
-            Text(
-              '%${(mastery * 100).round()}',
-              style: TT.h2.copyWith(color: color),
-            ),
+            TiltTag('%${(mastery * 100).round()} ustalık'),
           ],
         ),
-        const SizedBox(height: 14),
+        const SizedBox(height: 12),
+        Text(
+          next?.title ?? kind.tagline,
+          style: TT.display.copyWith(
+            color: Colors.white,
+            fontSize: 30,
+            height: 1.2,
+          ),
+        ),
+        const SizedBox(height: 10),
+        Text(
+          '${kind.tagline} · $done / $total ders tamam',
+          style: const TextStyle(
+            color: TC.heroMuted,
+            fontSize: 12,
+            height: 1.5,
+          ),
+        ),
+        const SizedBox(height: 16),
         BigButton(
           key: const Key('skill_next'),
-          label: next == null
-              ? 'Tüm dersler tamam'
-              : 'Sıradaki: ${next!.title}',
+          label: next == null ? 'Tüm dersler tamam' : 'Derse başla',
           icon: Ic.play,
-          color: color,
+          color: Colors.white,
           onPressed: onNext,
         ),
-        const SizedBox(height: 6),
+        const SizedBox(height: 4),
         TextButton.icon(
           key: const Key('skill_free'),
           onPressed: onFree,
-          style: TextButton.styleFrom(foregroundColor: color),
-          icon: const Icon(Ic.settings2),
+          style: TextButton.styleFrom(foregroundColor: TC.sun),
+          icon: const Icon(Ic.settings2, size: 18),
           label: const Text(
             'Serbest çalışma',
-            style: TextStyle(fontWeight: FontWeight.w800),
+            style: TextStyle(fontWeight: FontWeight.w600),
           ),
         ),
       ],

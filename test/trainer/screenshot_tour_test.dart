@@ -1,5 +1,5 @@
 // Visual tour for design review, not a regression gate. Renders key screens
-// with real Roboto/Material Icons fonts into PNG files:
+// with the app's real fonts into PNG files:
 //   flutter test test/trainer/screenshot_tour_test.dart \
 //     --dart-define=TOUR_DIR=/absolute/output/dir
 import 'dart:io';
@@ -8,7 +8,6 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:resonia/application/practice_preferences.dart';
 import 'package:resonia/application/practice_reminder.dart';
@@ -23,33 +22,13 @@ import 'package:resonia/trainer/settings/membership_screen.dart';
 import 'package:resonia/trainer/stats/stats_tab.dart';
 import 'package:resonia/trainer/state/trainer_store.dart';
 
+import '../support/tour_fonts.dart';
+
 const _dir = String.fromEnvironment('TOUR_DIR');
-
-Future<void> _loadFonts() async {
-  final root =
-      Platform.environment['FLUTTER_ROOT'] ?? '/opt/homebrew/share/flutter';
-  final fonts = '$root/bin/cache/artifacts/material_fonts';
-  Future<void> load(String family, List<String> files) async {
-    final loader = FontLoader(family);
-    for (final f in files) {
-      final bytes = File('$fonts/$f').readAsBytesSync();
-      loader.addFont(Future.value(ByteData.view(bytes.buffer)));
-    }
-    await loader.load();
-  }
-
-  await load('Roboto', [
-    'Roboto-Regular.ttf',
-    'Roboto-Medium.ttf',
-    'Roboto-Bold.ttf',
-    'Roboto-Black.ttf',
-  ]);
-  await load('MaterialIcons', ['MaterialIcons-Regular.otf']);
-}
 
 void main() {
   testWidgets('screenshot tour', skip: _dir.isEmpty, (tester) async {
-    await tester.runAsync(_loadFonts);
+    await tester.runAsync(loadTourFonts);
     final view = tester.view;
     view.physicalSize = const Size(1170, 2532);
     view.devicePixelRatio = 3;
@@ -240,7 +219,7 @@ void main() {
     await shot('voice_hub');
     await tap(key('koro_range'));
     await shot('range_intro');
-    await tap(find.bySemanticsLabel('Geri'));
+    await tap(find.byTooltip('Geri').first);
     await tester.scrollUntilVisible(
       key('koro_voices'),
       200,

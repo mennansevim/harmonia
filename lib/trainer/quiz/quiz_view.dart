@@ -304,20 +304,16 @@ class _QuizViewState extends State<QuizView> {
     padding: const EdgeInsets.fromLTRB(12, 8, 16, 4),
     child: Row(
       children: [
-        IconButton(
-          tooltip: 'Geri',
-          onPressed: _exit,
-          icon: const Icon(Ic.x, color: TC.body),
-        ),
+        BackSquare(icon: Ic.x, onTap: _exit),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                widget.title,
+                trCaps(widget.title),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: TT.title,
+                style: TT.crumb,
               ),
               const SizedBox(height: 6),
               _EvidenceStrip(results: _strip, current: _index, color: _color),

@@ -2294,3 +2294,12 @@ Hiçbiri UI'ya, depolamaya veya sunucuya bağlı değil. Gerçek koro MIDI dosya
 - `OptionChip` yüksekliği Figma gereği yaklaşık 34 pt; 44 pt dokunma hedefinin altındadır, gerçek cihazda bakılmalı.
 - Testler: `test/choir/choir_design_widgets_test.dart` (dar ekranda satır kırma, seçili durum semantiği, işaret sayısı) eklendi; uzayan sayfalar için iki test ve ekran turu kaydırma ile güncellendi, tur Lucide yazı tipini yükler.
 - Doğrulama: `dart tool/quality_check.dart` geçti (1106 geçti, 2 atlandı, diğer oturumun AUDIO-03 dosyaları çalışma ağacındayken). Simülatörde uygulama açıldı, Lucide ikonu görüldü. `integration_test/choir_journey_test.dart` bu turda çalıştırılmadı.
+
+## 2026-10-31 — DESIGN-07 kişisel ekranlar koro diliyle
+
+- `kit.dart`: `CrumbBar`, `PageTitle`, `TT.heroCaps`, `trCaps`; `BackSquare` yalın ok (tooltip'li `IconButton`); `TopBar` başlığı yol etiketi, `titleIcon`/`shadow` kaldırıldı; `ProgressBar.track`; `trainerColor` her beceri için `TC.primary`.
+- `ChoirPage` üst satırı `CrumbBar` kullanıyor; koro ekranlarının görüntüsü değişmedi (tur karşılaştırıldı).
+- Beceri ekranı: yol etiketi + başlık + patlıcan hero ("Sıradaki ders", Lora ders adı, beyaz "Derse başla", limon "Serbest çalışma"). İlerleme seviye kartı ve Ses Atölyesi kartı hero oldu. Sekme başlıklarına yol etiketi eklendi, kenar boşlukları 24.
+- Serbest çalışma, beceri istatistiği, üyelik, ders, quiz, ses aralığı testi ve çok seslilik başlıkları yol etiketi düzeninde. Ses aralığı testinde emoji yerine limon kutuda Lucide ikon, Lora başlık.
+- Testler: `test/support/tour_fonts.dart` iki turda ortak; kişisel tur gerçek yazı tipleriyle çalışıyor. İki test beklentisi yeni metne göre güncellendi. Tam **1122 test geçti**, 2 opt-in atlandı; analyze/format temiz.
+- Açık: onboarding/nefes/oturum sonu/quiz gövdeleri yalnız renk ve başlık aldı; ♭/♯ Inter alt kümesinde yok (testte kutu, cihaz kontrol edilmedi); simülatör ve gerçek telefon görülmedi. Commit yalnız bu işin dosyalarını içerir; o hâlin testleri disk dolu olduğu için ayrıca çalışmadı (analyze temiz).

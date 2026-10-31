@@ -156,8 +156,7 @@ void main() {
 
     await tapKey(tester, 'skill_interval');
     expect(find.text('BASAMAK 1'), findsOneWidget);
-    expect(find.text('Başlarken'), findsOneWidget);
-    expect(find.text('Sıradaki: Başlarken'), findsOneWidget);
+    expect(find.text('Başlarken'), findsWidgets);
     await tester.tap(find.byTooltip('Geri').first);
     await settle(tester);
 

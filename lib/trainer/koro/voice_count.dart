@@ -124,10 +124,17 @@ class _VoiceCountScreenState extends State<VoiceCountScreen> {
           child: Column(
             children: [
               TopBar(
-                title: 'Kaç ses duyuyorsun?',
+                title: 'Ses / Çok seslilik',
                 progress: (_index + (_picked == null ? 0 : 1)) / widget.length,
                 progressColor: TC.koro,
                 counter: '${_index + 1} / ${widget.length}',
+              ),
+              const Padding(
+                padding: EdgeInsets.fromLTRB(24, 16, 24, 0),
+                child: Align(
+                  alignment: AlignmentDirectional.centerStart,
+                  child: PageTitle('Kaç ses duyuyorsun?'),
+                ),
               ),
               const Spacer(),
               ListenDisc(
