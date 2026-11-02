@@ -16,7 +16,7 @@ val keystoreProperties = Properties().apply {
 val hasReleaseKey = keystoreProperties.getProperty("storeFile") != null
 
 android {
-    namespace = "com.resonia.resonia"
+    namespace = "com.mennansevim.vocalart"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -28,7 +28,7 @@ android {
 
     defaultConfig {
         // Store ID is final once published; confirm before the first upload.
-        applicationId = "com.resonia.resonia"
+        applicationId = "com.mennansevim.vocalart"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion

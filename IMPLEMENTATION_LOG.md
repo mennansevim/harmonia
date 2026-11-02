@@ -2303,3 +2303,23 @@ Hiçbiri UI'ya, depolamaya veya sunucuya bağlı değil. Gerçek koro MIDI dosya
 - Serbest çalışma, beceri istatistiği, üyelik, ders, quiz, ses aralığı testi ve çok seslilik başlıkları yol etiketi düzeninde. Ses aralığı testinde emoji yerine limon kutuda Lucide ikon, Lora başlık.
 - Testler: `test/support/tour_fonts.dart` iki turda ortak; kişisel tur gerçek yazı tipleriyle çalışıyor. İki test beklentisi yeni metne göre güncellendi. Tam **1122 test geçti**, 2 opt-in atlandı; analyze/format temiz.
 - Açık: onboarding/nefes/oturum sonu/quiz gövdeleri yalnız renk ve başlık aldı; ♭/♯ Inter alt kümesinde yok (testte kutu, cihaz kontrol edilmedi); simülatör ve gerçek telefon görülmedi. Commit yalnız bu işin dosyalarını içerir; o hâlin testleri disk dolu olduğu için ayrıca çalışmadı (analyze temiz).
+
+## 2026-10-31 — NAME-01 görünen ad Sinyorina
+
+**Kullanıcı isteği:** "sinyorina olacak yeni ad. bunu her yerde kullan tasarımda." (resonia.app başka yerlerde kullanılıyor.)
+
+- Kullanıcıya görünen metinlerde `Resonia` → `Sinyorina`: `ios/Runner/Info.plist` (CFBundleDisplayName, CFBundleName, NSMicrophoneUsageDescription), `AndroidManifest.xml` etiketi, `MaterialApp.title` (iki kabuk), karşılama markası, ayarlar, hatırlatma, izin kurtarma, veri aktarımı, koro dosyası hatası, ses aralığı testi ve onboarding metinleri. Türkçe ekler (’ya, ’nın, ’yı) aynı ünlü uyumuyla kaldı.
+- Bilerek değişmedi: paket/sınıf/dosya adları, `RESONIA_CHANNEL`, `.resonia` uzantısı, kod yorumları, dokümanlar, bundle ID.
+- Kontrol: `dart tool/quality_check.dart` → 1124 geçti, 2 atlandı. Cihaz/simülatör görünümü, marka ve App Store ad uygunluğu kontrol edilmedi. Commit yok.
+
+## 2026-11-02 — NAME-02 görünen ad Vocalart
+
+**Kullanıcı isteği:** İsim aramasından sonra "Vocalart" (alan adı şart değil, vocalartmusic alınabilir).
+
+- NAME-01'deki 32 görünen metin, iOS `Info.plist` (ad, mikrofon izni), Android etiketi ve test beklentileri `Sinyorina` → `Vocalart`. Ekler: ’ya→’a, ’nın→’ın, ’yı→’ı.
+- Ad taraması: App Store ABD/İngiltere temiz; WIPO Global Brand Database'de kayıt yok; vocalart.com kayıtlı, vocalart.app, vocalartmusic.com ve vocalartmusic.app boş (registry RDAP/Verisign whois). Diğer mağazalar ve TÜRKPATENT doğrulanmadı.
+- Değişmeyenler: bundle ID, paket/sınıf/dosya adları, `RESONIA_CHANNEL`, `.resonia`, kod yorumları, dokümanların geri kalanı.
+- Kontrol: `dart tool/quality_check.dart` → commit'e giren hâlde 1100 geçti, 2 atlandı (çalışma alanındaki diğer işlerle 1146).
+- Uygulama kimliği `com.resonia.resonia` → `com.mennansevim.vocalart` (iOS pbxproj, Android gradle namespace/applicationId, MainActivity paketi taşındı). `xcodebuild -showBuildSettings` yeni kimliği gösteriyor.
+- iOS simülatör derlemesi başarısız: Flutter 3.44.4 `debug_unpack_ios`, Xcode 27.0 `lipo -verify_arch` çoklu mimari argümanını kabul etmiyor ("requires exactly one input file"); tek mimariyle `lipo -verify_arch arm64` geçiyor. Araç zinciri sorunu; TestFlight öncesi çözülmeli. Android derlenmedi.
+- Çözüm: `ios/Flutter/{Debug,Release}.xcconfig` → `ARCHS[sdk=iphonesimulator*]=arm64` (önce `EXCLUDED_ARCHS` denendi, Flutter `ARCHS` ortam değişkenine baktığı için işe yaramadı). Simülatör derlemesi geçti (`com.mennansevim.vocalart`, `Vocalart`), uygulama simülatörde açıldı; imzasız cihaz release derlemesi geçti. Intel simülatör desteği düştü.

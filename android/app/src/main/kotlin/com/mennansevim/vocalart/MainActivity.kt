@@ -1,4 +1,4 @@
-package com.resonia.resonia
+package com.mennansevim.vocalart
 
 import io.flutter.embedding.android.FlutterActivity
 

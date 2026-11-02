@@ -244,7 +244,7 @@ class _RangeTestScreenState extends State<RangeTestScreen> {
           icon: Ic.mic,
           title: 'Ses aralığını bul',
           body:
-              'Önce en pes, sonra en tiz rahat sesini "aa" ile 3 saniye tut. Resonia\'nın ses tespit çekirdeği her kaydın temsilî perdesini ölçer.\n\nKayıtlar cihazdan çıkmaz ve analizden sonra silinir. Sonuç deneyseldir; ses tipini bir eğitmen ya da koro şefi belirler.',
+              'Önce en pes, sonra en tiz rahat sesini "aa" ile 3 saniye tut. Vocalart\'ın ses tespit çekirdeği her kaydın temsilî perdesini ölçer.\n\nKayıtlar cihazdan çıkmaz ve analizden sonra silinir. Sonuç deneyseldir; ses tipini bir eğitmen ya da koro şefi belirler.',
           button: 'Başla',
           onPressed: _start,
         );
@@ -253,7 +253,7 @@ class _RangeTestScreenState extends State<RangeTestScreen> {
           icon: Ic.lock,
           title: 'Mikrofon izni gerekli',
           body:
-              'Ses aralığını ölçmek için mikrofon izni ver. iOS Ayarlar > Resonia > Mikrofon\'dan açabilirsin.',
+              'Ses aralığını ölçmek için mikrofon izni ver. iOS Ayarlar > Vocalart > Mikrofon\'dan açabilirsin.',
           button: 'Tekrar dene',
           onPressed: _start,
         );

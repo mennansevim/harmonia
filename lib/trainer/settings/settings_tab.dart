@@ -85,7 +85,7 @@ class SettingsTab extends StatelessWidget {
                           children: [
                             Text(
                               store.part == null
-                                  ? 'Resonia'
+                                  ? 'Vocalart'
                                   : 'Çalışma aralığı: ${store.part!.title}',
                               style: TT.title,
                             ),
@@ -260,7 +260,7 @@ class SettingsTab extends StatelessWidget {
                     onTap: () => _info(
                       context,
                       'Kullanım koşulları',
-                      'Resonia beta sürümündedir. İçerik taslaktır, eğitimci onayından geçmemiştir ve sınav başarısı garantisi vermez.',
+                      'Vocalart beta sürümündedir. İçerik taslaktır, eğitimci onayından geçmemiştir ve sınav başarısı garantisi vermez.',
                     ),
                   ),
                   _Item(

@@ -326,7 +326,7 @@ String _retry(SessionRetryReason reason) => switch (reason) {
   SessionRetryReason.calibrationRequired =>
     'Önce ortamı ölç. Çıkış değiştiyse yeniden ölçmek gerekir.',
   SessionRetryReason.permissionDenied =>
-    'Mikrofon izni verilmedi. Telefon ayarlarından Resonia mikrofon iznini açabilir veya geri dönebilirsin.',
+    'Mikrofon izni verilmedi. Telefon ayarlarından Vocalart mikrofon iznini açabilir veya geri dönebilirsin.',
   SessionRetryReason.routeUnsupported =>
     'Bu ses çıkışı desteklenmiyor. Kablolu kulaklıkla tekrar dene.',
   SessionRetryReason.interrupted =>

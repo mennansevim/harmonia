@@ -75,7 +75,7 @@ void main() {
 
     expect(find.text('Sesini ve kulağını\nher gün geliştir'), findsOneWidget);
     await tapKey(tester, 'get_started');
-    expect(find.text('Resonia\'yı nasıl kullanacaksın?'), findsOneWidget);
+    expect(find.text('Vocalart\'ı nasıl kullanacaksın?'), findsOneWidget);
     await tapKey(tester, 'opt_singer');
     await tapKey(tester, 'ob_continue');
     await tapKey(tester, 'opt_tenor');

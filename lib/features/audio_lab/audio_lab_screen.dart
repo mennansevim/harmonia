@@ -208,7 +208,7 @@ class _AudioLabScreenState extends State<AudioLabScreen>
               ),
               SizedBox(height: ResoniaSpacing.sm),
               Text(
-                'İsteğe bağlı analiz deneysel frekans kanıtıdır; nota doğruluğu veya öğrenci başarı puanı değildir. İzin reddedilirse telefon ayarlarından Resonia’nın mikrofon iznini kontrol edebilirsin. İzin tekrar otomatik istenmez. Bluetooth ve kulaklık davranışı cihaz testini bekliyor.',
+                'İsteğe bağlı analiz deneysel frekans kanıtıdır; nota doğruluğu veya öğrenci başarı puanı değildir. İzin reddedilirse telefon ayarlarından Vocalart’ın mikrofon iznini kontrol edebilirsin. İzin tekrar otomatik istenmez. Bluetooth ve kulaklık davranışı cihaz testini bekliyor.',
               ),
             ],
           ),

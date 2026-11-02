@@ -45,8 +45,8 @@ class _MicrophonePermissionRecoveryCardState
     setState(() {
       _opening = false;
       _status = opened
-          ? 'Ayarlardan mikrofonu açtıktan sonra Resonia’ya dönüp yeniden dene.'
-          : 'Telefon ayarları açılamadı. Ayarlar > Resonia > Mikrofon yolunu kullanabilirsin.';
+          ? 'Ayarlardan mikrofonu açtıktan sonra Vocalart’a dönüp yeniden dene.'
+          : 'Telefon ayarları açılamadı. Ayarlar > Vocalart > Mikrofon yolunu kullanabilirsin.';
     });
   }
 
@@ -64,7 +64,7 @@ class _MicrophonePermissionRecoveryCardState
           ),
           const SizedBox(height: ResoniaSpacing.xs),
           const Text(
-            'İzin penceresi yeniden görünmüyorsa mikrofonu telefon ayarlarından açabilirsin. Resonia izni kendiliğinden değiştiremez.',
+            'İzin penceresi yeniden görünmüyorsa mikrofonu telefon ayarlarından açabilirsin. Vocalart izni kendiliğinden değiştiremez.',
           ),
           const SizedBox(height: ResoniaSpacing.sm),
           ChunkyButton(

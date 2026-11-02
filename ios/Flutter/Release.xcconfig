@@ -1,1 +1,6 @@
 #include "Generated.xcconfig"
+
+// Xcode 27.0 lipo rejects multiple archs in one -verify_arch call, which
+// breaks Flutter's universal simulator unpack. Apple Silicon simulators only
+// need arm64; device builds are unaffected.
+ARCHS[sdk=iphonesimulator*]=arm64

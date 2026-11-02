@@ -261,7 +261,7 @@ String _retryText(
   SessionRetryReason.calibrationRequired =>
     'Önce ortamı ölç. Çıkış (kulaklık/hoparlör) değiştiyse veya ölçüm eskidiyse yeniden ölçmek gerekir.',
   SessionRetryReason.permissionDenied =>
-    'Mikrofon izni yok. Telefon ayarlarından Resonia için mikrofonu açabilirsin; referansı dinlemek için izin gerekmez.',
+    'Mikrofon izni yok. Telefon ayarlarından Vocalart için mikrofonu açabilirsin; referansı dinlemek için izin gerekmez.',
   SessionRetryReason.routeUnsupported =>
     'Bu ses çıkışıyla bu çalışma yapılamıyor. Kablolu kulaklık dene.',
   SessionRetryReason.interrupted =>

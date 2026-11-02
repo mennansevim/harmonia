@@ -40,7 +40,7 @@ void main() {
 
     expect(recovery.calls, 1);
     expect(
-      find.textContaining('Resonia’ya dönüp yeniden dene'),
+      find.textContaining('Vocalart’a dönüp yeniden dene'),
       findsOneWidget,
     );
   });
@@ -85,7 +85,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.textContaining('Telefon ayarları açılamadı'), findsOneWidget);
-    expect(find.textContaining('Resonia’ya dönüp'), findsNothing);
+    expect(find.textContaining('Vocalart’a dönüp'), findsNothing);
   });
 
   testWidgets('turns platform exceptions into the same recoverable message', (

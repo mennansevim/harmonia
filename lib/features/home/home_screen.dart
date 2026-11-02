@@ -816,7 +816,7 @@ class _BetaSheet extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Resonia beta', style: text.titleLarge),
+            Text('Vocalart beta', style: text.titleLarge),
             const SizedBox(height: ResoniaSpacing.md),
             row(
               Icons.edit_note_rounded,

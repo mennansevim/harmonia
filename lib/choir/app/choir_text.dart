@@ -63,8 +63,8 @@ class CT {
 
   String bundleProblem(BundleProblem p) => switch (p) {
     BundleProblem.notABundle => _(
-      'Bu bir Resonia koro dosyası değil.',
-      'This is not a Resonia choir file.',
+      'Bu bir Vocalart koro dosyası değil.',
+      'This is not a Vocalart choir file.',
     ),
     BundleProblem.tooLarge => _('Dosya çok büyük.', 'This file is too large.'),
     BundleProblem.damaged => _(

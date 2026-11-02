@@ -216,7 +216,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   title: Text('İzin ve kulaklık rehberi'),
                   children: [
                     Text(
-                      'İzin vermediysen telefonun Ayarlar > Resonia > Mikrofon bölümünden açabilirsin. İzin vermeden de referansları dinleyebilir ve önizlemeleri görebilirsin.',
+                      'İzin vermediysen telefonun Ayarlar > Vocalart > Mikrofon bölümünden açabilirsin. İzin vermeden de referansları dinleyebilir ve önizlemeleri görebilirsin.',
                     ),
                     SizedBox(height: ResoniaSpacing.sm),
                     Text(
@@ -375,7 +375,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
               section('Hakkında', [
                 Text(
-                  'Resonia ${channel.label.toLowerCase()}dür. Ses değerlendirmesi deterministik ölçümle yapılır; yapay zekâ puan vermez. Sınav kazanma garantisi verilmez.',
+                  'Vocalart ${channel.label.toLowerCase()}dür. Ses değerlendirmesi deterministik ölçümle yapılır; yapay zekâ puan vermez. Sınav kazanma garantisi verilmez.',
                   key: const Key('about_channel'),
                 ),
               ]),

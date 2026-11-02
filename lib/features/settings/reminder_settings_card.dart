@@ -93,8 +93,8 @@ class _ReminderSettingsCardState extends State<ReminderSettingsCard> {
     setState(() {
       _updating = false;
       _message = opened
-          ? 'Bildirim ayarları açıldı. İzni değiştirdikten sonra Resonia’ya dön.'
-          : 'Bildirim ayarları açılamadı. Telefon ayarlarından Resonia bildirimlerini açabilirsin.';
+          ? 'Bildirim ayarları açıldı. İzni değiştirdikten sonra Vocalart’a dön.'
+          : 'Bildirim ayarları açılamadı. Telefon ayarlarından Vocalart bildirimlerini açabilirsin.';
     });
   }
 
@@ -137,7 +137,7 @@ class _ReminderSettingsCardState extends State<ReminderSettingsCard> {
               const Text('Hatırlatma durumu okunuyor…')
             else if (unavailable) ...[
               const Text(
-                'Bu sürümde cihaz bildirimi henüz bağlı değil. Resonia izin istemez ve hatırlatma kurmaz.',
+                'Bu sürümde cihaz bildirimi henüz bağlı değil. Vocalart izin istemez ve hatırlatma kurmaz.',
                 key: Key('reminder_unavailable'),
               ),
               const SizedBox(height: ResoniaSpacing.sm),

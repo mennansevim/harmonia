@@ -57,7 +57,7 @@ class GoalSelectionScreen extends StatelessWidget {
             const _BrandMark(),
             const SizedBox(height: ResoniaSpacing.lg),
             Text(
-              'Resonia',
+              'Vocalart',
               style: text.labelLarge?.copyWith(color: scheme.primary),
             ),
             Text('Ne için çalışıyorsun?', style: text.headlineMedium),

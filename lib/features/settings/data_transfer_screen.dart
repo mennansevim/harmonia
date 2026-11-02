@@ -134,7 +134,7 @@ class _DataTransferScreenState extends State<DataTransferScreen> {
 
   static String _reason(String r) => switch (r) {
     'too_large' => 'Metin çok büyük (4 MB sınırı).',
-    'not_json' || 'not_object' => 'Bu bir Resonia dışa aktarma metni değil.',
+    'not_json' || 'not_object' => 'Bu bir Vocalart dışa aktarma metni değil.',
     'version' || 'keys' =>
       'Desteklenmeyen dışa aktarma sürümü veya biçimi. Hiçbir şey eklenmedi.',
     _ => 'Metin bozuk veya eksik. Hiçbir şey eklenmedi.',

@@ -133,7 +133,7 @@ class _ResoniaAppState extends State<ResoniaApp> {
   );
 
   Widget _app() => MaterialApp(
-    title: 'Resonia',
+    title: 'Vocalart',
     navigatorKey: _navigator,
     theme: ResoniaTheme.light(),
     darkTheme: ResoniaTheme.dark(),
@@ -185,7 +185,7 @@ class _StartupError extends StatelessWidget {
             liveRegion: true,
             child: Text(
               failure == ProfileStorageFailure.corrupt
-                  ? 'Bu cihazdaki Resonia profili okunamadı.'
+                  ? 'Bu cihazdaki Vocalart profili okunamadı.'
                   : 'Cihaz depolamasına şu an erişilemedi.',
               key: const Key('startup_error'),
               style: Theme.of(context).textTheme.titleLarge,
