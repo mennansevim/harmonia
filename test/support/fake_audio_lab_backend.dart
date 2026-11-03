@@ -100,6 +100,12 @@ class FakeRoutedAudioLabBackend extends FakeAudioLabBackend
   @override
   Stream<double> get inputLevelDb => levels.stream;
 
+  @override
+  MeasurementProvenance get inputLevelProvenance => const MeasurementProvenance(
+    source: MeasurementSource.mock,
+    analyzerVersion: 'fake-input-level-v1',
+  );
+
   AudioRouteSnapshot route = const AudioRouteSnapshot(
     input: AudioRouteKind.builtIn,
     output: AudioRouteKind.wired,

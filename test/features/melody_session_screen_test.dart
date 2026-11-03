@@ -331,6 +331,13 @@ void main() {
         find.byKey(const Key('melody_candidate_practice')),
         findsOneWidget,
       );
+      expect(
+        find.byKey(const Key('melody_candidate_comparison')),
+        findsOneWidget,
+      );
+      expect(find.text('Aday karşılaştırması'), findsOneWidget);
+      expect(find.textContaining('nota doğruluğu'), findsOneWidget);
+      expect(find.textContaining('geçmişe, başarıya'), findsOneWidget);
       expect(find.textContaining('doğrulanmış hata'), findsOneWidget);
       expect(find.textContaining('puan değildir'), findsOneWidget);
       await _tap(tester, 'melody_open_candidate_practice');

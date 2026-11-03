@@ -13,6 +13,9 @@ abstract interface class PracticePreferencesRepository {
   Future<void> saveHapticsEnabled(bool enabled);
   Future<PortablePracticePreferences> loadPortablePreferences();
   Future<void> savePortablePreferences(PortablePracticePreferences value);
+
+  /// "Delete my data": the next read returns defaults.
+  Future<void> clear();
 }
 
 /// Settings safe to move between devices. Reminder time and haptics stay on
@@ -148,6 +151,14 @@ class InMemoryPracticePreferences implements PracticePreferencesRepository {
   ) async {
     _budget = value.dailyBudget;
     _weeklyGoal = value.weeklyGoal;
+  }
+
+  @override
+  Future<void> clear() async {
+    _budget = null;
+    _weeklyGoal = null;
+    _reminderTime = null;
+    _hapticsEnabled = true;
   }
 }
 

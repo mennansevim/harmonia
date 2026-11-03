@@ -1,0 +1,31 @@
+# Start a note quiz, answer once, leave it, background and return.
+appId: com.mennansevim.vocalart
+name: Quiz — cevap, çıkış, arka plan
+tags: [critical]
+---
+- runFlow: subflows/onboard_quick.yaml
+- scrollUntilVisible:
+    element: "Nota.*"
+    direction: DOWN
+- tapOn: "Nota.*"
+- tapOn: "Serbest çalışma"
+- tapOn: "Başlat"
+- extendedWaitUntil:
+    visible: "Bu hangi nota\\?"
+    timeout: 8000
+- takeScreenshot: quiz_question
+- tapOn: "Do"
+- takeScreenshot: quiz_after_answer
+# Repeated tap on the same answer must not advance or double count.
+- tapOn:
+    text: "Do"
+    optional: true
+    repeat: 3
+    delay: 50
+- takeScreenshot: quiz_after_repeat_taps
+- pressKey: home
+- launchApp:
+    stopApp: false
+- takeScreenshot: quiz_after_resume
+- tapOn: "Geri"
+- takeScreenshot: quiz_exit_prompt

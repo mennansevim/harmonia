@@ -7,6 +7,31 @@ belgesinde. Şirket geliri ile uygulama/modül geliri ayrıldı; “en çok kaza
 ilk üç” veya özellik bazlı gelir sıralaması iddiası yok. Son7 gün çalışma
 kartı GROW-01a kodlandı; diğer eksikler mevcut backlog'a bağlandı.
 
+**3 Kasım 2026 pazar ve fiyat ek incelemesi (masa başı, kod değişmedi):**
+- *Pazar büyüklüğü:* Kulak eğitimi uygulaması pazarı için yayımlanan tahmin
+  2025'te ≈ 488 M$, 2035'e ≈ 1,5 Mr$ (%11,8 YBBO; [WiseGuy](https://www.wiseguyreports.com/reports/ear-training-app-market)).
+  Yöntem görülmedi; iş planı girdisi sayılmaz. Tekil uygulama gelir
+  tahminleri (AppGoblin) küçük; niş pazar.
+- *Fiyat örnekleri (satıcı kaynakları, bağımsız doğrulanmadı):* Singing
+  Carrots aylık 19,99/39,99/79,99 $ ([kaynak](https://singingcarrots.com/blog/best-online-singing-courses-prices-2026-updated-guide/));
+  Chorilo topluluk başına 10 €/ay veya 100 €/yıl, 60 gün deneme
+  ([kaynak](https://www.chorilo.com/en/features)); VocalCentric koltuk paketi
+  39,99–199,99 $ ([App Store](https://apps.apple.com/app/id6739209305), veri eski olabilir);
+  EarMaster temel ücretsiz + IAP, TR yorumlarında Türkçe talebi
+  ([App Store TR](https://apps.apple.com/tr/app/id1105030163)).
+- *Türkiye boşluğu:* Türkçe arayüzlü ve konservatuvar özel yetenek sınavına
+  odaklı bir mağaza uygulaması doğrulanamadı. Sınavlar ezgi tekrarı, aralık,
+  müzikal bellek ve ritim ölçüyor ([Nişantaşı](https://www.nisantasi.edu.tr/Uploads/ozel-yetenek/2025_2026_Sahne_Sanatlar%C4%B1_%C3%96zel_Y.pdf),
+  [Sakarya](https://studyatsau.sakarya.edu.tr/wp-content/uploads/2024/07/2024-DEVLET-KONSERVATUARI-OZEL-YETENEK-SINAV-KLAVUZU-TR.pdf)).
+  Aynı eksikliği gören bir BAU öğrencisi uygulama geliştirdi
+  ([DHA](https://www.dha.com.tr/egitim/baulu-ogrenciden-muzik-pratigini-kolaylastiran-mobil-uygulama-2917846));
+  adı/mağazası doğrulanmadı — boşluk kapanabilir.
+- *Talep sınırları:* Ulusal aday sayısı bulunamadı (ÖSYM/MEB'den alınmalı);
+  bölüm kontenjanları ≈ 20. Sınavlar Ağustos–Eylül ([AKÜ 2026-27](https://konservatuvar.aku.edu.tr/wp-content/uploads/sites/126/2026/07/2026-2027-Akademik-Yili-Ozel-Yetenek-Sinavi-Kilavuzu.pdf));
+  talep mevsimsel varsayılmalı.
+- *Çıkarım (hipotez):* Fark Türkçe + sınav odağı; koro tarafında VocalCentric
+  güçlü. Ses puanlaması açılmadan "ses koçu" diye pazarlanmamalı.
+
 **İnceleme:** 2026-10-10 · **Kapsam:** konservatuvar hazırlığı, kulak eğitimi, ritim ve vokal geri bildirim.
 
 Bu liste indirme/gelir verisine dayalı bir “dünyanın en iyi 10'u” sıralaması değildir. Resonia'nın dört temel becerisine en ilgili 10 karşılaştırma ürünüdür. Resmî ürün sayfaları ve yardım belgeleri üzerinden masa başı araştırması yapıldı; ücretli hesapla derslerin uygulamalı testi veya 10 ürünün tamamında ekran ekran görsel denetim yapılmadı. Doğrulanan özellikler ile aşağıdaki UX yorumları birbirinden ayrıdır. Fiyatlar ülkeye ve mağazaya göre değişebildiği için fiyat karşılaştırması yapılmadı. Pazarlama doğruluk/öğrenme/gelir iddiaları bağımsız kanıt kabul edilmedi.

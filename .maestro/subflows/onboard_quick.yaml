@@ -1,0 +1,27 @@
+# Clean install → Today tab, as a choir singer (so the Koro tab exists).
+appId: com.mennansevim.vocalart
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible: ".*her gün geliştir"
+    timeout: 20000
+- scrollUntilVisible:
+    element: "Başlayalım"
+    direction: DOWN
+- tapOn: "Başlayalım"
+- tapOn: "Bir koroda söylüyorum"
+- tapOn: "Devam"
+- tapOn: "Atla"
+- tapOn: "Ses: aralık, ritim, ezgi"
+- tapOn: "Devam"
+- tapOn: "Devam"
+- tapOn: "Devam"
+- tapOn: "Şimdilik hayır"
+- scrollUntilVisible:
+    element: "Ana sayfaya git"
+    direction: DOWN
+- tapOn: "Ana sayfaya git"
+- extendedWaitUntil:
+    visible: "Bugün"
+    timeout: 8000

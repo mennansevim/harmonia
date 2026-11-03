@@ -36,8 +36,8 @@ class RhythmMeasuredExercise implements MeasuredExercise {
   @override
   String get analyzerVersion => RhythmImitationOutcome.version;
   @override
-  ResultCohort get cohort => ResultCohort.forExercise(
-    pattern.exercise.exercise,
+  ResultCohort get cohort => ResultCohort.forConfiguredExercise(
+    pattern.exercise,
     source: MeasurementSource.touch,
     analyzerVersion: analyzerVersion,
   );

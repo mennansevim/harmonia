@@ -7,6 +7,7 @@ import '../learn/session_end.dart';
 import '../quiz/quiz.dart';
 import '../quiz/quiz_view.dart';
 import '../ui/kit.dart';
+import '../../domain/lang.dart';
 
 /// Free practice configuration for one trainer, remembered per trainer.
 class PracticeSetupScreen extends StatefulWidget {
@@ -147,24 +148,28 @@ class _PracticeSetupScreenState extends State<PracticeSetupScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            CrumbBar(crumb: trCaps('${kind.title} / Serbest')),
+            CrumbBar(
+              crumb: trCaps(
+                tr('${kind.title} / Serbest', '${kind.title} / Free'),
+              ),
+            ),
             Expanded(
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(24, 4, 24, 24),
                 children: [
-                  const PageTitle('Serbest çalışma'),
+                  PageTitle(tr('Serbest çalışma', 'Free practice')),
                   const SizedBox(height: 10),
                   if (kind == TrainerKind.pitch) ...[
-                    const _Section('DİZİ'),
+                    _Section(tr('DİZİ', 'SCALE')),
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: Row(
                         children: [
-                          for (final (id, name) in const [
-                            ('custom', 'Özel'),
-                            ('major', 'Majör'),
-                            ('minor', 'Doğal minör'),
-                            ('chromatic', 'Kromatik'),
+                          for (final (id, name) in [
+                            ('custom', tr('Özel', 'Custom')),
+                            ('major', tr('Majör', 'Major')),
+                            ('minor', tr('Doğal minör', 'Natural minor')),
+                            ('chromatic', tr('Kromatik', 'Chromatic')),
                           ])
                             Padding(
                               padding: const EdgeInsets.only(right: 8),
@@ -180,11 +185,11 @@ class _PracticeSetupScreenState extends State<PracticeSetupScreen> {
                     ),
                   ],
                   _Section(switch (kind) {
-                    TrainerKind.pitch => 'NOTALAR (ÖZEL)',
-                    TrainerKind.interval => 'ARALIKLAR',
-                    TrainerKind.chord => 'AKORLAR',
-                    TrainerKind.scale => 'DİZİLER',
-                    TrainerKind.progression => 'YÜRÜYÜŞLER',
+                    TrainerKind.pitch => tr('NOTALAR (ÖZEL)', 'NOTES (CUSTOM)'),
+                    TrainerKind.interval => tr('ARALIKLAR', 'INTERVALS'),
+                    TrainerKind.chord => tr('AKORLAR', 'CHORDS'),
+                    TrainerKind.scale => tr('DİZİLER', 'SCALES'),
+                    TrainerKind.progression => tr('YÜRÜYÜŞLER', 'PROGRESSIONS'),
                   }),
                   LayoutBuilder(
                     builder: (context, c) {
@@ -209,48 +214,62 @@ class _PracticeSetupScreenState extends State<PracticeSetupScreen> {
                     },
                   ),
                   if (kind == TrainerKind.interval) ...[
-                    const _Section('YÖN'),
+                    _Section(tr('YÖN', 'DIRECTION')),
                     Segmented<IntervalDirection>(
                       joined: true,
                       color: color,
                       values: IntervalDirection.values,
                       selected: _direction,
                       label: (d) => switch (d) {
-                        IntervalDirection.ascending => 'Çıkan',
-                        IntervalDirection.descending => 'İnen',
-                        IntervalDirection.mixed => 'Karışık',
+                        IntervalDirection.ascending => tr('Çıkan', 'Rising'),
+                        IntervalDirection.descending => tr('İnen', 'Falling'),
+                        IntervalDirection.mixed => tr('Karışık', 'Mixed'),
                       },
                       onChanged: (d) => setState(() => _direction = d),
                     ),
                     const SizedBox(height: 6),
                     Text(switch (_direction) {
-                      IntervalDirection.ascending =>
+                      IntervalDirection.ascending => tr(
                         'Önce pes nota, sonra tiz nota çalar.',
-                      IntervalDirection.descending =>
+                        'Plays the low note, then the high note.',
+                      ),
+                      IntervalDirection.descending => tr(
                         'Önce tiz nota, sonra pes nota çalar.',
-                      IntervalDirection.mixed =>
+                        'Plays the high note, then the low note.',
+                      ),
+                      IntervalDirection.mixed => tr(
                         'Yön her soruda rastgele seçilir.',
+                        'The direction is picked at random each question.',
+                      ),
                     }, style: TT.small),
                   ],
                   if (kind == TrainerKind.progression) ...[
-                    const _Section('AKOR DİZİLİŞİ'),
+                    _Section(tr('AKOR DİZİLİŞİ', 'CHORD VOICING')),
                     Segmented<bool>(
                       joined: true,
                       color: color,
                       values: const [false, true],
                       selected: _inversions,
-                      label: (v) => v ? 'Çevrimler' : 'Kök konumu',
+                      label: (v) => v
+                          ? tr('Çevrimler', 'Inversions')
+                          : tr('Kök konumu', 'Root position'),
                       onChanged: (v) => setState(() => _inversions = v),
                     ),
                     const SizedBox(height: 6),
                     Text(
                       _inversions
-                          ? 'Üst sesler birbirine yakın kalır; yolu basla takip et.'
-                          : 'Her akor kökünü en altta tutar, bas yürüyüşü izler.',
+                          ? tr(
+                              'Üst sesler birbirine yakın kalır; yolu basla takip et.',
+                              'The upper notes stay close; follow the path with the bass.',
+                            )
+                          : tr(
+                              'Her akor kökünü en altta tutar, bas yürüyüşü izler.',
+                              'Each chord keeps its root at the bottom; follow the bass line.',
+                            ),
                       style: TT.small,
                     ),
                   ],
-                  const _Section('BÖLGE'),
+                  _Section(tr('BÖLGE', 'REGISTER')),
                   Segmented<Register>(
                     color: color,
                     values: Register.values,
@@ -258,13 +277,14 @@ class _PracticeSetupScreenState extends State<PracticeSetupScreen> {
                     label: (r) => r.label,
                     onChanged: (r) => setState(() => _register = r),
                   ),
-                  const _Section('SORU BAŞINA SÜRE'),
+                  _Section(tr('SORU BAŞINA SÜRE', 'TIME PER QUESTION')),
                   Segmented<int?>(
                     joined: true,
                     color: color,
                     values: const [null, 5, 15, 30],
                     selected: _limit,
-                    label: (v) => v == null ? 'Yok' : '${v}sn',
+                    label: (v) =>
+                        v == null ? tr('Yok', 'Off') : tr('${v}sn', '${v}s'),
                     onChanged: (v) => setState(() => _limit = v),
                   ),
                   if (kind == TrainerKind.pitch) ...[
@@ -272,11 +292,19 @@ class _PracticeSetupScreenState extends State<PracticeSetupScreen> {
                     AppCard(
                       child: Row(
                         children: [
-                          const Expanded(
-                            child: Text('REFERANS NOTA', style: TT.caps),
+                          Expanded(
+                            child: Text(
+                              tr('REFERANS NOTA', 'REFERENCE NOTE'),
+                              style: TT.caps,
+                            ),
                           ),
                           _Chip(
-                            label: _reference ? 'Do (her soruda)' : 'Yok',
+                            label: _reference
+                                ? tr(
+                                    '${PitchClass.name(0, TrainerScope.of(context).store.notation)} (her soruda)',
+                                    '${PitchClass.name(0, TrainerScope.of(context).store.notation)} (every question)',
+                                  )
+                                : tr('Yok', 'Off'),
                             selected: false,
                             color: color,
                             onTap: () =>
@@ -293,7 +321,7 @@ class _PracticeSetupScreenState extends State<PracticeSetupScreen> {
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
               child: BigButton(
                 key: const Key('practice_now'),
-                label: 'Başlat',
+                label: tr('Başlat', 'Start'),
                 icon: Ic.play,
                 color: color,
                 onPressed: _items.length >= 2 ? _start : null,

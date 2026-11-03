@@ -48,3 +48,7 @@ app.*.map.json
 /android/key.properties
 *.jks
 *.keystore
+
+# QA run output (videos, screenshots); evidence/ stays tracked
+/qa/artifacts/runs/
+/qa/reports/current.json

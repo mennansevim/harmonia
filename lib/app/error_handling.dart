@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../application/error_log.dart';
+import '../domain/lang.dart';
 
 /// Routes unexpected framework and platform errors into [log] (OPS-01a).
 /// Debug builds still print them; release builds show a calm placeholder
@@ -24,13 +25,17 @@ void installGlobalErrorHandlers(LocalErrorLog log) {
 class AppErrorPlaceholder extends StatelessWidget {
   const AppErrorPlaceholder({super.key});
   @override
-  Widget build(BuildContext context) => const Material(
+  Widget build(BuildContext context) => Material(
     child: Center(
       child: Padding(
         padding: EdgeInsets.all(24),
         child: Text(
-          'Bu bölüm gösterilemedi. Geri dönüp yeniden deneyebilirsin; '
-          'sonuçların ve kayıtların etkilenmedi.',
+          tr(
+            'Bu bölüm gösterilemedi. Geri dönüp yeniden deneyebilirsin; '
+                'sonuçların ve kayıtların etkilenmedi.',
+            'This part could not be shown. Go back and try again; '
+                'your results and recordings are unaffected.',
+          ),
           textAlign: TextAlign.center,
         ),
       ),

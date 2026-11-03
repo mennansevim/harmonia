@@ -1,6 +1,6 @@
-# Resonia — Yayın hazırlığı (canlıya çıkış açıkları)
+# Vocalart — Yayın hazırlığı (canlıya çıkış açıkları)
 
-**Güncelleme:** 2026-10-25 · Kaynaklar: CURRENT_ROADMAP, IMPLEMENTATION_ROADMAP §5–§11.
+**Güncelleme:** 2026-11-03 · Kaynaklar: CURRENT_ROADMAP, IMPLEMENTATION_ROADMAP §5–§11.
 Durum sözlüğü roadmap ile aynı; kod-test geçmesi cihaz/pilot/yayın kabulü değildir.
 
 Tür: **K** = kodla kapatılabilir, **Ka** = kullanıcı kararı, **D** = dış kaynak
@@ -21,8 +21,9 @@ Tür: **K** = kodla kapatılabilir, **Ka** = kullanıcı kararı, **D** = dış 
 | Açık | Tür | Durum / gereken |
 |---|---|---|
 | Android derleme ortamı | D | Debug APK derlendi (2026-10-14; Gradle CMake 3.22.1'i kendisi kurdu). cmdline-tools eksik, `flutter doctor --android-licenses` onaylanmadı; gerçek Android cihaz/emülatörde çalıştırılmadı |
-| Release imzalama | Ka/D | Kod hazır (`android/key.properties`, gitignore). Keystore üretimi ve saklanması kullanıcıda; iOS için Apple Developer hesabı + signing team |
-| Uygulama kimliği | Ka | `com.resonia.resonia` geçici. Mağazaya ilk yüklemeden sonra değişmez; kendi alan adınızla seçilmeli |
+| Release imzalama | Ka/D | Android release görevi geçerli dört alanlı `key.properties` + var olan keystore olmadan fail-closed; yalnız yerel derleme kanıtı için açık `-PallowDebugReleaseSigning=true` istisnası var ve mağazaya yüklenemez. Keystore üretimi/saklanması kullanıcıda. iOS: ücretli bireysel team `L3Z9U2B39K` projede tanımlı, otomatik imzalama; makinede yalnız Apple Development sertifikası, Vocalart için App Store profili yok (Xcode ilk imzalı arşivde üretir) |
+| TestFlight yüklemesi (REL-10) | D | 2026-11-03: beta kanalında imzasız `flutter build ipa --no-codesign` arşivi geçti (188,6 MB, 1.0.0+1); 1024 ana ikon arşivde opak; `ITSAppUsesNonExemptEncryption=false` eklendi ve testli. Kalan: App Store Connect uygulama kaydı, imzalı IPA, yükleme (kullanıcı yetkisi). Dış test için gizlilik politikası URL'si + Beta App Review |
+| Uygulama kimliği | K/D | `com.mennansevim.vocalart` iOS ve Android'de uygulandı; platform tutarlılığı otomatik testli. İlk mağaza kaydı/Team ID ve imzalı arşiv dış kapı |
 | Uygulama ikonu / açılış ekranı | K/D | Koddan üretilen marka ikonu; iOS tek-boyut varsayılan/koyu/renklendirilmiş kaynakları asset-testli ve Xcode 27 actool uyarısız, Android uyarlanabilir + tek renk; tema renginde açılış ekranı. Fiziksel görünüm, profesyonel tasarım kabulü ve mağaza ekran görüntüleri açık |
 | Sürüm numarası | K | `1.0.0+1`; her yüklemede build numarası artırılmalı (CI yok) |
 | Gerçek cihazda gezinti | D | Simulator build başarılı, elle gezinti/gerçek iPhone/Android testi yok |
@@ -32,7 +33,7 @@ Tür: **K** = kodla kapatılabilir, **Ka** = kullanıcı kararı, **D** = dış 
 | Yaş/çocuk güvenliği beyanı | D | Hedef kitle öğrenci; hukuk incelemesi |
 
 **Kodda tamam (REL-09/OPS-01a):** beta kanalında geliştirici araçları gizli,
-uygulama adı "Resonia", iOS PrivacyInfo.xcprivacy (izleme yok, veri toplama
+uygulama adı "Vocalart", iOS PrivacyInfo.xcprivacy (izleme yok, veri toplama
 yok, dosya zaman damgası C617.1), release imzalama yapılandırması, yerel hata
 günlüğü + kopyalanabilir rapor, release'te kırmızı hata ekranı yerine sakin mesaj.
 
@@ -74,7 +75,9 @@ CURRENT_ROADMAP › "Kalan işler — 2026-10-15".
 ```sh
 dart tool/quality_check.dart
 flutter build ios --simulator --debug --dart-define=RESONIA_CHANNEL=beta
-flutter build apk --release --dart-define=RESONIA_CHANNEL=beta   # key.properties yoksa debug imzalı
+flutter build apk --release --dart-define=RESONIA_CHANNEL=beta   # geçerli key.properties yoksa bilerek durur
+# Yalnız yerel release derleme kanıtı; oluşan debug-imzalı çıktı mağazaya yüklenmez:
+cd android && ./gradlew app:assembleRelease -PallowDebugReleaseSigning=true
 ```
 
 Mağazaya yükleme, TestFlight dağıtımı, push ve deployment ayrı kullanıcı

@@ -85,8 +85,8 @@ class RhythmNextStepPolicy {
     List<ExerciseResult> results,
     RhythmPattern p,
   ) {
-    final cohort = ResultCohort.forExercise(
-      p.exercise.exercise,
+    final cohort = ResultCohort.forConfiguredExercise(
+      p.exercise,
       source: MeasurementSource.touch,
       analyzerVersion: RhythmImitationOutcome.version,
     );

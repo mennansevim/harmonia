@@ -35,6 +35,9 @@ class NoteEvent {
 /// Validated content contract. The legacy demo Exercise remains supported.
 /// This defines stimulus and response rules, not a pitch/sequence analyzer.
 class ExerciseProtocol {
+  static const maxReferencePlaysLimit = 256;
+  static const maxRecallDelayMs = 600000;
+
   ExerciseProtocol({
     required this.mode,
     required List<NoteEvent> notes,
@@ -59,7 +62,9 @@ class ExerciseProtocol {
         meterNumerator < 1 ||
         ![1, 2, 4, 8, 16, 32].contains(meterDenominator) ||
         recallDelayMs < 0 ||
+        recallDelayMs > maxRecallDelayMs ||
         maxReferencePlays < 1 ||
+        maxReferencePlays > maxReferencePlaysLimit ||
         (notes.isEmpty && rhythmOnsetsBeats.isEmpty) ||
         notes.length > 256 ||
         rhythmOnsetsBeats.length > 256) {

@@ -1,0 +1,17 @@
+# QA_DEFECTS — Vocalart
+
+`qa/defects.json` dosyasından üretilir; elle düzenleme yapma.
+
+| ID | Ekran | Önem | Sorun | Kök neden | Durum | Kanıt |
+|---|---|---|---|---|---|---|
+| QA-DEF-010 | Bugün, Ses, İlerleme, Ayarlar sekmeleri | P1 | Çalışma biter, sonuç "İlerleme sekmesine eklendi, +48 XP" der; İlerleme yeniden başlatılana kadar 0 XP ve "Henüz deneme yok" gösterir. | Sekme gövdeleri const, TrainerScope store değişimini bağımlılara bildirmiyordu. Veri diske doğru yazılıyordu. | Verified | practice_screens_layout_test: tabs show new practice; 09_quiz_to_results |
+| QA-DEF-001 | Bugün ve tüm liste içi butonlar | P1 | Ana CTA ve görevler tek erişilebilirlik öğesinde birleşiyordu; VoiceOver "Çalışmaya başla"yı ayrı seçip etkinleştiremiyordu. | BigButton Semantics container/onTap taşımıyordu, excludeSemantics gerçek dokunma eylemini gizliyordu; AppCard sınır değildi. | Verified | test/trainer/kit_semantics_test.dart; Maestro hiyerarşisi |
+| QA-DEF-002 | Onboarding > Süre | P3 | Varsayılan 8 dakika seçeneklerde yoktu; hiçbir chip seçili değilken özet "8 dakika" diyordu. | TrainerStore varsayılanı onboarding seçenekleriyle eşleşmiyordu. | Verified | trainer_store_test; 01_onboarding_fresh |
+| QA-DEF-003 | Onboarding > Planın kuruldu (yatay) | P1 | Yatay yönde ekran 65 px taşıyordu; "Ana sayfaya git" çalışmıyor, kurulum tamamlanamıyordu. | Sabit Column + Spacer, kaydırma yok; uygulama yatayı destekliyor. | Verified | accessibility_audit_test yatay; 01_onboarding_fresh yatay |
+| QA-DEF-004 | Ses aralığı testi > izin reddi | P2 | İzin reddinde yalnız "Tekrar dene" vardı; iOS izni yeniden sormadığı için çıkmaz yoldu. | Trainer ekranı mevcut MicrophonePermissionRecovery yolunu kullanmıyordu. | Verified | practice_screens_layout_test; 06_mic_permission_denied |
+| QA-DEF-005 | Aralık testi (2× yazı), Kaç ses (yatay) | P2 | Sabit düzen taştı; alt içerik erişilemez oluyordu. | Expanded + Spacer düzeninde kaydırma yoktu. | Verified | practice_screens_layout_test (FitOrScroll) |
+| QA-DEF-006 | Tüm uygulama (iOS en büyük erişilebilirlik yazısı) | P2 | Yaklaşık 3× ölçekte Türkçe kelimeler heceden bölünüyor, karşılama S/A/T/B harfleri çubuklara biniyordu. | Metin ölçeğine üst sınır yoktu; düzen denetimi yalnız 2×'e kadardı. | Verified | practice_screens_layout_test; 17e AX5 Maestro |
+| QA-DEF-007 | Bugün kartı | P3 | Liste dipnotu kahraman kartıyla aynı öğede okunuyordu. | HeroCard semantics sınırı değildi. | Verified | kit_semantics_test |
+| QA-DEF-008 | Ayarlar satırları | P3 | Alt başlık ile sağdaki değer neredeyse bitişikti. | Satırda değer öncesi boşluk yoktu. | Verified | Regresyon testi yok; görsel doğrulandı (settings_notation_sheet) |
+| QA-DEF-009 | Tüm uygulama (İngilizce cihaz) | P2 | İngilizce cihazda arayüz Türkçe, koro modülü İngilizce: sekmede "Choir" ve karışık metinler. | Trainer ve Ses Atölyesi metinleri yalnız Türkçe yazılmıştı; locale yalnız koro modülünde kullanılıyordu. | Verified | Ürün kararı: tam İngilizce. test/trainer/english_ui_test.dart (İngilizce cihazda kurulum, tüm sekmeler, beceri/pratik/ders/nefes/aralık/üyelik ekranları; Türkçe harf/kelime ve taşma yok); Maestro 11_english_tour iPhone Air EN geçti; Türkçe 01/05/10 yeniden geçti |
+| QA-DEF-011 | Quiz > Karşılaştır (büyük yazı) | P3 | "DOĞRUSU" etiketi "DOĞRUS / U" diye bölünüyordu. | Dar kutuda tek satır zorunluluğu yoktu. | Verified | Regresyon testi yok; görsel kontrol |

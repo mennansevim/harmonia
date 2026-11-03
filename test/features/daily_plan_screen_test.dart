@@ -24,7 +24,11 @@ ExerciseResult _perc(int level, DateTime at, {bool retention = false}) {
     round: round,
     answers: [for (final i in round.items) i.correct],
     plays: List.filled(8, 1),
-  ).toResult(sessionId: 's', createdAt: at, retentionCheck: retention);
+  ).toResult(
+    sessionId: 'session-${at.microsecondsSinceEpoch}',
+    createdAt: at,
+    retentionCheck: retention,
+  );
 }
 
 Future<void> _add(ResultHistoryRepository h, ExerciseResult r) => h.record(

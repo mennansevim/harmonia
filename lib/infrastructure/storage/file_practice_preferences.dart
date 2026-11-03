@@ -107,4 +107,11 @@ class FilePracticePreferences implements PracticePreferencesRepository {
           replaceWeeklyGoal: true,
         ),
       );
+
+  @override
+  Future<void> clear() {
+    final run = _writes.then((_) => _store.delete());
+    _writes = run.catchError((Object _) {});
+    return run;
+  }
 }

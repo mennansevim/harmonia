@@ -2264,6 +2264,32 @@ Hiçbiri UI'ya, depolamaya veya sunucuya bağlı değil. Gerçek koro MIDI dosya
 - Doğrulama: `flutter test` 1095 geçti + 1 atlandı, analyze/format temiz, simülatör `choir_journey_test` ve `app_journeys_test` 6/6 geçti. Bir `quality_check` koşusu disk neredeyse doluyken sıfır CPU ile takıldı; öldürülüp aynı adımlar tek tek çalıştırıldı ve geçti, kök neden doğrulanmadı.
 - Fiziksel cihaz, kulaklık, Bluetooth, gecikme, bleed, Android ve insan pilotu yapılmadı. `flutter build ios --simulator` bu makinede Xcode 255 ile düşüyor (bilinen lipo sorunu); `flutter run/test -d` çalışıyor.
 
+## 2026-10-30 — AUDIO-03a analiz sonrası tanısal ses alanı
+
+- `visual_feedback_frame.dart`: phase, seviye, ham signed cents, nullable confidence/stability, aktif/tamamlanan notalar, hata ve provenance için tek yönlü UI sözleşmesi. Görsel konum ±1'e sıkıştırılırken ham sent değeri korunuyor.
+- `pitch_feedback_field.dart`: Aurora `CustomPainter` alanı; sent konumu, kayıt tepe seviyesi küre boyutunu sürüyor. Başarı rengi/skoru yok; kaynak, ölçülmeyen güven/kararlılık ve “puan değil” metni açık.
+- Tek ses oturumu yalnız başarılı kalite + analiz sonucunu eşliyor. Mock kanıt `test` kalıyor; periodic-frame ratio confidence'a, pitch dispersion stability'ye dönüştürülmüyor.
+- Domain/widget/akış regresyonlarıyla hedefli **9 test**, tam pakette **1098 test** geçti; 1 opt-in ekran turu atlandı, analyze/format temiz.
+- Canlı frame, VAD, puan, cihaz FPS'i, gerçek telefon ve insan sesi doğrulanmadı.
+
+## 2026-10-30 — AUDIO-03b canlı, yalnız enerji görsel frame'i
+
+- `InputLevelSource.inputLevelProvenance`: plugin `microphone`, test backend'i `mock`; kaynak UI'da korunuyor ve yükseltilmiyor.
+- `LiveVisualFeedbackProjector`: sonlu ve ≤0 dBFS olaylarını -60..0 gösterim aralığına sınırlar; kalibrasyon/cevap frame'i üretir. Pitch, confidence, stability ve skor üretmez; invalid olayda null döner.
+- `LivePitchFeedbackField`: bounded stream aboneliği; tek ses ekranında yalnız mikrofon açıkken görünür. Kalibrasyon ve cevap başlıkları ayrıdır.
+- `PitchFeedbackField`: pitch ölçülmeyen canlı fazda tuning ekseni/merkez anlamı çizmez; enerji halkası, kaynak ve “perde ölçülmüyor / cihazlar arası kalibre değil / puan değildir” açıklaması gösterir.
+- Eski tek ses canlı-meter regresyonu yeni sözleşmeye taşındı. Hedefli **12 test**, tam **1102 test** geçti; 2 opt-in ekran turu atlandı, analyze/format temiz.
+- Gerçek cihaz, FPS/jank, dBFS tutarlılığı, canlı pitch/sent, VAD, insan sesi ve akustik kabul yapılmadı.
+
+## 2026-10-30 — AUDIO-04a reviewed 2/3/4 ses deneme UI'sı
+
+- `ChordDiagnosticScreen`: mevcut `ChordResponseAttemptCoordinator` için calibration → reference → sequential response → quality/analysis durumlarını ve açık iptal/lifecycle davranışını kullanıcıya bağlar.
+- Learning modunda reviewed nota/oktav etiketleri görünür; recall modunda hedefler “Ses” olarak gizlenir. Exact ve any-order ayrı yönergelidir.
+- Recorder canlı alanı yalnız enerji/provenance gösterir. Sonuçlar aday eşleşmesi, oktav, farklı perde, eksik/fazla ve reordering açıklamasıdır; yüzde/başarı/puan yoktur.
+- Silent kayıt tarafsız kalite tekrarıdır ve worker çalışmaz. Placeholder rota ve disabled butonlar değiştirilmedi; ekran yalnız doğrulanmış coordinator injection ile kurulabilir.
+- 3 yeni widget testi; tam **1109 test geçti**, 2 opt-in tur atlandı; analyze/format temiz.
+- Kullanıcının gerçek piyano kayıtları, reviewed manifest/rights QA, insan sesi/VAD, fiziksel cihaz ve eğitimci kabulü yapılmadı.
+
 ## 2026-10-30 — DESIGN-03 İfade tasarım dili (ADR-037)
 
 - `lib/trainer/ui/kit.dart`: mor + limon renkler, Bricolage + Figtree, hap düğme, düz `HeroCard`, tonal alt menü (`home_shell.dart`).
@@ -2295,6 +2321,22 @@ Hiçbiri UI'ya, depolamaya veya sunucuya bağlı değil. Gerçek koro MIDI dosya
 - Testler: `test/choir/choir_design_widgets_test.dart` (dar ekranda satır kırma, seçili durum semantiği, işaret sayısı) eklendi; uzayan sayfalar için iki test ve ekran turu kaydırma ile güncellendi, tur Lucide yazı tipini yükler.
 - Doğrulama: `dart tool/quality_check.dart` geçti (1106 geçti, 2 atlandı, diğer oturumun AUDIO-03 dosyaları çalışma ağacındayken). Simülatörde uygulama açıldı, Lucide ikonu görüldü. `integration_test/choir_journey_test.dart` bu turda çalıştırılmadı.
 
+## 2026-10-31 — AUDIO-04b reviewed attempt composition
+
+- `ChordDiagnosticAttemptComposer`: reviewed loader çıktısından fresh player + PCM reader backend + worker + reference/capture/analyzer/coordinator zinciri kurar; hiçbir IO eylemini otomatik başlatmaz.
+- `createMobileChordDiagnosticAttempt`: `JustAudioClipPlayer`, `PluginAudioLabBackend` ve `IsolateRecordingPitchWorker` seçimini tek mobil adapter sınırında yapar.
+- Geçersiz policy/tolerans/süre kaynak ayırmadan reddedilir. Backend factory, eksik PCM-reader ve worker factory hatalarında player/backend sahipliği kapatılır; kurulum hatası cleanup hatasıyla değiştirilmez.
+- 5 yeni test; tam **1114 test geçti**, 2 opt-in tur atlandı; analyze/format temiz.
+- Placeholder rota açılmadı. Gerçek piyano manifest/hak/etiket QA, insan sesi/VAD, fiziksel cihaz ve eğitimci kabulü yapılmadı.
+
+## 2026-10-31 — AUDIO-04c atomik reviewed chord bankası
+
+- `ReviewedChordBankLoader`: sabit `reviewed_chords.json` için root/type/symlink/byte/UTF-8/strict schema kapısı; 2/3/4 ses kapsamı zorunlu.
+- Manifestteki bütün WAV kayıtları path/hash/header loader'ından geçmeden immutable `LoadedChordBank` dönmez; tek missing/corrupt kayıt partial availability üretmez.
+- Hata nesnesi yalnız bounded failure + kayıt kimliği/kodunu taşır, özel absolute root'u sızdırmaz. Loader hiçbir player, permission, capture veya analyzer başlatmaz.
+- 8 yeni test; tam **1122 test geçti**, 2 opt-in tur atlandı; analyze/format temiz.
+- Gerçek piyano nota/oktav/akort/tını/seviye/hak/eğitimci QA, insan sesi/VAD ve fiziksel cihaz yapılmadı; placeholder rota kapalı.
+
 ## 2026-10-31 — DESIGN-07 kişisel ekranlar koro diliyle
 
 - `kit.dart`: `CrumbBar`, `PageTitle`, `TT.heroCaps`, `trCaps`; `BackSquare` yalın ok (tooltip'li `IconButton`); `TopBar` başlığı yol etiketi, `titleIcon`/`shadow` kaldırıldı; `ProgressBar.track`; `trainerColor` her beceri için `TC.primary`.
@@ -2304,6 +2346,11 @@ Hiçbiri UI'ya, depolamaya veya sunucuya bağlı değil. Gerçek koro MIDI dosya
 - Testler: `test/support/tour_fonts.dart` iki turda ortak; kişisel tur gerçek yazı tipleriyle çalışıyor. İki test beklentisi yeni metne göre güncellendi. Tam **1122 test geçti**, 2 opt-in atlandı; analyze/format temiz.
 - Açık: onboarding/nefes/oturum sonu/quiz gövdeleri yalnız renk ve başlık aldı; ♭/♯ Inter alt kümesinde yok (testte kutu, cihaz kontrol edilmedi); simülatör ve gerçek telefon görülmedi. Commit yalnız bu işin dosyalarını içerir; o hâlin testleri disk dolu olduğu için ayrıca çalışmadı (analyze temiz).
 
+
+## 2026-10-31 — Legato ve isim araştırması (uygulama değişikliği yok)
+
+Kullanıcı isteğiyle güncel Trainer/Choir kaynakları Legato'nun resmi mağaza ve ürün sayfalarıyla karşılaştırıldı. Rapor: [Legato ve isim araştırması](docs/research/2026-10-31-legato-and-naming.md). Seçili isimler için TR/US Apple Search API sonuçları aynı klasörde JSON olarak saklandı. Canlı perde/insan sesi doğrulaması, eser bazlı süre günlüğü ve cihazlar arası devamlılık öncelik önerileridir; uygulanmış özellik veya kabul edilmiş yeni kapsam değildir. Uygulama kodu, skor kapıları ve mevcut kullanıcı değişiklikleri değiştirilmedi. Bu araştırmada uygulama kurulmadı, cihaz testi veya test paketi çalıştırılmadı.
+
 ## 2026-10-31 — NAME-01 görünen ad Sinyorina
 
 **Kullanıcı isteği:** "sinyorina olacak yeni ad. bunu her yerde kullan tasarımda." (resonia.app başka yerlerde kullanılıyor.)
@@ -2311,6 +2358,132 @@ Hiçbiri UI'ya, depolamaya veya sunucuya bağlı değil. Gerçek koro MIDI dosya
 - Kullanıcıya görünen metinlerde `Resonia` → `Sinyorina`: `ios/Runner/Info.plist` (CFBundleDisplayName, CFBundleName, NSMicrophoneUsageDescription), `AndroidManifest.xml` etiketi, `MaterialApp.title` (iki kabuk), karşılama markası, ayarlar, hatırlatma, izin kurtarma, veri aktarımı, koro dosyası hatası, ses aralığı testi ve onboarding metinleri. Türkçe ekler (’ya, ’nın, ’yı) aynı ünlü uyumuyla kaldı.
 - Bilerek değişmedi: paket/sınıf/dosya adları, `RESONIA_CHANNEL`, `.resonia` uzantısı, kod yorumları, dokümanlar, bundle ID.
 - Kontrol: `dart tool/quality_check.dart` → 1124 geçti, 2 atlandı. Cihaz/simülatör görünümü, marka ve App Store ad uygunluğu kontrol edilmedi. Commit yok.
+
+## 2026-10-31 — RETRY-01d açıklayıcı ezgi aday sonucu
+
+- `MelodyCandidateComparisonCard`, CORE-03 hizalamasındaki her sembolik adımı
+  referans/aday sıra numarasıyla gösterir: toleransa yakın, oktav farkı, farklı
+  perde, eşleşmeyen referans veya eşleşmeyen cevap.
+- Kart neden hedefli bölüm önerildiğini görünür kılar; bunun nota doğruluğu,
+  doğrulanmış hata veya ezgi hafızası puanı olmadığını ve history/mastery/
+  sıralamaya yazılmadığını açıklar.
+- Beş aday türü, karşılaştırılamayan cevap ve mevcut session akışı widget
+  regresyonlarıyla doğrulandı. Tam **1124 test geçti**, 2 opt-in tur atlandı;
+  analyze/format temiz.
+- Mock/sentetik kanıt gerçek insan sesi, VAD, fiziksel cihaz veya eğitimci
+  kabulü değildir; bu kapılar açık, commit/push/deploy yapılmadı.
+
+## 2026-11-01 — REL-06e yapılandırılmış yardım kanıtı
+
+- `AttemptAssistanceEvidence` için schema v1 eklendi: gerçekleşen referans
+  çalma sayısı, perde ipucu, transpozisyon, eşlik ve yapılandırılmış hatırlama
+  gecikmesi katı tür/alan/sınır doğrulamasıyla taşınıyor.
+- `ExerciseProtocol` tekrar ve gecikme üst sınırlarını doğruluyor; izin verilmeyen
+  yardım kullanımı sonuç kanıtı üretmeden reddediliyor.
+- Ritim sonucu, protocol ile bağlı gerçek `referencePlays` sayacını nested
+  `assistance` kanıtına yazıyor. Legacy alan göç uyumluluğu için korunuyor.
+- Beceri grafiği yalnız tek dinleme ve yardımsız kanıtı bağımsız sayıyor.
+  Malformed/çelişkili/new-assisted sonuçlar destekli kalıyor; eski sonuçlar
+  önceki tek-dinleme kuralıyla okunuyor.
+- Hedefli 100 test ve tam kalite kapısı geçti: **1131 test başarılı**, 2 opt-in
+  tur atlandı; analyze/format temiz. `configuredRecallDelayMs` ölçülmüş latency
+  veya hafıza değildir. Puan eşikleri, AI ve ses motoru değişmedi. Gerçek
+  cihaz/insan sesi/eğitimci/pilot/yayın kapıları açık; commit/push/deploy yok.
+
+## 2026-11-01 — REL-06f protokol parmak izi ve kohort izolasyonu
+
+- Yeni `ExerciseProtocolFingerprint`, strict `ExerciseProtocol.toJson()`
+  çıktısını `exercise-protocol-v1-sha256:<64 hex>` kimliğine dönüştürüyor.
+- Nota/ritim, presentation/order, 12TET+A4, tempo/ölçü, recall/tekrar ve üç
+  yardım politikası aynı kimliğe bağlı; JSON round-trip aynı değeri üretir.
+- `RhythmImitationOutcome.toResult` kimliği immutable measurements'a yazar.
+- `ResultCohort.forConfiguredExercise`, `RhythmMeasuredExercise` ve
+  `RhythmNextStepPolicy` exact kimlik ister. Eksik/farklı/bozuk kimlik fail-closed
+  kalır; geçmiş kayıt silinmez veya dönüştürülmez.
+- Beceri haritası, günlük plan, starting check, haftalık rapor ve kaldığın yer
+  fixture'ları yeni sözleşmeyle doğrulandı. Algı kohortları etkilenmedi.
+- Hedefli 105 ve tam **1136 test geçti**, 2 opt-in tur atlandı; analyze/format
+  temiz. İlk kalite denemesi yalnız 6 null-aware test lint'i nedeniyle durdu,
+  fixture stili düzeltilip kapı yeniden başarıyla çalıştırıldı. Cihaz/voice/VAD/
+  eğitimci/yayın kanıtı yok; commit/push/deploy yapılmadı.
+
+## 2026-11-01 — REL-07e yerel history session dedup
+
+- `classifyRecord`, aynı `sessionId` altındaki birebir aynı sonucu yeni bir
+  `attemptId` ile gelse bile duplicate; farklı sonucu conflict sayıyor. İki
+  durumda da history ve kapasite değişmiyor.
+- `planBatchRecords` aynı kuralı gelen batch'in kendi içinde ve mevcut history'ye
+  karşı atomik uygular; kapasite yalnız gerçekten yeni kimliklere harcanır.
+- Dosya adapter'ı load sırasında tekrar eden attempt veya session kimliğini
+  corrupt sayar ve dosyayı silmez/yeniden yazmaz. Import parse katmanı aynı
+  session kayıtlarını okuyabilse de repository sonuç raporunda duplicate/conflict
+  olarak çözer; partial write yoktur.
+- Gerçekten farklı günlük-plan turlarının test fixture'ları artık zamandan türeyen
+  farklı session kimlikleri taşır. İlk tam koşuda bu eski fixture varsayımı iki
+  daily-plan testini düşürdü; fixture düzeltildikten sonra hedefli **41 test** ve
+  tam kalite kapısı **1141 test + 2 opt-in skip** ile geçti. Analyze/format temiz.
+- Skor, AI, ses motoru veya kullanıcı verisi migration'ı değişmedi. Fiziksel
+  cihaz/insan sesi/eğitimci/pilot/yayın kapıları açık; commit/push/deploy yok.
+
+## 2026-11-02 — SHELL-04p başlangıç kontrolü foreground/dependency yenileme
+
+- `StartingCheckScreen`, read-only projection'lar için mevcut
+  `ForegroundRefreshState` sınırına alındı. `paused/hidden/detached → resumed`
+  bir read yapıyor; `inactive → resumed` ve ek `resumed` olayları yapmıyor.
+- History repository, çalışma hedefi veya katalog kimliği değişince önceki özet
+  yeni kaynağa taşınmıyor; ekran loading gösterip yalnız yeni future sonucunu
+  yayımlıyor. Launcher değişimi gereksiz history reload'u üretmiyor.
+- Foreground read yalnız özeti yeniliyor. Egzersiz route'u açma, local history
+  yazma, playback/capture başlatma veya yarım oturum restore etme yolu yok.
+- Ortak consumer regresyonlarıyla hedefli **41 test**, tam kalite kapısında
+  **1143 test + 2 opt-in skip** geçti; analyze/format temiz.
+- Bu kod testi fiziksel iOS/Android lifecycle, internetsiz kullanım, process
+  death veya pedagojik kabul değildir. Commit/push/deploy yapılmadı.
+
+## 2026-11-02 — DATA-03e veri taşıma async kaynak izolasyonu
+
+- Export başlangıcında history/profile/preferences/clock snapshot'lanıyor.
+  Kaynak değişirse generation kapısı eski load sonucunu encode/pano aşamasından
+  önce durduruyor; stale status yeni ekrana yayınlanmıyor.
+- Import başlangıcında history ve preference hedefleri snapshot'lanıyor. Açık
+  onay sırasında dependency replacement olursa eski onay hiçbir repository'ye
+  uygulanmıyor. Yazma başlamışsa işlem başladığı eski hedefte tamamlanabilir,
+  fakat yeni kaynağa dönemez ve stale callback/status yayınlayamaz.
+- Dependency replacement bekleyen UI kilidini yeni kaynak için kaldırıyor;
+  input korunuyor. Onay metni attempt ve session kimliği tekilliğini açıklıyor.
+- İlk hedefli komutta yanlış preference-test yolu nedeniyle yalnız runner load
+  hatası oluştu; doğru dosyayla tekrarlandı. Başarılı hedefli koşular toplam
+  **48 test**, tam kalite kapısı **1145 test + 2 opt-in skip**; analyze/format
+  temiz.
+- Hesap/sync/backend, gerçek iki cihaz panosu, process kill ve cross-file
+  transaction yok. Commit/push/deploy yapılmadı.
+
+## 2026-11-02 — DATA-03f export preference-read fail-closed
+
+- Export önce history'yi, ardından aynı snapshot'taki taşınabilir tercihleri
+  okuyor. Preference adapter'ı hata verirse belge encode edilmiyor ve
+  `Clipboard.setData` hiç çağrılmıyor.
+- Ekran yalnız bounded kullanıcı mesajı gösteriyor; exception metni veya özel
+  path sızmıyor. Busy kilidi finally ile açılıyor ve açık retry mümkün.
+- Bu karar sonuç-only belgeyi sessiz başarı saymıyor; profil/sonuç/tercih export
+  sözleşmesinin tamamı tek kullanıcı eylemi için eksiksiz kalıyor.
+- Hedefli **49 test**, tam kalite kapısında **1146 test + 2 opt-in skip** geçti;
+  analyze/format temiz. Gerçek cihaz clipboard, hesap/sync/backend ve iki cihaz
+  kabulü yok. Commit/push/deploy yapılmadı.
+
+## 2026-11-02 — DATA-03g bounded export üretimi
+
+- `LocalDataExport.encode`, JSON üretiminden önce `maxEntries=5000` sınırını,
+  üretimden sonra clipboard'dan önce `maxUtf8Bytes=4 MiB` sınırını uyguluyor.
+  Limitler decoder ile aynı sabitleri kullanıyor.
+- Limit aşımı reason-only `LocalDataFormatException('too_large')`; payload veya
+  özel içerik exception metnine girmiyor.
+- Veri taşıma ekranı bu durumu yakalayıp panoya hiçbir şey yazmadan bounded
+  4 MB mesajı gösteriyor ve işlem kilidini açıyor.
+- Entry preflight, büyük hedef payload'ı ve widget clipboard guard testleriyle
+  hedefli **51 test**, tam **1148 test + 2 opt-in skip** geçti; analyze/format
+  temiz. Gerçek cihaz pano kapasitesi/süre davranışı denenmedi; hesap/sync yok.
+  Commit/push/deploy yapılmadı.
 
 ## 2026-11-02 — NAME-02 görünen ad Vocalart
 
@@ -2323,3 +2496,291 @@ Hiçbiri UI'ya, depolamaya veya sunucuya bağlı değil. Gerçek koro MIDI dosya
 - Uygulama kimliği `com.resonia.resonia` → `com.mennansevim.vocalart` (iOS pbxproj, Android gradle namespace/applicationId, MainActivity paketi taşındı). `xcodebuild -showBuildSettings` yeni kimliği gösteriyor.
 - iOS simülatör derlemesi başarısız: Flutter 3.44.4 `debug_unpack_ios`, Xcode 27.0 `lipo -verify_arch` çoklu mimari argümanını kabul etmiyor ("requires exactly one input file"); tek mimariyle `lipo -verify_arch arm64` geçiyor. Araç zinciri sorunu; TestFlight öncesi çözülmeli. Android derlenmedi.
 - Çözüm: `ios/Flutter/{Debug,Release}.xcconfig` → `ARCHS[sdk=iphonesimulator*]=arm64` (önce `EXCLUDED_ARCHS` denendi, Flutter `ARCHS` ortam değişkenine baktığı için işe yaramadı). Simülatör derlemesi geçti (`com.mennansevim.vocalart`, `Vocalart`), uygulama simülatörde açıldı; imzasız cihaz release derlemesi geçti. Intel simülatör desteği düştü.
+
+## 2026-11-02 — LAUNCH-AUDIT canlıya çıkış ve rakip incelemesi
+
+**Kullanıcı isteği:** Canlıya çıkıştaki engelleri araştır, piyasadaki rakiplerle karşılaştır. Uygulama kodu değişmedi.
+
+- Çalıştırıldı: `dart tool/quality_check.dart` (1148 geçti, 2 atlandı), `flutter build appbundle --release --dart-define=RESONIA_CHANNEL=beta` (AAB üretildi, debug imzalı). `--no-pub` ile derleme stale registrant nedeniyle düştü; `pubspec.lock` değişmedi.
+- Bulunan hata: Verilerimi sil, sonuç geçmişi, çalışma tercihleri ve zamanlanmış hatırlatmayı kapsamıyor. Kod okumasıyla bulundu, çalıştırılmadı, düzeltilmedi.
+- Kaynaklar: Apple upcoming requirements, Google Play Console yardım sayfaları, App Store listeleri (cori, VocalCentric, Legato), Chorilo sitesi. Fiyatlar ABD listesi veya üçüncü taraf; Türkiye fiyatı değil. Rakip uygulamalar kurulup denenmedi.
+- Flutter 3.47+ gereği yalnız üçüncü taraf (Mixpanel) sürüm notundan geliyor; Flutter resmî notu doğrulanmadı.
+
+## 2026-11-02 — PRIV-01 Verilerimi sil kapsamı
+
+**Kullanıcı isteği:** LAUNCH-AUDIT'te bulunan silme hatasını düzelt.
+
+- `PracticePreferencesRepository.clear()`, `FilePracticePreferences.clear()` (yazma kuyruğunda), `PracticeReminderCoordinator.wipe()` eklendi.
+- `settings_tab.dart`: sıra hatırlatma ve tercihler → sonuç geçmişi → koro → `TrainerStore`. Hata mesajı Ayarlar'da gösterilir, adımlar tekrar edilebilir.
+- Widget testlerinde koro deposu sahte: gerçek dosya IO'su sahte saatte tamamlanmıyor. Gerçek dosya yolu integration test ile doğrulandı.
+- Doğrulama: `quality_check` 1154 geçti, 2 atlandı. `app_journeys_test` iPhone 17 simülatöründe 6/6. iPhone 17 Pro simülatörüne yeni debug derleme yüklendi.
+- Kapsam dışı kalanlar: kilitlenmeden kalan koro geçici dizinleri, gerçek bildirimle iptal denemesi.
+
+## 2026-11-02 — REL-09b yayın kimliği tutarlılık kapısı
+
+- `test/tool/release_identity_test.dart`, Android namespace/applicationId,
+  launcher etiketi ve tek `MainActivity` package yolunu; iOS ana/test target
+  bundle kimliklerini ve display/bundle adını birlikte doğruluyor.
+- Platform yayın dosyalarında emekliye ayrılan `com.resonia.resonia` kimliği
+  bulunursa test düşüyor. Bu kontrol tarihsel dokümanları veya migration riski
+  nedeniyle korunan iç Dart/data adlarını yeniden adlandırmıyor.
+- Android release uyarısı, `pubspec` açıklaması, README başlığı,
+  `RELEASE_READINESS.md` kimlik satırı ve AUDIO_TESTING simülatör izin komutu
+  Vocalart / `com.mennansevim.vocalart` ile eşlendi. ADR-039, ADR-038'in ad ve
+  mağaza kimliği bölümünü açıkça yerine geçiriyor.
+- Hedefli `release_identity` + `quality_check` koşusunda **13 test**, tam
+  `dart tool/quality_check.dart` koşusunda **1174 test + 2 opt-in skip** geçti;
+  format 351/0 ve analyze temiz.
+- Test repo yapılandırmasıdır; Apple Team/provisioning, Android keystore,
+  mağaza kaydı, imzalı arşiv, gerçek kurulum veya mağaza kabulü değildir.
+  Commit/push/deploy yapılmadı.
+
+## 2026-11-03 — QA-iOS-01 simülatör QA turu
+
+**Kullanıcı isteği:** Otonom iOS QA, görsel denetim, doğrulanan hataları düzeltme ve izlenebilir dashboard.
+
+- Kurulum: Homebrew ile Maestro 2.12.1. Patrol ve golden eklenmedi (gerekçe `QA_PLAN.md`).
+- Düzeltmeler ve regresyon testleri: QA-DEF-001…011, `qa/defects.json` ve `QA_DEFECTS.md`.
+- QA-DEF-010: `TrainerScope` store'u bildirmiyordu, `const` sekmeler bayat kalıyordu. Yeni test düzeltmeden önce düştü.
+- QA-DEF-001: `kit_semantics_test` düzeltmeden önce düştü.
+- Doğrulama: 1182 test geçti, 2 atlandı; analyze/format temiz; integration 7/7; Maestro 81 koşu, son durum 27/27 kombinasyon (4'ü önceki derleme).
+- Çözülemeyen gözlem: `code_gate` matris yükü altında bir kez exit 1 verdi (0 test hatası), tekrar etmedi, adım kaydedilmedi.
+- Sınırlar: gerçek cihaz, VoiceOver elle turu, gerçek ses/bildirim, performans, iOS 15–26.4 yok. Commit/push/deploy yapılmadı.
+
+## 2026-11-03 — REL-08b QA kapısı arıza kanıtı
+
+- `scripts/qa/code_gate.py` format/analyze/test süreçlerinin exit code ve
+  sürelerini, ilk düşen adımı, en çok 10 başarısız testin bounded ad/hata
+  özetini ve tool crash için en çok 12 satırlık diagnostic tail'i kaydediyor.
+  Repo kökü kalıcı rapora yazılmadan `<repo>` ile maskeleniyor.
+- Flutter test çağrısı canonical `quality_check` ile aynı `--concurrency 4`
+  sınırına alındı. Başarısız process, test sayacı sıfır olsa da `status=failed`
+  ve `failedStep` ile görünür; dashboard bu adımı gösteriyor.
+- `scripts/qa/test_code_gate.py` altında count/skip/hidden ayrımı, test hata
+  çıkarımı, bozuk machine satırından toparlanma ve bounded path-redaction için
+  **3 Python testi** geçti; py_compile ve dashboard üretimi temiz.
+- Gerçek `python3 -I scripts/qa/code_gate.py` koşusu: format exit0/1,29 sn,
+  analyze exit0/3,93 sn, tests exit0/79,5 sn; **1182 geçti, 0 başarısız,
+  2 opt-in atlandı**. Dashboard yeni JSON'dan yeniden üretildi.
+- Önceki tekil exit 1'in nedeni eski koşuda kanıt tutulmadığı için belirlenmedi;
+  bu paket geriye dönük neden uydurmaz. Cihaz/ses/pilot/hosted-CI/yayın kanıtı
+  değildir. Commit/push/deploy yapılmadı.
+
+## 2026-11-03 — I18N-01 tam İngilizce (QA-DEF-009)
+
+- Karar: kullanıcı "Tam İngilizce ekle" dedi. Kural koro modülüyle aynı: ilk cihaz dili Türkçe ise Türkçe, değilse İngilizce.
+- Altyapı: `lib/domain/lang.dart` (`Lang.en`, `tr`, `percent`); `TrainerApp.localeResolutionCallback`; `trCaps` dile duyarlı. `trainerPaths`, `draftAksakPatterns`, `draftRhythmPatterns`, `draftMicroLessons` dile göre önbellekli getter. `IntervalType`, `ChordQuality`, `ScaleType`, `Progression`, `VoicePart`, `BreathPhase` İngilizce alan taşır.
+- Çevrilen: `lib/trainer` tüm ekranlar ve domain; Ses Atölyesi'nden açılan `features/` ekranları (tek ses, ezgi + bölüm dinleme, ritim, piyano yer tutucusu, mikroders, sonraki adım metinleri, ortak bileşenler); hatırlatma bildirimi; `AppErrorPlaceholder`; iOS `NSMicrophoneUsageDescription` (`ios/Runner/{en,tr}.lproj/InfoPlist.strings`, `CFBundleLocalizations`, `knownRegions`).
+- Düzeltme: Ayarlar `_Item` değeri `Flexible`; İngilizcede "Solfège (Do Re Mi)" satırı 12 px taşıyordu.
+- Testler: `test/flutter_test_config.dart` testleri Türkçe cihazda koşturur ve `Lang.en`'i sıfırlar. `trainer_app_test` içindeki "Koro sekmesi yok" beklentisi yalnız İngilizce locale yüzünden geçiyordu; koro üyesi için sekme görünür olarak düzeltildi. Yeni `test/trainer/english_ui_test.dart`: İngilizce cihazda kurulum, tüm sekmeler, beş eğitmenin beceri/pratik/istatistik/ders ekranları, nefes, üyelik, aralık testi, kaç ses; Türkçe harf/kelime veya taşma bulursa düşer.
+- Sonuç: format/analyze temiz, **1185 geçti**, 0 başarısız, 2 opt-in atlandı. Maestro `11_english_tour` iPhone Air iOS 27 EN geçti (görüntüler `qa/artifacts/evidence/en/`); Türkçe `01`, `05`, `10` iPhone 17 iOS 27 üzerinde aynı derlemeyle geçti.
+- Sınırlar: çeviri kalitesi anadili İngilizce bir eğitimci/editörce gözden geçirilmedi; eski, erişilemeyen `features/` ekranları ve `skill_graph` başlıkları Türkçe; mağaza metinleri yok; gerçek cihaz yok; nota gösterimi varsayılanı İngilizcede de solfej.
+
+## 2026-11-03 — LAUNCH-AUDIT-02 canlıya hazırlık ve pazar araştırması
+
+- Kullanıcı isteği: "uygulama canlıya hazır mı, piyasa araştırması yap". Kod değişmedi.
+- Doğrulama: `dart tool/quality_check.dart` exit 0; **1185 geçti**, 0 başarısız, 2 opt-in atlandı.
+- Sonuç: açık yayın hazır değil; iç beta açıkları `RELEASE_READINESS.md` §2 ile aynı (imzalama, Apple dağıtım, gizlilik politikası, mağaza formları, gerçek cihaz). Ses puanlaması (`scoringEnabled=false`) açılmadan Core beta yok.
+- Pazar: web masa başı arama; bulgular ve kaynaklar `COMPETITOR_RESEARCH.md` 3 Kasım ekinde. Pazar büyüklüğü rakamları rapor firmalarına ait, yöntem görülmedi; fiyatlar satıcı kaynaklı.
+- Sınırlar: mağaza içi Türkiye araması elle yapılmadı, rakip uygulamalar indirilip denenmedi, ulusal aday sayısı yok, kullanıcı görüşmesi yok. Commit/push yok.
+
+## 2026-11-03 — REL-10 TestFlight hazırlık kontrolü
+
+- Kullanıcı isteği: "TestFlight'a yüklemeye hazır mı"; ardından şifreleme beyanının eklenmesi onaylandı.
+- Kontrol: `flutter build ipa --release --no-codesign --dart-define=RESONIA_CHANNEL=beta` → `build/ios/archive/Runner.xcarchive` (188,6 MB), sürüm 1.0.0+1, iOS 15.0. `assetutil` ile 1024 ana ikon opak. Team `L3Z9U2B39K` (ücretli bireysel); Vocalart için provisioning profile yok; yerelde yalnız Apple Development sertifikası.
+- Değişiklik: `ios/Runner/Info.plist` içine `ITSAppUsesNonExemptEncryption=false` (ağ veya özel şifreleme yok). `test/tool/release_identity_test.dart` anahtarı doğruluyor. `plutil -lint` OK.
+- Doğrulama: `dart tool/quality_check.dart` exit 0; **1185 geçti**, 0 başarısız, 2 opt-in atlandı.
+- Sınırlar: imzalı IPA üretilmedi, App Store Connect kaydı doğrulanmadı, yükleme yapılmadı; ileride ağ/HTTPS eklenirse beyan yeniden değerlendirilmeli. Gerçek cihaz yok. Commit yok.
+
+
+## 2026-11-03 — CHOIR-SEP-01 / RANGE-02 / IA-02: Koro ayrı ürün, dinle-tekrar et aralık testi, ses grubu sorusu kaldırıldı
+
+**Kullanıcı isteği:** Koro modülü korist için ayrı satılmalı; çok sesli kayıt
+üzerine eşlik ederek söyleme düşünülmeli. "Hangi ses grubusunuz" sorusu
+yersiz; Agora'daki kendi tek ses aralığı algoritmasını piyano sesleriyle
+"play and listen" olarak kullan, kullanıcı geçebilsin. 2/3/4 ses yakında;
+ses tespiti için ayrı ekran. Eğitim modelini ve benzer örnekleri araştır.
+
+### Uygulananlar
+
+- `lib/trainer/koro/range_ladder.dart` (saf Dart): Agora `rangeMachine.ts` +
+  `matchToTarget` portu. Doğal notalar E1–C7 (41), 2 deneme, yukarı→aşağı,
+  `skipDirection`, ±40 sent eşik. Yanlış oktav `octaveOff` (asla ulaşılmış
+  değil), kalite kapısı reddi `unmeasured` (perde/yakınlık null). Aralık için
+  en az iki ulaşılmış nota; tek nota sonuç değildir.
+- `lib/trainer/koro/range_test.dart`: ekran baştan yazıldı — tanıtım (Şimdi
+  değil) → izin → rahat "aa" ile başlangıç (ya da La3) → nota çal / söyle /
+  geri bildirim döngüsü, yön değişimi, "Tizde/Peste sınırım bu" → sonuç
+  (aralık, yarım ses/oktav, nota merdiveni, çalışma aralığı). Sonuç
+  `koroRange` ve `voicePart` (çalışma register'ı) olarak kaydedilir; puan,
+  history veya ses tipi üretilmez. Kayıt piyano bittikten sonra başlar.
+- `lib/trainer/audio/piano_notes.dart` + `assets/audio/piano/notes/catalog.json`:
+  kayıtlı piyano notası bankası; `rightsReference` boşken tüm katalog yok
+  sayılır, sentez piyanoya düşer. `TrainerAudio.playNote` nota bitene kadar
+  bekler.
+- Onboarding `Ob.part`: SATB seçimi yerine atlanabilir "Ses aralığını
+  ölçelim" adımı (`ob_measure_range`); kalıcı adım adı uyumluluk için `part`.
+  Hazır sayfası "Ölçülmedi · Ses sekmesinde ölç". Bugün kartındaki bağlantı
+  "Ses aralığını ölç" olup teste gider; dokunma hedefi 44→48 px (erişilebilirlik
+  denetimi yakaladı).
+- Ses sekmesi: "SES TESPİTİ" bölümü; 2/3/4 sesli tekrar "YAKINDA".
+- Koro: `lib/choir/domain/part_ladder.dart` `PartStep` (dinle, partin önde,
+  birlikte, partin kısık, partin yok) ve `PracticeScreen` üstünde basamak
+  kartı; varsayılan "Dinle" (eşit mix). Elle kaydırıcı "Kendi ayarın" olur.
+- Üyelik ekranına üçüncü sekme "Koro · ayrı" (planlanıyor, satış yok).
+- ADR-040.
+
+### Araştırma özeti
+
+- Benzer uygulamalar (Choir Player, Choral Practice, Track Tutor,
+  ChorusClass, Resonance Link, Soundslice) parti sessize alma/öne alma, hız ve
+  döngü sunuyor; bizdeki fark aşamalı destek azaltma ve şef ödeviyle bağ.
+- Learning-track rutini (Barbershop Harmony Society): tam mix → kendi parti
+  → "u" sonra sözler → parti eksik mix. Kontrollü karşılaştırma bulunamadı;
+  bir 2026 yüksek lisans tezi kayda aşırı bağımlılığın içselleştirme yerine
+  taklide kaydırabileceğini uyarıyor — bu yüzden son basamak "partin yok".
+- Aralık testi güvenilirliği için hakemli test-tekrar verisi bulunamadı;
+  eşikler kullanıcının Agora parametreleridir, insan benchmark'ı yoktur.
+
+### Doğrulama
+
+- `test/trainer/range_ladder_test.dart` 13 test (domain, hak kapısı, ekran
+  akışı, atlama); `choir_screens_test` +2 (basamak domain/ekran, dar ekran);
+  onboarding/İngilizce/erişilebilirlik/tur testleri yeni adıma uyarlandı.
+- `dart tool/quality_check.dart`: format/analyze temiz, **1201 test geçti**,
+  2 opt-in atlandı.
+
+### Sınırlar
+
+- Gerçek cihazda/mikrofonda denenmedi; hoparlör→mikrofon geçişi (iOS ses
+  oturumu) ve 2 sn kayıtla kalite kapısı gerçek seste doğrulanmadı.
+- Piyano WAV'ları kopyalanmadı (hak teyidi bekliyor); şimdilik sentez.
+- Maestro `01_onboarding_fresh` metni güncellendi ama simülatörde koşulmadı;
+  `integration_test` güncellendi, koşulmadı.
+- Koro modülünün satış/entitlement altyapısı, yeni örnek eserler ve şef
+  tarafı yok. Commit yok.
+
+### 2026-11-03 ek — Piyano notaları (sahibinin onayı)
+
+Kullanıcı Agora'daki 41 WAV'ın kendi kaydı olduğunu onayladı. Perde kontrolü
+(harmonik tarak + YIN): **A5–C7 arası 10 dosya adındaki notadan bir beyaz tuş
+tiz çalıyor** (A5.wav≈B5 … C7.wav≈D7); Agora web testini de etkiler. Doğrulanan
+31 dosya (E1–G5, 9,1 MB) `assets/audio/piano/notes/` altına kopyalandı ve
+katalog `rightsReference` ile açıldı; 10 dosya `heldBack`, onlar için sentez
+çalar. `test/trainer/piano_notes_bank_test.dart` her kaydın etiketini doğrular;
+kaymış 10 Agora dosyasının hepsini yakaladığı ayrıca denendi. Tam kapı:
+1203 test geçti, 2 opt-in atlandı (bir koşuda bilinen kararsız test bir kez
+düştü, tekrarında geçti). Gerçek cihazda çalınmadı. Commit yok.
+
+## 2026-11-03 — I18N-02 dil ayarı, RHYTHM-CLAP-01 senkron alkış
+
+**Kullanıcı isteği:** Dil Ayarlar'dan değişebilsin; ritim/ezgi tekrarı var mı;
+alkış animasyonu Batı ve Türk müziği ritimlerinden rastgele, senkron çalsın.
+
+- Ritim tekrarı ve ezgi tekrarı zaten vardı (Ses sekmesi → TEK SESLİ;
+  `RhythmImitationScreen` taslak, `MelodySessionScreen` deneysel). Değişmedi.
+- `TrainerStore.language` ('tr'/'en'/null=cihaz); Ayarlar > Tercihler > Dil.
+  `TrainerApp` yalnız dil değişince yeniden kurar, `MaterialApp.locale` ve
+  `Lang.en` birlikte ayarlanır (cihaz diline dönüşte WidgetsApp callback'i
+  çağırmadığı için `Lang.en` elle ayarlanıyor). "Verilerimi sil" dili sıfırlar.
+- `lib/trainer/koro/clap_rhythm.dart`: Batı (ritim taslakları + tresillo,
+  son clave, vals) ve Türk (aksak taslakları + sofyan) havuzu; art arda aynı
+  ritim gelmez. Alkış sesi sentez (üç kısa gürültü patlaması, kayıt yok).
+  Eller ve vuruş noktaları sesle aynı onset listesinden Ticker ile sürülür.
+  Ses sekmesinde "Alkışla ritim" (TASLAK). Ritimler eğitimci onaylı değil.
+- Testler: `test/trainer/clap_and_language_test.dart` (havuz, tekrar etmeme,
+  alkışın onset'te başlaması, animasyon sırası, dil değişimi ve geri dönüş).
+  Tam kapı: **1208 test geçti**, 2 opt-in atlandı, analyze/format temiz.
+- Sınırlar: cihaz çıkış gecikmesi ölçülmedi, görüntü sesten biraz önde
+  olabilir; gerçek cihazda denenmedi. Usul/aksak doğruluğu eğitimci onayı
+  bekler. Commit yok.
+
+## 2026-11-03 — DESIGN-08 ton düzeltmesi, karşılama ekranı
+
+**Kullanıcı isteği:** Arka plan çok açık; tonları gözden geçir. Karşılama
+ekranı kullanışlı mı; giriş ve sekmeleri gözden geçir.
+
+- `TC` (kit.dart): zemin #F8F7F3 → #EDE6DA (sıcak kum; beyaz kartlar artık
+  ayrışıyor), primary #7040E8 → #6536D8, primaryDeep/primarySoft/navPill
+  birlikte koyulaştı, body/muted/faint/line metin ve çizgi kontrastı için
+  koyulaştı. Figma krem zemin yönü korunur, yalnız ton derinleşti.
+- Karşılama: SATB çubukları (uygulamayı yalnız koro gibi gösteriyordu) ve
+  "Ölçemediğimiz şeyi puanlamayız" (iç ilke) kaldırıldı; yerine Kulak / Ses /
+  Koro üç somut satır ve "Bugün sekmesi ne yapacağını söyler" cümlesi.
+- Bugün: rota zaten ses aralığı adımını gösteriyorsa kahraman kartındaki
+  yinelenen "Ses aralığını ölç" bağlantısı gizlenir.
+- Ekran turu testi (`screenshot_tour_test`) ekran dışı öğeye sürükleyerek
+  ulaşacak şekilde düzeltildi (yeni ölçüm bağlantısı sonrası düşüyordu).
+- Tam kapı: **1208 test geçti**, 2 opt-in atlandı; analyze/format temiz.
+  Simülatör/Maestro görsel turu koşulmadı; renkler gerçek ekranda ve koyu
+  ortamda denenmedi. Commit yok.
+
+## 2026-11-03 — IA-03 giriş 5 adım: nota gösterimi sorusu kaldırıldı
+
+Kullanıcı onayıyla onboarding'den "Notaları nasıl yazalım?" adımı çıktı.
+"Başlayalım"da nota gösterimi dile göre atanır (Türkçe solfej, İngilizce
+harf); Ayarlar'dan değişir. Eski kayıtlı `obStep: notation` dakika adımından
+devam eder. Adım sayacı 5. Testler, ekran turu, integration ve Maestro 01/11
+akışları güncellendi (Maestro/integration koşulmadı). Tam kapı: **1209 test
+geçti**, 2 opt-in atlandı. Commit yok.
+
+## 2026-11-03 — REVIEW-02 tekrar kartları (aralıklı tekrar, HLR-lite)
+
+**Kullanıcı isteği:** Araştırmadaki ilk öneri; tekrar kartlarıyla başla.
+
+- `lib/trainer/domain/review_memory.dart` (saf Dart, `hlr-lite-1`):
+  `p = 2^(−Δ/h)`; kart `p < 0,85` olunca vadesi gelir. Doğru cevap yarı
+  ömrü yalnız gerçek bir aradan sonra (≥ h/2) ikiye katlar — aynı dakikada
+  tekrar "yığma çalışma" sayılır, aralık kazandırmaz; yanlış her zaman
+  yarıya indirir. Sınırlar 0,5–60 gün, başlangıç 1 gün (yanlışsa 0,5).
+  `dueCards` en çok unutulanı önce, en fazla 8 kart, eğitim türlerini
+  karıştırarak sıralar.
+- `TrainerStore.memory` + `reviewDay`; `recordAnswer` her ilk denemede
+  hafızayı günceller; JSON `memoryModel` sürümü uyuşmazsa hafıza yeniden
+  yorumlanmaz, sıfırdan başlar. "Verilerimi sil" hafızayı da siler.
+  Eski `ItemStat` geçmişine zaman bilgisi olmadığı için kart üretilmez.
+- `lib/trainer/learn/review_cards.dart`: her kart için soru; seçenekler
+  yalnız öğrencinin daha önce karşılaştığı öğelerden (tek öğe varsa
+  "sesi bul" sorusu). Oturum ders tamamlandı sayılmaz; `markReviewDone`.
+  Sonuç ekranı her kartın sonraki tekrarını gösterir ("yarın", "3 gün
+  sonra").
+- Bugün rotası: vadesi gelen kart varken "Tekrar kartları · N kart · ~dk ·
+  karışık" adımı; bitince "Bugünlük tamam".
+- Testler: `test/trainer/review_cards_test.dart` 12 test (model matematiği,
+  aralık kuralı, JSON sınırları, karışık sıra, kalıcılık, sürüm uyuşmazlığı,
+  yalnız görülen öğeler, Bugün adımı, sonuç ekranı). Tam kapı: **1221 test
+  geçti**, 2 opt-in atlandı; analyze/format temiz.
+- Sınırlar: parametreler taslak; öğrenci verisiyle ayar ve 7 gün sonra
+  gecikmeli doğruluk ölçümü yapılmadı. Söyleme/mikrofon öğeleri kart olmaz.
+  Hatırlatma bildirimi henüz kartları bilmiyor (§4.2). Gerçek cihazda
+  denenmedi. Commit yok.
+
+## 2026-11-03 — REM-02 akıllı yerel hatırlatma
+
+**Kullanıcı isteği:** Tekrar kartlarından sonra kartlara bağlı hatırlatma.
+
+- `lib/application/reminder_planner.dart` (saf Dart, sunucusuz, kural
+  tabanlı; Duolingo KDD 2020'nin uygunluk + tazelik fikri):
+  - Uygunluk: koro teslimi ≤2 gün, vadesi gelen kart ≥3, korunabilir seri
+    (≥3 gün ve dün çalışılmış), 3+ gün ara, ölçülmemiş aralık (≥3 aktif gün),
+    her zaman "rutin".
+  - Tazelik: bugün/dün planlanan tür neredeyse susar (×0,1), sonra bir
+    haftada tam ağırlığa döner; ardışık günler farklı metin alır.
+  - Saat: son 14 çalışma başlangıcının medyanından 30 dk önce (08:00–21:30);
+    5 örnekten azsa kullanıcının seçtiği saat.
+  - Takvim: 7 gün günlük, sonra 2 haftalık "haftada bir" mesajı; uygulama
+    açılmazsa günlük hatırlatma kendiliğinden durur.
+  - Metinler suçluluk/kayıp dili içermez; gelecekteki kart sayısı yazılmaz.
+- `PlannedReminderPlatform` / `PlannedNotificationDriver` ayrı arayüzler
+  (eski sahte sınıflar bozulmadı). Üretim sürücüsü 1701–1716 id'leriyle
+  tek seferlik bildirimler kurar; günlük kurulum ve iptal tüm id'leri temizler.
+- `PracticeReminderCoordinator.replan` yalnız hatırlatma açık ve izin varken
+  çalışır. `TrainerApp` uygulama arka plana geçince (`paused`) planı yeniden
+  kurar. `TrainerStore.practiceMinutes` (son 30 çalışma saati) ve
+  `reminderPlan` (geçmişi tazelik için) kalıcı; "Verilerimi sil" ikisini de
+  siler. `lib/trainer/app/reminder_context.dart` bağlamı yerel veriden kurar.
+- Testler: `test/application/reminder_planner_test.dart` 12 test. Tam kapı:
+  **1233 test geçti**, 2 opt-in atlandı; analyze/format temiz.
+- Sınırlar: gerçek cihazda bildirim teslimi, iOS arka plan zamanlaması,
+  saat dilimi değişimi ve Android tam zamanlı alarm davranışı denenmedi.
+  Etki (bildirim → 2 saatte çalışma) ölçülmedi. Commit yok.

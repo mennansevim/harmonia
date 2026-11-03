@@ -2,13 +2,17 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../application/microphone_permission_recovery.dart';
 import '../../domain/audio/audio_capture.dart';
 import '../../domain/audio/recording_pitch_analyzer.dart';
 import '../../infrastructure/audio/isolate_recording_pitch_worker.dart';
 import '../../infrastructure/audio/plugin_audio_lab_backend.dart';
+import '../../infrastructure/permissions/permission_handler_microphone_recovery.dart';
 import '../app/scope.dart';
 import '../domain/music.dart';
 import '../ui/kit.dart';
+import 'range_ladder.dart';
+import '../../domain/lang.dart';
 
 /// One sung take reduced to a single representative pitch, or a reason why
 /// no pitch is reported. Never a score.
@@ -32,24 +36,38 @@ abstract interface class RangeProbe {
 RangeTake evaluateRangeEvidence(RecordingPitchEvidence evidence) {
   if (evidence.status == RecordingPitchStatus.invalidInput ||
       evidence.status == RecordingPitchStatus.insufficientData) {
-    return const RangeTake.failed('Kayıt çok kısa ya da okunamadı.');
+    return RangeTake.failed(
+      tr(
+        'Kayıt çok kısa ya da okunamadı.',
+        'The recording was too short or could not be read.',
+      ),
+    );
   }
   if (evidence.status != RecordingPitchStatus.periodicSignalObserved ||
       evidence.representativeFrequencyHz == null) {
-    return const RangeTake.failed(
-      'Net bir ses duyulamadı. Biraz daha yüksek sesle, sabit tut.',
+    return RangeTake.failed(
+      tr(
+        'Net bir ses duyulamadı. Biraz daha yüksek sesle, sabit tut.',
+        'No clear voice was heard. A little louder, and hold it steady.',
+      ),
     );
   }
   final ratio = evidence.periodicFrameRatio ?? 0;
   if (ratio < 0.35) {
-    return const RangeTake.failed(
-      'Sesin kaydın çoğunda duyulmadı. Üç saniye boyunca tut.',
+    return RangeTake.failed(
+      tr(
+        'Sesin kaydın çoğunda duyulmadı. Üç saniye boyunca tut.',
+        'Your voice was missing from most of the take. Hold it for three seconds.',
+      ),
     );
   }
   final spread = evidence.pitchDispersionCents;
   if (spread == null || spread > 80) {
-    return const RangeTake.failed(
-      'Ses fazla dalgalandı. Tek bir notada sabit kal.',
+    return RangeTake.failed(
+      tr(
+        'Ses fazla dalgalandı. Tek bir notada sabit kal.',
+        'The pitch wavered too much. Stay steady on one note.',
+      ),
     );
   }
   return RangeTake.pitch(evidence.representativeFrequencyHz!);
@@ -104,36 +122,69 @@ VoicePart? suggestPart(int low, int high) {
   return best;
 }
 
-enum _Stage { intro, ready, recording, analyzing, take, result, denied }
+enum _Stage {
+  intro,
+  denied,
+  comfort,
+  comfortListening,
+  comfortFailed,
+  playing,
+  listening,
+  feedback,
+  turn,
+  result,
+}
 
+/// Separate voice-detection screen: play-and-listen range ladder (the
+/// author's Agora method). Each piano note is played first, then the singer
+/// repeats it; no gender or voice-group question is asked.
 class RangeTestScreen extends StatefulWidget {
-  const RangeTestScreen({super.key, this.probe});
+  const RangeTestScreen({
+    super.key,
+    this.probe,
+    this.recovery,
+    this.playNote,
+    this.pause = const Duration(milliseconds: 900),
+  });
   final RangeProbe? probe;
+  final MicrophonePermissionRecovery? recovery;
+
+  /// Plays one reference note and completes when it is over; defaults to
+  /// the shared trainer audio (recorded piano when cleared, else synth).
+  final Future<void> Function(int midi)? playNote;
+
+  /// How long feedback stays before the next note.
+  final Duration pause;
   @override
   State<RangeTestScreen> createState() => _RangeTestScreenState();
 }
 
+const _takeLength = Duration(seconds: 2);
+
 class _RangeTestScreenState extends State<RangeTestScreen> {
   RangeProbe? _probe;
   _Stage _stage = _Stage.intro;
-  bool _high = false;
-  RangeTake? _lastTake;
-  int? _lowMidi;
-  int? _highMidi;
+  RangeLadder? _ladder;
+  RangeAttempt? _last;
+  String? _failure;
   double _level = -60;
   StreamSubscription<double>? _levels;
-  int _secondsLeft = 3;
-  Timer? _tick;
+  bool _skip = false;
+  int _run = 0;
+  bool _saved = false;
 
   @override
   void dispose() {
-    _tick?.cancel();
+    _run++;
     _levels?.cancel();
     _probe?.close();
     super.dispose();
   }
 
   RangeProbe _ensureProbe() => _probe ??= widget.probe ?? MicRangeProbe();
+
+  Future<void> _play(int midi) =>
+      (widget.playNote ?? TrainerScope.read(context).audio.playNote)(midi);
 
   Future<void> _start() async {
     final probe = _ensureProbe();
@@ -151,68 +202,126 @@ class _RangeTestScreenState extends State<RangeTestScreen> {
     _levels ??= probe.levelDb.listen((db) {
       if (mounted) setState(() => _level = db);
     });
-    setState(() => _stage = _Stage.ready);
+    setState(() => _stage = _Stage.comfort);
   }
 
-  Future<void> _record() async {
-    setState(() {
-      _stage = _Stage.recording;
-      _secondsLeft = 3;
-    });
-    _tick = Timer.periodic(const Duration(seconds: 1), (t) {
-      if (!mounted) return;
-      setState(() => _secondsLeft = (_secondsLeft - 1).clamp(0, 3));
-    });
-    RangeTake take;
+  Future<RangeTake> _take() async {
     try {
-      final recording = _ensureProbe().record(const Duration(seconds: 3));
-      await Future<void>.delayed(const Duration(seconds: 3));
-      if (mounted) setState(() => _stage = _Stage.analyzing);
-      take = await recording;
+      return await _ensureProbe().record(_takeLength);
     } catch (_) {
-      take = const RangeTake.failed(
-        'Kayıt başlatılamadı. Mikrofonu başka bir uygulama kullanıyor olabilir.',
+      return RangeTake.failed(
+        tr(
+          'Kayıt başlatılamadı. Mikrofonu başka bir uygulama kullanıyor olabilir.',
+          'Recording could not start. Another app may be using the microphone.',
+        ),
       );
     }
-    _tick?.cancel();
-    if (!mounted) return;
-    setState(() {
-      _lastTake = take;
-      _stage = _Stage.take;
-    });
   }
 
-  void _accept() {
-    final hz = _lastTake?.hz;
-    if (hz == null) return;
-    final midi = hzToMidi(hz).round();
-    if (!_high) {
+  /// A comfortable "aa" sets the first note, instead of asking for a voice
+  /// group or gender.
+  Future<void> _comfort() async {
+    setState(() => _stage = _Stage.comfortListening);
+    final take = await _take();
+    if (!mounted) return;
+    if (take.hz == null) {
       setState(() {
-        _lowMidi = midi;
-        _high = true;
-        _lastTake = null;
-        _stage = _Stage.ready;
+        _failure = take.failure;
+        _stage = _Stage.comfortFailed;
       });
       return;
     }
-    setState(() {
-      _highMidi = midi;
-      _stage = _Stage.result;
-    });
-    final store = TrainerScope.of(context).store;
-    if (_lowMidi! < midi) {
-      store.koroRange = '$_lowMidi-$midi';
-      store.save();
-    }
+    _begin(startFromComfort(take.hz));
   }
 
-  void _restart() => setState(() {
-    _high = false;
-    _lowMidi = null;
-    _highMidi = null;
-    _lastTake = null;
-    _stage = _Stage.ready;
-  });
+  void _begin(int startMidi) {
+    _ladder = RangeLadder.start(startMidi);
+    _last = null;
+    _saved = false;
+    _loop(++_run);
+  }
+
+  bool _live(int run) => mounted && run == _run;
+
+  Future<void> _loop(int run) async {
+    while (_live(run) && !_ladder!.done) {
+      if (_consumeSkip()) {
+        if (_ladder!.done) break;
+        await _turn(run);
+        continue;
+      }
+      setState(() => _stage = _Stage.playing);
+      await _play(_ladder!.currentMidi);
+      if (!_live(run)) return;
+      if (_consumeSkip()) {
+        if (_ladder!.done) break;
+        await _turn(run);
+        continue;
+      }
+      setState(() => _stage = _Stage.listening);
+      final take = await _take();
+      if (!_live(run)) return;
+      if (_consumeSkip()) {
+        if (_ladder!.done) break;
+        await _turn(run);
+        continue;
+      }
+      final before = _ladder!.direction;
+      setState(() {
+        _ladder = _ladder!.record(take.hz);
+        _last = _ladder!.log.last;
+        _failure = take.failure;
+        _stage = _Stage.feedback;
+      });
+      await Future<void>.delayed(widget.pause);
+      if (!_live(run)) return;
+      if (!_ladder!.done && _ladder!.direction != before) await _turn(run);
+    }
+    if (_live(run)) _finish();
+  }
+
+  Future<void> _turn(int run) async {
+    setState(() => _stage = _Stage.turn);
+    await Future<void>.delayed(widget.pause * 2);
+  }
+
+  bool _consumeSkip() {
+    if (!_skip) return false;
+    _skip = false;
+    _ladder = _ladder!.skipDirection();
+    return true;
+  }
+
+  void _finish() {
+    final bounds = _ladder!.bounds;
+    if (bounds != null && !_saved) {
+      _saved = true;
+      final store = TrainerScope.of(context).store;
+      store.koroRange = '${bounds.lowMidi}-${bounds.highMidi}';
+      // The measured range picks the practice register; nobody is asked
+      // for a voice group. Settings can still change it.
+      final part = suggestPart(bounds.lowMidi, bounds.highMidi);
+      if (part != null) store.voicePart = part.name;
+      store.save();
+    }
+    setState(() => _stage = _Stage.result);
+  }
+
+  void _restart() {
+    _run++;
+    setState(() {
+      _ladder = null;
+      _last = null;
+      _stage = _Stage.comfort;
+    });
+  }
+
+  double get _progress => switch (_stage) {
+    _Stage.intro || _Stage.denied => 0.05,
+    _Stage.comfort || _Stage.comfortListening || _Stage.comfortFailed => 0.15,
+    _Stage.result => 1,
+    _ => _ladder?.direction == RangeDirection.down ? 0.66 : 0.4,
+  };
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -221,12 +330,8 @@ class _RangeTestScreenState extends State<RangeTestScreen> {
       child: Column(
         children: [
           TopBar(
-            title: 'Ses / Aralık testi',
-            progress: switch (_stage) {
-              _Stage.intro || _Stage.denied => 0.05,
-              _Stage.result => 1,
-              _ => _high ? 0.66 : 0.33,
-            },
+            title: tr('Ses aralığı', 'Vocal range'),
+            progress: _progress,
             progressColor: TC.koro,
           ),
           Expanded(child: _body()),
@@ -235,104 +340,140 @@ class _RangeTestScreenState extends State<RangeTestScreen> {
     ),
   );
 
+  Future<void> _openSettings() async {
+    try {
+      await (widget.recovery ?? const PermissionHandlerMicrophoneRecovery())
+          .openAppSettings();
+    } catch (_) {
+      // The page already spells out the manual path to the setting.
+    }
+  }
+
   Widget _body() {
-    final store = TrainerScope.of(context).store;
-    final notation = store.notation;
+    final notation = TrainerScope.of(context).store.notation;
+    String name(int midi) => PitchClass.midiName(midi, notation);
     switch (_stage) {
       case _Stage.intro:
         return _Page(
           icon: Ic.mic,
-          title: 'Ses aralığını bul',
-          body:
-              'Önce en pes, sonra en tiz rahat sesini "aa" ile 3 saniye tut. Vocalart\'ın ses tespit çekirdeği her kaydın temsilî perdesini ölçer.\n\nKayıtlar cihazdan çıkmaz ve analizden sonra silinir. Sonuç deneyseldir; ses tipini bir eğitmen ya da koro şefi belirler.',
-          button: 'Başla',
+          title: tr('Ses aralığını bul', 'Find your range'),
+          body: tr(
+            'Piyano bir nota çalar, sen aynı notayı "aa" ile 2 saniye tekrar edersin. Önce tize, sonra pese doğru nota nota ilerleriz; iki denemede tutturamadığın yerde o yön biter.\n\nYanlış oktavda söylenen nota ulaşılmış sayılmaz. Kayıtlar cihazdan çıkmaz ve analizden sonra silinir. Sonuç ses tipi değildir; onu eğitmen ya da koro şefi belirler.',
+            'The piano plays a note and you repeat it on "aa" for 2 seconds. We climb note by note, then go down; a direction ends where two attempts miss.\n\nA note sung in the wrong octave does not count as reached. Recordings stay on the device and are deleted after analysis. The result is not a voice type; a teacher or conductor decides that.',
+          ),
+          button: tr('Başla', 'Start'),
           onPressed: _start,
+          secondary: tr('Şimdi değil', 'Not now'),
+          onSecondary: () => Navigator.maybePop(context),
         );
       case _Stage.denied:
         return _Page(
           icon: Ic.lock,
-          title: 'Mikrofon izni gerekli',
-          body:
-              'Ses aralığını ölçmek için mikrofon izni ver. iOS Ayarlar > Vocalart > Mikrofon\'dan açabilirsin.',
-          button: 'Tekrar dene',
-          onPressed: _start,
+          title: tr('Mikrofon izni gerekli', 'Microphone permission needed'),
+          body: tr(
+            'Ses aralığını ölçmek için mikrofon izni ver. iOS Ayarlar > Vocalart > Mikrofon\'dan açabilirsin.',
+            'Allow the microphone to measure your range. You can turn it on in iOS Settings > Vocalart > Microphone.',
+          ),
+          // A denied prompt never reappears on iOS: retrying alone is a dead end.
+          button: tr('Ayarları aç', 'Open Settings'),
+          onPressed: _openSettings,
+          secondary: tr('Tekrar dene', 'Try again'),
+          onSecondary: _start,
         );
-      case _Stage.ready:
+      case _Stage.comfort:
         return _Page(
-          icon: _high ? Ic.arrowUp : Ic.arrowDown,
-          title: _high ? 'En tiz rahat sesin' : 'En pes rahat sesin',
-          body: _high
-              ? 'Zorlamadan çıkabildiğin en tiz notayı "aa" ile 3 saniye tut.'
-              : 'Hırıltıya kaçmadan çıkabildiğin en pes notayı "aa" ile 3 saniye tut.',
-          button: 'Kaydı başlat',
-          onPressed: _record,
+          icon: Ic.speech,
+          title: tr('Önce rahat bir ses', 'First, a comfortable note'),
+          body: tr(
+            'Konuşur gibi, zorlamadan bir "aa" söyle. Testin başlangıç notasını bundan seçeriz; ses grubunu sormayız.',
+            'Sing an easy "aa", like speaking. We pick the starting note from it; we do not ask for your voice group.',
+          ),
+          button: tr('Söyle (2 sn)', 'Sing (2 s)'),
+          onPressed: _comfort,
+          secondary: tr(
+            '${name(neutralStartMidi)} notasından başla',
+            'Start from ${name(neutralStartMidi)}',
+          ),
+          onSecondary: () => _begin(neutralStartMidi),
           footer: _LevelBar(db: _level),
         );
-      case _Stage.recording:
+      case _Stage.comfortListening:
         return _Page(
           icon: Ic.audioLines,
-          title: 'Dinliyorum… $_secondsLeft',
-          body: 'Sesini sabit tut.',
+          title: tr('Dinliyorum…', 'Listening…'),
+          body: tr('Rahat bir "aa".', 'An easy "aa".'),
           footer: _LevelBar(db: _level),
         );
-      case _Stage.analyzing:
-        return const _Page(
-          icon: Ic.hourglass,
-          title: 'Ölçülüyor…',
-          body: 'Kayıt cihazda çözümleniyor.',
-        );
-      case _Stage.take:
-        final take = _lastTake!;
-        if (take.hz == null) {
-          return _Page(
-            icon: Ic.circleHelp,
-            title: 'Ölçülemedi',
-            body: '${take.failure}\nBu deneme sonuç sayılmadı.',
-            button: 'Tekrar kaydet',
-            onPressed: _record,
-          );
-        }
-        final midi = hzToMidi(take.hz!).round();
+      case _Stage.comfortFailed:
         return _Page(
-          icon: Ic.target,
-          title: PitchClass.midiName(midi, notation),
-          body:
-              '${take.hz!.toStringAsFixed(1)} Hz civarı. Doğru duyuluyor mu? Değilse tekrar kaydet.',
-          button: _high ? 'Sonucu gör' : 'Tize geç',
-          onPressed: _accept,
-          secondary: 'Tekrar kaydet',
-          onSecondary: _record,
+          icon: Ic.circleHelp,
+          title: tr('Ölçülemedi', 'Not measured'),
+          body: _failure ?? '',
+          button: tr('Tekrar söyle', 'Sing again'),
+          onPressed: _comfort,
+          secondary: tr(
+            '${name(neutralStartMidi)} notasından başla',
+            'Start from ${name(neutralStartMidi)}',
+          ),
+          onSecondary: () => _begin(neutralStartMidi),
+        );
+      case _Stage.playing:
+      case _Stage.listening:
+      case _Stage.feedback:
+      case _Stage.turn:
+        return _LadderView(
+          ladder: _ladder!,
+          stage: _stage,
+          last: _last,
+          failure: _failure,
+          level: _level,
+          notation: notation,
+          onSkip: _stage == _Stage.playing || _stage == _Stage.listening
+              ? () => setState(() => _skip = true)
+              : null,
+          skipping: _skip,
         );
       case _Stage.result:
-        final low = _lowMidi!;
-        final high = _highMidi!;
-        if (high <= low) {
+        final bounds = _ladder?.bounds;
+        if (bounds == null) {
           return _Page(
             icon: Ic.moveVertical,
-            title: 'Sonuç tutarsız',
-            body:
-                'Tiz kayıt pes kayıttan daha pes ölçüldü (oktav karışmış olabilir). Bu sonuç kaydedilmedi; testi tekrarla.',
-            button: 'Baştan',
+            title: tr('Aralık çıkmadı', 'No range yet'),
+            body: tr(
+              'En az iki notayı aynı oktavda tutturmak gerekiyor. Bu deneme kaydedilmedi. Sessiz bir yerde, telefonu yüz hizasında tutup tekrar dene.',
+              'At least two notes must be matched in the same octave. This attempt was not saved. Try again somewhere quiet, phone at face height.',
+            ),
+            button: tr('Tekrar dene', 'Try again'),
             onPressed: _restart,
+            secondary: tr('Kapat', 'Close'),
+            onSecondary: () => Navigator.maybePop(context),
           );
         }
-        final part = suggestPart(low, high);
+        final store = TrainerScope.of(context).store;
+        final low = bounds.lowMidi;
+        final high = bounds.highMidi;
         return ListView(
           padding: const EdgeInsets.all(24),
           children: [
             const Center(child: _IconTile(Ic.music2)),
             const SizedBox(height: 8),
             Text(
-              '${PitchClass.midiName(low, notation)} – ${PitchClass.midiName(high, notation)}',
+              '${name(low)} – ${name(high)}',
+              key: const Key('range_result'),
               textAlign: TextAlign.center,
               style: TT.h1,
             ),
             const SizedBox(height: 4),
             Text(
-              '${high - low} yarım ses · yaklaşık ${((high - low) / 12).toStringAsFixed(1)} oktav',
+              tr(
+                '${bounds.semitones} yarım ses · yaklaşık ${bounds.octaves.toStringAsFixed(1)} oktav · ${_ladder!.reached.length} nota tutturuldu',
+                '${bounds.semitones} semitones · about ${bounds.octaves.toStringAsFixed(1)} octaves · ${_ladder!.reached.length} notes matched',
+              ),
               textAlign: TextAlign.center,
               style: TT.body,
             ),
+            const SizedBox(height: 20),
+            _Staircase(ladder: _ladder!, current: null),
             const SizedBox(height: 20),
             _RangeChart(low: low, high: high, notation: notation),
             const SizedBox(height: 20),
@@ -341,39 +482,215 @@ class _RangeTestScreenState extends State<RangeTestScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('OLASI PARTİ · TASLAK', style: TT.caps),
+                  Text(tr('ÇALIŞMA ARALIĞI', 'PRACTICE RANGE'), style: TT.caps),
                   const SizedBox(height: 4),
-                  Text(part?.title ?? 'Belirsiz', style: TT.h3),
+                  Text(
+                    store.part?.title ?? tr('Belirsiz', 'Unclear'),
+                    style: TT.h3,
+                  ),
                   const SizedBox(height: 4),
-                  const Text(
-                    'Yalnız ölçülen iki uç notaya dayanır. Ses rengi, geçiş bölgeleri ve rahat tessitura ölçülmedi; ses tipi kararını eğitmen ya da koro şefi verir.',
+                  Text(
+                    tr(
+                      'Dersler bu aralıkta çalar; Ayarlar\'dan değiştirebilirsin. Bu bir ses tipi kararı değildir: ses rengi, geçiş bölgeleri ve rahat tessitura ölçülmedi.',
+                      'Lessons play in this range; you can change it in Settings. This is not a voice type: timbre, passaggi and comfortable tessitura were not measured.',
+                    ),
                     style: TT.small,
                   ),
                 ],
               ),
             ),
             const SizedBox(height: 20),
-            if (part != null && store.voicePart != part.name) ...[
-              OutlinedButton.icon(
-                key: const Key('range_save_part'),
-                onPressed: () => setState(() {
-                  store.voicePart = part.name;
-                  store.save();
-                }),
-                icon: const Icon(Ic.userCheck),
-                label: Text('${part.title} aralığında çalış'),
-              ),
-              const SizedBox(height: 12),
-            ],
             BigButton(
-              label: 'Bitti',
+              label: tr('Bitti', 'Done'),
               color: TC.koro,
               onPressed: () => Navigator.pop(context),
             ),
-            TextLink('Testi tekrarla', onTap: _restart),
+            TextLink(tr('Testi tekrarla', 'Repeat the test'), onTap: _restart),
           ],
         );
     }
+  }
+}
+
+/// The running ladder: what to do now, the note, and the staircase.
+class _LadderView extends StatelessWidget {
+  const _LadderView({
+    required this.ladder,
+    required this.stage,
+    required this.last,
+    required this.failure,
+    required this.level,
+    required this.notation,
+    required this.onSkip,
+    required this.skipping,
+  });
+  final RangeLadder ladder;
+  final _Stage stage;
+  final RangeAttempt? last;
+  final String? failure;
+  final double level;
+  final NoteNotation notation;
+  final VoidCallback? onSkip;
+  final bool skipping;
+
+  String _feedback() {
+    final a = last;
+    if (a == null) return '';
+    final j = a.judgement;
+    final retry =
+        a.attempt < rangeAttemptsPerNote && ladder.currentMidi == a.targetMidi;
+    final again = retry ? tr(' Bir kez daha.', ' One more try.') : '';
+    return switch (j.match) {
+      RangeMatch.matched => tr(
+        'Tuttu · %${j.closeness!.round()} yakın',
+        'Matched · ${j.closeness!.round()}% close',
+      ),
+      RangeMatch.octaveOff => tr(
+        'Doğru nota, ama ${j.octave.abs()} oktav ${j.octave < 0 ? 'pes' : 'tiz'}. Sayılmadı.$again',
+        'Right note, but ${j.octave.abs()} octave${j.octave.abs() > 1 ? 's' : ''} ${j.octave < 0 ? 'low' : 'high'}. Not counted.$again',
+      ),
+      RangeMatch.missed => tr(
+        '${j.cents! > 0 ? 'Tiz' : 'Pes'} kaldı (${j.cents!.abs().round()} sent).$again',
+        'Too ${j.cents! > 0 ? 'high' : 'low'} (${j.cents!.abs().round()} cents).$again',
+      ),
+      RangeMatch.unmeasured =>
+        '${failure ?? tr('Ölçülemedi.', 'Not measured.')}$again',
+    };
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final up = ladder.direction == RangeDirection.up;
+    final (icon, title) = switch (stage) {
+      _Stage.playing => (Ic.volume2, tr('Dinle', 'Listen')),
+      _Stage.listening => (Ic.mic, tr('Şimdi sen söyle', 'Now you sing')),
+      _Stage.turn => (Ic.arrowDown, tr('Şimdi pese doğru', 'Now going down')),
+      _ => (
+        last?.judgement.match == RangeMatch.matched ? Ic.check : Ic.circleHelp,
+        _feedback(),
+      ),
+    };
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
+      child: Column(
+        children: [
+          const SizedBox(height: 8),
+          Tag(
+            up
+                ? tr(
+                    'TİZE DOĞRU · ${ladder.reached.length} NOTA',
+                    'GOING UP · ${ladder.reached.length} NOTES',
+                  )
+                : tr(
+                    'PESE DOĞRU · ${ladder.reached.length} NOTA',
+                    'GOING DOWN · ${ladder.reached.length} NOTES',
+                  ),
+            color: TC.koro,
+          ),
+          Expanded(
+            child: FitOrScroll(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _IconTile(icon),
+                  const SizedBox(height: 14),
+                  Text(
+                    PitchClass.midiName(ladder.currentMidi, notation),
+                    key: const Key('range_note'),
+                    style: TT.display,
+                  ),
+                  Text(
+                    tr(
+                      '${ladder.attempt}. deneme',
+                      'Attempt ${ladder.attempt}',
+                    ),
+                    style: TT.small,
+                  ),
+                  const SizedBox(height: 10),
+                  Semantics(
+                    liveRegion: true,
+                    child: Text(
+                      title,
+                      key: const Key('range_title'),
+                      textAlign: TextAlign.center,
+                      style: TT.h3,
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                  _Staircase(ladder: ladder, current: ladder.currentMidi),
+                  if (stage == _Stage.listening) ...[
+                    const SizedBox(height: 18),
+                    _LevelBar(db: level),
+                  ],
+                ],
+              ),
+            ),
+          ),
+          OutlinedButton.icon(
+            key: const Key('range_skip'),
+            onPressed: skipping ? null : onSkip,
+            icon: const Icon(Ic.skipForward),
+            label: Text(
+              up
+                  ? tr('Tizde sınırım bu, pese geç', 'My top is here, go down')
+                  : tr('Peste sınırım bu, bitir', 'My bottom is here, finish'),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// One bar per ladder note around the run: reached notes filled, the
+/// current note outlined. Mirrors the web test's note staircase.
+class _Staircase extends StatelessWidget {
+  const _Staircase({required this.ladder, required this.current});
+  final RangeLadder ladder;
+  final int? current;
+  @override
+  Widget build(BuildContext context) {
+    final touched = {
+      ...ladder.reached,
+      for (final a in ladder.log) a.targetMidi,
+      ?current,
+      ladder.startMidi,
+    };
+    final i0 = rangeLadderNotes.indexOf(
+      touched.reduce((a, b) => a < b ? a : b),
+    );
+    final i1 = rangeLadderNotes.indexOf(
+      touched.reduce((a, b) => a > b ? a : b),
+    );
+    final lo = (i0 - 2).clamp(0, rangeLadderNotes.length - 1);
+    final hi = (i1 + 2).clamp(0, rangeLadderNotes.length - 1);
+    final notes = rangeLadderNotes.sublist(lo, hi + 1);
+    return ExcludeSemantics(
+      child: SizedBox(
+        height: 72,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            for (var k = 0; k < notes.length; k++)
+              Expanded(
+                child: Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 1.5),
+                  height: 12 + 60 * (k + 1) / notes.length,
+                  decoration: BoxDecoration(
+                    color: ladder.reached.contains(notes[k])
+                        ? TC.koro
+                        : const Color(0xFFE4E3EF),
+                    border: notes[k] == current
+                        ? Border.all(color: TC.ink, width: 2)
+                        : null,
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
   }
 }
 
@@ -402,28 +719,30 @@ class _Page extends StatelessWidget {
     child: Column(
       children: [
         Expanded(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _IconTile(icon),
-              const SizedBox(height: 18),
-              Semantics(
-                liveRegion: true,
-                child: Text(
-                  title,
-                  key: const Key('range_title'),
-                  textAlign: TextAlign.center,
-                  style: TT.display,
+          child: FitOrScroll(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                _IconTile(icon),
+                const SizedBox(height: 18),
+                Semantics(
+                  liveRegion: true,
+                  child: Text(
+                    title,
+                    key: const Key('range_title'),
+                    textAlign: TextAlign.center,
+                    style: TT.display,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 10),
-              Text(
-                body,
-                textAlign: TextAlign.center,
-                style: TT.body.copyWith(color: TC.muted, fontSize: 14),
-              ),
-              if (footer != null) ...[const SizedBox(height: 26), footer!],
-            ],
+                const SizedBox(height: 10),
+                Text(
+                  body,
+                  textAlign: TextAlign.center,
+                  style: TT.body.copyWith(color: TC.muted, fontSize: 14),
+                ),
+                if (footer != null) ...[const SizedBox(height: 26), footer!],
+              ],
+            ),
           ),
         ),
         if (button != null)
@@ -460,12 +779,15 @@ class _LevelBar extends StatelessWidget {
     final v = ((db + 60) / 60).clamp(0.0, 1.0);
     return Column(
       children: [
-        const Text('GİRİŞ SEVİYESİ', style: TT.caps),
+        Text(tr('GİRİŞ SEVİYESİ', 'INPUT LEVEL'), style: TT.caps),
         const SizedBox(height: 8),
         ProgressBar(value: v, color: v > 0.92 ? TC.red : TC.koro, height: 10),
         const SizedBox(height: 6),
-        const Text(
-          'Yalnız gösterge; ses kalitesi ölçümü değildir.',
+        Text(
+          tr(
+            'Yalnız gösterge; ses kalitesi ölçümü değildir.',
+            'An indicator only; not a measure of voice quality.',
+          ),
           style: TT.small,
         ),
       ],
@@ -528,7 +850,10 @@ class _RangeChart extends StatelessWidget {
               ),
             Row(
               children: [
-                const SizedBox(width: 64, child: Text('Sen', style: TT.title)),
+                SizedBox(
+                  width: 64,
+                  child: Text(tr('Sen', 'You'), style: TT.title),
+                ),
                 Expanded(
                   child: LayoutBuilder(
                     builder: (context, c2) => SizedBox(

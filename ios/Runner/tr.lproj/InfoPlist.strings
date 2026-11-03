@@ -1,0 +1,2 @@
+/* iOS mikrofon izni penceresinde görünür. */
+"NSMicrophoneUsageDescription" = "Vocalart, yalnızca kaydı başlattığınızda sesinizi cihazınızda kaydedip dinletebilmek için mikrofonu kullanır.";

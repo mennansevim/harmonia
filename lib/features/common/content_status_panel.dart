@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../app/theme/resonia_theme.dart';
+import '../../domain/lang.dart';
 
 enum ContentStatusKind { loading, empty, error }
 
@@ -25,13 +26,18 @@ class ContentStatusPanel extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         if (kind == ContentStatusKind.loading)
-          const Center(
-            child: CircularProgressIndicator(semanticsLabel: 'Yükleniyor'),
+          Center(
+            child: CircularProgressIndicator(
+              semanticsLabel: tr('Yükleniyor', 'Loading'),
+            ),
           ),
         Semantics(liveRegion: true, child: Text(message)),
         if (kind == ContentStatusKind.error && onRetry != null) ...[
           const SizedBox(height: ResoniaSpacing.sm),
-          OutlinedButton(onPressed: onRetry, child: const Text('Yeniden dene')),
+          OutlinedButton(
+            onPressed: onRetry,
+            child: Text(tr('Yeniden dene', 'Try again')),
+          ),
         ],
       ],
     ),
@@ -48,7 +54,10 @@ class LocalOnlyNotice extends StatelessWidget {
       vertical: ResoniaSpacing.sm,
     ),
     child: Text(
-      'Yerel çalışma • Bu ekrandaki sonuçlar cihazında tutulur; sunucuya gönderilmez.',
+      tr(
+        'Yerel çalışma • Bu ekrandaki sonuçlar cihazında tutulur; sunucuya gönderilmez.',
+        'Local practice • Results on this screen stay on your device; they are not sent to a server.',
+      ),
       style: Theme.of(context).textTheme.bodySmall,
     ),
   );

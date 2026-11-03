@@ -8,6 +8,7 @@ import '../state/trainer_store.dart';
 import '../stats/stats_tab.dart';
 import '../ui/kit.dart';
 import 'lesson_flow.dart';
+import '../../domain/lang.dart';
 
 /// Opens a skill's page (lessons + free practice in one place).
 Future<void> openSkill(BuildContext context, TrainerKind kind) => Navigator.of(
@@ -42,7 +43,7 @@ class _SkillScreenState extends State<SkillScreen> {
     final next = store.nextNode(kind);
     final rows = <Widget>[];
     var stage = 1;
-    rows.add(_StageHeader('BASAMAK $stage'));
+    rows.add(_StageHeader(tr('BASAMAK $stage', 'STAGE $stage')));
     for (final node in path.nodes) {
       rows.add(
         _LessonRow(
@@ -57,7 +58,7 @@ class _SkillScreenState extends State<SkillScreen> {
       );
       if (node.kind == NodeKind.checkpoint) {
         stage++;
-        rows.add(_StageHeader('BASAMAK $stage'));
+        rows.add(_StageHeader(tr('BASAMAK $stage', 'STAGE $stage')));
       }
     }
     return Scaffold(
@@ -67,10 +68,15 @@ class _SkillScreenState extends State<SkillScreen> {
         child: Column(
           children: [
             CrumbBar(
-              crumb: trCaps('Beceriler / ${kind.shortTitle}'),
+              crumb: trCaps(
+                tr(
+                  'Beceriler / ${kind.shortTitle}',
+                  'Skills / ${kind.shortTitle}',
+                ),
+              ),
               trailing: IconButton(
                 key: const Key('skill_stats'),
-                tooltip: 'İstatistik',
+                tooltip: tr('İstatistik', 'Statistics'),
                 onPressed: () => Navigator.of(context).push(
                   MaterialPageRoute<void>(
                     builder: (_) => TrainerStatsScreen(trainer: kind),
@@ -103,8 +109,11 @@ class _SkillScreenState extends State<SkillScreen> {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  const Text(
-                    'Ara duraklar her zaman açık: %80 ile geçersen öncesindeki dersler tamamlanır.',
+                  Text(
+                    tr(
+                      'Ara duraklar her zaman açık: %80 ile geçersen öncesindeki dersler tamamlanır.',
+                      'Checkpoints are always open: pass with 80% and the lessons before it are completed.',
+                    ),
                     style: TT.small,
                   ),
                   ...rows,
@@ -144,11 +153,15 @@ class _Summary extends StatelessWidget {
           children: [
             Expanded(
               child: Text(
-                next == null ? 'TÜM DERSLER TAMAM' : 'SIRADAKİ DERS',
+                next == null
+                    ? tr('TÜM DERSLER TAMAM', 'ALL LESSONS DONE')
+                    : tr('SIRADAKİ DERS', 'NEXT LESSON'),
                 style: TT.heroCaps,
               ),
             ),
-            TiltTag('%${(mastery * 100).round()} ustalık'),
+            TiltTag(
+              tr('${percent(mastery)} ustalık', '${percent(mastery)} mastery'),
+            ),
           ],
         ),
         const SizedBox(height: 12),
@@ -162,7 +175,10 @@ class _Summary extends StatelessWidget {
         ),
         const SizedBox(height: 10),
         Text(
-          '${kind.tagline} · $done / $total ders tamam',
+          tr(
+            '${kind.tagline} · $done / $total ders tamam',
+            '${kind.tagline} · $done / $total lessons done',
+          ),
           style: const TextStyle(
             color: TC.heroMuted,
             fontSize: 12,
@@ -172,7 +188,9 @@ class _Summary extends StatelessWidget {
         const SizedBox(height: 16),
         BigButton(
           key: const Key('skill_next'),
-          label: next == null ? 'Tüm dersler tamam' : 'Derse başla',
+          label: next == null
+              ? tr('Tüm dersler tamam', 'All lessons done')
+              : tr('Derse başla', 'Start the lesson'),
           icon: Ic.play,
           color: Colors.white,
           onPressed: onNext,
@@ -183,8 +201,8 @@ class _Summary extends StatelessWidget {
           onPressed: onFree,
           style: TextButton.styleFrom(foregroundColor: TC.sun),
           icon: const Icon(Ic.settings2, size: 18),
-          label: const Text(
-            'Serbest çalışma',
+          label: Text(
+            tr('Serbest çalışma', 'Free practice'),
             style: TextStyle(fontWeight: FontWeight.w600),
           ),
         ),

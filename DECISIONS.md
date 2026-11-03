@@ -381,3 +381,47 @@ değildir ve geç kalan eski async okumalar generation kapısıyla elenir.
 
 **Tarih:** 2026-10-30 · **Durum:** kabul (kullanıcı: "uygulamanın adını her yerde Resonia olarak değiştir"). Görünen ad, Dart paketi, kod adları, paket uzantısı ve `com.resonia.resonia` kimliği değişti. Eski belgelerdeki tarihsel anlatım da yeni adı kullanır; proje klasörü yolu ve dış tasarım dosya adları istisnadır. Kimlik ilk mağaza yüklemesinden sonra değişmez.
 
+## ADR-039 — Görünen ad Vocalart, mağaza kimliği com.mennansevim.vocalart
+
+**Tarih:** 2026-11-02 · **Durum:** kabul; ADR-038'in görünen ad ve mağaza
+kimliği kararını yerine geçirir.
+
+**Karar:** Kullanıcının son ad seçimi `Vocalart`; iOS ve Android mağaza kimliği
+`com.mennansevim.vocalart`tır. Dart paket adı, iç sınıf adları, yerel veri
+biçimleri, `RESONIA_CHANNEL` ve `.resonia` dosya uzantısı migration riski
+yaratmamak için değişmez. Platform kimliği, test hedefi kimliği, launcher adı
+ve Kotlin package yolu otomatik regresyon testiyle birlikte tutulur.
+
+**Sınırlar:** Test yalnız repo yapılandırmasının tutarlılığını kanıtlar. Apple
+Team/provisioning, Android release keystore, ilk mağaza kaydı, imzalı arşiv ve
+fiziksel cihaz kurulumu ayrı yayın kapılarıdır. Tarihsel dokümanlardaki Resonia
+adı kod adı olarak korunabilir; güncel kullanıcı ve yayın yüzeyleri Vocalart
+olmalıdır.
+
+
+## ADR-040 — Koro modülü ayrı ürün; ses grubu sorulmaz, aralık dinle-tekrar et ile ölçülür
+
+**Tarih:** 2026-11-03 · **Karar veren:** kullanıcı (Mennan Sevim)
+
+- **Koro modülü ayrı satılır.** Premium/Plus'ın parçası değildir; ses, nefes,
+  kulak çalışması onsuz açık kalır. Amaç koristi daha iyi korist yapmak:
+  çok sesli kayıt üzerine eşlik ederek söyleme ana çalışma biçimidir.
+  Üyelik ekranında "Koro · ayrı" kartı var; fiyat ve mağaza ürünü yok.
+- **Eşlikle öğrenme basamakları** (`PartStep`): dinle → partin önde (%80
+  hız, "u") → birlikte söyle → partin kısık → partin yok. Bu,
+  LEARNING_MODEL "Koro" bölümündeki rehber-azaltma sırası ve yaygın
+  learning-track rutinidir (tam mix → parti baskın → parti eksik). Puan yok.
+- **"Hangi ses grubusun?" sorusu kaldırıldı.** Onboarding'deki parti seçimi
+  yerine atlanabilir "Ses aralığını ölçelim" adımı; ana sayfadaki bağlantı da
+  ölçüme gider. Ölçülen aralık yalnız çalışma register'ını seçer; ses tipi
+  değildir. Ayarlar'dan elle değiştirme kalır.
+- **Aralık algoritması kullanıcının Agora testinden** (`rangeMachine.ts`,
+  `matchToTarget`): piyano notası çalınır, korist tekrar eder; doğal notalar
+  E1–C7, nota başına 2 deneme, önce tize sonra pese, "sınırım bu" atlaması,
+  100 sent pencere / 60 eşik (±40 sent). Vocalart farkları: yanlış oktav
+  **başarı sayılmaz** (web sürümü cezayla sayıyordu), kalite kapısının
+  reddettiği kayıt `unmeasured` olarak ayrı tutulur, cinsiyet yerine rahat bir
+  "aa" ile başlangıç notası seçilir (ölçülemezse La3).
+- **Piyano notaları**: `assets/audio/piano/notes/catalog.json`
+  `rightsReference` dolu olmadan hiçbir kayıt çalınmaz; o zamana kadar sentez
+  piyano. Agora'daki 41 WAV hak zinciri teyit edilmeden kopyalanmadı.

@@ -44,9 +44,10 @@ class HistoryStorageException implements Exception {
   String toString() => 'HistoryStorageException(${failure.name})';
 }
 
-/// Local-only attempt history. An attempt id is recorded at most once:
-/// the same id with identical content is a duplicate (no double count), with
-/// different content a conflict (nothing overwritten). No silent pruning.
+/// Local-only attempt history. Attempt and session identities are each stored
+/// at most once. Identical session evidence is a duplicate even if an import
+/// changes its attempt id; different evidence for one session is a conflict.
+/// Nothing is overwritten and there is no silent pruning.
 abstract interface class ResultHistoryRepository {
   Future<List<ResultHistoryEntry>> load();
   Future<RecordOutcome> record(ResultHistoryEntry entry);
@@ -89,13 +90,34 @@ RecordOutcome classifyRecord(
           : RecordOutcome.conflict;
     }
   }
+  for (final e in existing) {
+    if (e.result.sessionId == entry.result.sessionId) {
+      return jsonEncode(e.result.toJson()) == jsonEncode(entry.result.toJson())
+          ? RecordOutcome.duplicate
+          : RecordOutcome.conflict;
+    }
+  }
   return existing.length >= capacity
       ? RecordOutcome.storageFull
       : RecordOutcome.recorded;
 }
 
+/// Persisted storage must never already contain ambiguous identities.
+bool hasUniqueHistoryIdentities(Iterable<ResultHistoryEntry> entries) {
+  final attempts = <String>{};
+  final sessions = <String>{};
+  for (final entry in entries) {
+    if (!attempts.add(entry.attemptId) ||
+        !sessions.add(entry.result.sessionId)) {
+      return false;
+    }
+  }
+  return true;
+}
+
 /// Pure planning shared by memory/file adapters. Input order is retained and
-/// capacity is explicit; duplicate/conflicting attempt ids never overwrite.
+/// capacity is explicit; duplicate/conflicting attempt or session ids never
+/// overwrite.
 BatchRecordPlan planBatchRecords({
   required List<ResultHistoryEntry> existing,
   required Iterable<ResultHistoryEntry> incoming,

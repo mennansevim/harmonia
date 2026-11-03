@@ -1,0 +1,5 @@
+# Maestro workspace: only top-level numbered flows run; subflows are helpers.
+flows:
+  - "*.yaml"
+excludeTags:
+  - wip

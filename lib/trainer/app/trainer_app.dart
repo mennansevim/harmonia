@@ -12,13 +12,18 @@ import '../../infrastructure/notifications/flutter_practice_reminder_platform.da
 import '../../infrastructure/storage/file_practice_preferences.dart';
 import '../../infrastructure/storage/file_result_history.dart';
 import '../audio/trainer_audio.dart';
+import '../../domain/lang.dart';
 import '../home/home_shell.dart';
 import '../onboarding/onboarding_flow.dart';
 import '../state/trainer_store.dart';
+import 'reminder_context.dart';
 import '../ui/kit.dart';
 import 'scope.dart';
 
 /// Ear-trainer app root: loading → onboarding → tabbed home.
+/// Largest system text scale the trainer honours.
+const maxTextScale = 2.0;
+
 class TrainerApp extends StatefulWidget {
   const TrainerApp({
     super.key,
@@ -28,6 +33,7 @@ class TrainerApp extends StatefulWidget {
     this.history,
     this.liveAudio = true,
     this.startupCleanup,
+    this.purgeTempAudio,
     this.choir,
   });
 
@@ -37,13 +43,14 @@ class TrainerApp extends StatefulWidget {
   final ResultHistoryRepository? history;
   final bool liveAudio;
   final Future<void> Function()? startupCleanup;
+  final Future<OrphanCleanupReport> Function()? purgeTempAudio;
   final ChoirStore? choir;
 
   @override
   State<TrainerApp> createState() => _TrainerAppState();
 }
 
-class _TrainerAppState extends State<TrainerApp> {
+class _TrainerAppState extends State<TrainerApp> with WidgetsBindingObserver {
   late final TrainerStore _store =
       widget.store ?? TrainerStore(FileTrainerPersistence());
   late final TrainerAudio _audio = widget.audio ?? TrainerAudio();
@@ -78,6 +85,9 @@ class _TrainerAppState extends State<TrainerApp> {
       _audio.timbre = _store.timbre;
     }
     if (!_choir.loaded) _choir.load();
+    WidgetsBinding.instance.addObserver(this);
+    _language = _store.language;
+    _store.addListener(_languageChanged);
     final sweep =
         widget.startupCleanup ??
         () async => _cleanup.value = await OrphanAudioCleaner(
@@ -86,12 +96,40 @@ class _TrainerAppState extends State<TrainerApp> {
     sweep().catchError((Object _) {});
   }
 
+  String? _language;
+
+  /// Rebuilds the app only when the Settings language changes.
+  void _languageChanged() {
+    if (_store.language == _language) return;
+    // WidgetsApp keeps its cached device locale when `locale` returns to
+    // null without calling localeResolutionCallback, so set the wording here.
+    final device = WidgetsBinding.instance.platformDispatcher.locales;
+    final code =
+        _store.language ?? (device.isEmpty ? 'en' : device.first.languageCode);
+    Lang.en = code != 'tr';
+    setState(() => _language = _store.language);
+  }
+
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _store.removeListener(_languageChanged);
     _audio.dispose();
     _cleanup.dispose();
     _choir.dispose();
     super.dispose();
+  }
+
+  /// Leaving the app is when the plan is freshest: today's practice, due
+  /// cards and choir work are known. Failures leave the old schedule.
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state != AppLifecycleState.paused || !_store.loaded) return;
+    replanReminders(
+      _store,
+      _reminders,
+      choir: _choir,
+    ).catchError((Object _) {});
   }
 
   void _onboardingFinished(bool begin) {
@@ -108,6 +146,9 @@ class _TrainerAppState extends State<TrainerApp> {
     audio: _audio,
     reminders: _reminders,
     history: _history,
+    purgeTempAudio:
+        widget.purgeTempAudio ??
+        OrphanAudioCleaner(getTemporaryDirectory).purge,
     liveAudio: widget.liveAudio,
     child: AppServices(
       history: _history,
@@ -120,9 +161,22 @@ class _TrainerAppState extends State<TrainerApp> {
           navigatorKey: _navigator,
           theme: trainerTheme(),
           themeMode: ThemeMode.light,
-          // English first: a device in any other language falls back to it.
+          // Settings can pin a language; otherwise Turkish on a Turkish
+          // device, English everywhere else.
+          locale: _language == null ? null : Locale(_language!),
           supportedLocales: const [Locale('en'), Locale('tr')],
           localizationsDelegates: GlobalMaterialLocalizations.delegates,
+          localeResolutionCallback: (locale, _) {
+            final turkish = locale?.languageCode == 'tr';
+            Lang.en = !turkish;
+            return Locale(turkish ? 'tr' : 'en');
+          },
+          // Layouts are audited up to 2x; iOS accessibility sizes reach about
+          // 3x, which splits words mid-syllable.
+          builder: (context, child) => MediaQuery.withClampedTextScaling(
+            maxScaleFactor: maxTextScale,
+            child: child!,
+          ),
           home: ListenableBuilder(
             listenable: _store,
             builder: (context, _) {

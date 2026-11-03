@@ -1,0 +1,63 @@
+# English device: onboarding, every tab and the Voice Lab exercises read in
+# English (QA-DEF-009). Run on a simulator whose language is English.
+appId: com.mennansevim.vocalart
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible: ".*ear every day"
+    timeout: 20000
+- takeScreenshot: qa/artifacts/evidence/en/01_welcome
+- scrollUntilVisible:
+    element: "Get started"
+    direction: DOWN
+- tapOn: "Get started"
+- takeScreenshot: qa/artifacts/evidence/en/02_role
+- tapOn: "I sing in a choir"
+- tapOn: "Continue"
+- tapOn: "Skip"
+- tapOn: "Voice: range, rhythm, melody"
+- tapOn: "Continue"
+- tapOn: "Continue"
+- takeScreenshot: qa/artifacts/evidence/en/04_reminder
+- tapOn: "Not now"
+- takeScreenshot: qa/artifacts/evidence/en/05_ready
+- scrollUntilVisible:
+    element: "Go to home"
+    direction: DOWN
+- tapOn: "Go to home"
+- extendedWaitUntil:
+    visible: "Today"
+    timeout: 8000
+- takeScreenshot: qa/artifacts/evidence/en/06_today
+- tapOn: "Voice"
+- takeScreenshot: qa/artifacts/evidence/en/07_voice_lab
+- tapOn: "Listen and sing.*"
+- waitForAnimationToEnd
+- takeScreenshot: qa/artifacts/evidence/en/08_single_note
+- tapOn: ".*Close single-note practice.*"
+- tapOn: "Melody echo.*"
+- waitForAnimationToEnd
+- takeScreenshot: qa/artifacts/evidence/en/09_melody
+- tapOn: ".*Close melody practice.*"
+- tapOn: "Rhythm echo.*"
+- waitForAnimationToEnd
+- takeScreenshot: qa/artifacts/evidence/en/10_rhythm
+- tapOn: ".*Close exercise.*"
+- scrollUntilVisible:
+    element: "2 / 3 / 4-part echo.*"
+    direction: DOWN
+- tapOn: "2 / 3 / 4-part echo.*"
+- waitForAnimationToEnd
+- takeScreenshot: qa/artifacts/evidence/en/11_piano_parts
+- tapOn: ".*Close piano examples.*"
+- tapOn: "Choir"
+- takeScreenshot: qa/artifacts/evidence/en/12_choir
+- tapOn: "Progress"
+- takeScreenshot: qa/artifacts/evidence/en/13_progress
+- tapOn: "Settings"
+- takeScreenshot: qa/artifacts/evidence/en/14_settings
+- tapOn: "Today"
+- tapOn: "Start practising"
+- waitForAnimationToEnd
+- takeScreenshot: qa/artifacts/evidence/en/15_breath

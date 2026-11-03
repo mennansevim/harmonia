@@ -27,6 +27,12 @@ class PluginAudioLabBackend
   @override
   Stream<double> get inputLevelDb => _levels.stream;
 
+  @override
+  MeasurementProvenance get inputLevelProvenance => const MeasurementProvenance(
+    source: MeasurementSource.microphone,
+    analyzerVersion: 'record-amplitude-dbfs-v1',
+  );
+
   Future<void> _stopLevels() async {
     await _levelSubscription?.cancel();
     _levelSubscription = null;

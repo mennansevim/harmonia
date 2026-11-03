@@ -8,11 +8,14 @@ import '../../application/single_tone_session.dart';
 import '../../domain/audio/audio_capture.dart';
 import '../../domain/audio/capture_quality.dart';
 import '../../domain/audio/recording_pitch_analyzer.dart';
+import '../../domain/audio/visual_feedback_frame.dart';
 import '../../infrastructure/audio/isolate_recording_pitch_worker.dart';
 import '../../infrastructure/audio/plugin_audio_lab_backend.dart';
-import '../common/input_level_meter.dart';
+import '../common/live_pitch_feedback_field.dart';
+import '../common/pitch_feedback_field.dart';
 import '../common/ui/resonia_ui.dart';
 import '../common/ui/microphone_permission_recovery_card.dart';
+import '../../domain/lang.dart';
 
 /// SESSION-01 UI: real capture flow, but no correct/incorrect decision until
 /// VAD-01 + BENCH-01 pass (SingleToneSessionOutcome.scoringEnabled).
@@ -70,19 +73,28 @@ class _SingleToneSessionScreenState extends State<SingleToneSessionScreen>
         final busy = !session.canStart;
         return LessonScaffold(
           progress: null,
-          counter: 'Puansız',
-          closeLabel: 'Tek ses çalışmasını kapat',
+          counter: tr('Puansız', 'Unscored'),
+          closeLabel: tr(
+            'Tek ses çalışmasını kapat',
+            'Close single-note practice',
+          ),
           top: [
-            const Align(
+            Align(
               alignment: AlignmentDirectional.centerStart,
-              child: StatusPill('Deneysel'),
+              child: StatusPill(tr('Deneysel', 'Experimental')),
             ),
             const SizedBox(height: ResoniaSpacing.md),
-            Text('Tek ses: dinle ve söyle', style: text.headlineSmall),
-            Text('Hedef: Do (C4)', style: text.titleMedium),
+            Text(
+              tr('Tek ses: dinle ve söyle', 'Single note: listen and sing'),
+              style: text.headlineSmall,
+            ),
+            Text(tr('Hedef: Do (C4)', 'Target: C4'), style: text.titleMedium),
             const SizedBox(height: ResoniaSpacing.xs),
-            const Text(
-              'Referans sentetik bir tondur. Doğru/yanlış kararı ve puan henüz verilmez.',
+            Text(
+              tr(
+                'Referans sentetik bir tondur. Doğru/yanlış kararı ve puan henüz verilmez.',
+                'The reference is a synthetic tone. No right/wrong verdict or score is given yet.',
+              ),
             ),
             const SizedBox(height: ResoniaSpacing.lg),
             Semantics(
@@ -97,10 +109,13 @@ class _SingleToneSessionScreenState extends State<SingleToneSessionScreen>
             ExpansionTile(
               key: const Key('session_help'),
               tilePadding: EdgeInsets.zero,
-              title: const Text('Nasıl çalışır?'),
-              children: const [
+              title: Text(tr('Nasıl çalışır?', 'How does it work?')),
+              children: [
                 Text(
-                  'Önce 2 saniye sessiz kalıp ortamı ölç. Referans bitince kısa bir bekleme olur, sonra mikrofon açılır. En fazla 4 saniye söyle. Kayıt yerel analiz için okununca silinir; cihazdan gönderilmez. Gerçek ses ve cihaz doğrulaması bekleniyor.',
+                  tr(
+                    'Önce 2 saniye sessiz kalıp ortamı ölç. Referans bitince kısa bir bekleme olur, sonra mikrofon açılır. En fazla 4 saniye söyle. Kayıt yerel analiz için okununca silinir; cihazdan gönderilmez. Gerçek ses ve cihaz doğrulaması bekleniyor.',
+                    'First stay quiet for 2 seconds to measure the room. After the reference there is a short pause, then the microphone opens. Sing for up to 4 seconds. The recording is deleted once read for local analysis; it never leaves the device. Real voice and device validation is pending.',
+                  ),
                 ),
               ],
             ),
@@ -109,13 +124,23 @@ class _SingleToneSessionScreenState extends State<SingleToneSessionScreen>
                 session.backend is InputLevelSource)
               Padding(
                 padding: const EdgeInsets.only(top: ResoniaSpacing.sm),
-                child: InputLevelMeter(
-                  levels: (session.backend as InputLevelSource).inputLevelDb,
+                child: LivePitchFeedbackField(
+                  sessionId: 'single-tone-${identityHashCode(session)}',
+                  phase: session.phase == SingleToneSessionPhase.calibrating
+                      ? VisualFeedbackPhase.calibrating
+                      : VisualFeedbackPhase.responding,
+                  levelsDb: (session.backend as InputLevelSource).inputLevelDb,
+                  provenance: (session.backend as InputLevelSource)
+                      .inputLevelProvenance,
                 ),
               ),
             if (session.outcome case final outcome?) ...[
               const SizedBox(height: ResoniaSpacing.md),
               _OutcomeCard(outcome: outcome),
+              if (_visualFrame(outcome) case final frame?) ...[
+                const SizedBox(height: ResoniaSpacing.md),
+                PitchFeedbackField(frame: frame),
+              ],
               if (outcome.retryReason == SessionRetryReason.permissionDenied)
                 MicrophonePermissionRecoveryCard(
                   recovery: widget.permissionRecovery,
@@ -125,7 +150,9 @@ class _SingleToneSessionScreenState extends State<SingleToneSessionScreen>
                   key: const Key('session_details'),
                   onPressed: () => setState(() => _showDetails = !_showDetails),
                   child: Text(
-                    _showDetails ? 'Ayrıntıyı gizle' : 'Ölçüm ayrıntısı',
+                    _showDetails
+                        ? tr('Ayrıntıyı gizle', 'Hide details')
+                        : tr('Ölçüm ayrıntısı', 'Measurement details'),
                   ),
                 ),
               if (_showDetails && !outcome.needsRetry)
@@ -141,7 +168,10 @@ class _SingleToneSessionScreenState extends State<SingleToneSessionScreen>
                     ? ChunkyTone.neutral
                     : ChunkyTone.primary,
                 icon: Icons.mic_none_rounded,
-                label: 'Ortamı ölç (2 sn sessizlik)',
+                label: tr(
+                  'Ortamı ölç (2 sn sessizlik)',
+                  'Measure the room (2 s of silence)',
+                ),
               ),
               const SizedBox(height: ResoniaSpacing.sm),
               ChunkyButton(
@@ -154,7 +184,7 @@ class _SingleToneSessionScreenState extends State<SingleToneSessionScreen>
                     ? ChunkyTone.primary
                     : ChunkyTone.neutral,
                 icon: Icons.hearing,
-                label: 'Dinle ve söyle',
+                label: tr('Dinle ve söyle', 'Listen and sing'),
               ),
             ],
             if (session.canFinishResponse) ...[
@@ -163,7 +193,7 @@ class _SingleToneSessionScreenState extends State<SingleToneSessionScreen>
                 onPressed: session.finishResponse,
                 tone: ChunkyTone.record,
                 icon: Icons.stop_rounded,
-                label: 'Bitirdim',
+                label: tr('Bitirdim', 'I am done'),
               ),
               const SizedBox(height: ResoniaSpacing.sm),
             ],
@@ -172,40 +202,93 @@ class _SingleToneSessionScreenState extends State<SingleToneSessionScreen>
                 key: const Key('session_cancel'),
                 onPressed: session.cancel,
                 tone: ChunkyTone.neutral,
-                label: 'İptal et',
+                label: tr('İptal et', 'Cancel'),
               ),
           ],
         );
       },
     );
   }
+
+  VisualFeedbackFrame? _visualFrame(SingleToneSessionOutcome outcome) {
+    final quality = outcome.quality;
+    final evidence = outcome.evidence;
+    final deviation = outcome.deviation;
+    if (outcome.needsRetry ||
+        quality == null ||
+        evidence == null ||
+        deviation == null) {
+      return null;
+    }
+    return VisualFeedbackFrame(
+      sessionId: 'single-tone-${identityHashCode(session)}',
+      phase: VisualFeedbackPhase.diagnostic,
+      level01: (quality.peakAbs ?? 0).clamp(0.0, 1.0),
+      signedCents: deviation.absoluteCents,
+      confidence01: null,
+      stability01: null,
+      activeNoteIndex: null,
+      completedNotes: 0,
+      errorType: deviation.octaveOffset == 0
+          ? null
+          : VisualFeedbackError.octaveDifference,
+      provenance: evidence.provenance,
+    );
+  }
 }
 
 String _calibrationText(NoiseFloorCalibration? c) => switch (c?.status) {
-  null =>
+  null => tr(
     'Önce sessiz kalarak ortamın gürültüsünü ölçelim. Ölçüm kaydı saklanmaz.',
-  NoiseFloorStatus.calibrated =>
+    'First stay quiet so we can measure the room noise. The measurement is not kept.',
+  ),
+  NoiseFloorStatus.calibrated => tr(
     'Ortam ölçüldü. Kulaklık/çıkış değişirse veya 30 dakika geçerse yeniden ölç.',
-  NoiseFloorStatus.tooNoisy =>
+    'Room measured. Measure again if headphones or output change, or after 30 minutes.',
+  ),
+  NoiseFloorStatus.tooNoisy => tr(
     'Ortam çok gürültülü. Daha sessiz bir yerde yeniden ölç.',
-  NoiseFloorStatus.activityDetected =>
+    'The room is too noisy. Measure again somewhere quieter.',
+  ),
+  NoiseFloorStatus.activityDetected => tr(
     'Ölçüm sırasında ses duyuldu. Sessiz kalıp yeniden ölç.',
-  _ => 'Ortam ölçülemedi. Yeniden dene.',
+    'Sound was heard during the measurement. Stay quiet and measure again.',
+  ),
+  _ => tr(
+    'Ortam ölçülemedi. Yeniden dene.',
+    'The room could not be measured. Try again.',
+  ),
 };
 
 String _phaseText(SingleToneSessionPhase phase) => switch (phase) {
-  SingleToneSessionPhase.idle => 'Hazır. Mikrofon kapalı.',
-  SingleToneSessionPhase.calibrating =>
+  SingleToneSessionPhase.idle => tr(
+    'Hazır. Mikrofon kapalı.',
+    'Ready. Microphone off.',
+  ),
+  SingleToneSessionPhase.calibrating => tr(
     'Ortam ölçülüyor — lütfen sessiz kal. Mikrofon açık.',
-  SingleToneSessionPhase.preparing => 'Hazırlanıyor…',
-  SingleToneSessionPhase.referencePlaying =>
+    'Measuring the room — please stay quiet. Microphone on.',
+  ),
+  SingleToneSessionPhase.preparing => tr('Hazırlanıyor…', 'Preparing…'),
+  SingleToneSessionPhase.referencePlaying => tr(
     'Referansı dinle. Mikrofon kapalı.',
-  SingleToneSessionPhase.waiting => 'Hazırlan…',
-  SingleToneSessionPhase.responding => 'Şimdi söyle. Mikrofon açık.',
-  SingleToneSessionPhase.assessing => 'Kayıt kalitesi kontrol ediliyor…',
-  SingleToneSessionPhase.analyzing => 'Yerel analiz yapılıyor…',
-  SingleToneSessionPhase.finished => 'Deneme bitti.',
-  SingleToneSessionPhase.closed => 'Oturum kapandı.',
+    'Listen to the reference. Microphone off.',
+  ),
+  SingleToneSessionPhase.waiting => tr('Hazırlan…', 'Get ready…'),
+  SingleToneSessionPhase.responding => tr(
+    'Şimdi söyle. Mikrofon açık.',
+    'Sing now. Microphone on.',
+  ),
+  SingleToneSessionPhase.assessing => tr(
+    'Kayıt kalitesi kontrol ediliyor…',
+    'Checking the recording quality…',
+  ),
+  SingleToneSessionPhase.analyzing => tr(
+    'Yerel analiz yapılıyor…',
+    'Analysing locally…',
+  ),
+  SingleToneSessionPhase.finished => tr('Deneme bitti.', 'Attempt finished.'),
+  SingleToneSessionPhase.closed => tr('Oturum kapandı.', 'Session closed.'),
 };
 
 class _OutcomeCard extends StatelessWidget {
@@ -216,12 +299,15 @@ class _OutcomeCard extends StatelessWidget {
     final neutral = context.resultColors.notMeasured;
     final (title, body) = outcome.needsRetry
         ? (
-            'Ölçüm alınamadı — puanlanmadı',
+            tr('Ölçüm alınamadı — puanlanmadı', 'No measurement — not scored'),
             _retryText(outcome.retryReason!, outcome.quality?.status),
           )
         : (
-            'Kaydın analiz edildi',
-            'Doğru/yanlış kararı henüz kapalı: ses tanıma doğruluğu gerçek kayıtlarla test edilmeden sonuç göstermiyoruz. İstersen ölçüm ayrıntısına bakabilirsin.',
+            tr('Kaydın analiz edildi', 'Your take was analysed'),
+            tr(
+              'Doğru/yanlış kararı henüz kapalı: ses tanıma doğruluğu gerçek kayıtlarla test edilmeden sonuç göstermiyoruz. İstersen ölçüm ayrıntısına bakabilirsin.',
+              'Right/wrong verdicts are off for now: we show no result until pitch accuracy is tested with real recordings. You can look at the measurement details if you like.',
+            ),
           );
     return Card(
       key: const Key('session_outcome'),
@@ -258,30 +344,56 @@ String _retryText(
   SessionRetryReason reason,
   CaptureQualityStatus? quality,
 ) => switch (reason) {
-  SessionRetryReason.calibrationRequired =>
+  SessionRetryReason.calibrationRequired => tr(
     'Önce ortamı ölç. Çıkış (kulaklık/hoparlör) değiştiyse veya ölçüm eskidiyse yeniden ölçmek gerekir.',
-  SessionRetryReason.permissionDenied =>
+    'Measure the room first. If the output (headphones/speaker) changed or the measurement is stale, measure again.',
+  ),
+  SessionRetryReason.permissionDenied => tr(
     'Mikrofon izni yok. Telefon ayarlarından Vocalart için mikrofonu açabilirsin; referansı dinlemek için izin gerekmez.',
-  SessionRetryReason.routeUnsupported =>
+    'No microphone permission. You can allow it for Vocalart in your phone settings; listening to the reference needs no permission.',
+  ),
+  SessionRetryReason.routeUnsupported => tr(
     'Bu ses çıkışıyla bu çalışma yapılamıyor. Kablolu kulaklık dene.',
-  SessionRetryReason.interrupted =>
+    'This exercise cannot run with this audio output. Try wired headphones.',
+  ),
+  SessionRetryReason.interrupted => tr(
     'Deneme kesildi (arama, bildirim veya kulaklık değişimi). Hazır olduğunda yeniden başlat.',
-  SessionRetryReason.captureFailed =>
+    'The attempt was interrupted (a call, a notification or a headphone change). Start again when you are ready.',
+  ),
+  SessionRetryReason.captureFailed => tr(
     'Kayıt alınamadı. Yeniden deneyebilirsin.',
-  SessionRetryReason.analysisFailed =>
+    'Nothing was recorded. You can try again.',
+  ),
+  SessionRetryReason.analysisFailed => tr(
     'Analiz tamamlanamadı. Yeniden deneyebilirsin.',
+    'The analysis could not finish. You can try again.',
+  ),
   SessionRetryReason.quality => switch (quality) {
-    CaptureQualityStatus.silent || CaptureQualityStatus.insufficientActivity =>
+    CaptureQualityStatus.silent ||
+    CaptureQualityStatus.insufficientActivity => tr(
       'Yeterli ses duyulmadı. Mikrofon açılınca notayı en az bir saniye net söyle.',
-    CaptureQualityStatus.lowSignalToNoise =>
+      'Not enough voice was heard. When the microphone opens, sing the note clearly for at least a second.',
+    ),
+    CaptureQualityStatus.lowSignalToNoise => tr(
       'Ortam gürültüsü sesine çok yakın. Daha sessiz bir yerde dene.',
-    CaptureQualityStatus.clipped =>
+      'The room noise is too close to your voice. Try somewhere quieter.',
+    ),
+    CaptureQualityStatus.clipped => tr(
       'Ses taştı. Telefondan biraz uzaklaşıp yeniden dene.',
-    CaptureQualityStatus.suspectedReferenceTail =>
+      'The sound clipped. Move a little away from the phone and try again.',
+    ),
+    CaptureQualityStatus.suspectedReferenceTail => tr(
       'Kaydın başında referans sesi duyulmuş olabilir. Kulaklık kullan veya mikrofon açıldıktan sonra başla.',
-    CaptureQualityStatus.calibrationRequired =>
+      'The reference may be audible at the start of the take. Use headphones or start after the microphone opens.',
+    ),
+    CaptureQualityStatus.calibrationRequired => tr(
       'Ortam ölçümü bu kayda uymuyor. Yeniden ölçüp dene.',
-    _ => 'Kayıt kullanılamadı. Yeniden deneyebilirsin.',
+      'The room measurement does not fit this take. Measure again and retry.',
+    ),
+    _ => tr(
+      'Kayıt kullanılamadı. Yeniden deneyebilirsin.',
+      'The take could not be used. You can try again.',
+    ),
   },
 };
 
@@ -299,16 +411,28 @@ class _Details extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Sinyal/gürültü: ${q.signalToNoiseDb?.toStringAsFixed(1) ?? "Ölçülmedi"}${q.signalToNoiseDb == null ? "" : " dB"}',
+            tr(
+              'Sinyal/gürültü: ${q.signalToNoiseDb?.toStringAsFixed(1) ?? "Ölçülmedi"}${q.signalToNoiseDb == null ? "" : " dB"}',
+              'Signal/noise: ${q.signalToNoiseDb?.toStringAsFixed(1) ?? "Not measured"}${q.signalToNoiseDb == null ? "" : " dB"}',
+            ),
           ),
           Text(
-            'Etkin enerji süresi: ${q.activeSeconds?.toStringAsFixed(2) ?? "Ölçülmedi"}${q.activeSeconds == null ? "" : " sn"}',
+            tr(
+              'Etkin enerji süresi: ${q.activeSeconds?.toStringAsFixed(2) ?? "Ölçülmedi"}${q.activeSeconds == null ? "" : " sn"}',
+              'Active energy time: ${q.activeSeconds?.toStringAsFixed(2) ?? "Not measured"}${q.activeSeconds == null ? "" : " s"}',
+            ),
           ),
           Text(
-            'Gözlenen temsilî frekans: ${hz == null ? "Ölçülmedi" : "${hz.toStringAsFixed(1)} Hz"}',
+            tr(
+              'Gözlenen temsilî frekans: ${hz == null ? "Ölçülmedi" : "${hz.toStringAsFixed(1)} Hz"}',
+              'Observed representative frequency: ${hz == null ? "Not measured" : "${hz.toStringAsFixed(1)} Hz"}',
+            ),
           ),
-          const Text(
-            'Bu değerler deneyseldir; insan sesi tespiti, doğru nota veya başarı kanıtı değildir.',
+          Text(
+            tr(
+              'Bu değerler deneyseldir; insan sesi tespiti, doğru nota veya başarı kanıtı değildir.',
+              'These values are experimental; they are not voice detection, a right note or proof of success.',
+            ),
           ),
         ],
       ),

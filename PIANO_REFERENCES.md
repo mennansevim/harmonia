@@ -1,7 +1,7 @@
 # Resonia — 2/3/4 sesli piyano referansları
 
 **Tarih:** 2026-10-11  
-**Durum:** Hazır 2/3/4 sesli piyano kayıtları için klasör/katalog, placeholder ekranı, CONS-01a–e reviewed yükleme/playback/composer, CONS-02a/b exact-any-order matcher, CONS-02c gated monofonik cevap kaydı, CONS-02d route/kalite kapılı diagnostic zincir, CONS-02e session ortam kalibrasyonu ve CONS-02f uçtan uca attempt coordinator var. Gerçek piyano dosyaları, birlikte nota/hak/tını QA, production player/UI ve gerçek insan sesi benchmark'ı yok. Önceki tekil sample mix kodu alternatif altyapı olarak korunuyor; ana içerik yolu değil.
+**Durum:** Hazır 2/3/4 sesli piyano kayıtları için klasör/katalog, placeholder ekranı, CONS-01a–e reviewed yükleme/playback/composer, CONS-02a/b exact-any-order matcher, CONS-02c gated monofonik cevap kaydı, CONS-02d route/kalite kapılı diagnostic zincir, CONS-02e session ortam kalibrasyonu, CONS-02f uçtan uca attempt coordinator, AUDIO-04a puansız UI, AUDIO-04b mobil composition ve AUDIO-04c atomik banka loader'ı var. Gerçek piyano dosyaları ile birlikte nota/hak/tını QA ve gerçek insan sesi/cihaz benchmark'ı yok; kullanıcı rotası kapalı. Önceki tekil sample mix kodu alternatif altyapı olarak korunuyor; ana içerik yolu değil.
 
 ## Kullanıcının seçtiği çalgı ve açık dosya biçimi
 
@@ -57,7 +57,8 @@ CONS-01e loader sonucundaki kayıt kimliği/nota metadata'sı ile defensive WAV
 snapshot'ını aynı session'a bağlar; UI'nın bunları ayrı kaynaklardan yanlış
 eşleştirmesine gerek bırakmaz. Her session fresh player alır, create autoplay
 yapmaz ve geçersiz sınav/replay politikası player tahsisinden önce reddedilir.
-Production player seçimi, kayıt kökü ve gerçek UI/capture bağlantısı açık kalır.
+Mobil player/backend/worker seçimi ve gerçek UI/capture composition kod-testlidir;
+kayıt kökü ile kullanıcı navigasyonu gerçek kayıtların ortak QA'sına kadar kapalıdır.
 
 Öğrenci cevabı monofonik frame→nota segment→sıra/set alignment ile değerlendirilir. Eksik/fazla/tekrar, doğru pitch-class ama yanlış oktav ve doğru sesler ama yanlış sıra ayrı kanıtlardır. Mevcut record diagnostic median/periodic ratio başarı/ezgi hafızası değildir. Kayıt/skor toleransları değiştirilmedi.
 
@@ -100,4 +101,10 @@ CONS-02f kalibrasyon→dinle→sırayla söyle→diagnostic durumlarını tek UI
 coordinator'da toplar. Pending worker sonucu cancel/replay/close sonrası
 yayımlanamaz; kalite retry ve analiz unavailable öğrenci hatası değildir.
 
-**Sıradaki işler:** kullanıcı hazır 2/3/4 ses kayıtlarını getirince birlikte nota/oktav/akort/format/seviye/süre/hak QA; production player seçimi ve gerçek kayıt hazır olunca UI/result copy wiring. Dosyalar gelene kadar placeholder'ı doldurma/oynatmayı açma. Kalıcı replay event'i, BENCH/VAD ve cihaz lifecycle/route kapıları ayrı; diğer bağımsız roadmap işleri devam eder.
+**AUDIO-04c banka kapısı:** özel kayıt kökündeki sabit
+`reviewed_chords.json` direct-child normal dosya olmalı; bounded UTF-8/strict
+schema parse, 2/3/4 kapsamı ve listedeki bütün WAV path/hash/header kontrolleri
+bitmeden immutable banka yayımlanmaz. Stream'den gelen başarılı prefix ürün
+availability'si değildir. Bu mekanizma nota/akort/tını/hak incelemesi değildir.
+
+**Sıradaki işler:** kullanıcı hazır 2/3/4 ses kayıtlarını getirince birlikte nota/oktav/akort/format/seviye/süre/hak QA; onaylı kökü atomik banka loader'ından geçirip ancak sonra kullanıcı navigasyonunu açma. Dosyalar gelene kadar placeholder'ı doldurma/oynatmayı açma. Kalıcı replay event'i, BENCH/VAD ve cihaz lifecycle/route kapıları ayrı; diğer bağımsız roadmap işleri devam eder.

@@ -1,0 +1,67 @@
+# Finish a whole quiz: result screen, Progress updates, survives a restart.
+appId: com.mennansevim.vocalart
+name: Quiz — sonuç ve kalıcılık
+tags: [critical]
+---
+- runFlow: subflows/onboard_quick.yaml
+- scrollUntilVisible:
+    element: "Nota.*"
+    direction: DOWN
+- tapOn: "Nota.*"
+- tapOn: "Serbest çalışma"
+- tapOn: "Başlat"
+- extendedWaitUntil:
+    visible: "Bu hangi nota\\?"
+    timeout: 8000
+- repeat:
+    times: 40
+    while:
+      notVisible: "Bitti"
+    commands:
+      - runFlow:
+          when:
+            visible: "Sonraki soru"
+          commands:
+            - takeScreenshot: quiz_compare
+            - tapOn: "Sonraki soru"
+      - runFlow:
+          when:
+            visible: "Devam"
+          commands:
+            - tapOn: "Devam"
+      - runFlow:
+          when:
+            visible: "Do"
+            notVisible: "Sonraki soru|Devam"
+          commands:
+            - tapOn: "Do"
+      - waitForAnimationToEnd
+- takeScreenshot: quiz_results
+- tapOn: "Bitti"
+# Back to the setup screen, then the skill page, then the tabs.
+- extendedWaitUntil:
+    visible: "Serbest çalışma"
+    timeout: 8000
+- tapOn: "Geri"
+- waitForAnimationToEnd
+- tapOn: "Geri"
+- extendedWaitUntil:
+    visible: "Bugün"
+    timeout: 8000
+- tapOn: "İlerleme"
+- scrollUntilVisible:
+    element: "Nota.*"
+    direction: DOWN
+- takeScreenshot: progress_after_quiz
+- assertNotVisible: "Nota\\n.*Henüz deneme yok"
+- stopApp
+- launchApp
+- extendedWaitUntil:
+    visible: "Bugün"
+    timeout: 15000
+- tapOn: "İlerleme"
+- scrollUntilVisible:
+    element: "Nota.*"
+    direction: DOWN
+- takeScreenshot: progress_after_restart
+- assertNotVisible: "Nota\\n.*Henüz deneme yok"

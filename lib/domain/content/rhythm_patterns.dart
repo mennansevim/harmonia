@@ -1,5 +1,6 @@
 import '../models/exercise.dart';
 import '../models/exercise_protocol.dart';
+import '../lang.dart';
 
 /// Educator sign-off state. Drafts may appear only with a visible label and
 /// never as exam content (EDU-01).
@@ -55,23 +56,29 @@ RhythmPattern _draft(
 );
 
 /// Developer drafts for the code path only; NOT educator-approved content.
-final List<RhythmPattern> draftRhythmPatterns = List.unmodifiable([
-  _draft('draft-rhythm-quarters', 'Dört dörtlük', 'Eşit aralıklı dört vuruş.', [
-    0,
-    1,
-    2,
-    3,
-  ]),
+/// Built once per wording language: titles are part of the pattern.
+final _draftByLang = <bool, List<RhythmPattern>>{};
+
+List<RhythmPattern> get draftRhythmPatterns =>
+    _draftByLang[Lang.en] ??= _buildDraftRhythm();
+
+List<RhythmPattern> _buildDraftRhythm() => List.unmodifiable([
+  _draft(
+    'draft-rhythm-quarters',
+    tr('Dört dörtlük', 'Four quarters'),
+    tr('Eşit aralıklı dört vuruş.', 'Four evenly spaced beats.'),
+    [0, 1, 2, 3],
+  ),
   _draft(
     'draft-rhythm-eighths',
-    'Sekizlik çifti',
-    'Üçüncü vuruşta iki hızlı vuruş.',
+    tr('Sekizlik çifti', 'Eighth-note pair'),
+    tr('Üçüncü vuruşta iki hızlı vuruş.', 'Two quick taps on the third beat.'),
     [0, 1, 2, 2.5, 3],
   ),
   _draft(
     'draft-rhythm-syncopation',
-    'Kısa senkop',
-    'Vuruş arasına düşen bir giriş.',
+    tr('Kısa senkop', 'Short syncopation'),
+    tr('Vuruş arasına düşen bir giriş.', 'An entry that falls between beats.'),
     [0, 1.5, 2, 3],
     difficulty: 2,
   ),

@@ -43,13 +43,17 @@ class FileResultHistory implements ResultHistoryRepository {
       throw const HistoryStorageException(HistoryStorageFailure.corrupt);
     }
     try {
-      return [
+      final decoded = [
         for (final e in entries)
           if (e is Map<String, Object?>)
             ResultHistoryEntry.fromJson(e)
           else
             throw const FormatException('entry'),
       ];
+      if (!hasUniqueHistoryIdentities(decoded)) {
+        throw const FormatException('duplicate history identity');
+      }
+      return decoded;
     } on FormatException {
       throw const HistoryStorageException(HistoryStorageFailure.corrupt);
     }

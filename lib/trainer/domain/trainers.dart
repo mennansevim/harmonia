@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'music.dart';
+import '../../domain/lang.dart';
 
 /// The five listening trainers. The choir module is separate (koro/).
 enum TrainerKind { pitch, interval, chord, scale, progression }
@@ -10,53 +11,74 @@ enum IntervalDirection { ascending, descending, mixed }
 extension TrainerKindInfo on TrainerKind {
   String get id => name;
   String get title => switch (this) {
-    TrainerKind.pitch => 'Nota Eğitimi',
-    TrainerKind.interval => 'Aralık Eğitimi',
-    TrainerKind.chord => 'Akor Tanıma',
-    TrainerKind.scale => 'Dizi Tanıma',
-    TrainerKind.progression => 'Akor Yürüyüşleri',
+    TrainerKind.pitch => tr('Nota Eğitimi', 'Note Training'),
+    TrainerKind.interval => tr('Aralık Eğitimi', 'Interval Training'),
+    TrainerKind.chord => tr('Akor Tanıma', 'Chord Recognition'),
+    TrainerKind.scale => tr('Dizi Tanıma', 'Scale Recognition'),
+    TrainerKind.progression => tr('Akor Yürüyüşleri', 'Chord Progressions'),
   };
   String get shortTitle => switch (this) {
-    TrainerKind.pitch => 'Nota',
-    TrainerKind.interval => 'Aralıklar',
-    TrainerKind.chord => 'Akorlar',
-    TrainerKind.scale => 'Diziler',
-    TrainerKind.progression => 'Yürüyüşler',
+    TrainerKind.pitch => tr('Nota', 'Notes'),
+    TrainerKind.interval => tr('Aralıklar', 'Intervals'),
+    TrainerKind.chord => tr('Akorlar', 'Chords'),
+    TrainerKind.scale => tr('Diziler', 'Scales'),
+    TrainerKind.progression => tr('Yürüyüşler', 'Progressions'),
   };
   String get tagline => switch (this) {
-    TrainerKind.pitch => 'Notayı adlandır',
-    TrainerKind.interval => 'Notalar arası mesafe',
-    TrainerKind.chord => 'Akor rengini tanı',
-    TrainerKind.scale => 'Diziyi bul',
-    TrainerKind.progression => 'Şarkı kalıplarını duy',
+    TrainerKind.pitch => tr('Notayı adlandır', 'Name the note'),
+    TrainerKind.interval => tr(
+      'Notalar arası mesafe',
+      'The distance between notes',
+    ),
+    TrainerKind.chord => tr('Akor rengini tanı', 'Know a chord by its colour'),
+    TrainerKind.scale => tr('Diziyi bul', 'Find the scale'),
+    TrainerKind.progression => tr(
+      'Şarkı kalıplarını duy',
+      'Hear the patterns in songs',
+    ),
   };
   String get pitchLine => switch (this) {
-    TrainerKind.pitch => 'Tek bir notayı tanı',
-    TrainerKind.interval => 'İki nota arasındaki mesafe',
-    TrainerKind.chord => 'Akor niteliğini tanı',
-    TrainerKind.scale => 'Dizi türünü kulaktan bul',
-    TrainerKind.progression => 'Yürüyüş kalıplarını yakala',
+    TrainerKind.pitch => tr('Tek bir notayı tanı', 'Recognise a single note'),
+    TrainerKind.interval => tr(
+      'İki nota arasındaki mesafe',
+      'The distance between two notes',
+    ),
+    TrainerKind.chord => tr(
+      'Akor niteliğini tanı',
+      'Recognise the chord quality',
+    ),
+    TrainerKind.scale => tr(
+      'Dizi türünü kulaktan bul',
+      'Find the scale type by ear',
+    ),
+    TrainerKind.progression => tr(
+      'Yürüyüş kalıplarını yakala',
+      'Catch the progression patterns',
+    ),
   };
   String get unitWord => switch (this) {
-    TrainerKind.pitch => 'nota',
-    TrainerKind.interval => 'aralık',
-    TrainerKind.chord => 'akor',
-    TrainerKind.scale => 'dizi',
-    TrainerKind.progression => 'yürüyüş',
+    TrainerKind.pitch => tr('nota', 'notes'),
+    TrainerKind.interval => tr('aralık', 'intervals'),
+    TrainerKind.chord => tr('akor', 'chords'),
+    TrainerKind.scale => tr('dizi', 'scales'),
+    TrainerKind.progression => tr('yürüyüş', 'progressions'),
   };
   String get question => switch (this) {
-    TrainerKind.pitch => 'Bu hangi nota?',
-    TrainerKind.interval => 'Bu hangi aralık?',
-    TrainerKind.chord => 'Bu hangi akor?',
-    TrainerKind.scale => 'Bu hangi dizi?',
-    TrainerKind.progression => 'Bu hangi yürüyüş?',
+    TrainerKind.pitch => tr('Bu hangi nota?', 'Which note is this?'),
+    TrainerKind.interval => tr('Bu hangi aralık?', 'Which interval is this?'),
+    TrainerKind.chord => tr('Bu hangi akor?', 'Which chord is this?'),
+    TrainerKind.scale => tr('Bu hangi dizi?', 'Which scale is this?'),
+    TrainerKind.progression => tr(
+      'Bu hangi yürüyüş?',
+      'Which progression is this?',
+    ),
   };
   String get replayLabel => switch (this) {
-    TrainerKind.pitch => 'TEKRAR DİNLE',
-    TrainerKind.interval => 'ARALIĞI TEKRARLA',
-    TrainerKind.chord => 'AKORU TEKRARLA',
-    TrainerKind.scale => 'DİZİYİ TEKRARLA',
-    TrainerKind.progression => 'YÜRÜYÜŞÜ TEKRARLA',
+    TrainerKind.pitch => tr('TEKRAR DİNLE', 'LISTEN AGAIN'),
+    TrainerKind.interval => tr('ARALIĞI TEKRARLA', 'REPLAY INTERVAL'),
+    TrainerKind.chord => tr('AKORU TEKRARLA', 'REPLAY CHORD'),
+    TrainerKind.scale => tr('DİZİYİ TEKRARLA', 'REPLAY SCALE'),
+    TrainerKind.progression => tr('YÜRÜYÜŞÜ TEKRARLA', 'REPLAY PROGRESSION'),
   };
 
   /// Every answer id the trainer can ask about.
@@ -254,9 +276,12 @@ String itemLabel(
 };
 
 String itemFeel(TrainerKind kind, String id) => switch (kind) {
-  TrainerKind.pitch => 'Do\'ya göre yerini düşün, sonra adını söyle.',
+  TrainerKind.pitch => tr(
+    'Do\'ya göre yerini düşün, sonra adını söyle.',
+    'Place it against the tonic, then name it.',
+  ),
   TrainerKind.interval =>
-    '${Intervals.byId(id).feel} Örnek: ${Intervals.byId(id).anchor}.',
+    '${Intervals.byId(id).feel} ${tr('Örnek', 'Example')}: ${Intervals.byId(id).anchor}.',
   TrainerKind.chord => Chords.byId(id).feel,
   TrainerKind.scale => Scales.byId(id).feel,
   TrainerKind.progression => Progressions.byId(id).feel,

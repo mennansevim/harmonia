@@ -97,6 +97,22 @@ void main() {
       ),
       throwsArgumentError,
     );
+    expect(
+      () => ExerciseProtocol(
+        mode: ExerciseMode.learning,
+        notes: [note()],
+        maxReferencePlays: ExerciseProtocol.maxReferencePlaysLimit + 1,
+      ),
+      throwsArgumentError,
+    );
+    expect(
+      () => ExerciseProtocol(
+        mode: ExerciseMode.learning,
+        notes: [note()],
+        recallDelayMs: ExerciseProtocol.maxRecallDelayMs + 1,
+      ),
+      throwsArgumentError,
+    );
   });
   test('sequential overlap and non-zero simultaneous onset rejected', () {
     expect(

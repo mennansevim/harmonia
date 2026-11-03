@@ -6,6 +6,7 @@ import 'package:flutter/scheduler.dart';
 
 import '../../../app/theme/resonia_theme.dart';
 import 'playback_visual.dart';
+import '../../../domain/lang.dart';
 
 /// Draws the clip that is actually playing: its real amplitude envelope with
 /// a moving playhead, and a zoomed oscilloscope of the samples under the
@@ -16,12 +17,12 @@ class WaveformPlaybackView extends StatefulWidget {
     super.key,
     required this.playback,
     this.height = 132,
-    this.idleLabel = 'Dinlemek için dokun',
+    this.idleLabel,
   });
 
   final ValueListenable<PlaybackVisual?> playback;
   final double height;
-  final String idleLabel;
+  final String? idleLabel;
 
   @override
   State<WaveformPlaybackView> createState() => _WaveformPlaybackViewState();
@@ -103,7 +104,9 @@ class _WaveformPlaybackViewState extends State<WaveformPlaybackView>
     final scheme = Theme.of(context).colorScheme;
     final playing = _visual != null;
     return Semantics(
-      label: playing ? 'Ses çalıyor' : widget.idleLabel,
+      label: playing
+          ? tr('Ses çalıyor', 'Playing')
+          : widget.idleLabel ?? tr('Dinlemek için dokun', 'Tap to listen'),
       liveRegion: true,
       excludeSemantics: true,
       child: SizedBox(

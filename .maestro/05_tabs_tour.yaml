@@ -1,0 +1,26 @@
+# Every tab and each long tab's lower half.
+appId: com.mennansevim.vocalart
+name: Sekmeler — tam tur
+tags: [critical, smoke]
+---
+- runFlow: subflows/onboard_quick.yaml
+- takeScreenshot: tab_today
+- scroll
+- takeScreenshot: tab_today_scrolled
+- tapOn: "Ses"
+- assertVisible: "Ses Atölyesi"
+- takeScreenshot: tab_voice
+- scroll
+- takeScreenshot: tab_voice_scrolled
+- tapOn: "Koro"
+- takeScreenshot: tab_choir
+- tapOn: "İlerleme"
+- takeScreenshot: tab_progress
+- scroll
+- takeScreenshot: tab_progress_scrolled
+- tapOn: "Ayarlar"
+- takeScreenshot: tab_settings
+- scroll
+- takeScreenshot: tab_settings_scrolled
+- scroll
+- takeScreenshot: tab_settings_bottom

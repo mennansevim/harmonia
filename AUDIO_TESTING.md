@@ -1115,7 +1115,124 @@ temiz. Sentetik tonlar gerçek piyano/insan sesi, VAD, mikrofon, cihaz veya
 
 ## Koro: tek telefonda eşlikli kayıt (CHOIR-A0)
 
-Simülatör kanıtı: `integration_test/choir_journey_test.dart` gerçek eklentilerle çalma + kayıt + miks zincirini çalıştırır (önce `xcrun simctl privacy <id> grant microphone com.resonia.resonia`). Simülatörde kulaklık ve gerçek akustik yol yoktur; gecikme, bleed veya ses kalitesi kanıtı değildir.
+Simülatör kanıtı: `integration_test/choir_journey_test.dart` gerçek eklentilerle çalma + kayıt + miks zincirini çalıştırır (önce `xcrun simctl privacy <id> grant microphone com.mennansevim.vocalart`). Simülatörde kulaklık ve gerçek akustik yol yoktur; gecikme, bleed veya ses kalitesi kanıtı değildir.
 
 Gerçek cihazda bakılacaklar: kablolu kulaklıkla kayıt; eşlik mikrofona sızıyor mu; `_lagMs` tahmini kulakla ne kadar tutuyor, hizalama kaydırıcısı ne kadar gerekiyor; AirPods ile A2DP çıkış + telefon mikrofonu gerçekten açılıyor mu; kayıt sırasında kulaklık çıkınca kayıt iptal oluyor mu; arama gelince davranış; Android'de aynı anda çalma/kayıt ve ses odağı; 10 dakikalık kayıtta bellek.
+
+## AUDIO-03a — Analiz sonrası VisualFeedbackFrame (2026-10-30)
+
+Kalite kapısından geçen batch kayıt kanıtı, provenance korunarak
+`VisualFeedbackFrame` üzerinden Aurora tanısal alanına bağlandı. Ham signed
+cents puanlamadan ayrı tutulur; kayıt tepe seviyesi yalnız görsel büyüklüğü
+sürer. Confidence/stability ölçülmediyse null kalır ve ekranda “ölçülmedi”
+olarak görünür. Test kaynağı mikrofon diye sunulmaz. Reduced motion ve büyük
+yazı eşdeğer bilgiyi korur.
+
+Hedefli 9 test ve tam **1098 test** geçti; 1 opt-in ekran turu atlandı,
+analyze/format temiz. Bu sonuç canlı pitch frame'i, VAD, başarı skoru, cihaz
+performansı, gerçek telefon veya insan sesi doğrulaması değildir.
+
+## AUDIO-03b — Canlı, yalnız enerji VisualFeedbackFrame (2026-10-30)
+
+Recorder amplitude akışı provenance ile birlikte kalibrasyon ve cevap
+fazlarındaki `VisualFeedbackFrame`'lere projekte edilir. Mapping -60..0 dBFS
+gösterim aralığıyla sınırlıdır; cihazlar arası kalibrasyon değildir. NaN,
+sonsuz ve pozitif dBFS olayları yok sayılır. Canlı frame'lerde signed cents,
+confidence ve stability null kalır; pitch ekseni çizilmez ve UI açıkça perde
+ölçülmediğini söyler. Mock akış “Test kaynağı” olarak kalır.
+
+Hedefli 12 test ve tam **1102 test** geçti; 2 opt-in ekran turu atlandı,
+analyze/format temiz. Bu sonuç gerçek cihaz frame hızı/jank, dBFS doğruluğu,
+canlı pitch, VAD, insan sesi veya akustik performans doğrulaması değildir.
+
+## AUDIO-04a — Reviewed chord deneme UI'sı (2026-10-30)
+
+Reviewed referans ve coordinator enjekte edildiğinde ekran açık kalibrasyon,
+tam playback, recall bekleme, tek sürekli sıralı cevap, kalite, worker,
+segment ve matcher akışını yürütür. Learning hedefleri görünür; recall hedef
+etiketleri gizlidir. Exact ve any-order kullanıcı yönergeleri ayrıdır. Canlı
+alan yalnız recorder enerjisidir; pitch/sent anlamı taşımaz.
+
+Sentetik PCM + fake player/backend ile tam 2 ses akışı, sessiz neutral retry ve
+recall hedef gizleme test edildi. Tam **1109 test** geçti, 2 opt-in tur atlandı;
+analyze/format temiz. Placeholder rota açılmadı. Bu; gerçek piyano duyulabilirliği,
+etiket/hak onayı, insan sesi segmentasyonu, VAD, telefon veya öğrenme kanıtı
+değildir.
+
+## AUDIO-04b — Reviewed attempt composition (2026-10-31)
+
+Reviewed loader'dan gelen immutable WAV/metadata; fresh reference player,
+PCM-reader capture backend, worker, reference session, capture session,
+diagnostic analyzer ve attempt coordinator'a tek composition sınırında bağlanır.
+Kurulum permission istemez, oynatmaz, kayıt veya analiz başlatmaz. Geçersiz
+politika native kaynak ayrılmadan; eksik PCM-reader/backend/worker hatası ise
+ayrılmış kaynaklar kapatılarak reddedilir.
+
+Beş fake-backed sahiplik testi ve tam **1114 test** geçti; 2 opt-in tur atlandı,
+analyze/format temiz. Mobil adapter seçiminin derlenmesi gerçek eklenti veya
+telefon doğrulaması değildir. Placeholder route kapalıdır; gerçek piyano
+duyulabilirliği, hak/etiket kabulü, insan sesi segmentasyonu, VAD, cihaz route'u
+ve öğrenme etkisi kanıtlanmadı.
+
+## AUDIO-04c — Atomik reviewed chord bankası (2026-10-31)
+
+Sabit manifest normal bir direct-child dosya olmalı; root/manifest symlink,
+dizin, eksik dosya, aşırı boyut, malformed UTF-8/JSON ve desteklenmeyen schema
+fail-closed kalır. Banka 2/3/4 kapsamının tamamını ve her WAV'ın ayrı
+path/hash/header doğrulamasını bekler. Yükleme sırasında bir kayıt düşerse daha
+önce doğrulanan prefix kullanıcıya hazır banka olarak verilmez.
+
+Sekiz dosya sistemi testi ve tam **1122 test** geçti; 2 opt-in tur atlandı,
+analyze/format temiz. Sentetik PCM yalnız loader regresyonudur. Nota/akort/tını,
+hak sahipliği, duyulabilirlik, VAD, insan sesi, fiziksel route veya pedagojik
+uygunluk kanıtlanmadı; kullanıcı rotası açılmadı.
+
+## RETRY-01d — Ezgi aday karşılaştırma sunumu (2026-10-31)
+
+CORE-03'ün sembolik alignment kanıtı, kısa ezgi sonucunda adım adım ve kaynak
+sırası korunarak sunulur. Yakın aday, oktav farkı, farklı perde, eksik ve fazla
+bölüm ayrı açıklanır. Bu yalnız mevcut frekans segmentlerinin karşılaştırmasıdır;
+nota doğruluğu, şarkı söyleme kalitesi, zamanlama veya ezgi hafızası değildir.
+
+İki widget testi ve tam **1124 test** geçti; 2 opt-in tur atlandı,
+analyze/format temiz. İnsan sesi etiketleri, VAD/segment benchmark'ı, gerçek
+telefon ve eğitimci gözlemi olmadan ürün skoru/history/mastery açılmayacaktır.
+
+## REL-06e — Oturum yardım kanıtı (2026-11-01)
+
+- Katı schema v1 round-trip, unknown/missing/wrong-type ve sınır dışı değerler
+  test edildi.
+- Protocol tekrar kotası ile perde ipucu, transpozisyon ve eşlik izinleri
+  uygulanıyor; izinli yardım kanıtı dahi bağımsız mastery değildir.
+- Ritim sonucu gözlenen referans çalma sayısını structured evidence'a yazar.
+- Legacy sonuç okunur; nested/legacy çelişkisi ve bozuk nested kanıt fail-closed
+  biçimde bağımsızlığı engeller.
+- Tam kalite kapısı: **1131 test geçti**, 2 opt-in tur atlandı; analyze/format
+  temiz. Bunlar kod testidir. Yapılandırılmış recall delay ölçülmüş latency
+  değildir; gerçek playback, telefon, insan sesi/VAD ve eğitimci kabulü yoktur.
+
+## REL-06f — Exact protokol parmak izi (2026-11-01)
+
+- Strict protocol JSON → sürümlü SHA-256 kimlik round-trip kararlılığı testli.
+- Ritim onset/tempo ve yardım/recall politikası değişiklikleri farklı kimlik
+  üretir; eksik veya farklı kimlik mevcut katalog kohortuna girmez.
+- Gerçek ritim outcome codec'i kimliği korur; mastery/next-step/report/resume
+  tüketicileri aynı exact-match sınırını paylaşır.
+- Eski kimliksiz ritim geçmişi okunabilir, fakat doğrulanamayan protokolü yeni
+  mastery'ye taşımaz. Veri silme veya sessiz migration yapılmaz.
+- Hedefli **105 test**, tam **1136 test** geçti; 2 opt-in tur atlandı,
+  analyze/format temiz. Hash sesin kendisini, nota etiketini, telifi, insan
+  cevabını veya cihaz davranışını doğrulamaz.
+
+## REL-07e — Attempt/session history tekilliği (2026-11-01)
+
+- Aynı attempt kimliği ve aynı session kimliği birbirinden bağımsız tekillik
+  sınırlarıdır. Exact tekrar double-count edilmez; değişmiş aynı-session kanıtı
+  mevcut sonucu overwrite etmez.
+- Batch import duplicate/conflict kararını kapasiteden önce verir ve başarısız
+  plan hiçbir prefix yazmaz. Diskte zaten yinelenen kimlik fail-closed corrupt
+  olur; kaynak dosya korunur, sessiz repair/migration yapılmaz.
+- Hedefli **41 test** ve tam **1141 test** geçti; 2 opt-in tur atlandı,
+  analyze/format temiz. Bu testler mikrofon, kayıt doğruluğu, insan sesi, VAD,
+  cihaz route'u veya pedagojik etki kanıtı değildir.
 

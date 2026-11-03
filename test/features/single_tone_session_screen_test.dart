@@ -109,12 +109,20 @@ void main() {
         ChunkyTone.record,
       );
       expect(find.byKey(const Key('session_cancel')), findsOneWidget);
-      expect(find.byKey(const Key('input_level_meter')), findsOneWidget);
+      expect(
+        find.byKey(const Key('live_visual_feedback_field')),
+        findsOneWidget,
+      );
+      backend.levels.add(-24);
+      await tester.pump();
+      expect(find.text('Canlı giriş seviyesi'), findsOneWidget);
+      expect(find.textContaining('Test kaynağı'), findsOneWidget);
+      expect(find.textContaining('perde ölçülmüyor'), findsOneWidget);
       await _tap(tester, 'session_cancel');
       await tester.pumpAndSettle();
       expect(backend.capturing, isFalse);
       expect(find.byKey(const Key('session_start')), findsOneWidget);
-      expect(find.byKey(const Key('input_level_meter')), findsNothing);
+      expect(find.byKey(const Key('live_visual_feedback_field')), findsNothing);
       expect(find.byType(LessonProgressBar), findsNothing);
       await tester.pumpWidget(const SizedBox());
       await tester.pumpAndSettle();
@@ -257,6 +265,12 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Kaydın analiz edildi'), findsOneWidget);
     expect(find.text('Doğru!'), findsNothing);
+    expect(find.byKey(const Key('pitch_feedback_field')), findsOneWidget);
+    expect(
+      find.textContaining('güven ve kararlılık ölçülmedi'),
+      findsOneWidget,
+    );
+    expect(find.textContaining('Test kaynağı'), findsOneWidget);
     await _tap(tester, 'session_details');
     await tester.pumpAndSettle();
     expect(find.textContaining('Gözlenen temsilî frekans'), findsOneWidget);

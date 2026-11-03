@@ -1,12 +1,15 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
+
+export '../domain/review_memory.dart' show ReviewCard;
 import 'package:path_provider/path_provider.dart';
 
 import '../../infrastructure/storage/json_file_store.dart';
 import '../audio/synth.dart';
 import '../domain/curriculum.dart';
 import '../domain/music.dart';
+import '../domain/review_memory.dart';
 import '../domain/trainers.dart';
 
 /// Where the local document lives. Tests use [MemoryTrainerPersistence].
@@ -82,7 +85,7 @@ class TrainerStore extends ChangeNotifier {
   bool onboardingDone = false;
   bool setupDone = false;
   final Map<String, Object?> answers = {};
-  int dailyMinutes = 8;
+  int dailyMinutes = 10;
   String? accountLabel;
   String username = '';
   bool trialAcknowledged = false;
@@ -100,6 +103,20 @@ class TrainerStore extends ChangeNotifier {
   // Progress.
   final Map<String, NodeProgress> nodes = {};
   final Map<String, Map<String, ItemStat>> stats = {};
+
+  /// Review-card memory per trainer and item ([memoryModelVersion]).
+  final Map<String, Map<String, ItemMemory>> memory = {};
+
+  /// Day key of the last finished review round.
+  String? reviewDay;
+
+  /// Minute of day of recent practice (newest last, at most 30): the
+  /// reminder planner's habitual time.
+  final List<int> practiceMinutes = [];
+
+  /// Reminder plan as scheduled: kind name and local time. Entries already
+  /// in the past were delivered and count for freshness.
+  final List<(String, DateTime)> reminderPlan = [];
   final Map<String, DayActivity> days = {};
   int xp = 0;
   String? lastTrainer;
@@ -111,6 +128,9 @@ class TrainerStore extends ChangeNotifier {
   final Set<String> seenTrainerSheets = {};
   String? lastStreakCelebrated;
   String? koroRange;
+
+  /// App language picked in Settings: 'tr', 'en', or null for the device's.
+  String? language;
 
   /// Day key of the last finished breathing guide. Self-paced and unmeasured:
   /// it ticks today's route step only, never streak, XP or mastery.
@@ -170,7 +190,7 @@ class TrainerStore extends ChangeNotifier {
     onboardingDone = false;
     setupDone = false;
     answers.clear();
-    dailyMinutes = 8;
+    dailyMinutes = 10;
     accountLabel = null;
     username = '';
     trialAcknowledged = false;
@@ -191,6 +211,11 @@ class TrainerStore extends ChangeNotifier {
     lastStreakCelebrated = null;
     koroRange = null;
     breathDay = null;
+    language = null;
+    memory.clear();
+    reviewDay = null;
+    practiceMinutes.clear();
+    reminderPlan.clear();
     notifyListeners();
   }
 
@@ -270,6 +295,10 @@ class TrainerStore extends ChangeNotifier {
     final s = perTrainer.putIfAbsent(itemId, ItemStat.new);
     s.attempts++;
     if (correct) s.correct++;
+    final mem = memory.putIfAbsent(trainer.id, () => {});
+    final before = mem[itemId];
+    mem[itemId] =
+        before?.answered(correct, now) ?? ItemMemory.first(correct, now);
     final day = days.putIfAbsent(dayKey(now), DayActivity.new);
     day.questions++;
     if (correct) day.correct++;
@@ -283,6 +312,35 @@ class TrainerStore extends ChangeNotifier {
 
   void recordSession() {
     days.putIfAbsent(dayKey(now), DayActivity.new).sessions++;
+    _notePracticeTime();
+    save();
+  }
+
+  void _notePracticeTime() {
+    practiceMinutes.add(now.hour * 60 + now.minute);
+    if (practiceMinutes.length > 30) practiceMinutes.removeAt(0);
+  }
+
+  /// Last day with any answered question.
+  DateTime? get lastPracticeDay {
+    final active = days.entries.where((e) => e.value.questions > 0);
+    if (active.isEmpty) return null;
+    final k = active
+        .map((e) => e.key)
+        .reduce((a, b) => a.compareTo(b) > 0 ? a : b);
+    return DateTime.tryParse(k);
+  }
+
+  int get activeDayCount => days.values.where((d) => d.questions > 0).length;
+
+  /// Cards due now, interleaved across trainers.
+  List<ReviewCard> get dueReview => dueCards(memory, now);
+
+  bool get reviewedToday => reviewDay == dayKey(now);
+
+  void markReviewDone() {
+    reviewDay = dayKey(now);
+    _notePracticeTime();
     save();
   }
 
@@ -382,6 +440,17 @@ class TrainerStore extends ChangeNotifier {
     'lastStreakCelebrated': lastStreakCelebrated,
     'koroRange': koroRange,
     'breathDay': breathDay,
+    'language': language,
+    'memoryModel': memoryModelVersion,
+    'memory': {
+      for (final t in memory.entries)
+        t.key: {for (final i in t.value.entries) i.key: i.value.toJson()},
+    },
+    'reviewDay': reviewDay,
+    'practiceMinutes': practiceMinutes,
+    'reminderPlan': [
+      for (final (k, t) in reminderPlan) [k, t.toUtc().millisecondsSinceEpoch],
+    ],
   };
 
   void _decode(Map<String, Object?> doc) {
@@ -395,7 +464,7 @@ class TrainerStore extends ChangeNotifier {
     answers
       ..clear()
       ..addAll(get<Map<String, Object?>>(doc, 'answers') ?? const {});
-    dailyMinutes = get<int>(doc, 'dailyMinutes') ?? 8;
+    dailyMinutes = get<int>(doc, 'dailyMinutes') ?? 10;
     accountLabel = get<String>(doc, 'accountLabel');
     username = get<String>(doc, 'username') ?? '';
     trialAcknowledged = get<bool>(doc, 'trialAcknowledged') ?? false;
@@ -459,5 +528,44 @@ class TrainerStore extends ChangeNotifier {
     lastStreakCelebrated = get<String>(doc, 'lastStreakCelebrated');
     koroRange = get<String>(doc, 'koroRange');
     breathDay = get<String>(doc, 'breathDay');
+    memory.clear();
+    // Another model version's half-lives mean something else: start over
+    // rather than reinterpret them.
+    if (get<String>(doc, 'memoryModel') == memoryModelVersion) {
+      (get<Map<String, Object?>>(doc, 'memory') ?? const {}).forEach((
+        t,
+        items,
+      ) {
+        if (items is! Map<String, Object?>) return;
+        final m = <String, ItemMemory>{};
+        items.forEach((id, v) {
+          final parsed = ItemMemory.fromJson(v);
+          if (parsed != null) m[id] = parsed;
+        });
+        if (m.isNotEmpty) memory[t] = m;
+      });
+    }
+    reviewDay = get<String>(doc, 'reviewDay');
+    practiceMinutes
+      ..clear()
+      ..addAll(
+        (get<List<Object?>>(doc, 'practiceMinutes') ?? const [])
+            .whereType<int>()
+            .where((m) => m >= 0 && m < 24 * 60),
+      );
+    reminderPlan.clear();
+    for (final e in get<List<Object?>>(doc, 'reminderPlan') ?? const []) {
+      if (e is List && e.length == 2 && e[0] is String && e[1] is int) {
+        reminderPlan.add((
+          e[0] as String,
+          DateTime.fromMillisecondsSinceEpoch(
+            e[1] as int,
+            isUtc: true,
+          ).toLocal(),
+        ));
+      }
+    }
+    final lang = get<String>(doc, 'language');
+    language = lang == 'tr' || lang == 'en' ? lang : null;
   }
 }

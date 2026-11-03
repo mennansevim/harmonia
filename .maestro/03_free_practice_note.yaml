@@ -1,0 +1,13 @@
+# Note training: open the skill, reach free practice, inspect accidentals.
+appId: com.mennansevim.vocalart
+name: Nota — serbest çalışma
+tags: [critical]
+---
+- runFlow: subflows/onboard_quick.yaml
+- scrollUntilVisible:
+    element: "Nota.*"
+    direction: DOWN
+- tapOn: "Nota.*"
+- takeScreenshot: skill_note
+- tapOn: "Serbest çalışma"
+- takeScreenshot: practice_setup_note

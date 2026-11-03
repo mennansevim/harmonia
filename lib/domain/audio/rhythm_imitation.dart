@@ -1,5 +1,7 @@
 import '../models/exercise.dart';
+import '../models/attempt_assistance_evidence.dart';
 import '../models/exercise_protocol.dart';
+import '../models/exercise_protocol_fingerprint.dart';
 import '../models/exercise_result.dart';
 import '../models/measurement_provenance.dart';
 import '../models/score_metric.dart';
@@ -76,9 +78,16 @@ class RhythmImitationOutcome {
         'tempoBpm': exercise.protocol.tempoBpm,
       },
       measurements: {
+        ExerciseProtocolFingerprint.measurementKey:
+            ExerciseProtocolFingerprint.compute(exercise.protocol),
         'anchor': 'first_tap',
         'anchorTimingMeasured': false,
         'referencePlays': referencePlays,
+        AttemptAssistanceEvidence.measurementKey:
+            AttemptAssistanceEvidence.forProtocol(
+              exercise.protocol,
+              referencePlaysCompleted: referencePlays,
+            ).toJson(),
         'retentionCheck': retentionCheck,
         'spanRatio': spanRatio,
         if (a != null) ...{

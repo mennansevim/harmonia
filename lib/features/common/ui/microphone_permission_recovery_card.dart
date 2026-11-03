@@ -6,6 +6,7 @@ import '../../../app/theme/resonia_theme.dart';
 import '../../../application/microphone_permission_recovery.dart';
 import '../../../infrastructure/permissions/permission_handler_microphone_recovery.dart';
 import 'resonia_ui.dart';
+import '../../../domain/lang.dart';
 
 /// Explicit recovery UI shown only after a microphone permission denial.
 ///
@@ -45,8 +46,14 @@ class _MicrophonePermissionRecoveryCardState
     setState(() {
       _opening = false;
       _status = opened
-          ? 'Ayarlardan mikrofonu açtıktan sonra Vocalart’a dönüp yeniden dene.'
-          : 'Telefon ayarları açılamadı. Ayarlar > Vocalart > Mikrofon yolunu kullanabilirsin.';
+          ? tr(
+              'Ayarlardan mikrofonu açtıktan sonra Vocalart’a dönüp yeniden dene.',
+              'After allowing the microphone in Settings, come back to Vocalart and try again.',
+            )
+          : tr(
+              'Telefon ayarları açılamadı. Ayarlar > Vocalart > Mikrofon yolunu kullanabilirsin.',
+              'Phone settings could not open. Use Settings > Vocalart > Microphone.',
+            );
     });
   }
 
@@ -59,12 +66,15 @@ class _MicrophonePermissionRecoveryCardState
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Mikrofon erişimini düzelt',
+            tr('Mikrofon erişimini düzelt', 'Fix microphone access'),
             style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: ResoniaSpacing.xs),
-          const Text(
-            'İzin penceresi yeniden görünmüyorsa mikrofonu telefon ayarlarından açabilirsin. Vocalart izni kendiliğinden değiştiremez.',
+          Text(
+            tr(
+              'İzin penceresi yeniden görünmüyorsa mikrofonu telefon ayarlarından açabilirsin. Vocalart izni kendiliğinden değiştiremez.',
+              'If the permission prompt does not appear again, you can allow the microphone in phone settings. Vocalart cannot change the permission itself.',
+            ),
           ),
           const SizedBox(height: ResoniaSpacing.sm),
           ChunkyButton(
@@ -72,7 +82,9 @@ class _MicrophonePermissionRecoveryCardState
             onPressed: _opening ? null : () => unawaited(_openSettings()),
             tone: ChunkyTone.neutral,
             icon: Icons.settings_outlined,
-            label: _opening ? 'Ayarlar açılıyor…' : 'Mikrofon ayarlarını aç',
+            label: _opening
+                ? tr('Ayarlar açılıyor…', 'Opening Settings…')
+                : tr('Mikrofon ayarlarını aç', 'Open microphone settings'),
           ),
           if (_status case final status?) ...[
             const SizedBox(height: ResoniaSpacing.sm),

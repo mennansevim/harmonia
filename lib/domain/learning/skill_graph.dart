@@ -1,5 +1,6 @@
 import '../content/rhythm_patterns.dart' show ContentReviewStatus;
 import '../models/exercise_result.dart';
+import '../models/attempt_assistance_evidence.dart';
 import '../models/learner_profile.dart';
 import 'measured_exercise.dart';
 import 'rhythm_next_step.dart';
@@ -197,7 +198,7 @@ class SkillStatusEvaluator {
     );
     if (retained) return MasteryState.retained;
     final unaided = streak.every(
-      (r) => (r.measurements['referencePlays'] as int? ?? 2) <= 1,
+      (r) => AttemptAssistanceEvidence.claimsIndependent(r.measurements),
     );
     return unaided ? MasteryState.independent : MasteryState.supported;
   }

@@ -5,6 +5,8 @@ import 'package:resonia/domain/audio/rhythm_reference_clock.dart';
 import 'package:resonia/domain/content/rhythm_patterns.dart';
 import 'package:resonia/domain/models/exercise.dart';
 import 'package:resonia/domain/models/exercise_protocol.dart';
+import 'package:resonia/domain/models/attempt_assistance_evidence.dart';
+import 'package:resonia/domain/models/exercise_protocol_fingerprint.dart';
 
 import '../../support/fake_clip_player.dart';
 
@@ -36,6 +38,46 @@ void expectNeutral(RhythmImitationOutcome outcome) {
 }
 
 void main() {
+  test(
+    'stored rhythm result carries protocol-bound assistance evidence',
+    () async {
+      final p = protocol();
+      final outcome = await evaluate(p);
+      final configured = ConfiguredExercise(
+        exercise: const Exercise(
+          id: 'rhythm-evidence',
+          title: 'Rhythm evidence',
+          skill: Skill.rhythm,
+          difficulty: 1,
+        ),
+        protocol: p,
+      );
+      final result = outcome.toResult(
+        exercise: configured,
+        sessionId: 'session',
+        createdAt: DateTime.utc(2026, 11),
+      );
+      final evidence = AttemptAssistanceEvidence.fromJson(
+        result.measurements[AttemptAssistanceEvidence.measurementKey]!
+            as Map<String, Object?>,
+      );
+
+      expect(evidence.referencePlaysCompleted, 1);
+      expect(evidence.pitchHintsUsed, 0);
+      expect(evidence.isIndependent, isTrue);
+      expect(
+        result.measurements[ExerciseProtocolFingerprint.measurementKey],
+        ExerciseProtocolFingerprint.compute(p),
+      );
+      expect(
+        evidence.configuredRecallDelayMs,
+        p.recallDelayMs,
+        reason:
+            'Configured policy is retained; measured latency is not claimed',
+      );
+    },
+  );
+
   test('tiny tempo and huge finite beats fail before round', () async {
     expectNeutral(await evaluate(protocol(tempo: 1e-300)));
     expectNeutral(await evaluate(protocol(beats: [0, 1e300])));

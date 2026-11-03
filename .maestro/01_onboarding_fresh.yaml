@@ -1,0 +1,52 @@
+# Fresh install: welcome through every onboarding step to the Today tab.
+# Text selectors only; Flutter Keys are not exposed to the accessibility tree.
+appId: com.mennansevim.vocalart
+name: Onboarding — temiz kurulum
+tags: [smoke, critical]
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible: ".*her gün geliştir"
+    timeout: 20000
+- scrollUntilVisible:
+    element: "Başlayalım"
+    direction: DOWN
+- takeScreenshot: onboarding_01_welcome
+- tapOn: "Başlayalım"
+- assertVisible: "Vocalart'ı nasıl kullanacaksın?"
+- takeScreenshot: onboarding_02_role_empty
+- tapOn: "Bir koroda söylüyorum"
+- takeScreenshot: onboarding_03_role_selected
+- tapOn: "Devam"
+- assertVisible: "Ses aralığını ölçelim"
+- takeScreenshot: onboarding_04_range
+- tapOn: "Atla"
+- assertVisible: "Önce neye odaklanalım?"
+- takeScreenshot: onboarding_05_focus
+- tapOn: "Ses: aralık, ritim, ezgi"
+- tapOn: "Devam"
+- assertVisible: "Günde kaç dakika ayırabilirsin?"
+- takeScreenshot: onboarding_07_minutes
+- tapOn: "Devam"
+- assertVisible: "Günlük hatırlatma ister misin?"
+- takeScreenshot: onboarding_08_reminder
+- tapOn: "Şimdilik hayır"
+- assertVisible: "Planın kuruldu"
+- assertVisible: ".*10 dakika.*"
+- takeScreenshot: onboarding_09_ready
+- scrollUntilVisible:
+    element: "Ana sayfaya git"
+    direction: DOWN
+- tapOn: "Ana sayfaya git"
+- extendedWaitUntil:
+    visible: "Bugün"
+    timeout: 8000
+- takeScreenshot: today_first_run
+# Cold restart keeps the finished onboarding.
+- stopApp
+- launchApp
+- extendedWaitUntil:
+    visible: "Bugün"
+    timeout: 15000
+- assertNotVisible: "Başlayalım"

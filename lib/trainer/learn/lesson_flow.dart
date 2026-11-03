@@ -15,6 +15,7 @@ import '../sing/trainer_pitch_sing_mobile.dart';
 import '../sing/trainer_pitch_sing_session.dart';
 import '../ui/kit.dart';
 import 'session_end.dart';
+import '../../domain/lang.dart';
 
 /// Resonia lesson: Dinle (meet each new sound) → Söyle (sing it back,
 /// self-paced and unmeasured) → Ayırt et (scored listening practice).
@@ -221,7 +222,9 @@ class _LessonFlowState extends State<LessonFlow> with WidgetsBindingObserver {
   Widget build(BuildContext context) => switch (_step) {
     _Step.practice => QuizView(
       key: const ValueKey('practice'),
-      title: node.isGate ? node.title : 'Ayırt et · ${node.title}',
+      title: node.isGate
+          ? node.title
+          : tr('Ayırt et · ${node.title}', 'Tell apart · ${node.title}'),
       color: color,
       questions: node.isGate ? _gen.session() : _gen.lessonPractice(node),
       showCounter: true,
@@ -245,16 +248,23 @@ class _LessonFlowState extends State<LessonFlow> with WidgetsBindingObserver {
 
   Widget _frame() {
     final (body, button) = switch (_step) {
-      _Step.overview => (_overview(), node.isGate ? 'Teste başla' : 'Başla'),
+      _Step.overview => (
+        _overview(),
+        node.isGate
+            ? tr('Teste başla', 'Start the test')
+            : tr('Başla', 'Start'),
+      ),
       _Step.listen => (
         _intro
             ? _introPage(path.introSlides[_page])
             : node.newItems.isEmpty
             ? _comparePage()
             : _meetPage(node.newItems[_page]),
-        _intro && _page == _pageCount - 1 ? 'Tamam' : 'İleri',
+        _intro && _page == _pageCount - 1
+            ? tr('Tamam', 'OK')
+            : tr('İleri', 'Next'),
       ),
-      _ => (_singPage(), 'Ayırt etmeye geç'),
+      _ => (_singPage(), tr('Ayırt etmeye geç', 'On to telling apart')),
     };
     return Scaffold(
       backgroundColor: TC.canvas,
@@ -343,34 +353,56 @@ class _LessonFlowState extends State<LessonFlow> with WidgetsBindingObserver {
         ? [
             (
               Ic.clipboardCheck,
-              'Ayırt et',
+              tr('Ayırt et', 'Tell apart'),
               node.kind == NodeKind.finalExam
-                  ? '20 soru · %80 ile tamamlanır'
-                  : '12 soru · %80 ile önceki dersler de tamamlanır',
+                  ? tr(
+                      '20 soru · %80 ile tamamlanır',
+                      '20 questions · complete with 80%',
+                    )
+                  : tr(
+                      '12 soru · %80 ile önceki dersler de tamamlanır',
+                      '12 questions · 80% also completes the lessons before',
+                    ),
             ),
           ]
         : [
             (
               Ic.ear,
-              'Dinle',
+              tr('Dinle', 'Listen'),
               node.newItems.isEmpty
-                  ? 'Bildiklerini yan yana çal'
-                  : 'Yeni ${kind.unitWord}: ${node.newItems.map((i) => _label(i, long: false)).join(', ')}',
+                  ? tr(
+                      'Bildiklerini yan yana çal',
+                      'Play what you know side by side',
+                    )
+                  : tr(
+                      'Yeni ${kind.unitWord}: ${node.newItems.map((i) => _label(i, long: false)).join(', ')}',
+                      'New ${kind.unitWord}: ${node.newItems.map((i) => _label(i, long: false)).join(', ')}',
+                    ),
             ),
-            (Ic.mic, 'Söyle', 'Duyduğunu sesli tekrar et · ölçülmez'),
+            (
+              Ic.mic,
+              tr('Söyle', 'Sing'),
+              tr(
+                'Duyduğunu sesli tekrar et · ölçülmez',
+                'Sing back what you heard · not measured',
+              ),
+            ),
             (
               Ic.clipboardCheck,
-              'Ayırt et',
-              '${node.items.length} seçenekli kısa tur',
+              tr('Ayırt et', 'Tell apart'),
+              tr(
+                '${node.items.length} seçenekli kısa tur',
+                'A short round with ${node.items.length} choices',
+              ),
             ),
           ];
     return ListView(
       padding: const EdgeInsets.fromLTRB(24, 12, 24, 16),
       children: [
         Text(switch (node.kind) {
-          NodeKind.checkpoint => 'ARA DURAK',
-          NodeKind.finalExam => 'KONSER PROVASI',
-          _ => 'BASAMAK $stage',
+          NodeKind.checkpoint => tr('ARA DURAK', 'CHECKPOINT'),
+          NodeKind.finalExam => tr('KONSER PROVASI', 'DRESS REHEARSAL'),
+          _ => tr('BASAMAK $stage', 'STAGE $stage'),
         }, style: TT.caps.copyWith(color: color)),
         const SizedBox(height: 4),
         Text(node.title, style: TT.h1),
@@ -418,16 +450,32 @@ class _LessonFlowState extends State<LessonFlow> with WidgetsBindingObserver {
 
   List<(String, String)> _facts(String item) => switch (kind) {
     TrainerKind.pitch => [
-      ('Yeri', '${_label('0')}\'ya göre ${int.parse(item)} yarım ses yukarıda'),
+      (
+        tr('Yeri', 'Place'),
+        tr(
+          '${_label('0')}\'ya göre ${int.parse(item)} yarım ses yukarıda',
+          '${int.parse(item)} semitones above ${_label('0')}',
+        ),
+      ),
     ],
     TrainerKind.interval => [
-      ('Genişlik', '${Intervals.byId(item).semitones} yarım ses'),
-      ('Solfej örneği', Intervals.byId(item).anchor),
+      (
+        tr('Genişlik', 'Size'),
+        tr(
+          '${Intervals.byId(item).semitones} yarım ses',
+          '${Intervals.byId(item).semitones} semitones',
+        ),
+      ),
+      (tr('Solfej örneği', 'Example'), Intervals.byId(item).anchor),
     ],
-    TrainerKind.chord => [('Ses sayısı', '${Chords.byId(item).tones.length}')],
-    TrainerKind.scale => [('Nota sayısı', '${Scales.byId(item).steps.length}')],
+    TrainerKind.chord => [
+      (tr('Ses sayısı', 'Notes'), '${Chords.byId(item).tones.length}'),
+    ],
+    TrainerKind.scale => [
+      (tr('Nota sayısı', 'Notes'), '${Scales.byId(item).steps.length}'),
+    ],
     TrainerKind.progression => [
-      ('Akor sayısı', '${Progressions.byId(item).chords.length}'),
+      (tr('Akor sayısı', 'Chords'), '${Progressions.byId(item).chords.length}'),
     ],
   };
 
@@ -437,7 +485,10 @@ class _LessonFlowState extends State<LessonFlow> with WidgetsBindingObserver {
       padding: const EdgeInsets.fromLTRB(24, 12, 24, 16),
       children: [
         Text(
-          'DİNLE · ${_page + 1} / $_pageCount',
+          tr(
+            'DİNLE · ${_page + 1} / $_pageCount',
+            'LISTEN · ${_page + 1} / $_pageCount',
+          ),
           style: TT.caps.copyWith(color: color),
         ),
         const SizedBox(height: 4),
@@ -481,7 +532,7 @@ class _LessonFlowState extends State<LessonFlow> with WidgetsBindingObserver {
                 ),
                 onPressed: () => _play(item),
                 icon: const Icon(Ic.play),
-                label: const Text('Çal'),
+                label: Text(tr('Çal', 'Play')),
               ),
             ),
             if (kind != TrainerKind.pitch) ...[
@@ -501,7 +552,7 @@ class _LessonFlowState extends State<LessonFlow> with WidgetsBindingObserver {
                     _play(item);
                   },
                   icon: const Icon(Ic.shuffle),
-                  label: const Text('Başka yerden'),
+                  label: Text(tr('Başka yerden', 'From elsewhere')),
                 ),
               ),
             ],
@@ -510,7 +561,10 @@ class _LessonFlowState extends State<LessonFlow> with WidgetsBindingObserver {
         if (store.part != null) ...[
           const SizedBox(height: 10),
           Text(
-            '${store.part!.title} aralığında çalınıyor.',
+            tr(
+              '${store.part!.title} aralığında çalınıyor.',
+              'Playing in the ${store.part!.title.toLowerCase()} range.',
+            ),
             textAlign: TextAlign.center,
             style: TT.small,
           ),
@@ -522,12 +576,18 @@ class _LessonFlowState extends State<LessonFlow> with WidgetsBindingObserver {
   Widget _comparePage() => ListView(
     padding: const EdgeInsets.fromLTRB(24, 12, 24, 16),
     children: [
-      Text('DİNLE · YAN YANA', style: TT.caps.copyWith(color: color)),
+      Text(
+        tr('DİNLE · YAN YANA', 'LISTEN · SIDE BY SIDE'),
+        style: TT.caps.copyWith(color: color),
+      ),
       const SizedBox(height: 4),
       Text(node.title.replaceFirst(RegExp(r'^\d+\. '), ''), style: TT.h1),
       const SizedBox(height: 6),
-      const Text(
-        'Her birini çal; aradaki farkı tek cümleyle kendine söyle.',
+      Text(
+        tr(
+          'Her birini çal; aradaki farkı tek cümleyle kendine söyle.',
+          'Play each one; tell yourself the difference in one sentence.',
+        ),
         style: TT.body,
       ),
       const SizedBox(height: 18),
@@ -560,50 +620,104 @@ class _LessonFlowState extends State<LessonFlow> with WidgetsBindingObserver {
       switch (session.phase) {
         SingleToneSessionPhase.idle =>
           session.calibration?.isUsable == true
-              ? 'Hazır · referansı dinleyip söyleyebilirsin'
-              : 'Önce birkaç saniye sessiz kalıp ortamı ölç',
-        SingleToneSessionPhase.calibrating => 'Ortam sesi ölçülüyor…',
-        SingleToneSessionPhase.preparing => 'Mikrofon hazırlanıyor…',
-        SingleToneSessionPhase.referencePlaying => 'Dinle · henüz söyleme',
-        SingleToneSessionPhase.waiting => 'Hazırlan…',
-        SingleToneSessionPhase.responding => 'Şimdi söyle',
-        SingleToneSessionPhase.assessing => 'Kayıt kalitesi kontrol ediliyor…',
-        SingleToneSessionPhase.analyzing => 'Ses adayı inceleniyor…',
+              ? tr(
+                  'Hazır · referansı dinleyip söyleyebilirsin',
+                  'Ready · listen to the reference, then sing',
+                )
+              : tr(
+                  'Önce birkaç saniye sessiz kalıp ortamı ölç',
+                  'First stay quiet for a few seconds to measure the room',
+                ),
+        SingleToneSessionPhase.calibrating => tr(
+          'Ortam sesi ölçülüyor…',
+          'Measuring the room…',
+        ),
+        SingleToneSessionPhase.preparing => tr(
+          'Mikrofon hazırlanıyor…',
+          'Preparing the microphone…',
+        ),
+        SingleToneSessionPhase.referencePlaying => tr(
+          'Dinle · henüz söyleme',
+          'Listen · do not sing yet',
+        ),
+        SingleToneSessionPhase.waiting => tr('Hazırlan…', 'Get ready…'),
+        SingleToneSessionPhase.responding => tr('Şimdi söyle', 'Sing now'),
+        SingleToneSessionPhase.assessing => tr(
+          'Kayıt kalitesi kontrol ediliyor…',
+          'Checking the recording quality…',
+        ),
+        SingleToneSessionPhase.analyzing => tr(
+          'Ses adayı inceleniyor…',
+          'Examining the pitch candidate…',
+        ),
         SingleToneSessionPhase.finished => _singOutcomeLabel(session),
-        SingleToneSessionPhase.closed => 'Oturum kapandı',
+        SingleToneSessionPhase.closed => tr('Oturum kapandı', 'Session closed'),
       };
 
   String _singOutcomeLabel(TrainerPitchSingSession session) {
     final outcome = session.diagnosticOutcome;
-    if (outcome == null) return 'Yeni bir deneme yapabilirsin';
+    if (outcome == null) {
+      return tr('Yeni bir deneme yapabilirsin', 'You can try again');
+    }
     if (outcome.needsRetry) {
       return switch (outcome.retryReason!) {
-        SessionRetryReason.calibrationRequired => 'Ortam ölçümünü yenile',
-        SessionRetryReason.permissionDenied =>
+        SessionRetryReason.calibrationRequired => tr(
+          'Ortam ölçümünü yenile',
+          'Measure the room again',
+        ),
+        SessionRetryReason.permissionDenied => tr(
           'Mikrofon izni verilmedi · istersen bu adımı geç',
-        SessionRetryReason.routeUnsupported =>
+          'Microphone permission not given · skip this step if you like',
+        ),
+        SessionRetryReason.routeUnsupported => tr(
           'Bu ses yolu ölçüm için uygun değil · kulaklıkla tekrar dene',
-        SessionRetryReason.interrupted => 'Deneme kesildi · sonuç sayılmadı',
-        SessionRetryReason.captureFailed => 'Kayıt alınamadı · sonuç sayılmadı',
-        SessionRetryReason.quality =>
+          'This audio route cannot be measured · try again with headphones',
+        ),
+        SessionRetryReason.interrupted => tr(
+          'Deneme kesildi · sonuç sayılmadı',
+          'The attempt was interrupted · not counted',
+        ),
+        SessionRetryReason.captureFailed => tr(
+          'Kayıt alınamadı · sonuç sayılmadı',
+          'Nothing was recorded · not counted',
+        ),
+        SessionRetryReason.quality => tr(
           'Ses yeterince ayrışmadı · sonuç sayılmadı',
-        SessionRetryReason.analysisFailed =>
+          'The voice was not clear enough · not counted',
+        ),
+        SessionRetryReason.analysisFailed => tr(
           'Ses analizi tamamlanamadı · sonuç sayılmadı',
+          'The analysis could not finish · not counted',
+        ),
       };
     }
     final deviation = outcome.deviation;
-    if (deviation == null) return 'Kararlı bir ses adayı bulunamadı';
+    if (deviation == null) {
+      return tr(
+        'Kararlı bir ses adayı bulunamadı',
+        'No steady pitch candidate was found',
+      );
+    }
     final cents = deviation.absoluteCents.round();
     final sign = cents > 0 ? '+' : '';
-    return 'Tanısal fark: $sign$cents sent · puan değil';
+    return tr(
+      'Tanısal fark: $sign$cents sent · puan değil',
+      'Diagnostic difference: $sign$cents cents · not a score',
+    );
   }
 
   String _sourceLabel(MeasurementSource source) => switch (source) {
-    MeasurementSource.microphone => 'Mikrofon kaydı',
-    MeasurementSource.mock => 'Test kaynağı',
-    MeasurementSource.synthetic => 'Sentetik kaynak',
-    MeasurementSource.touch => 'Dokunma',
-    MeasurementSource.unverified => 'Doğrulanmamış kaynak',
+    MeasurementSource.microphone => tr(
+      'Mikrofon kaydı',
+      'Microphone recording',
+    ),
+    MeasurementSource.mock => tr('Test kaynağı', 'Test source'),
+    MeasurementSource.synthetic => tr('Sentetik kaynak', 'Synthetic source'),
+    MeasurementSource.touch => tr('Dokunma', 'Touch'),
+    MeasurementSource.unverified => tr(
+      'Doğrulanmamış kaynak',
+      'Unverified source',
+    ),
   };
 
   bool _singActive(TrainerPitchSingSession session) => const {
@@ -630,30 +744,48 @@ class _LessonFlowState extends State<LessonFlow> with WidgetsBindingObserver {
               Icon(Ic.mic, color: color),
               const SizedBox(width: 10),
               Expanded(
-                child: Text('İsteğe bağlı ses kontrolü', style: TT.title),
+                child: Text(
+                  tr('İsteğe bağlı ses kontrolü', 'Optional voice check'),
+                  style: TT.title,
+                ),
               ),
-              const Text('PUANSIZ', style: TT.caps),
+              Text(tr('PUANSIZ', 'UNSCORED'), style: TT.caps),
             ],
           ),
           const SizedBox(height: 8),
           Text(
             session == null
                 ? _singUnavailable
-                      ? 'Ses kontrolü bu cihazda başlatılamadı · istersen adımı geç'
-                      : 'Mikrofon yalnız sen başlatırsan açılır. Bu kontrol ders sonucunu değiştirmez.'
+                      ? tr(
+                          'Ses kontrolü bu cihazda başlatılamadı · istersen adımı geç',
+                          'The voice check could not start on this device · skip the step if you like',
+                        )
+                      : tr(
+                          'Mikrofon yalnız sen başlatırsan açılır. Bu kontrol ders sonucunu değiştirmez.',
+                          'The microphone opens only if you start it. This check does not change the lesson result.',
+                        )
                 : _singPhaseLabel(session),
             key: const Key('sing_diagnostic_status'),
             style: TT.small,
             semanticsLabel: session == null
                 ? _singUnavailable
-                      ? 'İsteğe bağlı ses kontrolü kullanılamıyor'
-                      : 'İsteğe bağlı ses kontrolü hazır'
+                      ? tr(
+                          'İsteğe bağlı ses kontrolü kullanılamıyor',
+                          'Optional voice check unavailable',
+                        )
+                      : tr(
+                          'İsteğe bağlı ses kontrolü hazır',
+                          'Optional voice check ready',
+                        )
                 : _singPhaseLabel(session),
           ),
           if (outcome?.evidence != null) ...[
             const SizedBox(height: 6),
             Text(
-              'Kaynak: ${_sourceLabel(outcome!.evidence!.provenance.source)}',
+              tr(
+                'Kaynak: ${_sourceLabel(outcome!.evidence!.provenance.source)}',
+                'Source: ${_sourceLabel(outcome.evidence!.provenance.source)}',
+              ),
               key: const Key('sing_diagnostic_source'),
               style: TT.small,
             ),
@@ -664,14 +796,16 @@ class _LessonFlowState extends State<LessonFlow> with WidgetsBindingObserver {
               key: const Key('sing_cancel'),
               onPressed: () => session.cancel(),
               icon: const Icon(Ic.circleStop),
-              label: const Text('Durdur'),
+              label: Text(tr('Durdur', 'Stop')),
             )
           else if (!calibrated)
             OutlinedButton.icon(
               key: const Key('sing_calibrate'),
               onPressed: () => _calibrateSing(item),
               icon: const Icon(Ic.settings2),
-              label: const Text('Ortamı ölç ve hazırla'),
+              label: Text(
+                tr('Ortamı ölç ve hazırla', 'Measure the room and get ready'),
+              ),
             )
           else
             FilledButton.icon(
@@ -679,7 +813,11 @@ class _LessonFlowState extends State<LessonFlow> with WidgetsBindingObserver {
               style: FilledButton.styleFrom(backgroundColor: color),
               onPressed: () => _startSing(item),
               icon: const Icon(Ic.mic),
-              label: Text(outcome == null ? 'Dinle ve söyle' : 'Tekrar dene'),
+              label: Text(
+                outcome == null
+                    ? tr('Dinle ve söyle', 'Listen and sing')
+                    : tr('Tekrar dene', 'Try again'),
+              ),
             ),
         ],
       ),
@@ -696,16 +834,33 @@ class _LessonFlowState extends State<LessonFlow> with WidgetsBindingObserver {
     return ListView(
       padding: const EdgeInsets.fromLTRB(24, 12, 24, 16),
       children: [
-        Text('SÖYLE', style: TT.caps.copyWith(color: color)),
+        Text(tr('SÖYLE', 'SING'), style: TT.caps.copyWith(color: color)),
         const SizedBox(height: 4),
-        const Text('Duy, sonra kendi sesinle tekrar et', style: TT.h1),
+        Text(
+          tr(
+            'Duy, sonra kendi sesinle tekrar et',
+            'Hear it, then sing it back',
+          ),
+          style: TT.h1,
+        ),
         const SizedBox(height: 6),
         Text(switch (kind) {
-          TrainerKind.interval => 'İki notayı sırayla, la-la diye söyle.',
-          TrainerKind.chord ||
-          TrainerKind.progression => 'Akorun en pes sesini mırıldan.',
-          TrainerKind.scale => 'Diziyi notaların adlarıyla yukarı çık.',
-          TrainerKind.pitch => 'Notayı adıyla birlikte uzatarak söyle.',
+          TrainerKind.interval => tr(
+            'İki notayı sırayla, la-la diye söyle.',
+            'Sing the two notes in turn, on la-la.',
+          ),
+          TrainerKind.chord || TrainerKind.progression => tr(
+            'Akorun en pes sesini mırıldan.',
+            'Hum the lowest note of the chord.',
+          ),
+          TrainerKind.scale => tr(
+            'Diziyi notaların adlarıyla yukarı çık.',
+            'Sing up the scale with the note names.',
+          ),
+          TrainerKind.pitch => tr(
+            'Notayı adıyla birlikte uzatarak söyle.',
+            'Hold the note while singing its name.',
+          ),
         }, style: TT.body),
         const SizedBox(height: 18),
         for (final item in focus)
@@ -718,7 +873,7 @@ class _LessonFlowState extends State<LessonFlow> with WidgetsBindingObserver {
                   Icon(Ic.volume2, color: color),
                   const SizedBox(width: 12),
                   Expanded(child: Text(_label(item), style: TT.title)),
-                  const Text('Çal', style: TT.small),
+                  Text(tr('Çal', 'Play'), style: TT.small),
                 ],
               ),
             ),
@@ -747,8 +902,11 @@ class _LessonFlowState extends State<LessonFlow> with WidgetsBindingObserver {
           _pitchDiagnostic(diagnosticItem),
           const SizedBox(height: 12),
         ],
-        const Text(
-          'Bu adım puanlanmaz ve ilerlemeye yazılmaz; kulak ile ses arasında bağ kurmak içindir.',
+        Text(
+          tr(
+            'Bu adım puanlanmaz ve ilerlemeye yazılmaz; kulak ile ses arasında bağ kurmak içindir.',
+            'This step is not scored or added to progress; it links your ear and your voice.',
+          ),
           style: TT.small,
         ),
       ],
@@ -791,15 +949,15 @@ class ScaleLadder extends StatelessWidget {
                   ),
                 ),
               ),
-            const Positioned(
+            Positioned(
               left: 0,
               bottom: 0,
-              child: Text('KÖK', style: TT.caps),
+              child: Text(tr('KÖK', 'ROOT'), style: TT.caps),
             ),
-            const Positioned(
+            Positioned(
               right: 0,
               bottom: 0,
-              child: Text('OKTAV', style: TT.caps),
+              child: Text(tr('OKTAV', 'OCTAVE'), style: TT.caps),
             ),
           ],
         );

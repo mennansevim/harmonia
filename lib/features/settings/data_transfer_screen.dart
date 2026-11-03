@@ -34,6 +34,20 @@ class _DataTransferScreenState extends State<DataTransferScreen> {
   String? _exportStatus;
   String? _importStatus;
   var _busy = false;
+  var _generation = 0;
+
+  @override
+  void didUpdateWidget(covariant DataTransferScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!identical(oldWidget.history, widget.history) ||
+        !identical(oldWidget.profile, widget.profile) ||
+        !identical(oldWidget.preferences, widget.preferences)) {
+      _generation++;
+      _busy = false;
+      _exportStatus = null;
+      _importStatus = null;
+    }
+  }
 
   @override
   void dispose() {
@@ -43,32 +57,64 @@ class _DataTransferScreenState extends State<DataTransferScreen> {
 
   Future<void> _export() async {
     if (_busy) return;
+    final generation = _generation;
+    final history = widget.history;
+    final profile = widget.profile;
+    final preferences = widget.preferences;
+    final clock = widget.clock ?? DateTime.now;
     setState(() {
       _busy = true;
       _exportStatus = null;
     });
     try {
-      final entries = await widget.history.load();
-      final portable = await widget.preferences?.loadPortablePreferences();
+      final entries = await history.load();
+      PortablePracticePreferences? portable;
+      if (preferences != null) {
+        try {
+          portable = await preferences.loadPortablePreferences();
+        } catch (_) {
+          if (mounted && generation == _generation) {
+            _exportStatus =
+                'Çalışma tercihleri okunamadığı için dışa aktarılamadı. Panoya hiçbir şey yazılmadı.';
+          }
+          return;
+        }
+      }
+      if (!mounted || generation != _generation) return;
       final text = LocalDataExport.encode(
-        profile: widget.profile,
+        profile: profile,
         entries: entries,
-        exportedAt: (widget.clock ?? DateTime.now)(),
+        exportedAt: clock(),
         preferences: portable,
       );
-      if (!mounted) return;
       await Clipboard.setData(ClipboardData(text: text));
+      if (!mounted || generation != _generation) return;
       _exportStatus =
           '${entries.length} sonuç, hedef seçimin${portable == null ? '' : ' ve çalışma tercihlerin'} panoya kopyalandı. Ses kaydı içermez. '
           'Panodaki metni nereye yapıştırdığına sen karar verirsin; uygulama hiçbir yere göndermez.';
     } on HistoryStorageException {
-      _exportStatus = 'Geçmiş okunamadığı için dışa aktarılamadı.';
+      if (generation == _generation) {
+        _exportStatus = 'Geçmiş okunamadığı için dışa aktarılamadı.';
+      }
+    } on LocalDataFormatException {
+      if (generation == _generation) {
+        _exportStatus =
+            'Dışa aktarma 4 MB sınırını aştığı için panoya yazılmadı.';
+      }
     } on PlatformException {
-      _exportStatus = 'Panoya kopyalama doğrulanamadı. Yeniden deneyebilirsin.';
+      if (generation == _generation) {
+        _exportStatus =
+            'Panoya kopyalama doğrulanamadı. Yeniden deneyebilirsin.';
+      }
     } on MissingPluginException {
-      _exportStatus = 'Bu cihazda pano kullanılamıyor. Yeniden deneyebilirsin.';
+      if (generation == _generation) {
+        _exportStatus =
+            'Bu cihazda pano kullanılamıyor. Yeniden deneyebilirsin.';
+      }
     } finally {
-      if (mounted) setState(() => _busy = false);
+      if (mounted && generation == _generation) {
+        setState(() => _busy = false);
+      }
     }
   }
 
@@ -81,6 +127,10 @@ class _DataTransferScreenState extends State<DataTransferScreen> {
       setState(() => _importStatus = _reason(e.reason));
       return;
     }
+    final generation = _generation;
+    final history = widget.history;
+    final preferences = widget.preferences;
+    final onPreferencesImported = widget.onPreferencesImported;
     setState(() {
       _busy = true;
       _importStatus = null;
@@ -91,9 +141,9 @@ class _DataTransferScreenState extends State<DataTransferScreen> {
         builder: (c) => AlertDialog(
           title: const Text('Sonuçlar eklensin mi?'),
           content: Text(
-            '${doc.entries.length} sonuç bulundu. Aynı deneme zaten varsa tekrar sayılmaz; '
-            'farklı içerikli aynı deneme kimliği varsa mevcut kayıt korunur. Hedef seçimin değişmez.'
-            '${doc.preferences != null && widget.preferences != null ? ' Günlük süre ve haftalık hedef uygulanır; hatırlatma ve titreşim bu cihaza özel kalır.' : ''}',
+            '${doc.entries.length} sonuç bulundu. Aynı deneme veya oturum zaten varsa tekrar sayılmaz; '
+            'aynı kimlikte farklı içerik varsa mevcut kayıt korunur. Hedef seçimin değişmez.'
+            '${doc.preferences != null && preferences != null ? ' Günlük süre ve haftalık hedef uygulanır; hatırlatma ve titreşim bu cihaza özel kalır.' : ''}',
           ),
           actions: [
             TextButton(
@@ -108,27 +158,34 @@ class _DataTransferScreenState extends State<DataTransferScreen> {
           ],
         ),
       );
-      if (ok != true || !mounted) return;
-      final r = await LocalDataExport.importResults(doc, widget.history);
+      if (ok != true || !mounted || generation != _generation) return;
+      final r = await LocalDataExport.importResults(doc, history);
       var preferenceStatus = '';
-      if (doc.preferences != null && widget.preferences != null) {
+      if (doc.preferences != null && preferences != null) {
         try {
-          await widget.preferences!.savePortablePreferences(doc.preferences!);
-          widget.onPreferencesImported?.call();
+          await preferences.savePortablePreferences(doc.preferences!);
+          if (mounted && generation == _generation) {
+            onPreferencesImported?.call();
+          }
           preferenceStatus = ' Çalışma tercihleri uygulandı.';
         } catch (_) {
           preferenceStatus =
               ' Sonuçlar işlendi; çalışma tercihleri kaydedilemedi.';
         }
       }
+      if (!mounted || generation != _generation) return;
       _importStatus =
           'Eklendi: ${r.recorded}. Zaten vardı: ${r.duplicate}. '
           'Çakışan (korundu): ${r.conflict}. Yer yok: ${r.storageFull}.$preferenceStatus';
     } on HistoryStorageException {
-      _importStatus =
-          'Geçmiş kaydedilemedi. Bu gruptan hiçbir sonuç eklenmedi; yeniden deneyebilirsin.';
+      if (generation == _generation) {
+        _importStatus =
+            'Geçmiş kaydedilemedi. Bu gruptan hiçbir sonuç eklenmedi; yeniden deneyebilirsin.';
+      }
     } finally {
-      if (mounted) setState(() => _busy = false);
+      if (mounted && generation == _generation) {
+        setState(() => _busy = false);
+      }
     }
   }
 

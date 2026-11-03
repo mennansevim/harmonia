@@ -52,12 +52,13 @@ void main() {
     }
 
     Future<void> tap(Finder f, {int ms = 700}) async {
-      if (f.evaluate().isEmpty) {
-        await tester.scrollUntilVisible(
-          f,
-          200,
-          scrollable: find.byType(Scrollable).last,
+      // Off-screen list items are not built: drag the page until it is.
+      for (var i = 0; i < 12 && f.hitTestable().evaluate().isEmpty; i++) {
+        await tester.drag(
+          find.byType(Scrollable).hitTestable().first,
+          const Offset(0, -250),
         );
+        await tester.pump(const Duration(milliseconds: 200));
       }
       await tester.tap(f.first, warnIfMissed: false);
       for (var i = 0; i < ms ~/ 100; i++) {
@@ -93,14 +94,11 @@ void main() {
     await tap(key('opt_singer'));
     await shot('ob_role');
     await tap(key('ob_continue'));
-    await tap(key('opt_alto'));
     await shot('ob_part');
     await tap(key('ob_continue'));
     await tap(key('opt_voice'));
     await tap(key('opt_interval'));
     await shot('ob_focus');
-    await tap(key('ob_continue'));
-    await shot('ob_notation');
     await tap(key('ob_continue'));
     await tap(key('minutes_10'));
     await shot('ob_minutes');

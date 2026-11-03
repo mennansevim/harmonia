@@ -11,6 +11,8 @@ import 'package:resonia/domain/learning/today_planner.dart';
 import 'package:resonia/domain/models/exercise.dart';
 import 'package:resonia/domain/models/exercise_result.dart';
 import 'package:resonia/domain/models/learner_profile.dart';
+import 'package:resonia/domain/models/exercise_protocol_fingerprint.dart';
+import 'package:resonia/domain/models/result_cohort.dart';
 import 'package:resonia/domain/perception/interval_identification.dart';
 import 'package:resonia/domain/perception/pitch_comparison.dart';
 
@@ -76,6 +78,60 @@ void main() {
       expect(comparableResults([restored], catalog[i]), [restored]);
     }
     expect(catalog.first.cohort.difficulty, 2);
+    expect(
+      outcomes.first.measurements[ExerciseProtocolFingerprint.measurementKey],
+      catalog.first.cohort.protocolFingerprint,
+    );
+  });
+
+  test('rhythm evidence without the exact protocol identity fails closed', () {
+    final rhythm = outcomes.first;
+    final measurements = Map<String, Object?>.from(rhythm.measurements)
+      ..remove(ExerciseProtocolFingerprint.measurementKey);
+    final missing = ExerciseResult.fromJson({
+      ...rhythm.toJson(),
+      'measurements': measurements,
+    });
+    final mismatched = ExerciseResult.fromJson({
+      ...rhythm.toJson(),
+      'measurements': {
+        ...rhythm.measurements,
+        ExerciseProtocolFingerprint.measurementKey:
+            '${ExerciseProtocolFingerprint.algorithm}:${'0' * 64}',
+      },
+    });
+
+    expect(catalog.first.cohort.matches(missing), isFalse);
+    expect(catalog.first.cohort.matches(mismatched), isFalse);
+    expect(comparableResults([missing, mismatched], catalog.first), isEmpty);
+    expect(
+      SkillStatusEvaluator.exerciseState(catalog.first, [missing, mismatched]),
+      MasteryState.notMeasured,
+    );
+  });
+
+  test('a manually constructed malformed fingerprint cohort cannot match', () {
+    final result = ExerciseResult.fromJson({
+      ...outcomes.first.toJson(),
+      'measurements': {
+        ...outcomes.first.measurements,
+        ExerciseProtocolFingerprint.measurementKey: 'not-a-fingerprint',
+      },
+    });
+    final current = catalog.first.cohort;
+    final malformed = ResultCohort(
+      exerciseId: current.exerciseId,
+      skill: current.skill,
+      mode: current.mode,
+      difficulty: current.difficulty,
+      contentVersion: current.contentVersion,
+      scoringVersion: current.scoringVersion,
+      source: current.source,
+      analyzerVersion: current.analyzerVersion,
+      protocolFingerprint: 'not-a-fingerprint',
+    );
+
+    expect(malformed.matches(result), isFalse);
   });
 
   for (final entry in <String, Object>{

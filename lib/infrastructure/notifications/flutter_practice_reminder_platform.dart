@@ -6,6 +6,8 @@ import 'package:timezone/timezone.dart' as tz;
 
 import '../../application/practice_preferences.dart';
 import '../../application/practice_reminder.dart';
+import '../../application/reminder_planner.dart';
+import '../../domain/lang.dart';
 
 /// Narrow driver so permission and scheduling policy can be tested without
 /// invoking an operating-system notification channel.
@@ -18,9 +20,15 @@ abstract interface class PracticeNotificationDriver {
   Future<bool?> openSettings();
 }
 
+/// Drivers that can schedule one-off reminders at given local times.
+abstract interface class PlannedNotificationDriver {
+  Future<void> schedulePlan(List<PlannedReminder> plan);
+}
+
 /// Production adapter. Permission is requested only through [requestPermission],
 /// which the coordinator calls after an explicit user action.
-class FlutterPracticeReminderPlatform implements PracticeReminderPlatform {
+class FlutterPracticeReminderPlatform
+    implements PracticeReminderPlatform, PlannedReminderPlatform {
   FlutterPracticeReminderPlatform({PracticeNotificationDriver? driver})
     : _driver = driver ?? FlutterLocalNotificationDriver();
 
@@ -70,6 +78,18 @@ class FlutterPracticeReminderPlatform implements PracticeReminderPlatform {
   }
 
   @override
+  Future<void> schedulePlan(List<PlannedReminder> plan) async {
+    final driver = _driver;
+    if (driver is! PlannedNotificationDriver) {
+      throw StateError('Driver cannot schedule a plan');
+    }
+    if (!await _ready()) {
+      throw StateError('Notification adapter unavailable');
+    }
+    await (driver as PlannedNotificationDriver).schedulePlan(plan);
+  }
+
+  @override
   Future<void> cancelDaily() async {
     if (!await _ready()) {
       throw StateError('Notification adapter unavailable');
@@ -88,11 +108,15 @@ class FlutterPracticeReminderPlatform implements PracticeReminderPlatform {
   }
 }
 
-class FlutterLocalNotificationDriver implements PracticeNotificationDriver {
+class FlutterLocalNotificationDriver
+    implements PracticeNotificationDriver, PlannedNotificationDriver {
   FlutterLocalNotificationDriver({FlutterLocalNotificationsPlugin? plugin})
     : _plugin = plugin ?? FlutterLocalNotificationsPlugin();
 
   static const reminderId = 1701;
+
+  /// Ids 1701… hold either the daily reminder or one planned series.
+  static const maxPlanned = 16;
   final FlutterLocalNotificationsPlugin _plugin;
 
   @override
@@ -156,11 +180,57 @@ class FlutterLocalNotificationDriver implements PracticeNotificationDriver {
     return Future<bool?>.value();
   }
 
-  @override
-  Future<void> scheduleDaily(PracticeReminderTime time) async {
+  Future<void> _useLocalZone() async {
     tz_data.initializeTimeZones();
     final local = await FlutterTimezone.getLocalTimezone();
     tz.setLocalLocation(tz.getLocation(local.identifier));
+  }
+
+  Future<void> _cancelAll() async {
+    for (var i = 0; i < maxPlanned; i++) {
+      await _plugin.cancel(id: reminderId + i);
+    }
+  }
+
+  NotificationDetails get _details => NotificationDetails(
+    android: AndroidNotificationDetails(
+      'practice_reminders_v1',
+      tr('Çalışma hatırlatmaları', 'Practice reminders'),
+      channelDescription: tr(
+        'Kullanıcının seçtiği günlük çalışma saati',
+        'The daily practice time you chose',
+      ),
+      importance: Importance.defaultImportance,
+      priority: Priority.defaultPriority,
+    ),
+    iOS: DarwinNotificationDetails(presentAlert: true, presentSound: true),
+  );
+
+  @override
+  Future<void> schedulePlan(List<PlannedReminder> plan) async {
+    await _useLocalZone();
+    await _cancelAll();
+    final now = tz.TZDateTime.now(tz.local);
+    var id = reminderId;
+    for (final r in plan.take(maxPlanned)) {
+      final at = tz.TZDateTime.from(r.at, tz.local);
+      if (!at.isAfter(now)) continue;
+      await _plugin.zonedSchedule(
+        id: id++,
+        title: r.title,
+        body: r.body,
+        scheduledDate: at,
+        notificationDetails: _details,
+        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+        payload: 'practice-reminder:${r.kind.name}',
+      );
+    }
+  }
+
+  @override
+  Future<void> scheduleDaily(PracticeReminderTime time) async {
+    await _useLocalZone();
+    await _cancelAll();
     final scheduled = nextDailyOccurrence(
       now: tz.TZDateTime.now(tz.local),
       hour: time.hour,
@@ -168,14 +238,23 @@ class FlutterLocalNotificationDriver implements PracticeNotificationDriver {
     );
     await _plugin.zonedSchedule(
       id: reminderId,
-      title: 'Bugünkü kısa çalışman hazır',
-      body: 'Kulak ve ritim çalışmana kaldığın yerden devam et.',
+      title: tr(
+        'Bugünkü kısa çalışman hazır',
+        'Your short practice for today is ready',
+      ),
+      body: tr(
+        'Kulak ve ritim çalışmana kaldığın yerden devam et.',
+        'Pick up your ear and rhythm practice where you left off.',
+      ),
       scheduledDate: scheduled,
-      notificationDetails: const NotificationDetails(
+      notificationDetails: NotificationDetails(
         android: AndroidNotificationDetails(
           'practice_reminders_v1',
-          'Çalışma hatırlatmaları',
-          channelDescription: 'Kullanıcının seçtiği günlük çalışma saati',
+          tr('Çalışma hatırlatmaları', 'Practice reminders'),
+          channelDescription: tr(
+            'Kullanıcının seçtiği günlük çalışma saati',
+            'The daily practice time you chose',
+          ),
           importance: Importance.defaultImportance,
           priority: Priority.defaultPriority,
         ),
@@ -188,7 +267,7 @@ class FlutterLocalNotificationDriver implements PracticeNotificationDriver {
   }
 
   @override
-  Future<void> cancelDaily() => _plugin.cancel(id: reminderId);
+  Future<void> cancelDaily() => _cancelAll();
 
   @override
   Future<bool?> openSettings() {

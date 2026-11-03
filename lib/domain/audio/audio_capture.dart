@@ -75,4 +75,8 @@ abstract interface class ReferenceClipPlayer {
 /// never scored, never a voice/pitch claim, not calibrated across devices.
 abstract interface class InputLevelSource {
   Stream<double> get inputLevelDb;
+
+  /// Origin of the level stream. This labels UI evidence only; it does not
+  /// certify calibration, pitch, voice activity or analyzer accuracy.
+  MeasurementProvenance get inputLevelProvenance;
 }

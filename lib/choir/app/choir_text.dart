@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 import '../data/choir_bundle.dart';
 import '../domain/assignment.dart';
 import '../domain/choir.dart';
+import '../domain/part_ladder.dart';
 import '../domain/resource.dart';
 import '../domain/submission.dart';
 
@@ -510,6 +511,50 @@ class CT {
   // Practice
   String get myPart => _('Partim', 'My part');
   String get fullChoir => _('Tüm koro', 'Full choir');
+  // Accompanied part learning (PartStep)
+  String get stepsTitle => _('Eşlikle öğrenme', 'Learn with the choir');
+  String get stepsBody => _(
+    'Destek adım adım azalır: önce dinle, sonra partin öndeyken söyle, en sonunda partin olmadan diğer seslere karşı tut.',
+    'Support fades step by step: listen first, sing with your part in front, and finally hold it against the other voices without it.',
+  );
+  String stepName(PartStep s) => switch (s) {
+    PartStep.listen => _('Dinle', 'Listen'),
+    PartStep.lead => _('Partin önde', 'Part in front'),
+    PartStep.together => _('Birlikte söyle', 'Sing along'),
+    PartStep.carry => _('Partin kısık', 'Part faint'),
+    PartStep.alone => _('Partin yok', 'Part missing'),
+  };
+  String stepHow(PartStep s) => switch (s) {
+    PartStep.listen => _(
+      'Söyleme. Tüm sesler eşit; kendi partini dokunun içinde takip et.',
+      'Do not sing. All parts are even; follow your line inside the texture.',
+    ),
+    PartStep.lead => _(
+      'Partin önde, hız %80. "u" ile birlikte söyle; önce perdeler otursun.',
+      'Your part in front at 80% tempo. Sing along on "oo"; let the pitches settle first.',
+    ),
+    PartStep.together => _(
+      'Normal hız, sözlerle. Partin hâlâ duyuluyor.',
+      'Full tempo, with the words. Your part is still there.',
+    ),
+    PartStep.carry => _(
+      'Partin çok kısık: partini sen taşıyorsun. Kaydığın yeri işaretle, döngüye al.',
+      'Your part is faint: you carry it. Note where you slip and loop it.',
+    ),
+    PartStep.alone => _(
+      'Partin yok. Diğer seslere karşı tek başına tut; bu, provaya hazır olduğunun işaretidir.',
+      'Your part is gone. Hold it alone against the others; this is the sign you are ready for rehearsal.',
+    ),
+  };
+  String stepCount(PartStep s) => _(
+    '${s.index + 1}/${PartStep.values.length}. basamak',
+    'Step ${s.index + 1} of ${PartStep.values.length}',
+  );
+  String get nextStep => _('Sonraki basamak', 'Next step');
+  String get ownMix => _('Kendi ayarın', 'Your own mix');
+  String get chooseOwnPart =>
+      _('Basamaklar için partini seç.', 'Choose your part to use the steps.');
+
   String get ownVolume => _('Kendi partin', 'Your part');
   String get othersVolume => _('Diğer sesler', 'Other voices');
   String get metronome => _('Metronom', 'Metronome');

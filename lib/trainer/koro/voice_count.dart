@@ -6,6 +6,7 @@ import '../app/scope.dart';
 import '../domain/trainers.dart';
 import '../quiz/quiz_view.dart';
 import '../ui/kit.dart';
+import '../../domain/lang.dart';
 
 /// Builds a close-voiced choir-like chord of [voices] notes (2–4) inside
 /// SATB-friendly registers; notes are distinct and at least a 3rd apart.
@@ -98,8 +99,11 @@ class _VoiceCountScreenState extends State<VoiceCountScreen> {
                       const SizedBox(height: 10),
                       Text('$_correct / ${widget.length}', style: TT.h1),
                       const SizedBox(height: 6),
-                      const Text(
-                        'Ses sayısını doğru duydun. Çok sesli piyano kayıtları eklendiğinde her sesi tek tek tekrar etme çalışması açılacak.',
+                      Text(
+                        tr(
+                          'Ses sayısını doğru duydun. Çok sesli piyano kayıtları eklendiğinde her sesi tek tek tekrar etme çalışması açılacak.',
+                          'You heard how many voices were playing. When multi-part piano recordings are added, an exercise to sing each part in turn will open.',
+                        ),
                         textAlign: TextAlign.center,
                         style: TT.body,
                       ),
@@ -107,7 +111,7 @@ class _VoiceCountScreenState extends State<VoiceCountScreen> {
                   ),
                 ),
                 BigButton(
-                  label: 'Bitti',
+                  label: tr('Bitti', 'Done'),
                   color: TC.koro,
                   onPressed: () => Navigator.pop(context),
                 ),
@@ -121,66 +125,74 @@ class _VoiceCountScreenState extends State<VoiceCountScreen> {
       backgroundColor: TC.canvas,
       body: Builder(
         builder: (context) => SafeArea(
-          child: Column(
-            children: [
-              TopBar(
-                title: 'Ses / Çok seslilik',
-                progress: (_index + (_picked == null ? 0 : 1)) / widget.length,
-                progressColor: TC.koro,
-                counter: '${_index + 1} / ${widget.length}',
-              ),
-              const Padding(
-                padding: EdgeInsets.fromLTRB(24, 16, 24, 0),
-                child: Align(
-                  alignment: AlignmentDirectional.centerStart,
-                  child: PageTitle('Kaç ses duyuyorsun?'),
+          child: FitOrScroll(
+            child: Column(
+              children: [
+                TopBar(
+                  title: tr('Ses / Çok seslilik', 'Voice / Parts'),
+                  progress:
+                      (_index + (_picked == null ? 0 : 1)) / widget.length,
+                  progressColor: TC.koro,
+                  counter: '${_index + 1} / ${widget.length}',
                 ),
-              ),
-              const Spacer(),
-              ListenDisc(
-                color: TC.koro,
-                playing: TrainerScope.of(context).audio.playing,
-                onTap: _picked == null ? _play : null,
-              ),
-              const Spacer(),
-              Text(
-                _picked == null
-                    ? 'Aynı anda kaç ses çalıyor?'
-                    : _frame == true
-                    ? 'Tam isabet!'
-                    : 'Doğrusu $_answer ses',
-                style: TT.title,
-              ),
-              const SizedBox(height: 16),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-                child: Row(
-                  children: [
-                    for (final n in const [2, 3, 4])
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 5),
-                          child: AppCard(
-                            key: Key('voices_$n'),
-                            border: _picked == null
-                                ? TC.line
-                                : n == _answer
-                                ? TC.green
-                                : (n == _picked ? TC.red : TC.line),
-                            onTap: _picked == null ? () => _pick(n) : null,
-                            child: Column(
-                              children: [
-                                Text('$n', style: TT.h1),
-                                const Text('ses', style: TT.small),
-                              ],
+                Padding(
+                  padding: EdgeInsets.fromLTRB(24, 16, 24, 0),
+                  child: Align(
+                    alignment: AlignmentDirectional.centerStart,
+                    child: PageTitle(
+                      tr('Kaç ses duyuyorsun?', 'How many voices do you hear?'),
+                    ),
+                  ),
+                ),
+                const Spacer(),
+                ListenDisc(
+                  color: TC.koro,
+                  playing: TrainerScope.of(context).audio.playing,
+                  onTap: _picked == null ? _play : null,
+                ),
+                const Spacer(),
+                Text(
+                  _picked == null
+                      ? tr(
+                          'Aynı anda kaç ses çalıyor?',
+                          'How many notes are sounding at once?',
+                        )
+                      : _frame == true
+                      ? tr('Tam isabet!', 'Spot on!')
+                      : tr('Doğrusu $_answer ses', 'It was $_answer voices'),
+                  style: TT.title,
+                ),
+                const SizedBox(height: 16),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+                  child: Row(
+                    children: [
+                      for (final n in const [2, 3, 4])
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 5),
+                            child: AppCard(
+                              key: Key('voices_$n'),
+                              border: _picked == null
+                                  ? TC.line
+                                  : n == _answer
+                                  ? TC.green
+                                  : (n == _picked ? TC.red : TC.line),
+                              onTap: _picked == null ? () => _pick(n) : null,
+                              child: Column(
+                                children: [
+                                  Text('$n', style: TT.h1),
+                                  Text(tr('ses', 'voices'), style: TT.small),
+                                ],
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

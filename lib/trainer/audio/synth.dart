@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import '../../infrastructure/audio/pcm16_wav.dart';
 import '../domain/music.dart';
 import '../domain/trainers.dart';
+import '../../domain/lang.dart';
 
 /// Locally generated instrument colours. Additive synthesis only: no
 /// recorded or licensed samples are bundled.
@@ -10,12 +11,12 @@ enum Timbre { piano, guitar, cello, clarinet, trumpet, sine }
 
 extension TimbreInfo on Timbre {
   String get label => switch (this) {
-    Timbre.piano => 'Piyano',
-    Timbre.guitar => 'Gitar',
-    Timbre.cello => 'Çello',
-    Timbre.clarinet => 'Klarnet',
-    Timbre.trumpet => 'Trompet',
-    Timbre.sine => 'Sinüs',
+    Timbre.piano => tr('Piyano', 'Piano'),
+    Timbre.guitar => tr('Gitar', 'Guitar'),
+    Timbre.cello => tr('Çello', 'Cello'),
+    Timbre.clarinet => tr('Klarnet', 'Clarinet'),
+    Timbre.trumpet => tr('Trompet', 'Trumpet'),
+    Timbre.sine => tr('Sinüs', 'Sine'),
   };
 }
 

@@ -1,0 +1,4808 @@
+{
+  "checked_at": "2026-10-31T16:52:57.877646+00:00",
+  "method": "Apple Search API software, TR/US, limit 200; accent-insensitive name substring. Search absence is not availability.",
+  "queries": [
+    {
+      "term": "Cantilena",
+      "country": "tr",
+      "query_url": "https://itunes.apple.com/search?term=Cantilena&country=tr&entity=software&limit=200",
+      "returned": 1,
+      "name_matches": [],
+      "results": [
+        {
+          "name": "Tongue twisters of the day",
+          "url": "https://apps.apple.com/tr/app/tongue-twisters-of-the-day/id606282823?uo=4",
+          "seller": "Marco Tini",
+          "category": "Education"
+        }
+      ]
+    },
+    {
+      "term": "Cantilena",
+      "country": "us",
+      "query_url": "https://itunes.apple.com/search?term=Cantilena&country=us&entity=software&limit=200",
+      "returned": 23,
+      "name_matches": [],
+      "results": [
+        {
+          "name": "OperaGuide",
+          "url": "https://apps.apple.com/us/app/operaguide/id6754088909?uo=4",
+          "seller": "ADIACENT SPA SOCIETA' BENEFIT",
+          "category": "Education"
+        },
+        {
+          "name": "ITGuides: Pompeii, Herculaneum",
+          "url": "https://apps.apple.com/us/app/itguides-pompeii-herculaneum/id1441963096?uo=4",
+          "seller": "aurora radicella",
+          "category": "Travel"
+        },
+        {
+          "name": "Tuscany Wine Roads",
+          "url": "https://apps.apple.com/us/app/tuscany-wine-roads/id794931599?uo=4",
+          "seller": "BBS SRL",
+          "category": "Travel"
+        },
+        {
+          "name": "Opera Music Classical Songs",
+          "url": "https://apps.apple.com/us/app/opera-music-classical-songs/id1231298428?uo=4",
+          "seller": "Yonatan Roman",
+          "category": "Music"
+        },
+        {
+          "name": "Tonnara Florio Di Favignana",
+          "url": "https://apps.apple.com/us/app/tonnara-florio-di-favignana/id6474445454?uo=4",
+          "seller": "ETT S.p.A.",
+          "category": "Travel"
+        },
+        {
+          "name": "VideoSegnArt Agrigento",
+          "url": "https://apps.apple.com/us/app/videosegnart-agrigento/id6633439037?uo=4",
+          "seller": "Giuseppe Scozzola",
+          "category": "Travel"
+        },
+        {
+          "name": "OrvietoViva",
+          "url": "https://apps.apple.com/us/app/orvietoviva/id1661666942?uo=4",
+          "seller": "CREITALIA GROUP SNC DI FEDERICA ROMAGNOLI & C",
+          "category": "Travel"
+        },
+        {
+          "name": "iSanGennaro",
+          "url": "https://apps.apple.com/us/app/isangennaro/id375841747?uo=4",
+          "seller": "Dario Cervo",
+          "category": "Entertainment"
+        },
+        {
+          "name": "Radio Toscana",
+          "url": "https://apps.apple.com/us/app/radio-toscana/id391375374?uo=4",
+          "seller": "Radio Monte Serra Srl",
+          "category": "Music"
+        },
+        {
+          "name": "Castelli di Cannero",
+          "url": "https://apps.apple.com/us/app/castelli-di-cannero/id6744747902?uo=4",
+          "seller": "Dotdotdot srl",
+          "category": "Education"
+        },
+        {
+          "name": "Strada del Vino Costa Toscana",
+          "url": "https://apps.apple.com/us/app/strada-del-vino-costa-toscana/id1075805372?uo=4",
+          "seller": "Inlinea srl",
+          "category": "Travel"
+        },
+        {
+          "name": "Radio Movida Crotone",
+          "url": "https://apps.apple.com/us/app/radio-movida-crotone/id1078019530?uo=4",
+          "seller": "Giuseppe Bassani",
+          "category": "Music"
+        },
+        {
+          "name": "Sicily Music Conference",
+          "url": "https://apps.apple.com/us/app/sicily-music-conference/id1623181004?uo=4",
+          "seller": "Luigi Bellanca",
+          "category": "Entertainment"
+        },
+        {
+          "name": "Tourism Canillo Andorra",
+          "url": "https://apps.apple.com/us/app/tourism-canillo-andorra/id1300094828?uo=4",
+          "seller": "ANDORNET, S.A.",
+          "category": "Travel"
+        },
+        {
+          "name": "CosaFare",
+          "url": "https://apps.apple.com/us/app/cosafare/id6761446077?uo=4",
+          "seller": "FREDRIK JOAKIM BALCK",
+          "category": "Entertainment"
+        },
+        {
+          "name": "Cadentia Farnese",
+          "url": "https://apps.apple.com/us/app/cadentia-farnese/id6755356446?uo=4",
+          "seller": "Ambasciata di Francia in Italia",
+          "category": "Games"
+        },
+        {
+          "name": "S.Colombano Audio-Tactile Tour",
+          "url": "https://apps.apple.com/us/app/s-colombano-audio-tactile-tour/id6741421584?uo=4",
+          "seller": "GENUS BONONIAE - MUSEI DELLA CITTA' - SRL",
+          "category": "Education"
+        },
+        {
+          "name": "Tongue twisters of the day",
+          "url": "https://apps.apple.com/us/app/tongue-twisters-of-the-day/id606282823?uo=4",
+          "seller": "Marco Tini",
+          "category": "Education"
+        },
+        {
+          "name": "Calatino",
+          "url": "https://apps.apple.com/us/app/calatino/id6474432708?uo=4",
+          "seller": "ETT S.p.A.",
+          "category": "Travel"
+        },
+        {
+          "name": "Plastic Reflections",
+          "url": "https://apps.apple.com/us/app/plastic-reflections/id899132467?uo=4",
+          "seller": "GRUPPOZENIT INDIA PRIVATE LIMITED",
+          "category": "Entertainment"
+        },
+        {
+          "name": "Cosa Fare a Enna",
+          "url": "https://apps.apple.com/us/app/cosa-fare-a-enna/id6766696153?uo=4",
+          "seller": "Gaetano Arangio",
+          "category": "Travel"
+        },
+        {
+          "name": "Villa San Leonardo al Palco",
+          "url": "https://apps.apple.com/us/app/villa-san-leonardo-al-palco/id6763057210?uo=4",
+          "seller": "MACOEV S.r.l.",
+          "category": "Travel"
+        },
+        {
+          "name": "Cremona In",
+          "url": "https://apps.apple.com/us/app/cremona-in/id6805457666?uo=4",
+          "seller": "Alexandru Ionut Camberliu",
+          "category": "Entertainment"
+        }
+      ]
+    },
+    {
+      "term": "Sonante",
+      "country": "tr",
+      "query_url": "https://itunes.apple.com/search?term=Sonante&country=tr&entity=software&limit=200",
+      "returned": 3,
+      "name_matches": [],
+      "results": [
+        {
+          "name": "Sonanta: Voice expenses",
+          "url": "https://apps.apple.com/tr/app/sonanta-voice-expenses/id6793382245?uo=4",
+          "seller": "JESUS EDUARDO HERNANDEZ MARTINEZ",
+          "category": "Finance"
+        },
+        {
+          "name": "Sonant - audio conference call",
+          "url": "https://apps.apple.com/tr/app/sonant-audio-conference-call/id1518714520?uo=4",
+          "seller": "ShenXun Inc.",
+          "category": "Utilities"
+        },
+        {
+          "name": "Giggly Go - Fun for Toddlers",
+          "url": "https://apps.apple.com/tr/app/giggly-go-fun-for-toddlers/id6450898048?uo=4",
+          "seller": "Sonant Oy",
+          "category": "Games"
+        }
+      ]
+    },
+    {
+      "term": "Sonante",
+      "country": "us",
+      "query_url": "https://itunes.apple.com/search?term=Sonante&country=us&entity=software&limit=200",
+      "returned": 129,
+      "name_matches": [],
+      "results": [
+        {
+          "name": "Sonant - audio conference call",
+          "url": "https://apps.apple.com/us/app/sonant-audio-conference-call/id1518714520?uo=4",
+          "seller": "ShenXun Inc.",
+          "category": "Utilities"
+        },
+        {
+          "name": "SonicCloud Personalized Sound",
+          "url": "https://apps.apple.com/us/app/soniccloud-personalized-sound/id1121660424?uo=4",
+          "seller": "Sonitum, Inc.",
+          "category": "Health & Fitness"
+        },
+        {
+          "name": "Claro Música",
+          "url": "https://apps.apple.com/us/app/claro-m%C3%BAsica/id843577241?uo=4",
+          "seller": "iMusica LLC",
+          "category": "Entertainment"
+        },
+        {
+          "name": "Marimba, Xylophone, Vibraphone",
+          "url": "https://apps.apple.com/us/app/marimba-xylophone-vibraphone/id1455004243?uo=4",
+          "seller": "Son Truong Ngoc",
+          "category": "Games"
+        },
+        {
+          "name": "Sonanta: Voice expenses",
+          "url": "https://apps.apple.com/us/app/sonanta-voice-expenses/id6793382245?uo=4",
+          "seller": "JESUS EDUARDO HERNANDEZ MARTINEZ",
+          "category": "Finance"
+        },
+        {
+          "name": "ECHOES interactive sound walks",
+          "url": "https://apps.apple.com/us/app/echoes-interactive-sound-walks/id1021511722?uo=4",
+          "seller": "Echoes.xyz Ltd",
+          "category": "Lifestyle"
+        },
+        {
+          "name": "iLehra - Lehra Nagma Player",
+          "url": "https://apps.apple.com/us/app/ilehra-lehra-nagma-player/id333183750?uo=4",
+          "seller": "Prasad Upasani",
+          "category": "Music"
+        },
+        {
+          "name": "Solfeggio Frequencies: Sounds",
+          "url": "https://apps.apple.com/us/app/solfeggio-frequencies-sounds/id1522852980?uo=4",
+          "seller": "MBRB SP Z O O",
+          "category": "Health & Fitness"
+        },
+        {
+          "name": "3D Recorder Fingering Chart",
+          "url": "https://apps.apple.com/us/app/3d-recorder-fingering-chart/id1404847563?uo=4",
+          "seller": "DENYS BELIAEV",
+          "category": "Education"
+        },
+        {
+          "name": "Metronome Cifra Club",
+          "url": "https://apps.apple.com/us/app/metronome-cifra-club/id569883867?uo=4",
+          "seller": "Studio Sol Comunicacao Digital LTDA",
+          "category": "Music"
+        },
+        {
+          "name": "SonoSequencr",
+          "url": "https://apps.apple.com/us/app/sonosequencr/id967043604?uo=4",
+          "seller": "Marcus Pleintinger",
+          "category": "Music"
+        },
+        {
+          "name": "Sonideros TV",
+          "url": "https://apps.apple.com/us/app/sonideros-tv/id690007932?uo=4",
+          "seller": "MediaHosting LTD",
+          "category": "Music"
+        },
+        {
+          "name": "Intonia",
+          "url": "https://apps.apple.com/us/app/intonia/id1397570622?uo=4",
+          "seller": "Jerry Agin",
+          "category": "Music"
+        },
+        {
+          "name": "Son Sonidero Radio",
+          "url": "https://apps.apple.com/us/app/son-sonidero-radio/id1249989550?uo=4",
+          "seller": "MediaHosting LTD",
+          "category": "Music"
+        },
+        {
+          "name": "Adoro la Radio",
+          "url": "https://apps.apple.com/us/app/adoro-la-radio/id330237441?uo=4",
+          "seller": "Editrice reporter II s.r.l.",
+          "category": "Music"
+        },
+        {
+          "name": "BassTuner - Tuner Bass Guitar",
+          "url": "https://apps.apple.com/us/app/basstuner-tuner-bass-guitar/id1369629361?uo=4",
+          "seller": "Hsing-Fu Hsueh",
+          "category": "Music"
+        },
+        {
+          "name": "Sono+: Remote for Sonos",
+          "url": "https://apps.apple.com/us/app/sono-remote-for-sonos/id1502020066?uo=4",
+          "seller": "Paul Boyce",
+          "category": "Music"
+        },
+        {
+          "name": "Harmonium",
+          "url": "https://apps.apple.com/us/app/harmonium/id301027289?uo=4",
+          "seller": "Christophe BARATAY",
+          "category": "Music"
+        },
+        {
+          "name": "2D Recorder Fingering Chart",
+          "url": "https://apps.apple.com/us/app/2d-recorder-fingering-chart/id1392370304?uo=4",
+          "seller": "DENYS BELIAEV",
+          "category": "Education"
+        },
+        {
+          "name": "Sonideros Radio",
+          "url": "https://apps.apple.com/us/app/sonideros-radio/id1424886447?uo=4",
+          "seller": "Israel Montes",
+          "category": "Music"
+        },
+        {
+          "name": "Afamada Radio",
+          "url": "https://apps.apple.com/us/app/afamada-radio/id6759946260?uo=4",
+          "seller": "Hugo Roman",
+          "category": "Music"
+        },
+        {
+          "name": "Radio Fórmula 8000",
+          "url": "https://apps.apple.com/us/app/radio-f%C3%B3rmula-8000/id1550924459?uo=4",
+          "seller": "Israel Montes",
+          "category": "Music"
+        },
+        {
+          "name": "tones of terror and fear",
+          "url": "https://apps.apple.com/us/app/tones-of-terror-and-fear/id1206186792?uo=4",
+          "seller": "Maria Bayas",
+          "category": "Entertainment"
+        },
+        {
+          "name": "MasterPiano: Sight Reading",
+          "url": "https://apps.apple.com/us/app/masterpiano-sight-reading/id6758087301?uo=4",
+          "seller": "Adnane Chaabi",
+          "category": "Music"
+        },
+        {
+          "name": "Metronome M1 Pro",
+          "url": "https://apps.apple.com/us/app/metronome-m1-pro/id951002984?uo=4",
+          "seller": "Bijoy Thangaraj",
+          "category": "Music"
+        },
+        {
+          "name": "SONOCA Player",
+          "url": "https://apps.apple.com/us/app/sonoca-player/id896604023?uo=4",
+          "seller": "Crypton Future Media, Inc. Apps",
+          "category": "Music"
+        },
+        {
+          "name": "VocalGYM: Aprender a cantar",
+          "url": "https://apps.apple.com/us/app/vocalgym-aprender-a-cantar/id6743115748?uo=4",
+          "seller": "Lautaro Pereyra",
+          "category": "Education"
+        },
+        {
+          "name": "Himnario Evangélico",
+          "url": "https://apps.apple.com/us/app/himnario-evang%C3%A9lico/id6757204940?uo=4",
+          "seller": "Nelson Ovidio Arevalo Martinez",
+          "category": "Book"
+        },
+        {
+          "name": "Shruti Box",
+          "url": "https://apps.apple.com/us/app/shruti-box/id301042349?uo=4",
+          "seller": "Christophe BARATAY",
+          "category": "Music"
+        },
+        {
+          "name": "Sonidos Divertidos",
+          "url": "https://apps.apple.com/us/app/sonidos-divertidos/id1231280528?uo=4",
+          "seller": "Maria Bayas",
+          "category": "Entertainment"
+        },
+        {
+          "name": "DroneTone Concertmaster",
+          "url": "https://apps.apple.com/us/app/dronetone-concertmaster/id1660461516?uo=4",
+          "seller": "James Roberts",
+          "category": "Education"
+        },
+        {
+          "name": "Pad Mutant",
+          "url": "https://apps.apple.com/us/app/pad-mutant/id6463352937?uo=4",
+          "seller": "Garabato Sonoro LLC",
+          "category": "Music"
+        },
+        {
+          "name": "Sonitus",
+          "url": "https://apps.apple.com/us/app/sonitus/id1541742017?uo=4",
+          "seller": "Bastiaan Verreijt",
+          "category": "Utilities"
+        },
+        {
+          "name": "myMetronome",
+          "url": "https://apps.apple.com/us/app/mymetronome/id428486833?uo=4",
+          "seller": "Roberto Sonzogni",
+          "category": "Music"
+        },
+        {
+          "name": "La N103",
+          "url": "https://apps.apple.com/us/app/la-n103/id1477395217?uo=4",
+          "seller": "Keitel Ortega",
+          "category": "Entertainment"
+        },
+        {
+          "name": "Firenze Viola",
+          "url": "https://apps.apple.com/us/app/firenze-viola/id364868132?uo=4",
+          "seller": "TC&C srl",
+          "category": "News"
+        },
+        {
+          "name": "Swarasthana",
+          "url": "https://apps.apple.com/us/app/swarasthana/id763278591?uo=4",
+          "seller": "Ramadorai Arunkumar",
+          "category": "Music"
+        },
+        {
+          "name": "Metrodrummer",
+          "url": "https://apps.apple.com/us/app/metrodrummer/id1405019950?uo=4",
+          "seller": "Francesco Acquafredda",
+          "category": "Music"
+        },
+        {
+          "name": "Pianote",
+          "url": "https://apps.apple.com/us/app/pianote/id6792343347?uo=4",
+          "seller": "jerome lin",
+          "category": "Education"
+        },
+        {
+          "name": "Atarius Sound",
+          "url": "https://apps.apple.com/us/app/atarius-sound/id1402968673?uo=4",
+          "seller": "Alexander Savinykh",
+          "category": "Business"
+        },
+        {
+          "name": "La Fogonera Online",
+          "url": "https://apps.apple.com/us/app/la-fogonera-online/id6753230462?uo=4",
+          "seller": "Omar Garcia",
+          "category": "Music"
+        },
+        {
+          "name": "Baby Easy Xylophone",
+          "url": "https://apps.apple.com/us/app/baby-easy-xylophone/id1531601229?uo=4",
+          "seller": "Marco Cebrian Muino",
+          "category": "Music"
+        },
+        {
+          "name": "Cajon Flamenco",
+          "url": "https://apps.apple.com/us/app/cajon-flamenco/id6744958357?uo=4",
+          "seller": "Himalay Diyora",
+          "category": "Music"
+        },
+        {
+          "name": "Sonik: Events and Experiences",
+          "url": "https://apps.apple.com/us/app/sonik-events-and-experiences/id6736718016?uo=4",
+          "seller": "Sonik S.A.S.",
+          "category": "Entertainment"
+        },
+        {
+          "name": "Amore Bello Radio",
+          "url": "https://apps.apple.com/us/app/amore-bello-radio/id1469035432?uo=4",
+          "seller": "Byron Rivera",
+          "category": "Music"
+        },
+        {
+          "name": "RADIOCENTRO MIAMI",
+          "url": "https://apps.apple.com/us/app/radiocentro-miami/id6753648803?uo=4",
+          "seller": "sheraz Rasheed",
+          "category": "Music"
+        },
+        {
+          "name": "Canntina - MacCann Concertina",
+          "url": "https://apps.apple.com/us/app/canntina-maccann-concertina/id360579654?uo=4",
+          "seller": "Michael Eskin",
+          "category": "Music"
+        },
+        {
+          "name": "FM 105",
+          "url": "https://apps.apple.com/us/app/fm-105/id396115665?uo=4",
+          "seller": "GoMobie Softwares Ltda",
+          "category": "Music"
+        },
+        {
+          "name": "Pulse Metronome",
+          "url": "https://apps.apple.com/us/app/pulse-metronome/id1400514577?uo=4",
+          "seller": "Giovani Nascimento Pereira",
+          "category": "Music"
+        },
+        {
+          "name": "Canções de Embalar - Músicas para sonhar",
+          "url": "https://apps.apple.com/us/app/can%C3%A7%C3%B5es-de-embalar-m%C3%BAsicas-para-sonhar/id867010171?uo=4",
+          "seller": "Creative Experiences - Lisbon Labs - Solucoes Mult",
+          "category": "Music"
+        },
+        {
+          "name": "Relax Classic \"L.v.Beethoven\" by meditone®",
+          "url": "https://apps.apple.com/us/app/relax-classic-l-v-beethoven-by-meditone/id1031871034?uo=4",
+          "seller": "digiart,Inc.",
+          "category": "Health & Fitness"
+        },
+        {
+          "name": "Vibrato Trainer",
+          "url": "https://apps.apple.com/us/app/vibrato-trainer/id6761453658?uo=4",
+          "seller": "Michael Van Bebber",
+          "category": "Music"
+        },
+        {
+          "name": "Rumore Magazine",
+          "url": "https://apps.apple.com/us/app/rumore-magazine/id1199010447?uo=4",
+          "seller": "Homework Edizioni srl",
+          "category": "Music"
+        },
+        {
+          "name": "Shruthi Box",
+          "url": "https://apps.apple.com/us/app/shruthi-box/id6757926641?uo=4",
+          "seller": "SHREYAS MURALIDHARAN",
+          "category": "Music"
+        },
+        {
+          "name": "DESDE EL CORAZÓN RADIO",
+          "url": "https://apps.apple.com/us/app/desde-el-coraz%C3%B3n-radio/id6762206992?uo=4",
+          "seller": "DESDE EL CORAZON LLC",
+          "category": "Music"
+        },
+        {
+          "name": "Tihai Pro",
+          "url": "https://apps.apple.com/us/app/tihai-pro/id1275944861?uo=4",
+          "seller": "William Rossel",
+          "category": "Music"
+        },
+        {
+          "name": "iSanGennaro",
+          "url": "https://apps.apple.com/us/app/isangennaro/id375841747?uo=4",
+          "seller": "Dario Cervo",
+          "category": "Entertainment"
+        },
+        {
+          "name": "Sonido",
+          "url": "https://apps.apple.com/us/app/sonido/id1409386198?uo=4",
+          "seller": "Sonido LLC",
+          "category": "Music"
+        },
+        {
+          "name": "LSV CueList",
+          "url": "https://apps.apple.com/us/app/lsv-cuelist/id6744004350?uo=4",
+          "seller": "Ramiro Contreras Leon",
+          "category": "Music"
+        },
+        {
+          "name": "Sona FM 107.8 CRS",
+          "url": "https://apps.apple.com/us/app/sona-fm-107-8-crs/id6443795797?uo=4",
+          "seller": "Valliappa Foundation",
+          "category": "Music"
+        },
+        {
+          "name": "Sonido 102.1",
+          "url": "https://apps.apple.com/us/app/sonido-102-1/id6444663501?uo=4",
+          "seller": "Jorge Piedra",
+          "category": "Music"
+        },
+        {
+          "name": "Dizi: Flute Tuner & Lessons",
+          "url": "https://apps.apple.com/us/app/dizi-flute-tuner-lessons/id6776352512?uo=4",
+          "seller": "Mitaanshu Agarwal",
+          "category": "Music"
+        },
+        {
+          "name": "LSV Generador",
+          "url": "https://apps.apple.com/us/app/lsv-generador/id6737373130?uo=4",
+          "seller": "Ramiro Contreras Leon",
+          "category": "Music"
+        },
+        {
+          "name": "Ostinato z krainy Sonostworów",
+          "url": "https://apps.apple.com/us/app/ostinato-z-krainy-sonostwor%C3%B3w/id1439436075?uo=4",
+          "seller": "POLSKIE WYDAWNICTWO MUZYCZNE",
+          "category": "Education"
+        },
+        {
+          "name": "SONA Handpan Platform",
+          "url": "https://apps.apple.com/us/app/sona-handpan-platform/id6758941818?uo=4",
+          "seller": "sonaAi",
+          "category": "Music"
+        },
+        {
+          "name": "Harpa Cristã: Hinos e Áudio",
+          "url": "https://apps.apple.com/us/app/harpa-crist%C3%A3-hinos-e-%C3%A1udio/id6758815359?uo=4",
+          "seller": "Anderson Augusto Francisco",
+          "category": "Book"
+        },
+        {
+          "name": "GSRIyaz",
+          "url": "https://apps.apple.com/us/app/gsriyaz/id6461645057?uo=4",
+          "seller": "Darshan Singh",
+          "category": "Productivity"
+        },
+        {
+          "name": "Bansuri Transposer",
+          "url": "https://apps.apple.com/us/app/bansuri-transposer/id6602891008?uo=4",
+          "seller": "Shakti Singh Pawar",
+          "category": "Music"
+        },
+        {
+          "name": "Giggly Go - Fun for Toddlers",
+          "url": "https://apps.apple.com/us/app/giggly-go-fun-for-toddlers/id6450898048?uo=4",
+          "seller": "Sonant Oy",
+          "category": "Games"
+        },
+        {
+          "name": "Dj Pajaro Herrera",
+          "url": "https://apps.apple.com/us/app/dj-pajaro-herrera/id1555275626?uo=4",
+          "seller": "Alexander Herrera Tribaldo",
+          "category": "Music"
+        },
+        {
+          "name": "Radio Partenope",
+          "url": "https://apps.apple.com/us/app/radio-partenope/id1150620306?uo=4",
+          "seller": "Agrelli&Basta Srl",
+          "category": "Music"
+        },
+        {
+          "name": "Electrorchestra",
+          "url": "https://apps.apple.com/us/app/electrorchestra/id6443446919?uo=4",
+          "seller": "GSi di Guido Scognamiglio",
+          "category": "Music"
+        },
+        {
+          "name": "Info Viola",
+          "url": "https://apps.apple.com/us/app/info-viola/id692758703?uo=4",
+          "seller": "Niccolo' Calamai",
+          "category": "News"
+        },
+        {
+          "name": "Nombra la Nota",
+          "url": "https://apps.apple.com/us/app/nombra-la-nota/id6737921609?uo=4",
+          "seller": "Marcelo Palacios",
+          "category": "Education"
+        },
+        {
+          "name": "BeatTune - Tuner and Metronome",
+          "url": "https://apps.apple.com/us/app/beattune-tuner-and-metronome/id6670526458?uo=4",
+          "seller": "Edgar Zuniga",
+          "category": "Utilities"
+        },
+        {
+          "name": "Glissando z krainy Sonostworów",
+          "url": "https://apps.apple.com/us/app/glissando-z-krainy-sonostwor%C3%B3w/id1439436314?uo=4",
+          "seller": "POLSKIE WYDAWNICTWO MUZYCZNE",
+          "category": "Education"
+        },
+        {
+          "name": "Recorder Companion",
+          "url": "https://apps.apple.com/us/app/recorder-companion/id6802625925?uo=4",
+          "seller": "倩仪 赵",
+          "category": "Music"
+        },
+        {
+          "name": "Pocket Swara",
+          "url": "https://apps.apple.com/us/app/pocket-swara/id6762102085?uo=4",
+          "seller": "John Walbolt",
+          "category": "Music"
+        },
+        {
+          "name": "Beethoven - Violin Sonatas",
+          "url": "https://apps.apple.com/us/app/beethoven-violin-sonatas/id549746311?uo=4",
+          "seller": "Zininworks Inc.",
+          "category": "Music"
+        },
+        {
+          "name": "Vibrato Mastery",
+          "url": "https://apps.apple.com/us/app/vibrato-mastery/id6755321001?uo=4",
+          "seller": "Wallas da Silva Goncalves Pena",
+          "category": "Music"
+        },
+        {
+          "name": "Palmas: Flamenco Metronome",
+          "url": "https://apps.apple.com/us/app/palmas-flamenco-metronome/id6810768411?uo=4",
+          "seller": "David Smith",
+          "category": "Music"
+        },
+        {
+          "name": "Beethoven Cello Sonatas",
+          "url": "https://apps.apple.com/us/app/beethoven-cello-sonatas/id499818071?uo=4",
+          "seller": "Zininworks Inc.",
+          "category": "Music"
+        },
+        {
+          "name": "PlayCapital",
+          "url": "https://apps.apple.com/us/app/playcapital/id386374891?uo=4",
+          "seller": "Radio Delta 1 Srl",
+          "category": "Entertainment"
+        },
+        {
+          "name": "Sicily Music Conference",
+          "url": "https://apps.apple.com/us/app/sicily-music-conference/id1623181004?uo=4",
+          "seller": "Luigi Bellanca",
+          "category": "Entertainment"
+        },
+        {
+          "name": "Harmonics Practice",
+          "url": "https://apps.apple.com/us/app/harmonics-practice/id6748588377?uo=4",
+          "seller": "Tarmo Johannes",
+          "category": "Music"
+        },
+        {
+          "name": "Bach Partitas - SyncScore",
+          "url": "https://apps.apple.com/us/app/bach-partitas-syncscore/id520091031?uo=4",
+          "seller": "Zininworks Inc.",
+          "category": "Music"
+        },
+        {
+          "name": "Soloist Bansuri: Tuner & Riyaz",
+          "url": "https://apps.apple.com/us/app/soloist-bansuri-tuner-riyaz/id6776352419?uo=4",
+          "seller": "Mitaanshu Agarwal",
+          "category": "Music"
+        },
+        {
+          "name": "Brahms Cello Sonatas",
+          "url": "https://apps.apple.com/us/app/brahms-cello-sonatas/id590206081?uo=4",
+          "seller": "Zininworks Inc.",
+          "category": "Music"
+        },
+        {
+          "name": "Clavenome - Clave Metronome",
+          "url": "https://apps.apple.com/us/app/clavenome-clave-metronome/id6813747522?uo=4",
+          "seller": "HAYATO SUGAWARA",
+          "category": "Music"
+        },
+        {
+          "name": "Vibbro",
+          "url": "https://apps.apple.com/us/app/vibbro/id1526452915?uo=4",
+          "seller": "Vibbro Srl",
+          "category": "Music"
+        },
+        {
+          "name": "Kuzhalosai Instrumental Flute",
+          "url": "https://apps.apple.com/us/app/kuzhalosai-instrumental-flute/id1099715472?uo=4",
+          "seller": "Abirami Audio Recording Private Limited",
+          "category": "Music"
+        },
+        {
+          "name": "Flute Level",
+          "url": "https://apps.apple.com/us/app/flute-level/id6748576733?uo=4",
+          "seller": "Hideaki Uchikoshi",
+          "category": "Utilities"
+        },
+        {
+          "name": "LehraVishwa",
+          "url": "https://apps.apple.com/us/app/lehravishwa/id6782819102?uo=4",
+          "seller": "Ameya Sambhus",
+          "category": "Music"
+        },
+        {
+          "name": "sonoro VIBES",
+          "url": "https://apps.apple.com/us/app/sonoro-vibes/id6757176819?uo=4",
+          "seller": "sonoro audio GmbH",
+          "category": "Utilities"
+        },
+        {
+          "name": "Il Pallinatore",
+          "url": "https://apps.apple.com/us/app/il-pallinatore/id1593704985?uo=4",
+          "seller": "Suoni e Silenzi SRL",
+          "category": "Music"
+        },
+        {
+          "name": "Recorder Duet",
+          "url": "https://apps.apple.com/us/app/recorder-duet/id1267676682?uo=4",
+          "seller": "masafumi sasaki",
+          "category": "Music"
+        },
+        {
+          "name": "Auralis Fréquences & sons",
+          "url": "https://apps.apple.com/us/app/auralis-fr%C3%A9quences-sons/id6813928911?uo=4",
+          "seller": "Auralis frequences inc.",
+          "category": "Music"
+        },
+        {
+          "name": "LiveBand Studio",
+          "url": "https://apps.apple.com/us/app/liveband-studio/id6809209539?uo=4",
+          "seller": "Giovanni Emanuele Spina",
+          "category": "Music"
+        },
+        {
+          "name": "Blink Metronome",
+          "url": "https://apps.apple.com/us/app/blink-metronome/id6755675780?uo=4",
+          "seller": "Yusaku Akimioto",
+          "category": "Music"
+        },
+        {
+          "name": "Telemann 6 Sonatas (4-6)",
+          "url": "https://apps.apple.com/us/app/telemann-6-sonatas-4-6/id1129570003?uo=4",
+          "seller": "masafumi sasaki",
+          "category": "Music"
+        },
+        {
+          "name": "Flesh Orchestra",
+          "url": "https://apps.apple.com/us/app/flesh-orchestra/id6596767828?uo=4",
+          "seller": "LA JETEE SRL",
+          "category": "Music"
+        },
+        {
+          "name": "The Four Seasons",
+          "url": "https://apps.apple.com/us/app/the-four-seasons/id1633506339?uo=4",
+          "seller": "L'INSIEME",
+          "category": "Music"
+        },
+        {
+          "name": "Sonatique",
+          "url": "https://apps.apple.com/us/app/sonatique/id6761077749?uo=4",
+          "seller": "Relevat Digital Korlatolt Felelossegu Tarsasag",
+          "category": "Music"
+        },
+        {
+          "name": "Hopeful Music",
+          "url": "https://apps.apple.com/us/app/hopeful-music/id6473077259?uo=4",
+          "seller": "Anazer srl",
+          "category": "Music"
+        },
+        {
+          "name": "Pianoprofi",
+          "url": "https://apps.apple.com/us/app/pianoprofi/id1037779473?uo=4",
+          "seller": "barnsystem GmbH",
+          "category": "Education"
+        },
+        {
+          "name": "Viniles Radio",
+          "url": "https://apps.apple.com/us/app/viniles-radio/id1548487081?uo=4",
+          "seller": "Gianni Schiuma",
+          "category": "Music"
+        },
+        {
+          "name": "EveryMusic",
+          "url": "https://apps.apple.com/us/app/everymusic/id6759969055?uo=4",
+          "seller": "nicolo cauli",
+          "category": "Music"
+        },
+        {
+          "name": "Papanotas Metronome",
+          "url": "https://apps.apple.com/us/app/papanotas-metronome/id6769524422?uo=4",
+          "seller": "Nuno Cachada",
+          "category": "Music"
+        },
+        {
+          "name": "Radio Time Dance FM",
+          "url": "https://apps.apple.com/us/app/radio-time-dance-fm/id6468953626?uo=4",
+          "seller": "Dallin Production Srl",
+          "category": "Music"
+        },
+        {
+          "name": "Sincronización Sónica",
+          "url": "https://apps.apple.com/us/app/sincronizaci%C3%B3n-s%C3%B3nica/id6763658822?uo=4",
+          "seller": "Hugo Grappin",
+          "category": "Health & Fitness"
+        },
+        {
+          "name": "Metro Ritmo - Metronome",
+          "url": "https://apps.apple.com/us/app/metro-ritmo-metronome/id6748880364?uo=4",
+          "seller": "Maurizio Salvi",
+          "category": "Music"
+        },
+        {
+          "name": "Caliel Channel",
+          "url": "https://apps.apple.com/us/app/caliel-channel/id6478631923?uo=4",
+          "seller": "Eterno Media Marketing LTDA",
+          "category": "Education"
+        },
+        {
+          "name": "SiNota Eventi Cultura e Musica",
+          "url": "https://apps.apple.com/us/app/sinota-eventi-cultura-e-musica/id6746127774?uo=4",
+          "seller": "Mediastudio Srl",
+          "category": "Utilities"
+        },
+        {
+          "name": "Radio del Cofrade",
+          "url": "https://apps.apple.com/us/app/radio-del-cofrade/id6736397989?uo=4",
+          "seller": "Yobo Lab SL",
+          "category": "Music"
+        },
+        {
+          "name": "Rachmaninoff Echoes",
+          "url": "https://apps.apple.com/us/app/rachmaninoff-echoes/id6695737527?uo=4",
+          "seller": "BLOP Space GmbH",
+          "category": "Entertainment"
+        },
+        {
+          "name": "RE Metronome",
+          "url": "https://apps.apple.com/us/app/re-metronome/id6766114302?uo=4",
+          "seller": "ANDRES MATAS BAENA",
+          "category": "Music"
+        },
+        {
+          "name": "Diatonic Chords by Key",
+          "url": "https://apps.apple.com/us/app/diatonic-chords-by-key/id1533977611?uo=4",
+          "seller": "Mateus Polonini Cardoso",
+          "category": "Music"
+        },
+        {
+          "name": "Densoon",
+          "url": "https://apps.apple.com/us/app/densoon/id6755885733?uo=4",
+          "seller": "Fabio de Nicolo",
+          "category": "Utilities"
+        },
+        {
+          "name": "Rádio Campo dos Sonhos",
+          "url": "https://apps.apple.com/us/app/r%C3%A1dio-campo-dos-sonhos/id6738743046?uo=4",
+          "seller": "Carlos Oliveira",
+          "category": "Music"
+        },
+        {
+          "name": "Improvy",
+          "url": "https://apps.apple.com/us/app/improvy/id6775236759?uo=4",
+          "seller": "Lorenzo Ballestrazzi",
+          "category": "Music"
+        },
+        {
+          "name": "Scordio",
+          "url": "https://apps.apple.com/us/app/scordio/id6757894412?uo=4",
+          "seller": "Shota Ito",
+          "category": "Music"
+        },
+        {
+          "name": "Ando - Turismo sonoro",
+          "url": "https://apps.apple.com/us/app/ando-turismo-sonoro/id6781696236?uo=4",
+          "seller": "Carlos Benito",
+          "category": "Travel"
+        },
+        {
+          "name": "RagaGuru",
+          "url": "https://apps.apple.com/us/app/ragaguru/id6812937552?uo=4",
+          "seller": "HARSHARAJ KHINCHI",
+          "category": "Education"
+        },
+        {
+          "name": "Telemann 6 Recorder Sonatas",
+          "url": "https://apps.apple.com/us/app/telemann-6-recorder-sonatas/id1196717935?uo=4",
+          "seller": "masafumi sasaki",
+          "category": "Music"
+        },
+        {
+          "name": "Con Compás: Flamenco Metronome",
+          "url": "https://apps.apple.com/us/app/con-comp%C3%A1s-flamenco-metronome/id6810988683?uo=4",
+          "seller": "Patrick Brouwer",
+          "category": "Music"
+        },
+        {
+          "name": "Compositeurs",
+          "url": "https://apps.apple.com/us/app/compositeurs/id6761656628?uo=4",
+          "seller": "Michel Garlandat",
+          "category": "Education"
+        },
+        {
+          "name": "Radio Montuno",
+          "url": "https://apps.apple.com/us/app/radio-montuno/id6762240298?uo=4",
+          "seller": "Hugo Roman",
+          "category": "Music"
+        },
+        {
+          "name": "Finger Shruti",
+          "url": "https://apps.apple.com/us/app/finger-shruti/id6804659167?uo=4",
+          "seller": "Magari Kikaku LLC.",
+          "category": "Music"
+        },
+        {
+          "name": "Telemann 6  Duets",
+          "url": "https://apps.apple.com/us/app/telemann-6-duets/id1166797849?uo=4",
+          "seller": "masafumi sasaki",
+          "category": "Music"
+        }
+      ]
+    },
+    {
+      "term": "Vocalita",
+      "country": "tr",
+      "query_url": "https://itunes.apple.com/search?term=Vocalita&country=tr&entity=software&limit=200",
+      "returned": 0,
+      "name_matches": [],
+      "results": []
+    },
+    {
+      "term": "Vocalita",
+      "country": "us",
+      "query_url": "https://itunes.apple.com/search?term=Vocalita&country=us&entity=software&limit=200",
+      "returned": 177,
+      "name_matches": [],
+      "results": [
+        {
+          "name": "Vocalista: Learn to Sing",
+          "url": "https://apps.apple.com/us/app/vocalista-learn-to-sing/id6444087548?uo=4",
+          "seller": "Julian Boehm-Tettelbach",
+          "category": "Music"
+        },
+        {
+          "name": "Vox Tools: Learn to Sing",
+          "url": "https://apps.apple.com/us/app/vox-tools-learn-to-sing/id568721281?uo=4",
+          "seller": "Carlos Campana Molinero",
+          "category": "Music"
+        },
+        {
+          "name": "Nail the Pitch - Vocal Monitor",
+          "url": "https://apps.apple.com/us/app/nail-the-pitch-vocal-monitor/id1486640549?uo=4",
+          "seller": "Qiushi Jiang",
+          "category": "Music"
+        },
+        {
+          "name": "Yokara - Sing Karaoke Record",
+          "url": "https://apps.apple.com/us/app/yokara-sing-karaoke-record/id894927596?uo=4",
+          "seller": "INMOBI INTELLIGENT MOBILE COMPANY LIMITED",
+          "category": "Entertainment"
+        },
+        {
+          "name": "Musora: The Music Lessons App",
+          "url": "https://apps.apple.com/us/app/musora-the-music-lessons-app/id1460388277?uo=4",
+          "seller": "Musora Media Inc.",
+          "category": "Education"
+        },
+        {
+          "name": "Vocal Range Finder - Sing Whiz",
+          "url": "https://apps.apple.com/us/app/vocal-range-finder-sing-whiz/id1623180736?uo=4",
+          "seller": "DHWAPER LLC",
+          "category": "Music"
+        },
+        {
+          "name": "Erol Singer's Studio",
+          "url": "https://apps.apple.com/us/app/erol-singers-studio/id502780186?uo=4",
+          "seller": "Erol Studios Inc.",
+          "category": "Education"
+        },
+        {
+          "name": "Sing bot — learn to sing",
+          "url": "https://apps.apple.com/us/app/sing-bot-learn-to-sing/id1295721027?uo=4",
+          "seller": "Vasiliy Cherkasov",
+          "category": "Education"
+        },
+        {
+          "name": "SingTrue: Learn to sing in tune, pitch perfect",
+          "url": "https://apps.apple.com/us/app/singtrue-learn-to-sing-in-tune-pitch-perfect/id914239183?uo=4",
+          "seller": "Chris Sutton",
+          "category": "Music"
+        },
+        {
+          "name": "Voice Tune - Auto Recorder",
+          "url": "https://apps.apple.com/us/app/voice-tune-auto-recorder/id1281943102?uo=4",
+          "seller": "DHWAPER LLC",
+          "category": "Music"
+        },
+        {
+          "name": "VoxGuru",
+          "url": "https://apps.apple.com/us/app/voxguru/id1299389665?uo=4",
+          "seller": "PRATIBHA MUSIC (OPC) PRIVATE LIMITED",
+          "category": "Education"
+        },
+        {
+          "name": "Vocal Pitch Monitor-Voice Whiz",
+          "url": "https://apps.apple.com/us/app/vocal-pitch-monitor-voice-whiz/id1579828873?uo=4",
+          "seller": "DHWAPER LLC",
+          "category": "Health & Fitness"
+        },
+        {
+          "name": "Vocal Range - Pitch Detector",
+          "url": "https://apps.apple.com/us/app/vocal-range-pitch-detector/id1427559596?uo=4",
+          "seller": "Boris Shestakov",
+          "category": "Education"
+        },
+        {
+          "name": "VoiSona",
+          "url": "https://apps.apple.com/us/app/voisona/id6478200421?uo=4",
+          "seller": "Techno-Speech, Inc.",
+          "category": "Music"
+        },
+        {
+          "name": "Voice Tools",
+          "url": "https://apps.apple.com/us/app/voice-tools/id1447495900?uo=4",
+          "seller": "DevExtras Ltd",
+          "category": "Medical"
+        },
+        {
+          "name": "Vocal Range",
+          "url": "https://apps.apple.com/us/app/vocal-range/id1507577334?uo=4",
+          "seller": "Igor Kamenev",
+          "category": "Entertainment"
+        },
+        {
+          "name": "Singing Lessons: Learn to Sing",
+          "url": "https://apps.apple.com/us/app/singing-lessons-learn-to-sing/id6504427417?uo=4",
+          "seller": "Henry Reyes",
+          "category": "Education"
+        },
+        {
+          "name": "Vocal Judge - The Singing & Voice Talent Evaluator",
+          "url": "https://apps.apple.com/us/app/vocal-judge-the-singing-voice-talent-evaluator/id429810184?uo=4",
+          "seller": "Tiny Mobile Inc.",
+          "category": "Entertainment"
+        },
+        {
+          "name": "Appcompanist: Vocal Training",
+          "url": "https://apps.apple.com/us/app/appcompanist-vocal-training/id1279455633?uo=4",
+          "seller": "Appcompanist, LLC",
+          "category": "Music"
+        },
+        {
+          "name": "Voice Pitch Analyzer",
+          "url": "https://apps.apple.com/us/app/voice-pitch-analyzer/id1302785788?uo=4",
+          "seller": "David Seek, LLC",
+          "category": "Lifestyle"
+        },
+        {
+          "name": "Harmony Helper",
+          "url": "https://apps.apple.com/us/app/harmony-helper/id1283704743?uo=4",
+          "seller": "Harmony Helper LLC",
+          "category": "Music"
+        },
+        {
+          "name": "Singscope",
+          "url": "https://apps.apple.com/us/app/singscope/id944309175?uo=4",
+          "seller": "Springwell Music LLC",
+          "category": "Music"
+        },
+        {
+          "name": "Singing Coach AI",
+          "url": "https://apps.apple.com/us/app/singing-coach-ai/id6752552523?uo=4",
+          "seller": "Dreamhome AI Limited",
+          "category": "Music"
+        },
+        {
+          "name": "Riyaz - Learn to Sing",
+          "url": "https://apps.apple.com/us/app/riyaz-learn-to-sing/id1341595277?uo=4",
+          "seller": "MusicMuni Labs Private Limited",
+          "category": "Education"
+        },
+        {
+          "name": "Sing Whiz - Vocal Range Test",
+          "url": "https://apps.apple.com/us/app/sing-whiz-vocal-range-test/id6478636110?uo=4",
+          "seller": "European apps solutions LTD",
+          "category": "Music"
+        },
+        {
+          "name": "Voicely: Ringtone & AI Voice",
+          "url": "https://apps.apple.com/us/app/voicely-ringtone-ai-voice/id6475240863?uo=4",
+          "seller": "Breeze Technology Co., Limited",
+          "category": "Music"
+        },
+        {
+          "name": "Ella: Sight Singing & Reading",
+          "url": "https://apps.apple.com/us/app/ella-sight-singing-reading/id1301456113?uo=4",
+          "seller": "Ensemble Education, Inc.",
+          "category": "Music"
+        },
+        {
+          "name": "EZ Voice",
+          "url": "https://apps.apple.com/us/app/ez-voice/id838975220?uo=4",
+          "seller": "IK Multimedia US, LLC",
+          "category": "Music"
+        },
+        {
+          "name": "Learn to Sing - Perfect Pitch",
+          "url": "https://apps.apple.com/us/app/learn-to-sing-perfect-pitch/id1409450884?uo=4",
+          "seller": "Learn-to-Sing Music Education & Karaoke Inc.",
+          "category": "Education"
+        },
+        {
+          "name": "Juni: Trans Voice Training",
+          "url": "https://apps.apple.com/us/app/juni-trans-voice-training/id6761792141?uo=4",
+          "seller": "Songbird Studio LLC",
+          "category": "Health & Fitness"
+        },
+        {
+          "name": "VocalTuner - Pitch Training",
+          "url": "https://apps.apple.com/us/app/vocaltuner-pitch-training/id1505735245?uo=4",
+          "seller": "Kiichi Ito",
+          "category": "Music"
+        },
+        {
+          "name": "OnPitch - Vocal Pitch Monitor",
+          "url": "https://apps.apple.com/us/app/onpitch-vocal-pitch-monitor/id1212118228?uo=4",
+          "seller": "Alena Kucharenka",
+          "category": "Music"
+        },
+        {
+          "name": "Viva - Sing",
+          "url": "https://apps.apple.com/us/app/viva-sing/id6800981232?uo=4",
+          "seller": "FOSTER LANGLEY",
+          "category": "Lifestyle"
+        },
+        {
+          "name": "Vocal Extractor -Karaoke maker",
+          "url": "https://apps.apple.com/us/app/vocal-extractor-karaoke-maker/id1438806137?uo=4",
+          "seller": "Hikaru Tsuyumine",
+          "category": "Music"
+        },
+        {
+          "name": "Vocal Remover AI Splitting",
+          "url": "https://apps.apple.com/us/app/vocal-remover-ai-splitting/id1581793547?uo=4",
+          "seller": "HEYOS YAZILIM HIZMETLERI TICARET LIMITED SIRKETI",
+          "category": "Music"
+        },
+        {
+          "name": "Parrot AI Voice Changer",
+          "url": "https://apps.apple.com/us/app/parrot-ai-voice-changer/id6742321138?uo=4",
+          "seller": "DOO CENTRAL PARK 021 NOVI SAD",
+          "category": "Music"
+        },
+        {
+          "name": "Vocal Workout: Singing lessons",
+          "url": "https://apps.apple.com/us/app/vocal-workout-singing-lessons/id1458143075?uo=4",
+          "seller": "PRIVET LIMITED LLC",
+          "category": "Music"
+        },
+        {
+          "name": "Voice Training - Learn to Sing",
+          "url": "https://apps.apple.com/us/app/voice-training-learn-to-sing/id894620096?uo=4",
+          "seller": "Learn To Master Ltd",
+          "category": "Music"
+        },
+        {
+          "name": "Vocal Pitch Monitor+",
+          "url": "https://apps.apple.com/us/app/vocal-pitch-monitor/id6755929326?uo=4",
+          "seller": "NEXTLINE YAZILIM LIMITED SIRKETI",
+          "category": "Music"
+        },
+        {
+          "name": "Pocket Voice - Talking Piano",
+          "url": "https://apps.apple.com/us/app/pocket-voice-talking-piano/id338736195?uo=4",
+          "seller": "Rambax, LLC",
+          "category": "Music"
+        },
+        {
+          "name": "Learn to sing with Vocaberry",
+          "url": "https://apps.apple.com/us/app/learn-to-sing-with-vocaberry/id1333485458?uo=4",
+          "seller": "Boris Shestakov",
+          "category": "Education"
+        },
+        {
+          "name": "Voice Lessons To The World",
+          "url": "https://apps.apple.com/us/app/voice-lessons-to-the-world/id639871012?uo=4",
+          "seller": "New York Vocal Coaching Inc.",
+          "category": "Education"
+        },
+        {
+          "name": "Boimero: Vocal Synth Studio",
+          "url": "https://apps.apple.com/us/app/boimero-vocal-synth-studio/id6737790951?uo=4",
+          "seller": "Waffle, LLC.",
+          "category": "Music"
+        },
+        {
+          "name": "VocaLive CS",
+          "url": "https://apps.apple.com/us/app/vocalive-cs/id419846636?uo=4",
+          "seller": "IK Multimedia US, LLC",
+          "category": "Music"
+        },
+        {
+          "name": "Vocal Warmups with Kathleen",
+          "url": "https://apps.apple.com/us/app/vocal-warmups-with-kathleen/id1584560633?uo=4",
+          "seller": "Kathleen Hansen",
+          "category": "Music"
+        },
+        {
+          "name": "Clony AI Voice & Face Cloning",
+          "url": "https://apps.apple.com/us/app/clony-ai-voice-face-cloning/id6445868360?uo=4",
+          "seller": "Robin Michel",
+          "category": "Entertainment"
+        },
+        {
+          "name": "Singing Carrots AI Vocal Coach",
+          "url": "https://apps.apple.com/us/app/singing-carrots-ai-vocal-coach/id6776270059?uo=4",
+          "seller": "Singing Carrots Limited",
+          "category": "Education"
+        },
+        {
+          "name": "SWIFTSCALES Vocal Trainer",
+          "url": "https://apps.apple.com/us/app/swiftscales-vocal-trainer/id1079277628?uo=4",
+          "seller": "VELDEN LLC",
+          "category": "Education"
+        },
+        {
+          "name": "BeVocal: Singing tutor, lesson",
+          "url": "https://apps.apple.com/us/app/bevocal-singing-tutor-lesson/id6744920031?uo=4",
+          "seller": "PIXELCELL PTE. LIMITED",
+          "category": "Education"
+        },
+        {
+          "name": "Sur Sadhana",
+          "url": "https://apps.apple.com/us/app/sur-sadhana/id1175702604?uo=4",
+          "seller": "Clood On Music Private Limited",
+          "category": "Education"
+        },
+        {
+          "name": "Vocal Tune: Recording Studio",
+          "url": "https://apps.apple.com/us/app/vocal-tune-recording-studio/id1641729363?uo=4",
+          "seller": "Axora IT Soft LLC",
+          "category": "Music"
+        },
+        {
+          "name": "Matt Farnsworth Vocal Studio",
+          "url": "https://apps.apple.com/us/app/matt-farnsworth-vocal-studio/id934220202?uo=4",
+          "seller": "MATT FARNSWORTH VOCAL STUDIOS, LLC",
+          "category": "Music"
+        },
+        {
+          "name": "Voice Analyst: Pitch & Volume",
+          "url": "https://apps.apple.com/us/app/voice-analyst-pitch-volume/id732245213?uo=4",
+          "seller": "Speechtools Ltd",
+          "category": "Medical"
+        },
+        {
+          "name": "ChorusClass",
+          "url": "https://apps.apple.com/us/app/chorusclass/id1120676185?uo=4",
+          "seller": "ChorusClass Sweden AB",
+          "category": "Music"
+        },
+        {
+          "name": "Howli: Learn to Sing Harmonies",
+          "url": "https://apps.apple.com/us/app/howli-learn-to-sing-harmonies/id6762453643?uo=4",
+          "seller": "CandidGO Ltd",
+          "category": "Music"
+        },
+        {
+          "name": "Voice Builder",
+          "url": "https://apps.apple.com/us/app/voice-builder/id537753638?uo=4",
+          "seller": "Gary Catona",
+          "category": "Music"
+        },
+        {
+          "name": "Voice Band",
+          "url": "https://apps.apple.com/us/app/voice-band/id347859797?uo=4",
+          "seller": "WaveMachine Labs, Inc.",
+          "category": "Music"
+        },
+        {
+          "name": "goodtags",
+          "url": "https://apps.apple.com/us/app/goodtags/id1452432517?uo=4",
+          "seller": "Kenji Matsuoka",
+          "category": "Music"
+        },
+        {
+          "name": "Vocular",
+          "url": "https://apps.apple.com/us/app/vocular/id1080181813?uo=4",
+          "seller": "Stuart Brown",
+          "category": "Lifestyle"
+        },
+        {
+          "name": "Mobile VOCALOID Editor",
+          "url": "https://apps.apple.com/us/app/mobile-vocaloid-editor/id947797108?uo=4",
+          "seller": "Yamaha Corporation",
+          "category": "Music"
+        },
+        {
+          "name": "Text to Speech: Voice Reader",
+          "url": "https://apps.apple.com/us/app/text-to-speech-voice-reader/id1626767582?uo=4",
+          "seller": "Joseph Works Limited",
+          "category": "Utilities"
+        },
+        {
+          "name": "Entrenador Vocal: Voz afinada",
+          "url": "https://apps.apple.com/us/app/entrenador-vocal-voz-afinada/id1469621336?uo=4",
+          "seller": "Henry Reyes",
+          "category": "Education"
+        },
+        {
+          "name": "AI Voice Generator - SEDA",
+          "url": "https://apps.apple.com/us/app/ai-voice-generator-seda/id1673140921?uo=4",
+          "seller": "Kavir AI B.V.",
+          "category": "Productivity"
+        },
+        {
+          "name": "Chorus Connection",
+          "url": "https://apps.apple.com/us/app/chorus-connection/id6764381316?uo=4",
+          "seller": "Chorus Connection Inc.",
+          "category": "Productivity"
+        },
+        {
+          "name": "voix - vocal effects",
+          "url": "https://apps.apple.com/us/app/voix-vocal-effects/id1499292536?uo=4",
+          "seller": "Coda Labs Incorporated",
+          "category": "Entertainment"
+        },
+        {
+          "name": "VocaLive",
+          "url": "https://apps.apple.com/us/app/vocalive/id410619243?uo=4",
+          "seller": "IK Multimedia US, LLC",
+          "category": "Music"
+        },
+        {
+          "name": "VocalPro: Vocal Exercises",
+          "url": "https://apps.apple.com/us/app/vocalpro-vocal-exercises/id6756432451?uo=4",
+          "seller": "Hyorok Lee",
+          "category": "Music"
+        },
+        {
+          "name": "SingTuner: Vocal Pitch Monitor",
+          "url": "https://apps.apple.com/us/app/singtuner-vocal-pitch-monitor/id6762633130?uo=4",
+          "seller": "BRANDO.PRO SIA",
+          "category": "Music"
+        },
+        {
+          "name": "Translator Women's Voice",
+          "url": "https://apps.apple.com/us/app/translator-womens-voice/id967976940?uo=4",
+          "seller": "Escolha Tecnologia LTDA - ME",
+          "category": "Entertainment"
+        },
+        {
+          "name": "Remove Vocals-vocal extractor",
+          "url": "https://apps.apple.com/us/app/remove-vocals-vocal-extractor/id1568842642?uo=4",
+          "seller": "磊 聂",
+          "category": "Music"
+        },
+        {
+          "name": "Vocal Remover for Karaoke",
+          "url": "https://apps.apple.com/us/app/vocal-remover-for-karaoke/id1393212799?uo=4",
+          "seller": "Kasidej Khunvattanakarn",
+          "category": "Music"
+        },
+        {
+          "name": "Lala: Learn to Sing",
+          "url": "https://apps.apple.com/us/app/lala-learn-to-sing/id6799151123?uo=4",
+          "seller": "Gino Swanepoel",
+          "category": "Education"
+        },
+        {
+          "name": "VocalZap",
+          "url": "https://apps.apple.com/us/app/vocalzap/id425051645?uo=4",
+          "seller": "Acoustica Inc.",
+          "category": "Music"
+        },
+        {
+          "name": "The Vocal Coach",
+          "url": "https://apps.apple.com/us/app/the-vocal-coach/id1515249256?uo=4",
+          "seller": "Annabel Williams Music Ltd",
+          "category": "Music"
+        },
+        {
+          "name": "VocalGYM: Aprender a cantar",
+          "url": "https://apps.apple.com/us/app/vocalgym-aprender-a-cantar/id6743115748?uo=4",
+          "seller": "Lautaro Pereyra",
+          "category": "Education"
+        },
+        {
+          "name": "Singing Vocal Warm Ups - Singer's Friend",
+          "url": "https://apps.apple.com/us/app/singing-vocal-warm-ups-singers-friend/id350913803?uo=4",
+          "seller": "Robert Lumpkins",
+          "category": "Music"
+        },
+        {
+          "name": "Singing Lessons",
+          "url": "https://apps.apple.com/us/app/singing-lessons/id917246794?uo=4",
+          "seller": "Inborn Voice LLC",
+          "category": "Education"
+        },
+        {
+          "name": "VocalRun: Singing Game",
+          "url": "https://apps.apple.com/us/app/vocalrun-singing-game/id6757741224?uo=4",
+          "seller": "Jonas Hiltl",
+          "category": "Music"
+        },
+        {
+          "name": "RecStar",
+          "url": "https://apps.apple.com/us/app/recstar/id6471727990?uo=4",
+          "seller": "YITONG WENG",
+          "category": "Music"
+        },
+        {
+          "name": "Pocket Singer - My OC sings！",
+          "url": "https://apps.apple.com/us/app/pocket-singer-my-oc-sings/id1665512424?uo=4",
+          "seller": "ACCIDENTAL AI PTE. LTD.",
+          "category": "Music"
+        },
+        {
+          "name": "Christella VoiceUp: MTF Voice",
+          "url": "https://apps.apple.com/us/app/christella-voiceup-mtf-voice/id1124464717?uo=4",
+          "seller": "Speechtools Ltd",
+          "category": "Health & Fitness"
+        },
+        {
+          "name": "ChoraLine",
+          "url": "https://apps.apple.com/us/app/choraline/id1436601526?uo=4",
+          "seller": "Andrew Grigg",
+          "category": "Music"
+        },
+        {
+          "name": "Sing Harmonies",
+          "url": "https://apps.apple.com/us/app/sing-harmonies/id378913608?uo=4",
+          "seller": "Susan Anders",
+          "category": "Music"
+        },
+        {
+          "name": "Ken Tamplin Vocal Academy",
+          "url": "https://apps.apple.com/us/app/ken-tamplin-vocal-academy/id6501969785?uo=4",
+          "seller": "Ken Tamplin Vocal Academy",
+          "category": "Education"
+        },
+        {
+          "name": "sacredmusic.fm",
+          "url": "https://apps.apple.com/us/app/sacredmusic-fm/id1327746565?uo=4",
+          "seller": "The Christopher Mueller Foundation for Polyphony and Chant, LLC",
+          "category": "Education"
+        },
+        {
+          "name": "Vocal Remover Lite",
+          "url": "https://apps.apple.com/us/app/vocal-remover-lite/id518520396?uo=4",
+          "seller": "KBIC International Limited",
+          "category": "Music"
+        },
+        {
+          "name": "Pitchy - Sing On Pitch",
+          "url": "https://apps.apple.com/us/app/pitchy-sing-on-pitch/id6749875369?uo=4",
+          "seller": "Jiajun Xu",
+          "category": "Music"
+        },
+        {
+          "name": "PitchHighway: Learn to Sing",
+          "url": "https://apps.apple.com/us/app/pitchhighway-learn-to-sing/id6758129342?uo=4",
+          "seller": "Gabriel Policiuc",
+          "category": "Music"
+        },
+        {
+          "name": "SingVoicer: Live Vocal Effects",
+          "url": "https://apps.apple.com/us/app/singvoicer-live-vocal-effects/id6809576763?uo=4",
+          "seller": "BRANDO.PRO SIA",
+          "category": "Music"
+        },
+        {
+          "name": "IPANow! Latin",
+          "url": "https://apps.apple.com/us/app/ipanow-latin/id490427446?uo=4",
+          "seller": "Kelly Turner",
+          "category": "Reference"
+        },
+        {
+          "name": "TransVoice.App: Voice Training",
+          "url": "https://apps.apple.com/us/app/transvoice-app-voice-training/id6755695835?uo=4",
+          "seller": "Kailar UG (haftungsbeschrankt)",
+          "category": "Health & Fitness"
+        },
+        {
+          "name": "VocaDB",
+          "url": "https://apps.apple.com/us/app/vocadb/id907510673?uo=4",
+          "seller": "Augsorn Chanklad",
+          "category": "Reference"
+        },
+        {
+          "name": "Deep Voice Training - DEEPER",
+          "url": "https://apps.apple.com/us/app/deep-voice-training-deeper/id6756211670?uo=4",
+          "seller": "Michael TOURNAUD",
+          "category": "Lifestyle"
+        },
+        {
+          "name": "Warm Me Up!",
+          "url": "https://apps.apple.com/us/app/warm-me-up/id427362797?uo=4",
+          "seller": "L.L HUNTER & V.A JACOBS & L KENDALL & D YOUNG",
+          "category": "Music"
+        },
+        {
+          "name": "Parakeet Voice Toolkit",
+          "url": "https://apps.apple.com/us/app/parakeet-voice-toolkit/id6447527699?uo=4",
+          "seller": "Chestnut Studios LLC",
+          "category": "Education"
+        },
+        {
+          "name": "Vocal Coach: Singing Lessons",
+          "url": "https://apps.apple.com/us/app/vocal-coach-singing-lessons/id6514289644?uo=4",
+          "seller": "Riafy Technologies Private Limited",
+          "category": "Lifestyle"
+        },
+        {
+          "name": "Clases de Canto By Acayo Music",
+          "url": "https://apps.apple.com/us/app/clases-de-canto-by-acayo-music/id1515008088?uo=4",
+          "seller": "Stefan Sidler",
+          "category": "Education"
+        },
+        {
+          "name": "Complete Vocal Technique Intro",
+          "url": "https://apps.apple.com/us/app/complete-vocal-technique-intro/id1221380256?uo=4",
+          "seller": "Complete Vocal Institute ApS",
+          "category": "Education"
+        },
+        {
+          "name": "VocalUp : Vocal Training Coach",
+          "url": "https://apps.apple.com/us/app/vocalup-vocal-training-coach/id6467825195?uo=4",
+          "seller": "Dodotdo, Inc",
+          "category": "Music"
+        },
+        {
+          "name": "AI Singer: Voice Clone",
+          "url": "https://apps.apple.com/us/app/ai-singer-voice-clone/id6748572998?uo=4",
+          "seller": "CurlyCorn LLC",
+          "category": "Music"
+        },
+        {
+          "name": "MusicPutty - Vocal Tune",
+          "url": "https://apps.apple.com/us/app/musicputty-vocal-tune/id6444390100?uo=4",
+          "seller": "Qiushi Jiang",
+          "category": "Music"
+        },
+        {
+          "name": "Vocal Coach Singer",
+          "url": "https://apps.apple.com/us/app/vocal-coach-singer/id6475352985?uo=4",
+          "seller": "Subtle Monsters LLC",
+          "category": "Education"
+        },
+        {
+          "name": "Praise and Harmony TV",
+          "url": "https://apps.apple.com/us/app/praise-and-harmony-tv/id1491066763?uo=4",
+          "seller": "Acappella Ministries Inc",
+          "category": "Entertainment"
+        },
+        {
+          "name": "Voice Through",
+          "url": "https://apps.apple.com/us/app/voice-through/id6738984292?uo=4",
+          "seller": "洋 李",
+          "category": "Games"
+        },
+        {
+          "name": "Voice Training & Vocal Warm Up",
+          "url": "https://apps.apple.com/us/app/voice-training-vocal-warm-up/id6752491628?uo=4",
+          "seller": "Pavel Levin",
+          "category": "Music"
+        },
+        {
+          "name": "Concert Companion",
+          "url": "https://apps.apple.com/us/app/concert-companion/id6812503973?uo=4",
+          "seller": "Daan Boertien",
+          "category": "Music"
+        },
+        {
+          "name": "Vocal Gym: Sing Better",
+          "url": "https://apps.apple.com/us/app/vocal-gym-sing-better/id6747166548?uo=4",
+          "seller": "Selah Records LLC",
+          "category": "Education"
+        },
+        {
+          "name": "Crescendo Voice",
+          "url": "https://apps.apple.com/us/app/crescendo-voice/id1568560313?uo=4",
+          "seller": "Giant Octopus, LLC",
+          "category": "Music"
+        },
+        {
+          "name": "VoClone: AI Voice Changer",
+          "url": "https://apps.apple.com/us/app/voclone-ai-voice-changer/id6755109022?uo=4",
+          "seller": "MOBOVER DIJITAL HIZMETLER ANONIM SIRKETI",
+          "category": "Music"
+        },
+        {
+          "name": "Kanto: Sing karaoke music",
+          "url": "https://apps.apple.com/us/app/kanto-sing-karaoke-music/id828427930?uo=4",
+          "seller": "Karaoke Smart SAC",
+          "category": "Entertainment"
+        },
+        {
+          "name": "Melody Singing Coach",
+          "url": "https://apps.apple.com/us/app/melody-singing-coach/id6755720516?uo=4",
+          "seller": "Sirius Music Communications GmbH",
+          "category": "Music"
+        },
+        {
+          "name": "Genderfluent: voice training",
+          "url": "https://apps.apple.com/us/app/genderfluent-voice-training/id6751425517?uo=4",
+          "seller": "Murphy Labs, LLC",
+          "category": "Education"
+        },
+        {
+          "name": "Opera: Requiem",
+          "url": "https://apps.apple.com/us/app/opera-requiem/id335851759?uo=4",
+          "seller": "Appcube Ltd Mobile",
+          "category": "Book"
+        },
+        {
+          "name": "Complete Vocal Technique",
+          "url": "https://apps.apple.com/us/app/complete-vocal-technique/id1217857017?uo=4",
+          "seller": "Complete Vocal Institute ApS",
+          "category": "Education"
+        },
+        {
+          "name": "Perfectly Tuned",
+          "url": "https://apps.apple.com/us/app/perfectly-tuned/id6733219527?uo=4",
+          "seller": "Alejandro Jimenez",
+          "category": "Games"
+        },
+        {
+          "name": "DictionBuddy",
+          "url": "https://apps.apple.com/us/app/dictionbuddy/id1464882253?uo=4",
+          "seller": "DictionBuddy LLC",
+          "category": "Education"
+        },
+        {
+          "name": "Labs AI : Text to Speech",
+          "url": "https://apps.apple.com/us/app/labs-ai-text-to-speech/id6741198402?uo=4",
+          "seller": "Sedona Tech Belgium SRL",
+          "category": "Entertainment"
+        },
+        {
+          "name": "Liz Caplan Vocal Coach",
+          "url": "https://apps.apple.com/us/app/liz-caplan-vocal-coach/id1328550092?uo=4",
+          "seller": "Liz Caplan Vocal Studios, LLC",
+          "category": "Music"
+        },
+        {
+          "name": "PitchPop: Sing in Tune",
+          "url": "https://apps.apple.com/us/app/pitchpop-sing-in-tune/id6801956244?uo=4",
+          "seller": "哲 刘",
+          "category": "Music"
+        },
+        {
+          "name": "Perfect Pitch Pipe SWIFTSCALES",
+          "url": "https://apps.apple.com/us/app/perfect-pitch-pipe-swiftscales/id1163973615?uo=4",
+          "seller": "VELDEN LLC",
+          "category": "Education"
+        },
+        {
+          "name": "Vocal Pitch Monitor",
+          "url": "https://apps.apple.com/us/app/vocal-pitch-monitor/id842218231?uo=4",
+          "seller": "Tadao Yamaoka",
+          "category": "Music"
+        },
+        {
+          "name": "Activate Your Voice",
+          "url": "https://apps.apple.com/us/app/activate-your-voice/id703201018?uo=4",
+          "seller": "Elaine Clark",
+          "category": "Business"
+        },
+        {
+          "name": "Voice Teacher - Sing in tune",
+          "url": "https://apps.apple.com/us/app/voice-teacher-sing-in-tune/id1387165550?uo=4",
+          "seller": "Yannis RICHARD",
+          "category": "Education"
+        },
+        {
+          "name": "Inborn Voice",
+          "url": "https://apps.apple.com/us/app/inborn-voice/id971744019?uo=4",
+          "seller": "Inborn Voice LLC",
+          "category": "Education"
+        },
+        {
+          "name": "MyTone - Singing & Vocal Coach",
+          "url": "https://apps.apple.com/us/app/mytone-singing-vocal-coach/id6743761697?uo=4",
+          "seller": "Pradeep Chandrasekar",
+          "category": "Music"
+        },
+        {
+          "name": "Voice Games",
+          "url": "https://apps.apple.com/us/app/voice-games/id6499132824?uo=4",
+          "seller": "DevExtras Ltd",
+          "category": "Medical"
+        },
+        {
+          "name": "Rate My Singing",
+          "url": "https://apps.apple.com/us/app/rate-my-singing/id6809666043?uo=4",
+          "seller": "Bhuwan Shrestha",
+          "category": "Music"
+        },
+        {
+          "name": "Leigh McRae Vocal Mastery",
+          "url": "https://apps.apple.com/us/app/leigh-mcrae-vocal-mastery/id499179818?uo=4",
+          "seller": "McRae Music Pty Ltd",
+          "category": "Music"
+        },
+        {
+          "name": "Harmonium - Official App",
+          "url": "https://apps.apple.com/us/app/harmonium-official-app/id6748640384?uo=4",
+          "seller": "Consonance",
+          "category": "Music"
+        },
+        {
+          "name": "VoiceFun - Voice Generator",
+          "url": "https://apps.apple.com/us/app/voicefun-voice-generator/id6461690849?uo=4",
+          "seller": "AIByte Limited",
+          "category": "Music"
+        },
+        {
+          "name": "Utah COPA",
+          "url": "https://apps.apple.com/us/app/utah-copa/id1529934718?uo=4",
+          "seller": "Robbins Music Theatre Academy, LLC",
+          "category": "Education"
+        },
+        {
+          "name": "Vocal Soloist AUv3 Plugin",
+          "url": "https://apps.apple.com/us/app/vocal-soloist-auv3-plugin/id1466786161?uo=4",
+          "seller": "Limelight Software",
+          "category": "Music"
+        },
+        {
+          "name": "THROGA",
+          "url": "https://apps.apple.com/us/app/throga/id1099510865?uo=4",
+          "seller": "Richard Fink IV",
+          "category": "Education"
+        },
+        {
+          "name": "Opera: Carmina Burana",
+          "url": "https://apps.apple.com/us/app/opera-carmina-burana/id335848382?uo=4",
+          "seller": "Appcube Ltd Mobile",
+          "category": "Book"
+        },
+        {
+          "name": "Tanpura Studio",
+          "url": "https://apps.apple.com/us/app/tanpura-studio/id1128683323?uo=4",
+          "seller": "Aman Kalyan",
+          "category": "Music"
+        },
+        {
+          "name": "Songy: AI Voice & Music Cover",
+          "url": "https://apps.apple.com/us/app/songy-ai-voice-music-cover/id6474932697?uo=4",
+          "seller": "Aliona Grigorieva",
+          "category": "Music"
+        },
+        {
+          "name": "Vocal Trainer Pitch - Range",
+          "url": "https://apps.apple.com/us/app/vocal-trainer-pitch-range/id6760511794?uo=4",
+          "seller": "Karol Jaworski",
+          "category": "Music"
+        },
+        {
+          "name": "Vocal Training",
+          "url": "https://apps.apple.com/us/app/vocal-training/id6789551154?uo=4",
+          "seller": "Сергеи Анисимов",
+          "category": "Music"
+        },
+        {
+          "name": "VOIS - AI Vocal Coach",
+          "url": "https://apps.apple.com/us/app/vois-ai-vocal-coach/id6450704764?uo=4",
+          "seller": "VOIS, CJSC",
+          "category": "Education"
+        },
+        {
+          "name": "Solfeggio",
+          "url": "https://apps.apple.com/us/app/solfeggio/id1009678914?uo=4",
+          "seller": "海 林",
+          "category": "Music"
+        },
+        {
+          "name": "Rate My Voice",
+          "url": "https://apps.apple.com/us/app/rate-my-voice/id1445541861?uo=4",
+          "seller": "DevExtras Ltd",
+          "category": "Lifestyle"
+        },
+        {
+          "name": "VocalEase 4 U",
+          "url": "https://apps.apple.com/us/app/vocalease-4-u/id1053564288?uo=4",
+          "seller": "Arnold Mcculler",
+          "category": "Music"
+        },
+        {
+          "name": "Vocal Tech",
+          "url": "https://apps.apple.com/us/app/vocal-tech/id615350694?uo=4",
+          "seller": "Jeremy Hunt",
+          "category": "Education"
+        },
+        {
+          "name": "Padhanisa: Learn to Sing Songs",
+          "url": "https://apps.apple.com/us/app/padhanisa-learn-to-sing-songs/id6477534907?uo=4",
+          "seller": "Saregama India Limited",
+          "category": "Education"
+        },
+        {
+          "name": "Opera Music Classical Songs",
+          "url": "https://apps.apple.com/us/app/opera-music-classical-songs/id1231298428?uo=4",
+          "seller": "Yonatan Roman",
+          "category": "Music"
+        },
+        {
+          "name": "Simple Pitch",
+          "url": "https://apps.apple.com/us/app/simple-pitch/id1464479016?uo=4",
+          "seller": "Grace Avery",
+          "category": "Music"
+        },
+        {
+          "name": "Singing Straw Studio",
+          "url": "https://apps.apple.com/us/app/singing-straw-studio/id6743140749?uo=4",
+          "seller": "Singing Straw LLC",
+          "category": "Entertainment"
+        },
+        {
+          "name": "IPANow! Italian",
+          "url": "https://apps.apple.com/us/app/ipanow-italian/id490428333?uo=4",
+          "seller": "Kelly Turner",
+          "category": "Reference"
+        },
+        {
+          "name": "Tonelo - Learn to Sing & Train",
+          "url": "https://apps.apple.com/us/app/tonelo-learn-to-sing-train/id6760287400?uo=4",
+          "seller": "Gurcan Kirik",
+          "category": "Music"
+        },
+        {
+          "name": "Vocal Workout of The Day",
+          "url": "https://apps.apple.com/us/app/vocal-workout-of-the-day/id1474322758?uo=4",
+          "seller": "Daniel Zangger Borch",
+          "category": "Music"
+        },
+        {
+          "name": "Deep Voice: Pitch Coach",
+          "url": "https://apps.apple.com/us/app/deep-voice-pitch-coach/id6743659444?uo=4",
+          "seller": "Konstantin Vasiuk",
+          "category": "Health & Fitness"
+        },
+        {
+          "name": "Humanoid - Baby Audio",
+          "url": "https://apps.apple.com/us/app/humanoid-baby-audio/id6618145781?uo=4",
+          "seller": "Baby Audio Inc.",
+          "category": "Music"
+        },
+        {
+          "name": "Vocal Tune Studio",
+          "url": "https://apps.apple.com/us/app/vocal-tune-studio/id1664414521?uo=4",
+          "seller": "Davy Wentzler",
+          "category": "Music"
+        },
+        {
+          "name": "AI Voice Changer - Songs Maker",
+          "url": "https://apps.apple.com/us/app/ai-voice-changer-songs-maker/id6761000111?uo=4",
+          "seller": "VN-Consult doo",
+          "category": "Entertainment"
+        },
+        {
+          "name": "Voice Pitch",
+          "url": "https://apps.apple.com/us/app/voice-pitch/id6751323742?uo=4",
+          "seller": "Hiep Pham",
+          "category": "Music"
+        },
+        {
+          "name": "Time to Sing! Your Vocal Coach",
+          "url": "https://apps.apple.com/us/app/time-to-sing-your-vocal-coach/id6746382553?uo=4",
+          "seller": "Kirill Zolygin",
+          "category": "Education"
+        },
+        {
+          "name": "VoiceEvalU8",
+          "url": "https://apps.apple.com/us/app/voiceevalu8/id1127850724?uo=4",
+          "seller": "VoiceEvalU8",
+          "category": "Utilities"
+        },
+        {
+          "name": "Bloom Vocal: AI Singing Coach",
+          "url": "https://apps.apple.com/us/app/bloom-vocal-ai-singing-coach/id6796238098?uo=4",
+          "seller": "Woojin Lee",
+          "category": "Education"
+        },
+        {
+          "name": "Vocalizer",
+          "url": "https://apps.apple.com/us/app/vocalizer/id6757826523?uo=4",
+          "seller": "Unbounded Software Ltd",
+          "category": "Music"
+        },
+        {
+          "name": "Sangat: Riyaz with Harmonium",
+          "url": "https://apps.apple.com/us/app/sangat-riyaz-with-harmonium/id6818059239?uo=4",
+          "seller": "Sudheer Singh",
+          "category": "Music"
+        },
+        {
+          "name": "Vocaly: Smart Vocal Training",
+          "url": "https://apps.apple.com/us/app/vocaly-smart-vocal-training/id1522458212?uo=4",
+          "seller": "Vocaly Pro Sp. z o.o.",
+          "category": "Music"
+        },
+        {
+          "name": "canta: learn to sing in tune",
+          "url": "https://apps.apple.com/us/app/canta-learn-to-sing-in-tune/id6799558463?uo=4",
+          "seller": "PDEVELOP Limited Liability Company",
+          "category": "Education"
+        },
+        {
+          "name": "Vocal Gauge: Range Transposer",
+          "url": "https://apps.apple.com/us/app/vocal-gauge-range-transposer/id1624908530?uo=4",
+          "seller": "Pirone Entertainment, LLC",
+          "category": "Music"
+        },
+        {
+          "name": "Tanpura Sadhak",
+          "url": "https://apps.apple.com/us/app/tanpura-sadhak/id1489916732?uo=4",
+          "seller": "Asterbyte Software Systems Private Limited",
+          "category": "Music"
+        },
+        {
+          "name": "Vocalise - Smart Singing",
+          "url": "https://apps.apple.com/us/app/vocalise-smart-singing/id6468425084?uo=4",
+          "seller": "EVONS Creative Voice Solutions AB",
+          "category": "Music"
+        },
+        {
+          "name": "7 Minute Vocal Warm Up",
+          "url": "https://apps.apple.com/us/app/7-minute-vocal-warm-up/id1255708054?uo=4",
+          "seller": "Daniel William",
+          "category": "Music"
+        },
+        {
+          "name": "Pitch Perfect Music",
+          "url": "https://apps.apple.com/us/app/pitch-perfect-music/id6749835266?uo=4",
+          "seller": "Srivatsava Gunturi",
+          "category": "Music"
+        },
+        {
+          "name": "Stay Tuned AI",
+          "url": "https://apps.apple.com/us/app/stay-tuned-ai/id6778098896?uo=4",
+          "seller": "Kishan Sripada",
+          "category": "Music"
+        },
+        {
+          "name": "Note Hitter Voice Lite",
+          "url": "https://apps.apple.com/us/app/note-hitter-voice-lite/id605792537?uo=4",
+          "seller": "Richard Williams",
+          "category": "Education"
+        },
+        {
+          "name": "Voice Versa: AI Voice Cloning",
+          "url": "https://apps.apple.com/us/app/voice-versa-ai-voice-cloning/id6458145709?uo=4",
+          "seller": "Tufan Ocak",
+          "category": "Productivity"
+        },
+        {
+          "name": "Recite - Beautify Your Voice",
+          "url": "https://apps.apple.com/us/app/recite-beautify-your-voice/id6683306349?uo=4",
+          "seller": "Recite LLC",
+          "category": "Book"
+        },
+        {
+          "name": "Echo: AI Voice Changer & Twin",
+          "url": "https://apps.apple.com/us/app/echo-ai-voice-changer-twin/id1643418431?uo=4",
+          "seller": "TANOS YAZILIM VE BILISIM HIZMETLERI SANAYI VE TICARET LIMITED SIRKETI",
+          "category": "Entertainment"
+        },
+        {
+          "name": "Vocal Exercises",
+          "url": "https://apps.apple.com/us/app/vocal-exercises/id421964951?uo=4",
+          "seller": "Patrick Kelly",
+          "category": "Music"
+        },
+        {
+          "name": "Singr: Ranked Singing",
+          "url": "https://apps.apple.com/us/app/singr-ranked-singing/id6763688182?uo=4",
+          "seller": "Zuma Partners LLC",
+          "category": "Music"
+        },
+        {
+          "name": "Chantlings",
+          "url": "https://apps.apple.com/us/app/chantlings/id1560632579?uo=4",
+          "seller": "IORAMA AB",
+          "category": "Music"
+        },
+        {
+          "name": "PitchMonitor - Vocal Visual",
+          "url": "https://apps.apple.com/us/app/pitchmonitor-vocal-visual/id6751228637?uo=4",
+          "seller": "Weijyun Jhou",
+          "category": "Music"
+        },
+        {
+          "name": "Canciones de Cuna en Español",
+          "url": "https://apps.apple.com/us/app/canciones-de-cuna-en-espa%C3%B1ol/id767755110?uo=4",
+          "seller": "Creative Experiences - Lisbon Labs - Solucoes Mult",
+          "category": "Music"
+        }
+      ]
+    },
+    {
+      "term": "Appoggio",
+      "country": "tr",
+      "query_url": "https://itunes.apple.com/search?term=Appoggio&country=tr&entity=software&limit=200",
+      "returned": 0,
+      "name_matches": [],
+      "results": []
+    },
+    {
+      "term": "Appoggio",
+      "country": "us",
+      "query_url": "https://itunes.apple.com/search?term=Appoggio&country=us&entity=software&limit=200",
+      "returned": 109,
+      "name_matches": [],
+      "results": [
+        {
+          "name": "Exame",
+          "url": "https://apps.apple.com/us/app/exame/id406204105?uo=4",
+          "seller": "EDITORA E COMERCIO VALONGO LTDA",
+          "category": "News"
+        },
+        {
+          "name": "GialloZafferano: le Ricette",
+          "url": "https://apps.apple.com/us/app/giallozafferano-le-ricette/id384387249?uo=4",
+          "seller": "Mondadori Digital SPA",
+          "category": "Food & Drink"
+        },
+        {
+          "name": "Opera del Duomo di Orvieto",
+          "url": "https://apps.apple.com/us/app/opera-del-duomo-di-orvieto/id6739359748?uo=4",
+          "seller": "OPERA DEL DUOMO DI ORVIETO FABBRICERIA",
+          "category": "Education"
+        },
+        {
+          "name": "ilRosario",
+          "url": "https://apps.apple.com/us/app/ilrosario/id416791472?uo=4",
+          "seller": "Carlo Di Benedetto",
+          "category": "Education"
+        },
+        {
+          "name": "Biaggi's Ordering",
+          "url": "https://apps.apple.com/us/app/biaggis-ordering/id1439463033?uo=4",
+          "seller": "Biaggi's Ristorante Italiano, L.L.C.",
+          "category": "Food & Drink"
+        },
+        {
+          "name": "yoU@B",
+          "url": "https://apps.apple.com/us/app/you-b/id1131224997?uo=4",
+          "seller": "UNIVERSITA COMMERCIALE LUIGI BOCCONI",
+          "category": "Education"
+        },
+        {
+          "name": "QrDelivery",
+          "url": "https://apps.apple.com/us/app/qrdelivery/id885830237?uo=4",
+          "seller": "AXYLOG SRL SEMPLIFICATA",
+          "category": "Productivity"
+        },
+        {
+          "name": "Tiro A Segno",
+          "url": "https://apps.apple.com/us/app/tiro-a-segno/id1235718428?uo=4",
+          "seller": "TIRO A SEGNO OF NEW YORK INC",
+          "category": "Lifestyle"
+        },
+        {
+          "name": "Giro Lago",
+          "url": "https://apps.apple.com/us/app/giro-lago/id900477432?uo=4",
+          "seller": "TEA WEB SAS DI TOMASO EVOLVI & C.",
+          "category": "Travel"
+        },
+        {
+          "name": "Three-Cards Monte",
+          "url": "https://apps.apple.com/us/app/three-cards-monte/id650616743?uo=4",
+          "seller": "Angelo Capone",
+          "category": "Games"
+        },
+        {
+          "name": "City Up Perugia",
+          "url": "https://apps.apple.com/us/app/city-up-perugia/id668210096?uo=4",
+          "seller": "Massimiliano Maccabei",
+          "category": "Lifestyle"
+        },
+        {
+          "name": "Giochi per bambini : imparare a leggere",
+          "url": "https://apps.apple.com/us/app/giochi-per-bambini-imparare-a-leggere/id1083166833?uo=4",
+          "seller": "Blue Compass BVBA",
+          "category": "Education"
+        },
+        {
+          "name": "Buonconsiglio",
+          "url": "https://apps.apple.com/us/app/buonconsiglio/id6755602131?uo=4",
+          "seller": "LARIN SRL SEMPLIFICATA",
+          "category": "Education"
+        },
+        {
+          "name": "Palazzina di caccia Stupinigi",
+          "url": "https://apps.apple.com/us/app/palazzina-di-caccia-stupinigi/id1516814909?uo=4",
+          "seller": "D'Uva Workshop S.r.l.",
+          "category": "Education"
+        },
+        {
+          "name": "il mio primo libro",
+          "url": "https://apps.apple.com/us/app/il-mio-primo-libro/id438903788?uo=4",
+          "seller": "Rafat Zohra",
+          "category": "Book"
+        },
+        {
+          "name": "App Romanista",
+          "url": "https://apps.apple.com/us/app/app-romanista/id1664521886?uo=4",
+          "seller": "Globo Records s.r.l.",
+          "category": "Sports"
+        },
+        {
+          "name": "Andy Pizza",
+          "url": "https://apps.apple.com/us/app/andy-pizza/id1619989176?uo=4",
+          "seller": "Andrea Perini",
+          "category": "Food & Drink"
+        },
+        {
+          "name": "Famiglia Cristiana Edicola",
+          "url": "https://apps.apple.com/us/app/famiglia-cristiana-edicola/id474437383?uo=4",
+          "seller": "Editoriale San Paolo S.r.l.",
+          "category": "News"
+        },
+        {
+          "name": "Chicco BebèCare",
+          "url": "https://apps.apple.com/us/app/chicco-beb%C3%A8care/id1424256979?uo=4",
+          "seller": "Artsana S.p.A.",
+          "category": "Health & Fitness"
+        },
+        {
+          "name": "Edizioni Curci Digital",
+          "url": "https://apps.apple.com/us/app/edizioni-curci-digital/id1516597107?uo=4",
+          "seller": "Edizioni Curci S.r.l.",
+          "category": "Book"
+        },
+        {
+          "name": "Veneto24",
+          "url": "https://apps.apple.com/us/app/veneto24/id6461416386?uo=4",
+          "seller": "GIVE EMOTIONS S.R.L.",
+          "category": "Music"
+        },
+        {
+          "name": "Abruzzo",
+          "url": "https://apps.apple.com/us/app/abruzzo/id657369641?uo=4",
+          "seller": "Marco Giraudo",
+          "category": "Travel"
+        },
+        {
+          "name": "La Bibbia: Vangelo del Giorno",
+          "url": "https://apps.apple.com/us/app/la-bibbia-vangelo-del-giorno/id6808133283?uo=4",
+          "seller": "cesare d'adamo",
+          "category": "Reference"
+        },
+        {
+          "name": "iSanGennaro",
+          "url": "https://apps.apple.com/us/app/isangennaro/id375841747?uo=4",
+          "seller": "Dario Cervo",
+          "category": "Entertainment"
+        },
+        {
+          "name": "Cammino di San Cristoforo",
+          "url": "https://apps.apple.com/us/app/cammino-di-san-cristoforo/id1488312802?uo=4",
+          "seller": "Itineraria S.r.l.",
+          "category": "Travel"
+        },
+        {
+          "name": "RideUp",
+          "url": "https://apps.apple.com/us/app/rideup/id819234285?uo=4",
+          "seller": "N.I.D.O. SpA",
+          "category": "Sports"
+        },
+        {
+          "name": "TuttoBici",
+          "url": "https://apps.apple.com/us/app/tuttobici/id455233479?uo=4",
+          "seller": "Prima Pagina Edizioni Srl",
+          "category": "Sports"
+        },
+        {
+          "name": "HopeMedia Italia",
+          "url": "https://apps.apple.com/us/app/hopemedia-italia/id1534876620?uo=4",
+          "seller": "Unione Italiana delle Chiese Cristiane Avventiste del Settimo Giorno",
+          "category": "News"
+        },
+        {
+          "name": "Stresa e Baveno",
+          "url": "https://apps.apple.com/us/app/stresa-e-baveno/id1578238956?uo=4",
+          "seller": "Comune di Baveno",
+          "category": "Travel"
+        },
+        {
+          "name": "Gazzetta d'Alba",
+          "url": "https://apps.apple.com/us/app/gazzetta-dalba/id791502997?uo=4",
+          "seller": "Editoriale San Paolo S.r.l.",
+          "category": "News"
+        },
+        {
+          "name": "La Voce di Ferrara-Comacchio",
+          "url": "https://apps.apple.com/us/app/la-voce-di-ferrara-comacchio/id698164342?uo=4",
+          "seller": "OPERA ARCHIDIOCESANA DELLA PRESERVAZIONE DELLA FEDE E DELLA RELIGIONE",
+          "category": "Magazines & Newspapers"
+        },
+        {
+          "name": "Ri-Scatta",
+          "url": "https://apps.apple.com/us/app/ri-scatta/id1462447469?uo=4",
+          "seller": "eBest IOT Inc",
+          "category": "Utilities"
+        },
+        {
+          "name": "MontepulcianoAPP",
+          "url": "https://apps.apple.com/us/app/montepulcianoapp/id1377572765?uo=4",
+          "seller": "Comune di Montepulciano",
+          "category": "Travel"
+        },
+        {
+          "name": "Bibbia italiano Italian Bible",
+          "url": "https://apps.apple.com/us/app/bibbia-italiano-italian-bible/id637436280?uo=4",
+          "seller": "CHI  FA WANG",
+          "category": "Food & Drink"
+        },
+        {
+          "name": "Degusta Vini",
+          "url": "https://apps.apple.com/us/app/degusta-vini/id757814904?uo=4",
+          "seller": "Giulio Mollica",
+          "category": "Food & Drink"
+        },
+        {
+          "name": "Evviva San Gennaro",
+          "url": "https://apps.apple.com/us/app/evviva-san-gennaro/id555312972?uo=4",
+          "seller": "GOAPP SRL",
+          "category": "Lifestyle"
+        },
+        {
+          "name": "L’Arena-Il giornale di Verona",
+          "url": "https://apps.apple.com/us/app/larena-il-giornale-di-verona/id382383212?uo=4",
+          "seller": "Societa Athesis S.p.A.",
+          "category": "News"
+        },
+        {
+          "name": "Fax Settimanale",
+          "url": "https://apps.apple.com/us/app/fax-settimanale/id1336541951?uo=4",
+          "seller": "Converpress s.r.l.",
+          "category": "Lifestyle"
+        },
+        {
+          "name": "TRG Live",
+          "url": "https://apps.apple.com/us/app/trg-live/id992450705?uo=4",
+          "seller": "FFZ srl",
+          "category": "News"
+        },
+        {
+          "name": "Arcobaleno",
+          "url": "https://apps.apple.com/us/app/arcobaleno/id1440273653?uo=4",
+          "seller": "CORTE DILETTO EOOD",
+          "category": "Business"
+        },
+        {
+          "name": "iGuzzini Jiminy",
+          "url": "https://apps.apple.com/us/app/iguzzini-jiminy/id1615588638?uo=4",
+          "seller": "iGuzzini illuminazione spa",
+          "category": "News"
+        },
+        {
+          "name": "Mamma Informata (versione1)",
+          "url": "https://apps.apple.com/us/app/mamma-informata-versione1/id1378553370?uo=4",
+          "seller": "Oyebola Apanisile",
+          "category": "Education"
+        },
+        {
+          "name": "SNADIR",
+          "url": "https://apps.apple.com/us/app/snadir/id1484830707?uo=4",
+          "seller": "Sergio Bonuomo",
+          "category": "Education"
+        },
+        {
+          "name": "Bando",
+          "url": "https://apps.apple.com/us/app/bando/id1452930268?uo=4",
+          "seller": "Giuseppe Caccavale",
+          "category": "Productivity"
+        },
+        {
+          "name": "Med-Ex for Generali",
+          "url": "https://apps.apple.com/us/app/med-ex-for-generali/id1474110690?uo=4",
+          "seller": "MEDEX MEDICINE & EXERCISE SRL",
+          "category": "Health & Fitness"
+        },
+        {
+          "name": "Filtriacquaitalia",
+          "url": "https://apps.apple.com/us/app/filtriacquaitalia/id1605975659?uo=4",
+          "seller": "Alberto Palestini",
+          "category": "Shopping"
+        },
+        {
+          "name": "iMercatettini",
+          "url": "https://apps.apple.com/us/app/imercatettini/id909631403?uo=4",
+          "seller": "Luca Bonacorsi",
+          "category": "Shopping"
+        },
+        {
+          "name": "Carigo goGreen",
+          "url": "https://apps.apple.com/us/app/carigo-gogreen/id1637070648?uo=4",
+          "seller": "Ikon s.r.l.",
+          "category": "Entertainment"
+        },
+        {
+          "name": "iLogg",
+          "url": "https://apps.apple.com/us/app/ilogg/id1579007486?uo=4",
+          "seller": "UNIVERSITA' DEGLI STUDI DI TRENTO",
+          "category": "Utilities"
+        },
+        {
+          "name": "Lenny App",
+          "url": "https://apps.apple.com/us/app/lenny-app/id1541125374?uo=4",
+          "seller": "Magic Srl",
+          "category": "Food & Drink"
+        },
+        {
+          "name": "Tonight: What To Do Together",
+          "url": "https://apps.apple.com/us/app/tonight-what-to-do-together/id6758625847?uo=4",
+          "seller": "Simone Ruggiero",
+          "category": "Lifestyle"
+        },
+        {
+          "name": "ONTASK!",
+          "url": "https://apps.apple.com/us/app/ontask/id1611340228?uo=4",
+          "seller": "Young Decade IT Software Solution LLP",
+          "category": "Utilities"
+        },
+        {
+          "name": "Lavoro a Chiamata",
+          "url": "https://apps.apple.com/us/app/lavoro-a-chiamata/id6670283766?uo=4",
+          "seller": "Piervito Creanza",
+          "category": "Productivity"
+        },
+        {
+          "name": "Clokki",
+          "url": "https://apps.apple.com/us/app/clokki/id1480547493?uo=4",
+          "seller": "PLUM SNC DI DOSI CRISTIAN & C.",
+          "category": "Productivity"
+        },
+        {
+          "name": "Dolivery Driver",
+          "url": "https://apps.apple.com/us/app/dolivery-driver/id1480190470?uo=4",
+          "seller": "Francesco Bevilacqua",
+          "category": "Food & Drink"
+        },
+        {
+          "name": "AlgoM2",
+          "url": "https://apps.apple.com/us/app/algom2/id1610357110?uo=4",
+          "seller": "Rixalto Group SA",
+          "category": "Lifestyle"
+        },
+        {
+          "name": "Yawa",
+          "url": "https://apps.apple.com/us/app/yawa/id6736362948?uo=4",
+          "seller": "Enablia S.p.A.",
+          "category": "Finance"
+        },
+        {
+          "name": "Play&Discover Reggio Calabria",
+          "url": "https://apps.apple.com/us/app/play-discover-reggio-calabria/id1463657022?uo=4",
+          "seller": "Rosanna Pesce",
+          "category": "Games"
+        },
+        {
+          "name": "CoordinatoreApp",
+          "url": "https://apps.apple.com/us/app/coordinatoreapp/id6474447999?uo=4",
+          "seller": "SABANET SRL",
+          "category": "Productivity"
+        },
+        {
+          "name": "Corsivo Italiano: ABC bambini",
+          "url": "https://apps.apple.com/us/app/corsivo-italiano-abc-bambini/id6815169516?uo=4",
+          "seller": "druidori s.r.o.",
+          "category": "Education"
+        },
+        {
+          "name": "Russo Store Shop",
+          "url": "https://apps.apple.com/us/app/russo-store-shop/id6443895183?uo=4",
+          "seller": "Joia Software Solutions Srl",
+          "category": "Productivity"
+        },
+        {
+          "name": "ViviBusso",
+          "url": "https://apps.apple.com/us/app/vivibusso/id1580054903?uo=4",
+          "seller": "Pierfrancesco Frezza",
+          "category": "Travel"
+        },
+        {
+          "name": "OPS Ordine TSRM PSTRP NAAVBNCE",
+          "url": "https://apps.apple.com/us/app/ops-ordine-tsrm-pstrp-naavbnce/id6747707771?uo=4",
+          "seller": "Bluenet srl",
+          "category": "Medical"
+        },
+        {
+          "name": "A.N.CO.T.",
+          "url": "https://apps.apple.com/us/app/a-n-co-t/id6745273721?uo=4",
+          "seller": "A.N.CO.T. Associazione Nazionale Consulenti Tributari",
+          "category": "Productivity"
+        },
+        {
+          "name": "Rispondo IO",
+          "url": "https://apps.apple.com/us/app/rispondo-io/id6503631019?uo=4",
+          "seller": "Edicolina srl",
+          "category": "Utilities"
+        },
+        {
+          "name": "Cesena  Segnala",
+          "url": "https://apps.apple.com/us/app/cesena-segnala/id1514598248?uo=4",
+          "seller": "Semenda srl",
+          "category": "Utilities"
+        },
+        {
+          "name": "Moma Torino",
+          "url": "https://apps.apple.com/us/app/moma-torino/id1609634929?uo=4",
+          "seller": "MOMA SRL",
+          "category": "Food & Drink"
+        },
+        {
+          "name": "Wora Agent",
+          "url": "https://apps.apple.com/us/app/wora-agent/id1544249882?uo=4",
+          "seller": "Wora Srl",
+          "category": "Business"
+        },
+        {
+          "name": "Peschef",
+          "url": "https://apps.apple.com/us/app/peschef/id6477377418?uo=4",
+          "seller": "Forza 4 Srls",
+          "category": "Food & Drink"
+        },
+        {
+          "name": "Cerchi",
+          "url": "https://apps.apple.com/us/app/cerchi/id6755742984?uo=4",
+          "seller": "Alessandro Formaggi",
+          "category": "Utilities"
+        },
+        {
+          "name": "puntochiave",
+          "url": "https://apps.apple.com/us/app/puntochiave/id6741158059?uo=4",
+          "seller": "Rosanna Minervini",
+          "category": "Utilities"
+        },
+        {
+          "name": "Sportellino",
+          "url": "https://apps.apple.com/us/app/sportellino/id6779574814?uo=4",
+          "seller": "holi collective gmbh",
+          "category": "Reference"
+        },
+        {
+          "name": "Conoscere e Curare il Cuore",
+          "url": "https://apps.apple.com/us/app/conoscere-e-curare-il-cuore/id6476921002?uo=4",
+          "seller": "Roma Web Service S.r.l.",
+          "category": "Utilities"
+        },
+        {
+          "name": "Civile",
+          "url": "https://apps.apple.com/us/app/civile/id309585531?uo=4",
+          "seller": "Appcube Ltd Mobile",
+          "category": "Reference"
+        },
+        {
+          "name": "Madoo Italian Cafe",
+          "url": "https://apps.apple.com/us/app/madoo-italian-cafe/id6479184893?uo=4",
+          "seller": "Ami Food & Beverage LTD",
+          "category": "Food & Drink"
+        },
+        {
+          "name": "Clock Badge",
+          "url": "https://apps.apple.com/us/app/clock-badge/id6478119549?uo=4",
+          "seller": "Tecnoconference",
+          "category": "Utilities"
+        },
+        {
+          "name": "Maison Mètropole",
+          "url": "https://apps.apple.com/us/app/maison-m%C3%A8tropole/id6670389288?uo=4",
+          "seller": "Solutions Plus srl",
+          "category": "Travel"
+        },
+        {
+          "name": "Change in Cardiology",
+          "url": "https://apps.apple.com/us/app/change-in-cardiology/id6748299437?uo=4",
+          "seller": "Tecnoconference",
+          "category": "Medical"
+        },
+        {
+          "name": "SINC - Esanatoglia",
+          "url": "https://apps.apple.com/us/app/sinc-esanatoglia/id6755780132?uo=4",
+          "seller": "AppLoad Srl",
+          "category": "News"
+        },
+        {
+          "name": "Ciao Oman",
+          "url": "https://apps.apple.com/us/app/ciao-oman/id6817413813?uo=4",
+          "seller": "CAFFE' RAGNO DI VEGGIANI MARCELLO & C. SAS",
+          "category": "Travel"
+        },
+        {
+          "name": "P&C Fonte Nuova",
+          "url": "https://apps.apple.com/us/app/p-c-fonte-nuova/id6749274662?uo=4",
+          "seller": "GIUSEPPE PARMATO",
+          "category": "Education"
+        },
+        {
+          "name": "STRADA: Serate e percorsi",
+          "url": "https://apps.apple.com/us/app/strada-serate-e-percorsi/id6797076677?uo=4",
+          "seller": "FEDERICO BORCHIA",
+          "category": "Entertainment"
+        },
+        {
+          "name": "DelixGo Partner",
+          "url": "https://apps.apple.com/us/app/delixgo-partner/id6759236211?uo=4",
+          "seller": "AB COMMUNICATION SRLS",
+          "category": "Food & Drink"
+        },
+        {
+          "name": "Quisvapo",
+          "url": "https://apps.apple.com/us/app/quisvapo/id6770514334?uo=4",
+          "seller": "Benedetto Caruso",
+          "category": "Health & Fitness"
+        },
+        {
+          "name": "amoruso traslochi",
+          "url": "https://apps.apple.com/us/app/amoruso-traslochi/id6769764572?uo=4",
+          "seller": "Rosanna Minervini",
+          "category": "Entertainment"
+        },
+        {
+          "name": "Campus Imperia",
+          "url": "https://apps.apple.com/us/app/campus-imperia/id6755237807?uo=4",
+          "seller": "CENTRO STAMPA OFFSET DI AMADEO CLAUDIA & CO. SAS",
+          "category": "Education"
+        },
+        {
+          "name": "SINC - Magliano di Tenna",
+          "url": "https://apps.apple.com/us/app/sinc-magliano-di-tenna/id6755780884?uo=4",
+          "seller": "AppLoad Srl",
+          "category": "News"
+        },
+        {
+          "name": "Vigilia Residential",
+          "url": "https://apps.apple.com/us/app/vigilia-residential/id6814678203?uo=4",
+          "seller": "Luigi Lizcano Leon",
+          "category": "Utilities"
+        },
+        {
+          "name": "APPUNTO Studio",
+          "url": "https://apps.apple.com/us/app/appunto-studio/id6739716638?uo=4",
+          "seller": "APPUNTO SOCIETA' TRA AVVOCATI A RESPONSABILITA' LIMITATA",
+          "category": "Business"
+        },
+        {
+          "name": "Terre di Eolo",
+          "url": "https://apps.apple.com/us/app/terre-di-eolo/id6711331957?uo=4",
+          "seller": "Gabriele Tumeo",
+          "category": "Travel"
+        },
+        {
+          "name": "borghivirtuali",
+          "url": "https://apps.apple.com/us/app/borghivirtuali/id6744737919?uo=4",
+          "seller": "empix multimedia srl",
+          "category": "Graphics & Design"
+        },
+        {
+          "name": "Enjoy Orma Tour",
+          "url": "https://apps.apple.com/us/app/enjoy-orma-tour/id6711331975?uo=4",
+          "seller": "Gabriele Tumeo",
+          "category": "Travel"
+        },
+        {
+          "name": "castello di muggia",
+          "url": "https://apps.apple.com/us/app/castello-di-muggia/id6781556060?uo=4",
+          "seller": "xiaochuan Ge",
+          "category": "Travel"
+        },
+        {
+          "name": "Consegna Sicura",
+          "url": "https://apps.apple.com/us/app/consegna-sicura/id6759153975?uo=4",
+          "seller": "RuneLab s.r.l",
+          "category": "Utilities"
+        },
+        {
+          "name": "ViviMaccla",
+          "url": "https://apps.apple.com/us/app/vivimaccla/id6819601315?uo=4",
+          "seller": "Adolfo Colagiovanni",
+          "category": "Travel"
+        },
+        {
+          "name": "Pegasus Welfare",
+          "url": "https://apps.apple.com/us/app/pegasus-welfare/id6557069277?uo=4",
+          "seller": "Alfanet srl",
+          "category": "Productivity"
+        },
+        {
+          "name": "Arno Energia",
+          "url": "https://apps.apple.com/us/app/arno-energia/id6752025428?uo=4",
+          "seller": "BOOSTAR SRL SEMPLIFICATA",
+          "category": "Productivity"
+        },
+        {
+          "name": "OkBadanti",
+          "url": "https://apps.apple.com/us/app/okbadanti/id6762742705?uo=4",
+          "seller": "Carlo Dalla Quercia",
+          "category": "Business"
+        },
+        {
+          "name": "QuickLevel",
+          "url": "https://apps.apple.com/us/app/quicklevel/id6759212100?uo=4",
+          "seller": "Cristiano Fenzi",
+          "category": "Utilities"
+        },
+        {
+          "name": "RenA: Planimetrie e Render 3D",
+          "url": "https://apps.apple.com/us/app/rena-planimetrie-e-render-3d/id6812114607?uo=4",
+          "seller": "QVADIS SRL",
+          "category": "Business"
+        },
+        {
+          "name": "DOMINA.Famiglia",
+          "url": "https://apps.apple.com/us/app/domina-famiglia/id6742880418?uo=4",
+          "seller": "Domina Associazione Nazionale Famiglie Datori di Lavoro Domestico",
+          "category": "Utilities"
+        },
+        {
+          "name": "Guido Quiz",
+          "url": "https://apps.apple.com/us/app/guido-quiz/id6791612131?uo=4",
+          "seller": "Emanuele Todini",
+          "category": "Education"
+        },
+        {
+          "name": "SINC - Gagliole",
+          "url": "https://apps.apple.com/us/app/sinc-gagliole/id6755780742?uo=4",
+          "seller": "AppLoad Srl",
+          "category": "News"
+        },
+        {
+          "name": "Club Pattinaggio Ascona",
+          "url": "https://apps.apple.com/us/app/club-pattinaggio-ascona/id6762084718?uo=4",
+          "seller": "Tiziano Grifoni",
+          "category": "Health & Fitness"
+        },
+        {
+          "name": "L'Imprendipromotore",
+          "url": "https://apps.apple.com/us/app/limprendipromotore/id6478924141?uo=4",
+          "seller": "Strategike srl",
+          "category": "Finance"
+        },
+        {
+          "name": "Santo di oggi",
+          "url": "https://apps.apple.com/us/app/santo-di-oggi/id6744330798?uo=4",
+          "seller": "Vincenzo Sestito",
+          "category": "Lifestyle"
+        },
+        {
+          "name": "E Check App",
+          "url": "https://apps.apple.com/us/app/e-check-app/id6443917179?uo=4",
+          "seller": "SABANET SRL",
+          "category": "Productivity"
+        },
+        {
+          "name": "Parte Guelfa - Dragoni",
+          "url": "https://apps.apple.com/us/app/parte-guelfa-dragoni/id6443770362?uo=4",
+          "seller": "TOMMASO CONFORTI",
+          "category": "Utilities"
+        },
+        {
+          "name": "Rovagnati360Agent",
+          "url": "https://apps.apple.com/us/app/rovagnati360agent/id6476417119?uo=4",
+          "seller": "Rovagnati SpA",
+          "category": "Business"
+        }
+      ]
+    },
+    {
+      "term": "Corale",
+      "country": "tr",
+      "query_url": "https://itunes.apple.com/search?term=Corale&country=tr&entity=software&limit=200",
+      "returned": 170,
+      "name_matches": [
+        {
+          "name": "Corale Santa Cecilia Bernate",
+          "url": "https://apps.apple.com/tr/app/corale-santa-cecilia-bernate/id6479448157?uo=4",
+          "seller": "Massimiliano Limosani",
+          "category": "Music"
+        },
+        {
+          "name": "CORALerpMobility",
+          "url": "https://apps.apple.com/tr/app/coralerpmobility/id6755493701?uo=4",
+          "seller": "Coral Servsoft Private Limited",
+          "category": "Business"
+        }
+      ],
+      "results": [
+        {
+          "name": "Coral Club",
+          "url": "https://apps.apple.com/tr/app/coral-club/id1437262333?uo=4",
+          "seller": "CORAL CLUB DISTRIBUTION LTD",
+          "category": "Business"
+        },
+        {
+          "name": "Coral Tatil",
+          "url": "https://apps.apple.com/tr/app/coral-tatil/id6744054717?uo=4",
+          "seller": "CORAL SEYAHAT ANONIM SIRKETI",
+          "category": "Travel"
+        },
+        {
+          "name": "Coral: Couples & Relationship",
+          "url": "https://apps.apple.com/tr/app/coral-couples-relationship/id1448861466?uo=4",
+          "seller": "Athais Inc.",
+          "category": "Health & Fitness"
+        },
+        {
+          "name": "Coral Travel - Поиск туров",
+          "url": "https://apps.apple.com/tr/app/coral-travel-%D0%BF%D0%BE%D0%B8%D1%81%D0%BA-%D1%82%D1%83%D1%80%D0%BE%D0%B2/id6739885321?uo=4",
+          "seller": "AMBITUR OOO",
+          "category": "Travel"
+        },
+        {
+          "name": "Coral High",
+          "url": "https://apps.apple.com/tr/app/coral-high/id6503293345?uo=4",
+          "seller": "GO BULUT YAZILIM TEKNOLOJILERI SITE YONETIMI SANAYI VE TICARET LIMITED SIRKETI",
+          "category": "Shopping"
+        },
+        {
+          "name": "Domina Coral Bay Resort",
+          "url": "https://apps.apple.com/tr/app/domina-coral-bay-resort/id1631818221?uo=4",
+          "seller": "NILE COMPANY FOR MANAGING HOTELS AND RESORTS LLC",
+          "category": "Travel"
+        },
+        {
+          "name": "Coral Reef by Tinybop",
+          "url": "https://apps.apple.com/tr/app/coral-reef-by-tinybop/id1331577768?uo=4",
+          "seller": "Tinybop Inc.",
+          "category": "Education"
+        },
+        {
+          "name": "Coral Travel Elite агентство",
+          "url": "https://apps.apple.com/tr/app/coral-travel-elite-%D0%B0%D0%B3%D0%B5%D0%BD%D1%82%D1%81%D1%82%D0%B2%D0%BE/id1454252989?uo=4",
+          "seller": "Oleg Vinogradov",
+          "category": "Travel"
+        },
+        {
+          "name": "Coral Isle: Farm & Build",
+          "url": "https://apps.apple.com/tr/app/coral-isle-farm-build/id6443987355?uo=4",
+          "seller": "QuartSoft AG",
+          "category": "Games"
+        },
+        {
+          "name": "Coral Travel Poland",
+          "url": "https://apps.apple.com/tr/app/coral-travel-poland/id1520418722?uo=4",
+          "seller": "CORAL TRAVEL POLAND SP Z O O",
+          "category": "Travel"
+        },
+        {
+          "name": "Coral Travel -сеть турагентств",
+          "url": "https://apps.apple.com/tr/app/coral-travel-%D1%81%D0%B5%D1%82%D1%8C-%D1%82%D1%83%D1%80%D0%B0%D0%B3%D0%B5%D0%BD%D1%82%D1%81%D1%82%D0%B2/id1234075544?uo=4",
+          "seller": "Oleg Vinogradov",
+          "category": "Travel"
+        },
+        {
+          "name": "Goldy – Aquatic Coral Sea Life",
+          "url": "https://apps.apple.com/tr/app/goldy-aquatic-coral-sea-life/id1079431665?uo=4",
+          "seller": "Adem Oktay",
+          "category": "Games"
+        },
+        {
+          "name": "ZipApp Lite: The Unarchiver",
+          "url": "https://apps.apple.com/tr/app/zipapp-lite-the-unarchiver/id585600850?uo=4",
+          "seller": "兰桂 吴",
+          "category": "Utilities"
+        },
+        {
+          "name": "Coral Lebanon",
+          "url": "https://apps.apple.com/tr/app/coral-lebanon/id1600860923?uo=4",
+          "seller": "The Coral Oil Company Limited",
+          "category": "Business"
+        },
+        {
+          "name": "Корал Тревел ООО Пасарт",
+          "url": "https://apps.apple.com/tr/app/%D0%BA%D0%BE%D1%80%D0%B0%D0%BB-%D1%82%D1%80%D0%B5%D0%B2%D0%B5%D0%BB-%D0%BE%D0%BE%D0%BE-%D0%BF%D0%B0%D1%81%D0%B0%D1%80%D1%82/id1487374959?uo=4",
+          "seller": "KOMPANIYA PASART, OOO",
+          "category": "Business"
+        },
+        {
+          "name": "Coral Travel Турагентствo",
+          "url": "https://apps.apple.com/tr/app/coral-travel-%D1%82%D1%83%D1%80%D0%B0%D0%B3%D0%B5%D0%BD%D1%82%D1%81%D1%82%D0%B2o/id6483363171?uo=4",
+          "seller": "Aleksandra Seliverstova",
+          "category": "Travel"
+        },
+        {
+          "name": "incharge.evc",
+          "url": "https://apps.apple.com/tr/app/incharge-evc/id1590319661?uo=4",
+          "seller": "Coral A.E Oil and Chemicals Company",
+          "category": "Navigation"
+        },
+        {
+          "name": "Coral Travel - турагентствo",
+          "url": "https://apps.apple.com/tr/app/coral-travel-%D1%82%D1%83%D1%80%D0%B0%D0%B3%D0%B5%D0%BD%D1%82%D1%81%D1%82%D0%B2o/id1553871656?uo=4",
+          "seller": "PAVEL VINNIKOV",
+          "category": "Travel"
+        },
+        {
+          "name": "Corale Santa Cecilia Bernate",
+          "url": "https://apps.apple.com/tr/app/corale-santa-cecilia-bernate/id6479448157?uo=4",
+          "seller": "Massimiliano Limosani",
+          "category": "Music"
+        },
+        {
+          "name": "ChmPlus Lite: CHM/EPUB Reader",
+          "url": "https://apps.apple.com/tr/app/chmplus-lite-chm-epub-reader/id443454952?uo=4",
+          "seller": "兰桂 吴",
+          "category": "Productivity"
+        },
+        {
+          "name": "Battle Of The Coral Sea",
+          "url": "https://apps.apple.com/tr/app/battle-of-the-coral-sea/id6738445839?uo=4",
+          "seller": "Mohammad Alizade",
+          "category": "Games"
+        },
+        {
+          "name": "foodpanda: Food & Groceries",
+          "url": "https://apps.apple.com/tr/app/foodpanda-food-groceries/id758103884?uo=4",
+          "seller": "Internet Services Polen Sp. z o.o.",
+          "category": "Food & Drink"
+        },
+        {
+          "name": "Canva: AI Video & Photo Editor",
+          "url": "https://apps.apple.com/tr/app/canva-ai-video-photo-editor/id897446215?uo=4",
+          "seller": "Canva Pty Ltd",
+          "category": "Photo & Video"
+        },
+        {
+          "name": "CBA Coral Business Academy",
+          "url": "https://apps.apple.com/tr/app/cba-coral-business-academy/id6759369567?uo=4",
+          "seller": "CORAL CLUB DISTRIBUTION LTD",
+          "category": "Business"
+        },
+        {
+          "name": "CORAL: Prostate Cancer Risk and Survival",
+          "url": "https://apps.apple.com/tr/app/coral-prostate-cancer-risk-and-survival/id1137504631?uo=4",
+          "seller": "Jon Giambattista",
+          "category": "Medical"
+        },
+        {
+          "name": "Guide for Coral Island",
+          "url": "https://apps.apple.com/tr/app/guide-for-coral-island/id6467129597?uo=4",
+          "seller": "Gene Allister Sy",
+          "category": "Utilities"
+        },
+        {
+          "name": "Coral Health 365",
+          "url": "https://apps.apple.com/tr/app/coral-health-365/id1560958357?uo=4",
+          "seller": "CORAL CLUB DISTRIBUTION LTD",
+          "category": "Health & Fitness"
+        },
+        {
+          "name": "CAFÉ DE CORAL",
+          "url": "https://apps.apple.com/tr/app/caf%C3%A9-de-coral/id1436965382?uo=4",
+          "seller": "CAFE DE CORAL FAST FOOD LIMITED",
+          "category": "Food & Drink"
+        },
+        {
+          "name": "יד2 - yad2",
+          "url": "https://apps.apple.com/tr/app/%D7%99%D7%932-yad2/id406318295?uo=4",
+          "seller": "Coral Tell LTD",
+          "category": "Shopping"
+        },
+        {
+          "name": "Merge Restyle",
+          "url": "https://apps.apple.com/tr/app/merge-restyle/id6738049542?uo=4",
+          "seller": "HIGGS TECHNOLOGY CO., LIMITED",
+          "category": "Games"
+        },
+        {
+          "name": "Photoshop Express Photo Editor",
+          "url": "https://apps.apple.com/tr/app/photoshop-express-photo-editor/id331975235?uo=4",
+          "seller": "ADOBE SYSTEMS SOFTWARE IRELAND LIMITED",
+          "category": "Photo & Video"
+        },
+        {
+          "name": "ChmPlus Pro: CHM/EPUB Reader",
+          "url": "https://apps.apple.com/tr/app/chmplus-pro-chm-epub-reader/id441521818?uo=4",
+          "seller": "兰桂 吴",
+          "category": "Book"
+        },
+        {
+          "name": "iSVN Lite",
+          "url": "https://apps.apple.com/tr/app/isvn-lite/id1489780160?uo=4",
+          "seller": "兰桂 吴",
+          "category": "Utilities"
+        },
+        {
+          "name": "Fish Farm",
+          "url": "https://apps.apple.com/tr/app/fish-farm/id364918873?uo=4",
+          "seller": "BITBROS INC.",
+          "category": "Games"
+        },
+        {
+          "name": "BetsWall Football Betting Tips",
+          "url": "https://apps.apple.com/tr/app/betswall-football-betting-tips/id1064425227?uo=4",
+          "seller": "HAYY YAZILIM OYUN PAZARLAMA SANAYI VE TICARET LIMITED SIRKETI",
+          "category": "Sports"
+        },
+        {
+          "name": "Fruit Nibblers",
+          "url": "https://apps.apple.com/tr/app/fruit-nibblers/id962680846?uo=4",
+          "seller": "Rovio Entertainment Oyj",
+          "category": "Games"
+        },
+        {
+          "name": "Persona.aero: Business Lounge",
+          "url": "https://apps.apple.com/tr/app/persona-aero-business-lounge/id1640247254?uo=4",
+          "seller": "PERSONA TRAVEL LLC",
+          "category": "Travel"
+        },
+        {
+          "name": "ZipApp Pro: The Unarchiver",
+          "url": "https://apps.apple.com/tr/app/zipapp-pro-the-unarchiver/id522281602?uo=4",
+          "seller": "兰桂 吴",
+          "category": "Utilities"
+        },
+        {
+          "name": "Ozon Travel: ЖД билеты и отели",
+          "url": "https://apps.apple.com/tr/app/ozon-travel-%D0%B6%D0%B4-%D0%B1%D0%B8%D0%BB%D0%B5%D1%82%D1%8B-%D0%B8-%D0%BE%D1%82%D0%B5%D0%BB%D0%B8/id959592459?uo=4",
+          "seller": "INTERNET SOLUTIONS, LLC",
+          "category": "Travel"
+        },
+        {
+          "name": "700 Solitaires Classic - Cards",
+          "url": "https://apps.apple.com/tr/app/700-solitaires-classic-cards/id483517253?uo=4",
+          "seller": "MobArts Ltd",
+          "category": "Games"
+        },
+        {
+          "name": "Octopus 八達通",
+          "url": "https://apps.apple.com/tr/app/octopus-%E5%85%AB%E9%81%94%E9%80%9A/id1114430602?uo=4",
+          "seller": "OCTOPUS Cards Ltd.",
+          "category": "Finance"
+        },
+        {
+          "name": "Jackpot Crush - Casino Slots",
+          "url": "https://apps.apple.com/tr/app/jackpot-crush-casino-slots/id1529572983?uo=4",
+          "seller": "SpinX Games Limited",
+          "category": "Games"
+        },
+        {
+          "name": "Горящие туры в Travelata.ru",
+          "url": "https://apps.apple.com/tr/app/%D0%B3%D0%BE%D1%80%D1%8F%D1%89%D0%B8%D0%B5-%D1%82%D1%83%D1%80%D1%8B-%D0%B2-travelata-ru/id883141609?uo=4",
+          "seller": "Travelata OOO",
+          "category": "Travel"
+        },
+        {
+          "name": "Fish Farm 2",
+          "url": "https://apps.apple.com/tr/app/fish-farm-2/id579721088?uo=4",
+          "seller": "BITBROS INC.",
+          "category": "Games"
+        },
+        {
+          "name": "CoralDrive",
+          "url": "https://apps.apple.com/tr/app/coraldrive/id6504926369?uo=4",
+          "seller": "Team Tweaks Technologies Private Limited",
+          "category": "Travel"
+        },
+        {
+          "name": "Coral Clash",
+          "url": "https://apps.apple.com/tr/app/coral-clash/id6754509672?uo=4",
+          "seller": "Josiah Buxton",
+          "category": "Games"
+        },
+        {
+          "name": "Ministério Chama Coral",
+          "url": "https://apps.apple.com/tr/app/minist%C3%A9rio-chama-coral/id6749340847?uo=4",
+          "seller": "Eder Rios",
+          "category": "Music"
+        },
+        {
+          "name": "Miss Coral: Speak English",
+          "url": "https://apps.apple.com/tr/app/miss-coral-speak-english/id6779044744?uo=4",
+          "seller": "CREAACTIVA LLC",
+          "category": "Education"
+        },
+        {
+          "name": "CoralTree Residence Shuttle",
+          "url": "https://apps.apple.com/tr/app/coraltree-residence-shuttle/id6736479332?uo=4",
+          "seller": "Downtowner App Inc.",
+          "category": "Travel"
+        },
+        {
+          "name": "First Coral Gables",
+          "url": "https://apps.apple.com/tr/app/first-coral-gables/id1561045337?uo=4",
+          "seller": "First United Methodist Church of Coral Gables",
+          "category": "Education"
+        },
+        {
+          "name": "Clear Coral",
+          "url": "https://apps.apple.com/tr/app/clear-coral/id6741346289?uo=4",
+          "seller": "Agam Brahma",
+          "category": "Lifestyle"
+        },
+        {
+          "name": "Coral Cactus",
+          "url": "https://apps.apple.com/tr/app/coral-cactus/id1638984092?uo=4",
+          "seller": "Comment On Apps LLC",
+          "category": "Shopping"
+        },
+        {
+          "name": "Gyrotonic Coral Gables",
+          "url": "https://apps.apple.com/tr/app/gyrotonic-coral-gables/id6789072125?uo=4",
+          "seller": "Principles Of Intelligent Movement, LLC",
+          "category": "Health & Fitness"
+        },
+        {
+          "name": "Coral Oaks Tennis Club",
+          "url": "https://apps.apple.com/tr/app/coral-oaks-tennis-club/id1521832223?uo=4",
+          "seller": "CORAL OAKS TENNIS & WELLNESS, LLC",
+          "category": "Health & Fitness"
+        },
+        {
+          "name": "Coral Cliffs Cinema",
+          "url": "https://apps.apple.com/tr/app/coral-cliffs-cinema/id1658947961?uo=4",
+          "seller": "INDY Cinema Group Ltd",
+          "category": "Entertainment"
+        },
+        {
+          "name": "Insignia-CoralApp",
+          "url": "https://apps.apple.com/tr/app/insignia-coralapp/id6745554747?uo=4",
+          "seller": "INSIGNIA LIMITED",
+          "category": "Business"
+        },
+        {
+          "name": "Mylo by Coral Smart Pool",
+          "url": "https://apps.apple.com/tr/app/mylo-by-coral-smart-pool/id6444309522?uo=4",
+          "seller": "Coral Smart Pool Ltd",
+          "category": "Health & Fitness"
+        },
+        {
+          "name": "Coralie CCA",
+          "url": "https://apps.apple.com/tr/app/coralie-cca/id6621264293?uo=4",
+          "seller": "REUNIR SERVICES",
+          "category": "Travel"
+        },
+        {
+          "name": "Captain Coral's Reef Rescue",
+          "url": "https://apps.apple.com/tr/app/captain-corals-reef-rescue/id6771332119?uo=4",
+          "seller": "Jan Matysik",
+          "category": "Games"
+        },
+        {
+          "name": "Christ Church Coral Springs",
+          "url": "https://apps.apple.com/tr/app/christ-church-coral-springs/id6741553928?uo=4",
+          "seller": "CHRIST CHURCH - A LUTHERAN CONGREGATION, INC.",
+          "category": "Education"
+        },
+        {
+          "name": "Coral Ocean Resort",
+          "url": "https://apps.apple.com/tr/app/coral-ocean-resort/id1549738859?uo=4",
+          "seller": "Chronogolf Inc.",
+          "category": "Sports"
+        },
+        {
+          "name": "Coral Springs CityTV",
+          "url": "https://apps.apple.com/tr/app/coral-springs-citytv/id6448310713?uo=4",
+          "seller": "Cablecast Community Media LLC",
+          "category": "Education"
+        },
+        {
+          "name": "Nautilus Coral",
+          "url": "https://apps.apple.com/tr/app/nautilus-coral/id6740090580?uo=4",
+          "seller": "MG Proget Group 1 srl",
+          "category": "Lifestyle"
+        },
+        {
+          "name": "Calvary Chapel Cape Coral",
+          "url": "https://apps.apple.com/tr/app/calvary-chapel-cape-coral/id1236047825?uo=4",
+          "seller": "Calvary Chapel of Ft Myers Inc",
+          "category": "Education"
+        },
+        {
+          "name": "Coral Reef Trips",
+          "url": "https://apps.apple.com/tr/app/coral-reef-trips/id6771944078?uo=4",
+          "seller": "Linh Phan Nhat Khanh",
+          "category": "Travel"
+        },
+        {
+          "name": "CoralBooking",
+          "url": "https://apps.apple.com/tr/app/coralbooking/id6504527452?uo=4",
+          "seller": "Team Tweaks Technologies Private Limited",
+          "category": "Business"
+        },
+        {
+          "name": "Coral leather",
+          "url": "https://apps.apple.com/tr/app/coral-leather/id6754561228?uo=4",
+          "seller": "Lavleen Dhindsa",
+          "category": "Games"
+        },
+        {
+          "name": "Coral Dry",
+          "url": "https://apps.apple.com/tr/app/coral-dry/id6756916092?uo=4",
+          "seller": "SIFABSO TECHNOLOGY LLP",
+          "category": "Lifestyle"
+        },
+        {
+          "name": "Corals Coral Live",
+          "url": "https://apps.apple.com/tr/app/corals-coral-live/id1641821471?uo=4",
+          "seller": "shopmanyapps LLC",
+          "category": "Shopping"
+        },
+        {
+          "name": "Cape Coral First",
+          "url": "https://apps.apple.com/tr/app/cape-coral-first/id6499235598?uo=4",
+          "seller": "Cape Coral First Methodist Church Inc.",
+          "category": "Education"
+        },
+        {
+          "name": "Reef Remedy: Fish & Coral Help",
+          "url": "https://apps.apple.com/tr/app/reef-remedy-fish-coral-help/id6794310573?uo=4",
+          "seller": "Szymon Niemiec",
+          "category": "Reference"
+        },
+        {
+          "name": "Vibrant Coral Stickers",
+          "url": "https://apps.apple.com/tr/app/vibrant-coral-stickers/id6749040236?uo=4",
+          "seller": "Liping Liu",
+          "category": "Entertainment"
+        },
+        {
+          "name": "Corally Motor Management",
+          "url": "https://apps.apple.com/tr/app/corally-motor-management/id6463020490?uo=4",
+          "seller": "JSP Group Intl BVBA",
+          "category": "Utilities"
+        },
+        {
+          "name": "Coral & Lace Boutique",
+          "url": "https://apps.apple.com/tr/app/coral-lace-boutique/id1634057997?uo=4",
+          "seller": "Comment On Apps LLC",
+          "category": "Shopping"
+        },
+        {
+          "name": "RedCoralPilates @ Bugis",
+          "url": "https://apps.apple.com/tr/app/redcoralpilates-bugis/id6737512755?uo=4",
+          "seller": "VIBEFAM PTE LTD",
+          "category": "Health & Fitness"
+        },
+        {
+          "name": "Cape Coral Yoga Pilates",
+          "url": "https://apps.apple.com/tr/app/cape-coral-yoga-pilates/id6741593742?uo=4",
+          "seller": "FITDEGREE LLC",
+          "category": "Health & Fitness"
+        },
+        {
+          "name": "Coral Identifier: Reef Care",
+          "url": "https://apps.apple.com/tr/app/coral-identifier-reef-care/id6769314256?uo=4",
+          "seller": "Nova Rights LLC",
+          "category": "Education"
+        },
+        {
+          "name": "Corall Words",
+          "url": "https://apps.apple.com/tr/app/corall-words/id6818492116?uo=4",
+          "seller": "Blake Jonson",
+          "category": "Games"
+        },
+        {
+          "name": "Coral Raider",
+          "url": "https://apps.apple.com/tr/app/coral-raider/id6775776555?uo=4",
+          "seller": "Ali Khalaf",
+          "category": "Games"
+        },
+        {
+          "name": "Coral APP",
+          "url": "https://apps.apple.com/tr/app/coral-app/id6795713207?uo=4",
+          "seller": "Luis Eduardo Altino",
+          "category": "Music"
+        },
+        {
+          "name": "Coral Ridge Yacht Club",
+          "url": "https://apps.apple.com/tr/app/coral-ridge-yacht-club/id1605736312?uo=4",
+          "seller": "Coral Ridge Yacht Club, Inc.",
+          "category": "Lifestyle"
+        },
+        {
+          "name": "The Mile Coral Gables",
+          "url": "https://apps.apple.com/tr/app/the-mile-coral-gables/id1660972869?uo=4",
+          "seller": "Elevated Lifestyles Inc",
+          "category": "Lifestyle"
+        },
+        {
+          "name": "Coral Casino Beach & Cabana",
+          "url": "https://apps.apple.com/tr/app/coral-casino-beach-cabana/id6475365592?uo=4",
+          "seller": "Montecito Country Club, INC",
+          "category": "Lifestyle"
+        },
+        {
+          "name": "Coralillo Cafe",
+          "url": "https://apps.apple.com/tr/app/coralillo-cafe/id6654926503?uo=4",
+          "seller": "NIU MEDIA ADZHENSI, UKRAINA, PP",
+          "category": "Food & Drink"
+        },
+        {
+          "name": "Coral Day",
+          "url": "https://apps.apple.com/tr/app/coral-day/id6790139753?uo=4",
+          "seller": "Stefan Dordevic",
+          "category": "Lifestyle"
+        },
+        {
+          "name": "CoralCalc: Reef Dosing Guide",
+          "url": "https://apps.apple.com/tr/app/coralcalc-reef-dosing-guide/id6761398297?uo=4",
+          "seller": "JUHWAN PARK",
+          "category": "Lifestyle"
+        },
+        {
+          "name": "Coral Gardens",
+          "url": "https://apps.apple.com/tr/app/coral-gardens/id6796483269?uo=4",
+          "seller": "Joseph Seif",
+          "category": "Games"
+        },
+        {
+          "name": "Corals Closet",
+          "url": "https://apps.apple.com/tr/app/corals-closet/id6538725453?uo=4",
+          "seller": "Momence, Inc.",
+          "category": "Health & Fitness"
+        },
+        {
+          "name": "RedCoralPilates @ Raffles",
+          "url": "https://apps.apple.com/tr/app/redcoralpilates-raffles/id6755100146?uo=4",
+          "seller": "VIBEFAM PTE LTD",
+          "category": "Health & Fitness"
+        },
+        {
+          "name": "The Coral App",
+          "url": "https://apps.apple.com/tr/app/the-coral-app/id6763652621?uo=4",
+          "seller": "The Coral App LLC",
+          "category": "Entertainment"
+        },
+        {
+          "name": "Coral Mountain Golf Club",
+          "url": "https://apps.apple.com/tr/app/coral-mountain-golf-club/id1538634749?uo=4",
+          "seller": "Chronogolf Inc.",
+          "category": "Sports"
+        },
+        {
+          "name": "Card Coral - Loyalty Business",
+          "url": "https://apps.apple.com/tr/app/card-coral-loyalty-business/id6759158179?uo=4",
+          "seller": "RED NUMBERS SRL",
+          "category": "Business"
+        },
+        {
+          "name": "TIDEBLOOM: Coral Garden Puzzle",
+          "url": "https://apps.apple.com/tr/app/tidebloom-coral-garden-puzzle/id6819226386?uo=4",
+          "seller": "Changjun Park",
+          "category": "Games"
+        },
+        {
+          "name": "Rosa Coral: Óculos Femininos",
+          "url": "https://apps.apple.com/tr/app/rosa-coral-%C3%B3culos-femininos/id6755238831?uo=4",
+          "seller": "ANONIME LTDA",
+          "category": "Shopping"
+        },
+        {
+          "name": "Coral Fragger",
+          "url": "https://apps.apple.com/tr/app/coral-fragger/id6781217111?uo=4",
+          "seller": "Edijs Smagris",
+          "category": "Games"
+        },
+        {
+          "name": "Турвизор подбор и бронь тура",
+          "url": "https://apps.apple.com/tr/app/%D1%82%D1%83%D1%80%D0%B2%D0%B8%D0%B7%D0%BE%D1%80-%D0%BF%D0%BE%D0%B4%D0%B1%D0%BE%D1%80-%D0%B8-%D0%B1%D1%80%D0%BE%D0%BD%D1%8C-%D1%82%D1%83%D1%80%D0%B0/id1605969538?uo=4",
+          "seller": "Lurtaev Vasilii",
+          "category": "Travel"
+        },
+        {
+          "name": "DoubleHit Casino Vegas Slots",
+          "url": "https://apps.apple.com/tr/app/doublehit-casino-vegas-slots/id1016431735?uo=4",
+          "seller": "GHOST STUDIO Co., Limited",
+          "category": "Games"
+        },
+        {
+          "name": "iHorse™ Racing 2：Horse manager",
+          "url": "https://apps.apple.com/tr/app/ihorse-racing-2-horse-manager/id909286740?uo=4",
+          "seller": "Gamemiracle Company Limited",
+          "category": "Games"
+        },
+        {
+          "name": "Sim Aquarium: 3D Fish Tank",
+          "url": "https://apps.apple.com/tr/app/sim-aquarium-3d-fish-tank/id1050519228?uo=4",
+          "seller": "达 雷",
+          "category": "Games"
+        },
+        {
+          "name": "Shark Hunter Scuba Diving 3D",
+          "url": "https://apps.apple.com/tr/app/shark-hunter-scuba-diving-3d/id1423040309?uo=4",
+          "seller": "Munaim Shah",
+          "category": "Games"
+        },
+        {
+          "name": "TUI (PL/CZ/RO)",
+          "url": "https://apps.apple.com/tr/app/tui-pl-cz-ro/id638172733?uo=4",
+          "seller": "TUI Poland Sp. z o.o.",
+          "category": "Travel"
+        },
+        {
+          "name": "My Dream Fish Tank - Fish Aquarium Game",
+          "url": "https://apps.apple.com/tr/app/my-dream-fish-tank-fish-aquarium-game/id1171390612?uo=4",
+          "seller": "TPG TECNOLOGIA DA INFORMACAO LTDA",
+          "category": "Games"
+        },
+        {
+          "name": "NASA NeMO-Net",
+          "url": "https://apps.apple.com/tr/app/nasa-nemo-net/id1506604930?uo=4",
+          "seller": "NASA",
+          "category": "Games"
+        },
+        {
+          "name": "Clumsy Fish",
+          "url": "https://apps.apple.com/tr/app/clumsy-fish/id819281094?uo=4",
+          "seller": "Happymagenta UAB",
+          "category": "Games"
+        },
+        {
+          "name": "Tanklet: Idle Fish Aquarium",
+          "url": "https://apps.apple.com/tr/app/tanklet-idle-fish-aquarium/id6792056689?uo=4",
+          "seller": "Smart Kiitos Oy",
+          "category": "Games"
+        },
+        {
+          "name": "Lightopus (Appxplore)",
+          "url": "https://apps.apple.com/tr/app/lightopus-appxplore/id828230274?uo=4",
+          "seller": "Appxplore (iCandy) Sdn. Bhd.",
+          "category": "Games"
+        },
+        {
+          "name": "MyReef 3D Aquarium 2 Lite",
+          "url": "https://apps.apple.com/tr/app/myreef-3d-aquarium-2-lite/id315987484?uo=4",
+          "seller": "BITBROS INC.",
+          "category": "Entertainment"
+        },
+        {
+          "name": "Paradise - Fish Aquarium",
+          "url": "https://apps.apple.com/tr/app/paradise-fish-aquarium/id1166830239?uo=4",
+          "seller": "ORCA STUDIOS PTY. LTD.",
+          "category": "Games"
+        },
+        {
+          "name": "Flyer Maker + Poster Maker",
+          "url": "https://apps.apple.com/tr/app/flyer-maker-poster-maker/id1337666644?uo=4",
+          "seller": "Bhavesh Gabani",
+          "category": "Graphics & Design"
+        },
+        {
+          "name": "Solitaire Tripeaks - Farm Trip",
+          "url": "https://apps.apple.com/tr/app/solitaire-tripeaks-farm-trip/id6451408044?uo=4",
+          "seller": "俊威 钟",
+          "category": "Games"
+        },
+        {
+          "name": "DESERTOPIA",
+          "url": "https://apps.apple.com/tr/app/desertopia/id1265572046?uo=4",
+          "seller": "Gamtropy Co., Ltd.",
+          "category": "Games"
+        },
+        {
+          "name": "Splash — Fish Aquarium",
+          "url": "https://apps.apple.com/tr/app/splash-fish-aquarium/id960080321?uo=4",
+          "seller": "Runaway Play Ltd",
+          "category": "Games"
+        },
+        {
+          "name": "Dopples World: My Avatar Town",
+          "url": "https://apps.apple.com/tr/app/dopples-world-my-avatar-town/id6569248884?uo=4",
+          "seller": "TUTOTOONS LTD",
+          "category": "Education"
+        },
+        {
+          "name": "Little Fin",
+          "url": "https://apps.apple.com/tr/app/little-fin/id1567169912?uo=4",
+          "seller": "Gionathan Pesaresi",
+          "category": "Games"
+        },
+        {
+          "name": "Farm Games - Farming Simulator",
+          "url": "https://apps.apple.com/tr/app/farm-games-farming-simulator/id6504006439?uo=4",
+          "seller": "Muhammad Arslan",
+          "category": "Games"
+        },
+        {
+          "name": "iHorse™ G1 Leading Sire",
+          "url": "https://apps.apple.com/tr/app/ihorse-g1-leading-sire/id6738126802?uo=4",
+          "seller": "Gamemiracle Company Limited",
+          "category": "Games"
+        },
+        {
+          "name": "NEXO: Taxi y Delivery",
+          "url": "https://apps.apple.com/tr/app/nexo-taxi-y-delivery/id6780886749?uo=4",
+          "seller": "Alexander Coral",
+          "category": "Travel"
+        },
+        {
+          "name": "WorkReflection",
+          "url": "https://apps.apple.com/tr/app/workreflection/id6805322970?uo=4",
+          "seller": "CLOUD & CORAL COMPANY LIMITED",
+          "category": "Productivity"
+        },
+        {
+          "name": "Connect Benefit",
+          "url": "https://apps.apple.com/tr/app/connect-benefit/id1600238355?uo=4",
+          "seller": "Coral LLC",
+          "category": "Medical"
+        },
+        {
+          "name": "Nocturne: Gratitude Journal",
+          "url": "https://apps.apple.com/tr/app/nocturne-gratitude-journal/id6782596480?uo=4",
+          "seller": "Coral Rose Page",
+          "category": "Health & Fitness"
+        },
+        {
+          "name": "Coralis for Construction",
+          "url": "https://apps.apple.com/tr/app/coralis-for-construction/id1659813279?uo=4",
+          "seller": "CORAL I.S. LTD",
+          "category": "Business"
+        },
+        {
+          "name": "ADS",
+          "url": "https://apps.apple.com/tr/app/ads/id6470144149?uo=4",
+          "seller": "CORAL I.S. LTD",
+          "category": "Medical"
+        },
+        {
+          "name": "精品课堂 - 启迪思维开启智慧之旅",
+          "url": "https://apps.apple.com/tr/app/%E7%B2%BE%E5%93%81%E8%AF%BE%E5%A0%82-%E5%90%AF%E8%BF%AA%E6%80%9D%E7%BB%B4%E5%BC%80%E5%90%AF%E6%99%BA%E6%85%A7%E4%B9%8B%E6%97%85/id1613653842?uo=4",
+          "seller": "CoralWin(Beijing) Education Technology Co., Ltd.",
+          "category": "Utilities"
+        },
+        {
+          "name": "小阅问问",
+          "url": "https://apps.apple.com/tr/app/%E5%B0%8F%E9%98%85%E9%97%AE%E9%97%AE/id6817297338?uo=4",
+          "seller": "Coral Zhicheng (Beijing) Technology Co., Ltd",
+          "category": "Utilities"
+        },
+        {
+          "name": "Cape Vineyard",
+          "url": "https://apps.apple.com/tr/app/cape-vineyard/id1421384613?uo=4",
+          "seller": "Vineyard Community Church of Cape Coral",
+          "category": "Education"
+        },
+        {
+          "name": "Pythonaut: Learn Python",
+          "url": "https://apps.apple.com/tr/app/pythonaut-learn-python/id6823301735?uo=4",
+          "seller": "Coral Rose Page",
+          "category": "Education"
+        },
+        {
+          "name": "SudokuStreak",
+          "url": "https://apps.apple.com/tr/app/sudokustreak/id6774646292?uo=4",
+          "seller": "Coral Rose Page",
+          "category": "Games"
+        },
+        {
+          "name": "Dolala趣学音乐",
+          "url": "https://apps.apple.com/tr/app/dolala%E8%B6%A3%E5%AD%A6%E9%9F%B3%E4%B9%90/id1621012319?uo=4",
+          "seller": "CoralWin(Beijing) Education Technology Co., Ltd.",
+          "category": "Lifestyle"
+        },
+        {
+          "name": "My Basil",
+          "url": "https://apps.apple.com/tr/app/my-basil/id6446291462?uo=4",
+          "seller": "CoralTree, Inc",
+          "category": "Business"
+        },
+        {
+          "name": "Ready to Race: Running",
+          "url": "https://apps.apple.com/tr/app/ready-to-race-running/id6787731230?uo=4",
+          "seller": "CORAL MARIE CAPO VELEZ",
+          "category": "Health & Fitness"
+        },
+        {
+          "name": "Misstep: Puzzle Runner",
+          "url": "https://apps.apple.com/tr/app/misstep-puzzle-runner/id6792955248?uo=4",
+          "seller": "Coral Cove Software LLC",
+          "category": "Games"
+        },
+        {
+          "name": "悟空会",
+          "url": "https://apps.apple.com/tr/app/%E6%82%9F%E7%A9%BA%E4%BC%9A/id6747387070?uo=4",
+          "seller": "Coral Ridge Outpatient Center, LLC",
+          "category": "Lifestyle"
+        },
+        {
+          "name": "CORALerpMobility",
+          "url": "https://apps.apple.com/tr/app/coralerpmobility/id6755493701?uo=4",
+          "seller": "Coral Servsoft Private Limited",
+          "category": "Business"
+        },
+        {
+          "name": "anupalan",
+          "url": "https://apps.apple.com/tr/app/anupalan/id1525080374?uo=4",
+          "seller": "Coral Servsoft Private Limited",
+          "category": "Business"
+        },
+        {
+          "name": "职阅云",
+          "url": "https://apps.apple.com/tr/app/%E8%81%8C%E9%98%85%E4%BA%91/id6756996452?uo=4",
+          "seller": "Coral Zhicheng (Beijing) Technology Co., Ltd",
+          "category": "Utilities"
+        },
+        {
+          "name": "Gin & Tonic",
+          "url": "https://apps.apple.com/tr/app/gin-tonic/id6783418274?uo=4",
+          "seller": "Coral Rose Page",
+          "category": "Games"
+        },
+        {
+          "name": "Baby Learns Colors!",
+          "url": "https://apps.apple.com/tr/app/baby-learns-colors/id1553283716?uo=4",
+          "seller": "Coral Team B.V.",
+          "category": "Education"
+        },
+        {
+          "name": "罗勒尚才",
+          "url": "https://apps.apple.com/tr/app/%E7%BD%97%E5%8B%92%E5%B0%9A%E6%89%8D/id6756957917?uo=4",
+          "seller": "Coral Zhicheng (Beijing) Technology Co., Ltd",
+          "category": "Utilities"
+        },
+        {
+          "name": "Granada Church",
+          "url": "https://apps.apple.com/tr/app/granada-church/id1543506676?uo=4",
+          "seller": "Granada Presbyterian Church (Coral Gables)",
+          "category": "Education"
+        },
+        {
+          "name": "Oasis Middle Charter School",
+          "url": "https://apps.apple.com/tr/app/oasis-middle-charter-school/id6477718145?uo=4",
+          "seller": "Cape Coral Charter School Authority",
+          "category": "Education"
+        },
+        {
+          "name": "Big Day: Countdown Widgets",
+          "url": "https://apps.apple.com/tr/app/big-day-countdown-widgets/id6781751202?uo=4",
+          "seller": "Coral Rose Page",
+          "category": "Utilities"
+        },
+        {
+          "name": "IgniteTV Play",
+          "url": "https://apps.apple.com/tr/app/ignitetv-play/id6503616822?uo=4",
+          "seller": "Coral Cable Vision Company Limited",
+          "category": "Entertainment"
+        },
+        {
+          "name": "Baby Learns Simple Objects!",
+          "url": "https://apps.apple.com/tr/app/baby-learns-simple-objects/id1553295078?uo=4",
+          "seller": "Coral Team B.V.",
+          "category": "Education"
+        },
+        {
+          "name": "Liars Grid: Daily Puzzle",
+          "url": "https://apps.apple.com/tr/app/liars-grid-daily-puzzle/id6782519708?uo=4",
+          "seller": "Coral Rose Page",
+          "category": "Games"
+        },
+        {
+          "name": "Oddword",
+          "url": "https://apps.apple.com/tr/app/oddword/id6780912059?uo=4",
+          "seller": "Coral Rose Page",
+          "category": "Games"
+        },
+        {
+          "name": "CrossFit ENG",
+          "url": "https://apps.apple.com/tr/app/crossfit-eng/id6758171382?uo=4",
+          "seller": "Cape Coral Fitness LLC",
+          "category": "Health & Fitness"
+        },
+        {
+          "name": "Level: Calisthenics for All",
+          "url": "https://apps.apple.com/tr/app/level-calisthenics-for-all/id6805455879?uo=4",
+          "seller": "Pablo Coral",
+          "category": "Health & Fitness"
+        },
+        {
+          "name": "Spindrift",
+          "url": "https://apps.apple.com/tr/app/spindrift/id6764054679?uo=4",
+          "seller": "Coral Rose Page",
+          "category": "Utilities"
+        },
+        {
+          "name": "Reef Tagger",
+          "url": "https://apps.apple.com/tr/app/reef-tagger/id6783680865?uo=4",
+          "seller": "Cool Coral Labs Limited",
+          "category": "Sports"
+        },
+        {
+          "name": "Westminster Academy",
+          "url": "https://apps.apple.com/tr/app/westminster-academy/id1464965494?uo=4",
+          "seller": "CORAL RIDGE PRESBYTERIAN CHURCH, INC",
+          "category": "Education"
+        },
+        {
+          "name": "Elemental Calculator",
+          "url": "https://apps.apple.com/tr/app/elemental-calculator/id6757080421?uo=4",
+          "seller": "Chrystian Gerardo Lozada Coral",
+          "category": "Utilities"
+        },
+        {
+          "name": "Ride Freebee",
+          "url": "https://apps.apple.com/tr/app/ride-freebee/id1014088236?uo=4",
+          "seller": "BEEFREE, LLC",
+          "category": "Travel"
+        },
+        {
+          "name": "Aquarium Camera",
+          "url": "https://apps.apple.com/tr/app/aquarium-camera/id1279335875?uo=4",
+          "seller": "John Ostler",
+          "category": "Photo & Video"
+        },
+        {
+          "name": "Nice - Intimacy Tracker",
+          "url": "https://apps.apple.com/tr/app/nice-intimacy-tracker/id1107291612?uo=4",
+          "seller": "Incendiary Studios LLC",
+          "category": "Health & Fitness"
+        },
+        {
+          "name": "Fish Aquarium Live Wallpapers",
+          "url": "https://apps.apple.com/tr/app/fish-aquarium-live-wallpapers/id1089100801?uo=4",
+          "seller": "Voros Innovation & Business Services Pty Ltd",
+          "category": "Lifestyle"
+        },
+        {
+          "name": "myAI®",
+          "url": "https://apps.apple.com/tr/app/myai/id731463335?uo=4",
+          "seller": "C2 Development, LLC",
+          "category": "Utilities"
+        },
+        {
+          "name": "daily catch fishbrain",
+          "url": "https://apps.apple.com/tr/app/daily-catch-fishbrain/id1208013619?uo=4",
+          "seller": "Natthaya Sutthitham",
+          "category": "Games"
+        },
+        {
+          "name": "Aquarium Live Wallpapers Lite",
+          "url": "https://apps.apple.com/tr/app/aquarium-live-wallpapers-lite/id1194959293?uo=4",
+          "seller": "Md Rashed Nizam",
+          "category": "Entertainment"
+        },
+        {
+          "name": "Orca Puzzles for Kids Free Jigsaw Wonder Edition",
+          "url": "https://apps.apple.com/tr/app/orca-puzzles-for-kids-free-jigsaw-wonder-edition/id1023960454?uo=4",
+          "seller": "Eggroll Games LLC",
+          "category": "Games"
+        },
+        {
+          "name": "Real Shark Simulator",
+          "url": "https://apps.apple.com/tr/app/real-shark-simulator/id1143955973?uo=4",
+          "seller": "YIGIT OZTURK",
+          "category": "Games"
+        },
+        {
+          "name": "Sea Turtle & Princess Mermaid",
+          "url": "https://apps.apple.com/tr/app/sea-turtle-princess-mermaid/id1589379349?uo=4",
+          "seller": "Muhammad Ans Irshad",
+          "category": "Games"
+        },
+        {
+          "name": "Mermaid Coloring Book For Girls: Learn to color and draw a Mermaid, Free games for children",
+          "url": "https://apps.apple.com/tr/app/mermaid-coloring-book-for-girls-learn-to-color-and/id1128687650?uo=4",
+          "seller": "Marut Srimarueang",
+          "category": "Games"
+        },
+        {
+          "name": "Zest: Couples Love Questions",
+          "url": "https://apps.apple.com/tr/app/zest-couples-love-questions/id6464639603?uo=4",
+          "seller": "Offbeat Apps LLC",
+          "category": "Health & Fitness"
+        },
+        {
+          "name": "SYNA-G",
+          "url": "https://apps.apple.com/tr/app/syna-g/id1080917075?uo=4",
+          "seller": "Guangzhou Maxspect Electronic Technology Co., LTD",
+          "category": "Lifestyle"
+        },
+        {
+          "name": "sea boy fishing forecast games for 4 year olds",
+          "url": "https://apps.apple.com/tr/app/sea-boy-fishing-forecast-games-for-4-year-olds/id1137028601?uo=4",
+          "seller": "Natthaya Sutthitham",
+          "category": "Games"
+        },
+        {
+          "name": "Aquawiz",
+          "url": "https://apps.apple.com/tr/app/aquawiz/id6739469479?uo=4",
+          "seller": "KUAN TING PAN",
+          "category": "Utilities"
+        },
+        {
+          "name": "Aquarium Log - Tank Manager",
+          "url": "https://apps.apple.com/tr/app/aquarium-log-tank-manager/id1621042664?uo=4",
+          "seller": "Ko Hyunshik",
+          "category": "Productivity"
+        },
+        {
+          "name": "ReefBay",
+          "url": "https://apps.apple.com/tr/app/reefbay/id6478054386?uo=4",
+          "seller": "Toolit Media LLC",
+          "category": "Lifestyle"
+        },
+        {
+          "name": "Rainbow: Wakacje & Wycieczki",
+          "url": "https://apps.apple.com/tr/app/rainbow-wakacje-wycieczki/id6444444407?uo=4",
+          "seller": "Rainbow Tours S.A.",
+          "category": "Travel"
+        },
+        {
+          "name": "EcoSmart Live",
+          "url": "https://apps.apple.com/tr/app/ecosmart-live/id703004790?uo=4",
+          "seller": "EcoTech Marine LLC",
+          "category": "Lifestyle"
+        }
+      ]
+    },
+    {
+      "term": "Corale",
+      "country": "us",
+      "query_url": "https://itunes.apple.com/search?term=Corale&country=us&entity=software&limit=200",
+      "returned": 155,
+      "name_matches": [
+        {
+          "name": "Corale Santa Cecilia Bernate",
+          "url": "https://apps.apple.com/us/app/corale-santa-cecilia-bernate/id6479448157?uo=4",
+          "seller": "Massimiliano Limosani",
+          "category": "Music"
+        }
+      ],
+      "results": [
+        {
+          "name": "Coral: Couples & Relationship",
+          "url": "https://apps.apple.com/us/app/coral-couples-relationship/id1448861466?uo=4",
+          "seller": "Athais Inc.",
+          "category": "Health & Fitness"
+        },
+        {
+          "name": "Coral Club",
+          "url": "https://apps.apple.com/us/app/coral-club/id1437262333?uo=4",
+          "seller": "CORAL CLUB DISTRIBUTION LTD",
+          "category": "Business"
+        },
+        {
+          "name": "Coral Isle: Farm & Build",
+          "url": "https://apps.apple.com/us/app/coral-isle-farm-build/id6443987355?uo=4",
+          "seller": "QuartSoft AG",
+          "category": "Games"
+        },
+        {
+          "name": "Coral Companion",
+          "url": "https://apps.apple.com/us/app/coral-companion/id6785317639?uo=4",
+          "seller": "Hawleywood LLC",
+          "category": "Reference"
+        },
+        {
+          "name": "Guide for Coral Island",
+          "url": "https://apps.apple.com/us/app/guide-for-coral-island/id6467129597?uo=4",
+          "seller": "Gene Allister Sy",
+          "category": "Utilities"
+        },
+        {
+          "name": "Corals Coral Live",
+          "url": "https://apps.apple.com/us/app/corals-coral-live/id1641821471?uo=4",
+          "seller": "shopmanyapps LLC",
+          "category": "Shopping"
+        },
+        {
+          "name": "Coral Academy of Science LV",
+          "url": "https://apps.apple.com/us/app/coral-academy-of-science-lv/id1623789808?uo=4",
+          "seller": "CORAL ACADEMY OF SCIENCE LAS VEGAS",
+          "category": "Education"
+        },
+        {
+          "name": "OKCoral",
+          "url": "https://apps.apple.com/us/app/okcoral/id1350898621?uo=4",
+          "seller": "Coral Restoration Foundation, Inc.",
+          "category": "Education"
+        },
+        {
+          "name": "DESERTOPIA",
+          "url": "https://apps.apple.com/us/app/desertopia/id1265572046?uo=4",
+          "seller": "Gamtropy Co., Ltd.",
+          "category": "Games"
+        },
+        {
+          "name": "Goldy – Aquatic Coral Sea Life",
+          "url": "https://apps.apple.com/us/app/goldy-aquatic-coral-sea-life/id1079431665?uo=4",
+          "seller": "Adem Oktay",
+          "category": "Games"
+        },
+        {
+          "name": "Coral Card",
+          "url": "https://apps.apple.com/us/app/coral-card/id1192933755?uo=4",
+          "seller": "Metamedia Technology Co., Ltd.",
+          "category": "Lifestyle"
+        },
+        {
+          "name": "Coral Boutique",
+          "url": "https://apps.apple.com/us/app/coral-boutique/id1662423978?uo=4",
+          "seller": "Tammy Ivy",
+          "category": "Shopping"
+        },
+        {
+          "name": "Aquarium And Coral Tracking",
+          "url": "https://apps.apple.com/us/app/aquarium-and-coral-tracking/id1532120379?uo=4",
+          "seller": "vi Nguyen",
+          "category": "Utilities"
+        },
+        {
+          "name": "TREMBLE Studios",
+          "url": "https://apps.apple.com/us/app/tremble-studios/id1524078282?uo=4",
+          "seller": "Coral Tremble Gables LLC",
+          "category": "Health & Fitness"
+        },
+        {
+          "name": "Coral Care Guide",
+          "url": "https://apps.apple.com/us/app/coral-care-guide/id1577023704?uo=4",
+          "seller": "Coral LLC",
+          "category": "Medical"
+        },
+        {
+          "name": "Red Coral Universe",
+          "url": "https://apps.apple.com/us/app/red-coral-universe/id1667641760?uo=4",
+          "seller": "Larry Meistrich",
+          "category": "Entertainment"
+        },
+        {
+          "name": "Coral Identifier: Reef Care",
+          "url": "https://apps.apple.com/us/app/coral-identifier-reef-care/id6769314256?uo=4",
+          "seller": "Nova Rights LLC",
+          "category": "Education"
+        },
+        {
+          "name": "Coral Cactus",
+          "url": "https://apps.apple.com/us/app/coral-cactus/id1638984092?uo=4",
+          "seller": "Comment On Apps LLC",
+          "category": "Shopping"
+        },
+        {
+          "name": "Coral Reef by Tinybop",
+          "url": "https://apps.apple.com/us/app/coral-reef-by-tinybop/id1331577768?uo=4",
+          "seller": "Tinybop Inc.",
+          "category": "Education"
+        },
+        {
+          "name": "Corals Closet",
+          "url": "https://apps.apple.com/us/app/corals-closet/id6538725453?uo=4",
+          "seller": "Momence, Inc.",
+          "category": "Health & Fitness"
+        },
+        {
+          "name": "Coral Gables Trolley Tracker",
+          "url": "https://apps.apple.com/us/app/coral-gables-trolley-tracker/id6479674588?uo=4",
+          "seller": "One Bite Apps Inc.",
+          "category": "Travel"
+        },
+        {
+          "name": "Coral Ridge Ministries",
+          "url": "https://apps.apple.com/us/app/coral-ridge-ministries/id1073195394?uo=4",
+          "seller": "CORAL RIDGE PRESBYTERIAN CHURCH, INC",
+          "category": "Education"
+        },
+        {
+          "name": "Coral Gables Citizen Center",
+          "url": "https://apps.apple.com/us/app/coral-gables-citizen-center/id6474243469?uo=4",
+          "seller": "city of coral gables",
+          "category": "Productivity"
+        },
+        {
+          "name": "Coral Bay Club",
+          "url": "https://apps.apple.com/us/app/coral-bay-club/id6743319716?uo=4",
+          "seller": "Coral Bay Club Inc",
+          "category": "Lifestyle"
+        },
+        {
+          "name": "Academia Coral",
+          "url": "https://apps.apple.com/us/app/academia-coral/id1565373098?uo=4",
+          "seller": "AkzoNobel Decorative Coatings B.V.",
+          "category": "Education"
+        },
+        {
+          "name": "Battle Of The Coral Sea",
+          "url": "https://apps.apple.com/us/app/battle-of-the-coral-sea/id6738445839?uo=4",
+          "seller": "Mohammad Alizade",
+          "category": "Games"
+        },
+        {
+          "name": "CBA Coral Business Academy",
+          "url": "https://apps.apple.com/us/app/cba-coral-business-academy/id6759369567?uo=4",
+          "seller": "CORAL CLUB DISTRIBUTION LTD",
+          "category": "Business"
+        },
+        {
+          "name": "Domina Coral Bay Resort",
+          "url": "https://apps.apple.com/us/app/domina-coral-bay-resort/id1631818221?uo=4",
+          "seller": "NILE COMPANY FOR MANAGING HOTELS AND RESORTS LLC",
+          "category": "Travel"
+        },
+        {
+          "name": "Center Pharmacy Cape Coral",
+          "url": "https://apps.apple.com/us/app/center-pharmacy-cape-coral/id1563284582?uo=4",
+          "seller": "Bilgin, Inc.",
+          "category": "Medical"
+        },
+        {
+          "name": "Coral Ridge Yacht Club",
+          "url": "https://apps.apple.com/us/app/coral-ridge-yacht-club/id1605736312?uo=4",
+          "seller": "Coral Ridge Yacht Club, Inc.",
+          "category": "Lifestyle"
+        },
+        {
+          "name": "Coral Travel - Поиск туров",
+          "url": "https://apps.apple.com/us/app/coral-travel-%D0%BF%D0%BE%D0%B8%D1%81%D0%BA-%D1%82%D1%83%D1%80%D0%BE%D0%B2/id6739885321?uo=4",
+          "seller": "AMBITUR OOO",
+          "category": "Travel"
+        },
+        {
+          "name": "54D On",
+          "url": "https://apps.apple.com/us/app/54d-on/id1520445334?uo=4",
+          "seller": "Coral GPY Gables LLC",
+          "category": "Health & Fitness"
+        },
+        {
+          "name": "Coral Quest Odyssey",
+          "url": "https://apps.apple.com/us/app/coral-quest-odyssey/id6670272257?uo=4",
+          "seller": "Soumia BERIADA",
+          "category": "Games"
+        },
+        {
+          "name": "Coral Creek Club",
+          "url": "https://apps.apple.com/us/app/coral-creek-club/id1528781559?uo=4",
+          "seller": "Coral Creek Club Member Acquisition Corp",
+          "category": "Lifestyle"
+        },
+        {
+          "name": "Coral Oaks Tennis Club",
+          "url": "https://apps.apple.com/us/app/coral-oaks-tennis-club/id1521832223?uo=4",
+          "seller": "CORAL OAKS TENNIS & WELLNESS, LLC",
+          "category": "Health & Fitness"
+        },
+        {
+          "name": "Coral Cliffs Cinema",
+          "url": "https://apps.apple.com/us/app/coral-cliffs-cinema/id1658947961?uo=4",
+          "seller": "INDY Cinema Group Ltd",
+          "category": "Entertainment"
+        },
+        {
+          "name": "Philips CoralCare",
+          "url": "https://apps.apple.com/us/app/philips-coralcare/id1507947348?uo=4",
+          "seller": "Signify Netherlands B.V.",
+          "category": "Business"
+        },
+        {
+          "name": "Coral-Perfumes",
+          "url": "https://apps.apple.com/us/app/coral-perfumes/id6472872599?uo=4",
+          "seller": "Coral Perfumes Industry LLC",
+          "category": "Shopping"
+        },
+        {
+          "name": "Coral Tournaments",
+          "url": "https://apps.apple.com/us/app/coral-tournaments/id6746067576?uo=4",
+          "seller": "International Table Soccer Federation",
+          "category": "Sports"
+        },
+        {
+          "name": "The Mile Coral Gables",
+          "url": "https://apps.apple.com/us/app/the-mile-coral-gables/id1660972869?uo=4",
+          "seller": "Elevated Lifestyles Inc",
+          "category": "Lifestyle"
+        },
+        {
+          "name": "Reef Expert: Fish & Coral",
+          "url": "https://apps.apple.com/us/app/reef-expert-fish-coral/id6751739535?uo=4",
+          "seller": "Yihong Lim",
+          "category": "Lifestyle"
+        },
+        {
+          "name": "Coral Wealth Management",
+          "url": "https://apps.apple.com/us/app/coral-wealth-management/id6480421589?uo=4",
+          "seller": "CORAL WEALTH MANAGEMENT, LLC",
+          "category": "Finance"
+        },
+        {
+          "name": "Coral Tree Cafe",
+          "url": "https://apps.apple.com/us/app/coral-tree-cafe/id576833194?uo=4",
+          "seller": "CTC Cafe Encino LLC",
+          "category": "Food & Drink"
+        },
+        {
+          "name": "Coral Bay Wine & Spirits",
+          "url": "https://apps.apple.com/us/app/coral-bay-wine-spirits/id6499385104?uo=4",
+          "seller": "Coral Bay Wine & Spirits, Inc.",
+          "category": "Shopping"
+        },
+        {
+          "name": "Coral Casino Beach & Cabana",
+          "url": "https://apps.apple.com/us/app/coral-casino-beach-cabana/id6475365592?uo=4",
+          "seller": "Montecito Country Club, INC",
+          "category": "Lifestyle"
+        },
+        {
+          "name": "Freddi Fish 5: Coral Cove",
+          "url": "https://apps.apple.com/us/app/freddi-fish-5-coral-cove/id1001003428?uo=4",
+          "seller": "Tommo Inc.",
+          "category": "Games"
+        },
+        {
+          "name": "Coral Beach Club",
+          "url": "https://apps.apple.com/us/app/coral-beach-club/id6449506012?uo=4",
+          "seller": "Utiliter d.o.o",
+          "category": "Lifestyle"
+        },
+        {
+          "name": "My Coral Springs App",
+          "url": "https://apps.apple.com/us/app/my-coral-springs-app/id962929021?uo=4",
+          "seller": "City of Coral Springs",
+          "category": "Productivity"
+        },
+        {
+          "name": "Coral Travel -сеть турагентств",
+          "url": "https://apps.apple.com/us/app/coral-travel-%D1%81%D0%B5%D1%82%D1%8C-%D1%82%D1%83%D1%80%D0%B0%D0%B3%D0%B5%D0%BD%D1%82%D1%81%D1%82%D0%B2/id1234075544?uo=4",
+          "seller": "Oleg Vinogradov",
+          "category": "Travel"
+        },
+        {
+          "name": "Coral Showroom Tag Scanner",
+          "url": "https://apps.apple.com/us/app/coral-showroom-tag-scanner/id1587842269?uo=4",
+          "seller": "Skyspan Systems LLC",
+          "category": "Utilities"
+        },
+        {
+          "name": "CORAL TRAVEL ТУРАГЕНТСТВО МСК",
+          "url": "https://apps.apple.com/us/app/coral-travel-%D1%82%D1%83%D1%80%D0%B0%D0%B3%D0%B5%D0%BD%D1%82%D1%81%D1%82%D0%B2%D0%BE-%D0%BC%D1%81%D0%BA/id1529585345?uo=4",
+          "seller": "Irina Blinova",
+          "category": "Travel"
+        },
+        {
+          "name": "Calvary Chapel Cape Coral",
+          "url": "https://apps.apple.com/us/app/calvary-chapel-cape-coral/id1236047825?uo=4",
+          "seller": "Calvary Chapel of Ft Myers Inc",
+          "category": "Education"
+        },
+        {
+          "name": "Coral Health 365",
+          "url": "https://apps.apple.com/us/app/coral-health-365/id1560958357?uo=4",
+          "seller": "CORAL CLUB DISTRIBUTION LTD",
+          "category": "Health & Fitness"
+        },
+        {
+          "name": "Cape Coral 311",
+          "url": "https://apps.apple.com/us/app/cape-coral-311/id1610014117?uo=4",
+          "seller": "City of Cape Coral",
+          "category": "Utilities"
+        },
+        {
+          "name": "Coral Travel Lithuania",
+          "url": "https://apps.apple.com/us/app/coral-travel-lithuania/id1586092500?uo=4",
+          "seller": "Coral Travel Lithuania UAB",
+          "category": "Travel"
+        },
+        {
+          "name": "CORAL Gyne Nomogram Calculator",
+          "url": "https://apps.apple.com/us/app/coral-gyne-nomogram-calculator/id1212183345?uo=4",
+          "seller": "Jon Giambattista",
+          "category": "Medical"
+        },
+        {
+          "name": "Coral Ocean Resort",
+          "url": "https://apps.apple.com/us/app/coral-ocean-resort/id1549738859?uo=4",
+          "seller": "Chronogolf Inc.",
+          "category": "Sports"
+        },
+        {
+          "name": "CoralPro",
+          "url": "https://apps.apple.com/us/app/coralpro/id6751351283?uo=4",
+          "seller": "Coral Care, Inc.",
+          "category": "Health & Fitness"
+        },
+        {
+          "name": "Coral Travel Poland",
+          "url": "https://apps.apple.com/us/app/coral-travel-poland/id1520418722?uo=4",
+          "seller": "CORAL TRAVEL POLAND SP Z O O",
+          "category": "Travel"
+        },
+        {
+          "name": "Coral Travel Elite агентство",
+          "url": "https://apps.apple.com/us/app/coral-travel-elite-%D0%B0%D0%B3%D0%B5%D0%BD%D1%82%D1%81%D1%82%D0%B2%D0%BE/id1454252989?uo=4",
+          "seller": "Oleg Vinogradov",
+          "category": "Travel"
+        },
+        {
+          "name": "Coral Travel - турагентствo",
+          "url": "https://apps.apple.com/us/app/coral-travel-%D1%82%D1%83%D1%80%D0%B0%D0%B3%D0%B5%D0%BD%D1%82%D1%81%D1%82%D0%B2o/id1553871656?uo=4",
+          "seller": "PAVEL VINNIKOV",
+          "category": "Travel"
+        },
+        {
+          "name": "Coral Ridge Presbyterian",
+          "url": "https://apps.apple.com/us/app/coral-ridge-presbyterian/id1484035710?uo=4",
+          "seller": "CORAL RIDGE PRESBYTERIAN CHURCH, INC",
+          "category": "Lifestyle"
+        },
+        {
+          "name": "Coral Fragger",
+          "url": "https://apps.apple.com/us/app/coral-fragger/id6781217111?uo=4",
+          "seller": "Edijs Smagris",
+          "category": "Games"
+        },
+        {
+          "name": "Coral Lebanon",
+          "url": "https://apps.apple.com/us/app/coral-lebanon/id1600860923?uo=4",
+          "seller": "The Coral Oil Company Limited",
+          "category": "Business"
+        },
+        {
+          "name": "Corale Santa Cecilia Bernate",
+          "url": "https://apps.apple.com/us/app/corale-santa-cecilia-bernate/id6479448157?uo=4",
+          "seller": "Massimiliano Limosani",
+          "category": "Music"
+        },
+        {
+          "name": "Coral Reef Coffee",
+          "url": "https://apps.apple.com/us/app/coral-reef-coffee/id6742277728?uo=4",
+          "seller": "Coral Reef Coffee Company, LLC",
+          "category": "Food & Drink"
+        },
+        {
+          "name": "Coral & Lace Boutique",
+          "url": "https://apps.apple.com/us/app/coral-lace-boutique/id1634057997?uo=4",
+          "seller": "Comment On Apps LLC",
+          "category": "Shopping"
+        },
+        {
+          "name": "Coral Beach and Tennis Club",
+          "url": "https://apps.apple.com/us/app/coral-beach-and-tennis-club/id1217716136?uo=4",
+          "seller": "CBC 2013 Manager Ltd",
+          "category": "Lifestyle"
+        },
+        {
+          "name": "CORAL: Prostate Cancer Risk and Survival",
+          "url": "https://apps.apple.com/us/app/coral-prostate-cancer-risk-and-survival/id1137504631?uo=4",
+          "seller": "Jon Giambattista",
+          "category": "Medical"
+        },
+        {
+          "name": "Coral Online",
+          "url": "https://apps.apple.com/us/app/coral-online/id6752671341?uo=4",
+          "seller": "Gerardo Ortiz e Hijos C. LTDA.",
+          "category": "Shopping"
+        },
+        {
+          "name": "Coral Oaks Golf Course",
+          "url": "https://apps.apple.com/us/app/coral-oaks-golf-course/id6736535196?uo=4",
+          "seller": "Antares Golf, LLC",
+          "category": "Sports"
+        },
+        {
+          "name": "Coral Reef Ocean",
+          "url": "https://apps.apple.com/us/app/coral-reef-ocean/id1558813559?uo=4",
+          "seller": "FoxCom, s.r.o.",
+          "category": "Games"
+        },
+        {
+          "name": "First Coral Gables",
+          "url": "https://apps.apple.com/us/app/first-coral-gables/id1561045337?uo=4",
+          "seller": "First United Methodist Church of Coral Gables",
+          "category": "Education"
+        },
+        {
+          "name": "Egypt Travel Guide - Pyramids, Secrets of Coral",
+          "url": "https://apps.apple.com/us/app/egypt-travel-guide-pyramids-secrets-of-coral/id751169890?uo=4",
+          "seller": "Anastasia Kovba",
+          "category": "Travel"
+        },
+        {
+          "name": "Турагентство CORAL Travel",
+          "url": "https://apps.apple.com/us/app/%D1%82%D1%83%D1%80%D0%B0%D0%B3%D0%B5%D0%BD%D1%82%D1%81%D1%82%D0%B2%D0%BE-coral-travel/id1582625163?uo=4",
+          "seller": "Roman Kuznetsov",
+          "category": "Travel"
+        },
+        {
+          "name": "Coral Colors: Water Sort",
+          "url": "https://apps.apple.com/us/app/coral-colors-water-sort/id6770530398?uo=4",
+          "seller": "zak goichman",
+          "category": "Games"
+        },
+        {
+          "name": "Riviera CC Coral Gables",
+          "url": "https://apps.apple.com/us/app/riviera-cc-coral-gables/id1456770049?uo=4",
+          "seller": "Riviera Country Club of Coral Gables, Florida",
+          "category": "Lifestyle"
+        },
+        {
+          "name": "CAFÉ DE CORAL",
+          "url": "https://apps.apple.com/us/app/caf%C3%A9-de-coral/id1436965382?uo=4",
+          "seller": "CAFE DE CORAL FAST FOOD LIMITED",
+          "category": "Food & Drink"
+        },
+        {
+          "name": "Coral Springs CityTV",
+          "url": "https://apps.apple.com/us/app/coral-springs-citytv/id6448310713?uo=4",
+          "seller": "Cablecast Community Media LLC",
+          "category": "Education"
+        },
+        {
+          "name": "CORAL eSIM: Travel Data Plans",
+          "url": "https://apps.apple.com/us/app/coral-esim-travel-data-plans/id6772658969?uo=4",
+          "seller": "BORING LLC",
+          "category": "Travel"
+        },
+        {
+          "name": "Residiuum Tales of Coral",
+          "url": "https://apps.apple.com/us/app/residiuum-tales-of-coral/id6443626133?uo=4",
+          "seller": "IBIZA COLLECTIBLES COMERCIO, IMPORTACAO EXPORTACAO LTDA",
+          "category": "Games"
+        },
+        {
+          "name": "Coral store متجر كورال",
+          "url": "https://apps.apple.com/us/app/coral-store-%D9%85%D8%AA%D8%AC%D8%B1-%D9%83%D9%88%D8%B1%D8%A7%D9%84/id6740146682?uo=4",
+          "seller": "iraq techno",
+          "category": "Navigation"
+        },
+        {
+          "name": "Coral Cove Media",
+          "url": "https://apps.apple.com/us/app/coral-cove-media/id6445924002?uo=4",
+          "seller": "Monica Lea Imagery LLC",
+          "category": "Photo & Video"
+        },
+        {
+          "name": "Cape Coral Yoga Pilates",
+          "url": "https://apps.apple.com/us/app/cape-coral-yoga-pilates/id6741593742?uo=4",
+          "seller": "FITDEGREE LLC",
+          "category": "Health & Fitness"
+        },
+        {
+          "name": "Корал Тревел ООО Пасарт",
+          "url": "https://apps.apple.com/us/app/%D0%BA%D0%BE%D1%80%D0%B0%D0%BB-%D1%82%D1%80%D0%B5%D0%B2%D0%B5%D0%BB-%D0%BE%D0%BE%D0%BE-%D0%BF%D0%B0%D1%81%D0%B0%D1%80%D1%82/id1487374959?uo=4",
+          "seller": "KOMPANIYA PASART, OOO",
+          "category": "Business"
+        },
+        {
+          "name": "יד2 - yad2",
+          "url": "https://apps.apple.com/us/app/%D7%99%D7%932-yad2/id406318295?uo=4",
+          "seller": "Coral Tell LTD",
+          "category": "Shopping"
+        },
+        {
+          "name": "Coral Sea Resorts",
+          "url": "https://apps.apple.com/us/app/coral-sea-resorts/id1481378246?uo=4",
+          "seller": "Infosoftel Ltd",
+          "category": "Travel"
+        },
+        {
+          "name": "Sunset Chicken Cape Coral",
+          "url": "https://apps.apple.com/us/app/sunset-chicken-cape-coral/id6805530335?uo=4",
+          "seller": "SUNSET CHICKEN, INC.",
+          "category": "Food & Drink"
+        },
+        {
+          "name": "Coral Travel турагентство",
+          "url": "https://apps.apple.com/us/app/coral-travel-%D1%82%D1%83%D1%80%D0%B0%D0%B3%D0%B5%D0%BD%D1%82%D1%81%D1%82%D0%B2%D0%BE/id1446989838?uo=4",
+          "seller": "PAVEL VINNIKOV",
+          "category": "Travel"
+        },
+        {
+          "name": "CoralSync",
+          "url": "https://apps.apple.com/us/app/coralsync/id6737188794?uo=4",
+          "seller": "Huizhou Abi Technology Co.,Ltd",
+          "category": "Utilities"
+        },
+        {
+          "name": "CoralTree Residence Shuttle",
+          "url": "https://apps.apple.com/us/app/coraltree-residence-shuttle/id6736479332?uo=4",
+          "seller": "Downtowner App Inc.",
+          "category": "Travel"
+        },
+        {
+          "name": "Reef Remedy: Fish & Coral Help",
+          "url": "https://apps.apple.com/us/app/reef-remedy-fish-coral-help/id6794310573?uo=4",
+          "seller": "Szymon Niemiec",
+          "category": "Reference"
+        },
+        {
+          "name": "Coral leather",
+          "url": "https://apps.apple.com/us/app/coral-leather/id6754561228?uo=4",
+          "seller": "Lavleen Dhindsa",
+          "category": "Games"
+        },
+        {
+          "name": "Coral Clash",
+          "url": "https://apps.apple.com/us/app/coral-clash/id6754509672?uo=4",
+          "seller": "Josiah Buxton",
+          "category": "Games"
+        },
+        {
+          "name": "Coral Office Park",
+          "url": "https://apps.apple.com/us/app/coral-office-park/id1472981381?uo=4",
+          "seller": "Sharry Europe s.r.o.",
+          "category": "Business"
+        },
+        {
+          "name": "Casavana",
+          "url": "https://apps.apple.com/us/app/casavana/id6749703881?uo=4",
+          "seller": "Casavana Coral Reef, Inc",
+          "category": "Food & Drink"
+        },
+        {
+          "name": "Coralis",
+          "url": "https://apps.apple.com/us/app/coralis/id1573244665?uo=4",
+          "seller": "Coralis Americas LLC",
+          "category": "Productivity"
+        },
+        {
+          "name": "ZipApp Lite: The Unarchiver",
+          "url": "https://apps.apple.com/us/app/zipapp-lite-the-unarchiver/id585600850?uo=4",
+          "seller": "兰桂 吴",
+          "category": "Utilities"
+        },
+        {
+          "name": "CoralBear",
+          "url": "https://apps.apple.com/us/app/coralbear/id6502746517?uo=4",
+          "seller": "毓鑫 邢",
+          "category": "Utilities"
+        },
+        {
+          "name": "Coral Identifier: Reef Corals",
+          "url": "https://apps.apple.com/us/app/coral-identifier-reef-corals/id6757849065?uo=4",
+          "seller": "Szymon Niemiec",
+          "category": "Reference"
+        },
+        {
+          "name": "Coral Travel Estonia",
+          "url": "https://apps.apple.com/us/app/coral-travel-estonia/id1618741172?uo=4",
+          "seller": "CORAL TRAVEL ESTONIA OU",
+          "category": "Travel"
+        },
+        {
+          "name": "Coral Travel Latvia",
+          "url": "https://apps.apple.com/us/app/coral-travel-latvia/id1639097660?uo=4",
+          "seller": "CORAL TRAVEL Latvia",
+          "category": "Travel"
+        },
+        {
+          "name": "Coral Reef Trips",
+          "url": "https://apps.apple.com/us/app/coral-reef-trips/id6771944078?uo=4",
+          "seller": "Linh Phan Nhat Khanh",
+          "category": "Travel"
+        },
+        {
+          "name": "ChmPlus Lite: CHM/EPUB Reader",
+          "url": "https://apps.apple.com/us/app/chmplus-lite-chm-epub-reader/id443454952?uo=4",
+          "seller": "兰桂 吴",
+          "category": "Productivity"
+        },
+        {
+          "name": "54D",
+          "url": "https://apps.apple.com/us/app/54d/id1450739885?uo=4",
+          "seller": "Coral GPY Gables LLC",
+          "category": "Health & Fitness"
+        },
+        {
+          "name": "WINK News",
+          "url": "https://apps.apple.com/us/app/wink-news/id1040467539?uo=4",
+          "seller": "Fort Myers Broadcasting Co.",
+          "category": "News"
+        },
+        {
+          "name": "Mylo by Coral Smart Pool",
+          "url": "https://apps.apple.com/us/app/mylo-by-coral-smart-pool/id6444309522?uo=4",
+          "seller": "Coral Smart Pool Ltd",
+          "category": "Health & Fitness"
+        },
+        {
+          "name": "foodpanda: Food & Groceries",
+          "url": "https://apps.apple.com/us/app/foodpanda-food-groceries/id758103884?uo=4",
+          "seller": "Internet Services Polen Sp. z o.o.",
+          "category": "Food & Drink"
+        },
+        {
+          "name": "Christ Church Coral Springs",
+          "url": "https://apps.apple.com/us/app/christ-church-coral-springs/id6741553928?uo=4",
+          "seller": "CHRIST CHURCH - A LUTHERAN CONGREGATION, INC.",
+          "category": "Education"
+        },
+        {
+          "name": "Coral Travel Romania",
+          "url": "https://apps.apple.com/us/app/coral-travel-romania/id6738166545?uo=4",
+          "seller": "CORAL TRAVEL & TOURISM SERVICES S.R.L",
+          "category": "Travel"
+        },
+        {
+          "name": "Coralillo Cafe",
+          "url": "https://apps.apple.com/us/app/coralillo-cafe/id6654926503?uo=4",
+          "seller": "NIU MEDIA ADZHENSI, UKRAINA, PP",
+          "category": "Food & Drink"
+        },
+        {
+          "name": "ABC DOS RECIFES DE CORAL",
+          "url": "https://apps.apple.com/us/app/abc-dos-recifes-de-coral/id1521928237?uo=4",
+          "seller": "Instituto Coral Vivo",
+          "category": "Games"
+        },
+        {
+          "name": "IgniteTV Play",
+          "url": "https://apps.apple.com/us/app/ignitetv-play/id6503616822?uo=4",
+          "seller": "Coral Cable Vision Company Limited",
+          "category": "Entertainment"
+        },
+        {
+          "name": "Coralie Transport à la Demande",
+          "url": "https://apps.apple.com/us/app/coralie-transport-%C3%A0-la-demande/id1474352826?uo=4",
+          "seller": "REUNIR SERVICES",
+          "category": "Travel"
+        },
+        {
+          "name": "Gyrotonic Coral Gables",
+          "url": "https://apps.apple.com/us/app/gyrotonic-coral-gables/id6789072125?uo=4",
+          "seller": "Principles Of Intelligent Movement, LLC",
+          "category": "Health & Fitness"
+        },
+        {
+          "name": "Corally Motor Management",
+          "url": "https://apps.apple.com/us/app/corally-motor-management/id6463020490?uo=4",
+          "seller": "JSP Group Intl BVBA",
+          "category": "Utilities"
+        },
+        {
+          "name": "Fish Identifier AI: FinID",
+          "url": "https://apps.apple.com/us/app/fish-identifier-ai-finid/id6758929033?uo=4",
+          "seller": "Mayank Yadav",
+          "category": "Reference"
+        },
+        {
+          "name": "Coral Mountain Golf Club",
+          "url": "https://apps.apple.com/us/app/coral-mountain-golf-club/id1538634749?uo=4",
+          "seller": "Chronogolf Inc.",
+          "category": "Sports"
+        },
+        {
+          "name": "Rosa Coral: Óculos Femininos",
+          "url": "https://apps.apple.com/us/app/rosa-coral-%C3%B3culos-femininos/id6755238831?uo=4",
+          "seller": "ANONIME LTDA",
+          "category": "Shopping"
+        },
+        {
+          "name": "Coral Travel Elite Service",
+          "url": "https://apps.apple.com/us/app/coral-travel-elite-service/id1606153299?uo=4",
+          "seller": "Roman Kuznetsov",
+          "category": "Travel"
+        },
+        {
+          "name": "Fruit Nibblers",
+          "url": "https://apps.apple.com/us/app/fruit-nibblers/id962680846?uo=4",
+          "seller": "Rovio Entertainment Oyj",
+          "category": "Games"
+        },
+        {
+          "name": "Golden Corral",
+          "url": "https://apps.apple.com/us/app/golden-corral/id1552332865?uo=4",
+          "seller": "Golden Corral Corporation",
+          "category": "Food & Drink"
+        },
+        {
+          "name": "Reefs: Reef Aquarium & Coral",
+          "url": "https://apps.apple.com/us/app/reefs-reef-aquarium-coral/id337679831?uo=4",
+          "seller": "Manhattan Reefs",
+          "category": "Entertainment"
+        },
+        {
+          "name": "Ride Freebee",
+          "url": "https://apps.apple.com/us/app/ride-freebee/id1014088236?uo=4",
+          "seller": "BEEFREE, LLC",
+          "category": "Travel"
+        },
+        {
+          "name": "Coral Travel Georgia",
+          "url": "https://apps.apple.com/us/app/coral-travel-georgia/id6758376652?uo=4",
+          "seller": "CORAL TRAVEL, LLC (GEO)",
+          "category": "Travel"
+        },
+        {
+          "name": "Cape Coral First",
+          "url": "https://apps.apple.com/us/app/cape-coral-first/id6499235598?uo=4",
+          "seller": "Cape Coral First Methodist Church Inc.",
+          "category": "Education"
+        },
+        {
+          "name": "Coral Sea",
+          "url": "https://apps.apple.com/us/app/coral-sea/id1450658012?uo=4",
+          "seller": "UPSELL SINGLE MEMBER P.C.",
+          "category": "Travel"
+        },
+        {
+          "name": "Reef ID: Fish & Coral ID",
+          "url": "https://apps.apple.com/us/app/reef-id-fish-coral-id/id6746783057?uo=4",
+          "seller": "Colby Maloy",
+          "category": "Education"
+        },
+        {
+          "name": "Oceanic+ Scuba Diving Computer",
+          "url": "https://apps.apple.com/us/app/oceanic-scuba-diving-computer/id1610517133?uo=4",
+          "seller": "Huish Outdoors, LLC",
+          "category": "Sports"
+        },
+        {
+          "name": "Octopus 八達通",
+          "url": "https://apps.apple.com/us/app/octopus-%E5%85%AB%E9%81%94%E9%80%9A/id1114430602?uo=4",
+          "seller": "OCTOPUS Cards Ltd.",
+          "category": "Finance"
+        },
+        {
+          "name": "Coral Swim",
+          "url": "https://apps.apple.com/us/app/coral-swim/id6782922086?uo=4",
+          "seller": "C4 Software Development LLC",
+          "category": "Games"
+        },
+        {
+          "name": "PackSnap: Scan",
+          "url": "https://apps.apple.com/us/app/packsnap-scan/id6782348663?uo=4",
+          "seller": "HOF CORAL",
+          "category": "Business"
+        },
+        {
+          "name": "Grace Church App",
+          "url": "https://apps.apple.com/us/app/grace-church-app/id557417656?uo=4",
+          "seller": "Grace Church of Cape Coral Inc.",
+          "category": "Lifestyle"
+        },
+        {
+          "name": "Agapé: Feel Close When Apart",
+          "url": "https://apps.apple.com/us/app/agap%C3%A9-feel-close-when-apart/id1507907556?uo=4",
+          "seller": "Agape Wellness Inc",
+          "category": "Health & Fitness"
+        },
+        {
+          "name": "Splash — Fish Aquarium",
+          "url": "https://apps.apple.com/us/app/splash-fish-aquarium/id960080321?uo=4",
+          "seller": "Runaway Play Ltd",
+          "category": "Games"
+        },
+        {
+          "name": "Paint by number for adults",
+          "url": "https://apps.apple.com/us/app/paint-by-number-for-adults/id1330926273?uo=4",
+          "seller": "Coloring puzzle games sp. z o.o.",
+          "category": "Games"
+        },
+        {
+          "name": "The Excellence Collection",
+          "url": "https://apps.apple.com/us/app/the-excellence-collection/id1519562027?uo=4",
+          "seller": "DAPPER TECHNOLOGIES S. DE R.L. DE C.V.",
+          "category": "Travel"
+        },
+        {
+          "name": "Miss Coral: Speak English",
+          "url": "https://apps.apple.com/us/app/miss-coral-speak-english/id6779044744?uo=4",
+          "seller": "CREAACTIVA LLC",
+          "category": "Education"
+        },
+        {
+          "name": "B.Ticket Coral Gables",
+          "url": "https://apps.apple.com/us/app/b-ticket-coral-gables/id6746413893?uo=4",
+          "seller": "INTEGR PARKING SOLUTIONS LLC",
+          "category": "Utilities"
+        },
+        {
+          "name": "Palladium Hotel Group",
+          "url": "https://apps.apple.com/us/app/palladium-hotel-group/id520047102?uo=4",
+          "seller": "Mobail Apps S.L.",
+          "category": "Travel"
+        },
+        {
+          "name": "Classic Vegas Casino Slots",
+          "url": "https://apps.apple.com/us/app/classic-vegas-casino-slots/id994102781?uo=4",
+          "seller": "GHOST STUDIO Co., Limited",
+          "category": "Games"
+        },
+        {
+          "name": "Jackpot Crush - Casino Slots",
+          "url": "https://apps.apple.com/us/app/jackpot-crush-casino-slots/id1529572983?uo=4",
+          "seller": "SpinX Games Limited",
+          "category": "Games"
+        },
+        {
+          "name": "The Coral App",
+          "url": "https://apps.apple.com/us/app/the-coral-app/id6763652621?uo=4",
+          "seller": "The Coral App LLC",
+          "category": "Entertainment"
+        },
+        {
+          "name": "Coral Gardens",
+          "url": "https://apps.apple.com/us/app/coral-gardens/id6796483269?uo=4",
+          "seller": "Joseph Seif",
+          "category": "Games"
+        },
+        {
+          "name": "My Basil",
+          "url": "https://apps.apple.com/us/app/my-basil/id6446291462?uo=4",
+          "seller": "CoralTree, Inc",
+          "category": "Business"
+        },
+        {
+          "name": "Coral Coast Music",
+          "url": "https://apps.apple.com/us/app/coral-coast-music/id6753960192?uo=4",
+          "seller": "Coral Coast Music",
+          "category": "Education"
+        },
+        {
+          "name": "CoralCalc: Reef Dosing Guide",
+          "url": "https://apps.apple.com/us/app/coralcalc-reef-dosing-guide/id6761398297?uo=4",
+          "seller": "JUHWAN PARK",
+          "category": "Lifestyle"
+        },
+        {
+          "name": "DoubleHit Slots Casino Game",
+          "url": "https://apps.apple.com/us/app/doublehit-slots-casino-game/id1016431735?uo=4",
+          "seller": "GHOST STUDIO Co., Limited",
+          "category": "Games"
+        },
+        {
+          "name": "Cowlitz Hill Guernseys",
+          "url": "https://apps.apple.com/us/app/cowlitz-hill-guernseys/id6768526612?uo=4",
+          "seller": "Coral Cove Software LLC",
+          "category": "Food & Drink"
+        },
+        {
+          "name": "Fish Aquarium Live Wallpapers",
+          "url": "https://apps.apple.com/us/app/fish-aquarium-live-wallpapers/id1089100801?uo=4",
+          "seller": "Voros Innovation & Business Services Pty Ltd",
+          "category": "Lifestyle"
+        },
+        {
+          "name": "Gables UCC",
+          "url": "https://apps.apple.com/us/app/gables-ucc/id1474647944?uo=4",
+          "seller": "CORAL GABLES CONGREGATIONAL CHURCH (UNITED CHURCH OFCHRIST), INC.",
+          "category": "Lifestyle"
+        },
+        {
+          "name": "CRCC",
+          "url": "https://apps.apple.com/us/app/crcc/id1484129134?uo=4",
+          "seller": "Coral Ridge Golf Course, Inc.",
+          "category": "Lifestyle"
+        },
+        {
+          "name": "Nice - Intimacy Tracker",
+          "url": "https://apps.apple.com/us/app/nice-intimacy-tracker/id1107291612?uo=4",
+          "seller": "Incendiary Studios LLC",
+          "category": "Health & Fitness"
+        },
+        {
+          "name": "Photoshop Express Photo Editor",
+          "url": "https://apps.apple.com/us/app/photoshop-express-photo-editor/id331975235?uo=4",
+          "seller": "Adobe Inc.",
+          "category": "Photo & Video"
+        },
+        {
+          "name": "Tap Tap Fish - AbyssRium",
+          "url": "https://apps.apple.com/us/app/tap-tap-fish-abyssrium/id1068366937?uo=4",
+          "seller": "SangHeon Kim",
+          "category": "Games"
+        }
+      ]
+    },
+    {
+      "term": "Intonare",
+      "country": "tr",
+      "query_url": "https://itunes.apple.com/search?term=Intonare&country=tr&entity=software&limit=200",
+      "returned": 1,
+      "name_matches": [
+        {
+          "name": "Intonare",
+          "url": "https://apps.apple.com/tr/app/intonare/id6790028334?uo=4",
+          "seller": "Daniele Citti",
+          "category": "Music"
+        }
+      ],
+      "results": [
+        {
+          "name": "Intonare",
+          "url": "https://apps.apple.com/tr/app/intonare/id6790028334?uo=4",
+          "seller": "Daniele Citti",
+          "category": "Music"
+        }
+      ]
+    },
+    {
+      "term": "Intonare",
+      "country": "us",
+      "query_url": "https://itunes.apple.com/search?term=Intonare&country=us&entity=software&limit=200",
+      "returned": 9,
+      "name_matches": [
+        {
+          "name": "Intonare",
+          "url": "https://apps.apple.com/us/app/intonare/id6790028334?uo=4",
+          "seller": "Daniele Citti",
+          "category": "Music"
+        }
+      ],
+      "results": [
+        {
+          "name": "Intonare",
+          "url": "https://apps.apple.com/us/app/intonare/id6790028334?uo=4",
+          "seller": "Daniele Citti",
+          "category": "Music"
+        },
+        {
+          "name": "Snareobics",
+          "url": "https://apps.apple.com/us/app/snareobics/id1621286421?uo=4",
+          "seller": "Snareobics Ltd",
+          "category": "Music"
+        },
+        {
+          "name": "RTFactory Rudiments",
+          "url": "https://apps.apple.com/us/app/rtfactory-rudiments/id936150686?uo=4",
+          "seller": "Marc Kusters, Jose Cortijo",
+          "category": "Music"
+        },
+        {
+          "name": "Drum Surgeon AUv3 Plugin",
+          "url": "https://apps.apple.com/us/app/drum-surgeon-auv3-plugin/id1539908432?uo=4",
+          "seller": "Limelight Software",
+          "category": "Music"
+        },
+        {
+          "name": "Snare Drill",
+          "url": "https://apps.apple.com/us/app/snare-drill/id1035123580?uo=4",
+          "seller": "Juergen Kilian",
+          "category": "Music"
+        },
+        {
+          "name": "Snare Lab",
+          "url": "https://apps.apple.com/us/app/snare-lab/id6760266807?uo=4",
+          "seller": "TREVBEATS MULTIMEDIA LLC",
+          "category": "Music"
+        },
+        {
+          "name": "WatchDrum-Drum kit&Djembe",
+          "url": "https://apps.apple.com/us/app/watchdrum-drum-kit-djembe/id6451437323?uo=4",
+          "seller": "玉美 张",
+          "category": "Music"
+        },
+        {
+          "name": "MetroChord: Precise Metronome",
+          "url": "https://apps.apple.com/us/app/metrochord-precise-metronome/id6784759053?uo=4",
+          "seller": "joonseo park",
+          "category": "Utilities"
+        },
+        {
+          "name": "Kongstronomen: Metronome",
+          "url": "https://apps.apple.com/us/app/kongstronomen-metronome/id6760202079?uo=4",
+          "seller": "Øivind Kongsjorden",
+          "category": "Music"
+        }
+      ]
+    }
+  ]
+}

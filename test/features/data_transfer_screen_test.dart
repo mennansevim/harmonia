@@ -32,6 +32,21 @@ class _FailingBatchHistory extends InMemoryResultHistory {
       );
 }
 
+class _BrokenPortablePreferences extends InMemoryPracticePreferences {
+  @override
+  Future<PortablePracticePreferences> loadPortablePreferences() =>
+      Future.error(StateError('private preference path'));
+}
+
+class _OversizedHistory extends InMemoryResultHistory {
+  @override
+  Future<List<ResultHistoryEntry>> load() async => List.filled(
+    LocalDataExport.maxEntries + 1,
+    entry('attempt-too-many'),
+    growable: false,
+  );
+}
+
 void main() {
   String? clipboard;
   bool clipboardFails = false;
@@ -112,6 +127,50 @@ void main() {
     expect(find.textContaining('0 sonuç'), findsOneWidget);
   });
 
+  testWidgets('preference read failure publishes no partial export', (
+    tester,
+  ) async {
+    final history = InMemoryResultHistory();
+    await history.record(entry('attempt-pref-export'));
+    await pump(tester, history, preferences: _BrokenPortablePreferences());
+
+    await tester.tap(find.byKey(const Key('export_copy')));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.textContaining('Çalışma tercihleri okunamadığı'),
+      findsOneWidget,
+    );
+    expect(find.textContaining('Panoya hiçbir şey yazılmadı'), findsOneWidget);
+    expect(find.textContaining('private preference path'), findsNothing);
+    expect(clipboard, isNull);
+    expect(
+      tester
+          .widget<ChunkyButton>(find.byKey(const Key('export_copy')))
+          .onPressed,
+      isNotNull,
+    );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('oversized export is bounded before clipboard publication', (
+    tester,
+  ) async {
+    await pump(tester, _OversizedHistory());
+    await tester.tap(find.byKey(const Key('export_copy')));
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('4 MB sınırını aştığı'), findsOneWidget);
+    expect(clipboard, isNull);
+    expect(
+      tester
+          .widget<ChunkyButton>(find.byKey(const Key('export_copy')))
+          .onPressed,
+      isNotNull,
+    );
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('pending export locks both actions and input then recovers', (
     tester,
   ) async {
@@ -163,6 +222,36 @@ void main() {
   });
 
   testWidgets(
+    'replacement source cancels stale export before clipboard publication',
+    (tester) async {
+      final old = _PendingHistory();
+      await pump(tester, old);
+      await tester.tap(find.byKey(const Key('export_copy')));
+      await tester.pump();
+      expect(old.loads, 1);
+
+      final next = InMemoryResultHistory();
+      await pump(tester, next);
+      expect(
+        tester
+            .widget<ChunkyButton>(find.byKey(const Key('export_copy')))
+            .onPressed,
+        isNotNull,
+      );
+      expect(find.byKey(const Key('transfer_busy')), findsNothing);
+
+      old.gate.complete([entry('attempt-stale-export')]);
+      await tester.pumpAndSettle();
+      expect(clipboard, isNull);
+      expect(find.byKey(const Key('export_status')), findsNothing);
+
+      await tester.tap(find.byKey(const Key('export_copy')));
+      await tester.pumpAndSettle();
+      expect(LocalDataExport.decode(clipboard!).entries, isEmpty);
+    },
+  );
+
+  testWidgets(
     'confirmation locks operations; cancel preserves input and history',
     (tester) async {
       final h = InMemoryResultHistory();
@@ -205,6 +294,38 @@ void main() {
       expect(clipboard, isNull);
     },
   );
+
+  testWidgets('replacement source invalidates an open import confirmation', (
+    tester,
+  ) async {
+    final old = InMemoryResultHistory();
+    final next = InMemoryResultHistory();
+    await pump(tester, old);
+    final text = LocalDataExport.encode(
+      profile: null,
+      entries: [entry('attempt-stale-import')],
+      exportedAt: DateTime.utc(2026),
+    );
+    await tester.enterText(find.byKey(const Key('import_text')), text);
+    await tester.tap(find.byKey(const Key('import_apply')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('confirm_import')), findsOneWidget);
+
+    await pump(tester, next);
+    expect(find.byKey(const Key('confirm_import')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('confirm_import')));
+    await tester.pumpAndSettle();
+
+    expect(await old.load(), isEmpty);
+    expect(await next.load(), isEmpty);
+    expect(find.byKey(const Key('import_status')), findsNothing);
+    expect(
+      tester
+          .widget<ChunkyButton>(find.byKey(const Key('import_apply')))
+          .onPressed,
+      isNotNull,
+    );
+  });
 
   testWidgets('dark reduced-motion transfer can validate at large text', (
     tester,

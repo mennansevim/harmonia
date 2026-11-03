@@ -1,5 +1,35 @@
 # Resonia — Model devir ve genel işleyiş notu
 
+**2026-11-03 ADR-040:** Koro modülü ayrı satılır. Ses grubu sorulmaz; aralık
+`range_ladder.dart` (Agora portu, yanlış oktav ≠ başarı) ile
+`RangeTestScreen`'de dinle-tekrar et ölçülür ve yalnız çalışma register'ını
+seçer. `PianoNoteBank` `rightsReference` olmadan kayıt çalmaz. Koro
+`PartStep` basamakları puan değildir. Onboarding `Ob.part` adı kalıcı adım
+uyumluluğu için korunur.
+
+**2026-11-03 REL-08b:** `scripts/qa/code_gate.py` artık format/analyze/test
+exit code ve sürelerini, ilk düşen adımı, bounded test failures ve repo yolunu
+maskeleyen diagnostic tail'i `qa/reports/code_gate.json` içine yazar;
+dashboard `failedStep` gösterir. Test komutu `--concurrency 4` ile canonical
+runner'a eşitlendi. `python3 -I scripts/qa/test_code_gate.py` 3/3; gerçek kapı
+1182 passed, 0 failed, 2 skipped, tüm exit'ler 0. Önceki tekil exit 1'in nedeni
+kanıtsız olduğu için uydurulmadı; yalnız gelecekteki tekrara gözlem eklendi.
+Bu QA tooling cihaz/ses/pilot/yayın kabulü değildir; commit/push/deploy yok.
+
+**2026-11-03 I18N-01:** Kullanıcıya görünen her yeni metin `tr('Türkçe', 'English')` ile yazılır (`lib/domain/lang.dart`); `const` içinde kullanılamaz. Domain verisindeki metinler `const` kalacaksa İngilizce alanı ekleyip getter ile seç; top-level `final` listeler dile göre önbellekli getter olmalı. Testler Türkçe cihazda koşar; İngilizce kontrol `test/trainer/english_ui_test.dart`. Dil cihazdan gelir, uygulama içi seçici yok.
+
+**2026-11-03 QA-iOS-01:** `TrainerScope.of` artık store değişiminde yeniden çizer (`InheritedNotifier`); `const` sekmeler bu yüzden güncel kalır, build içinde store değiştirme. Sığmayabilecek tam ekran düzende `FitOrScroll` kullan. Yazı ölçeği `maxTextScale` (2×) ile sınırlı; denetimler bu üst sınıra göre. Yeni QA araçları: `scripts/qa/run_flows.sh <udid>`, `python3 -I scripts/qa/code_gate.py`, `.maestro/`, `qa/defects.json`. `flutter test integration_test` `build/.../Runner.app`'i test ikilisiyle değiştirir: Maestro'dan önce `flutter build ios --simulator --debug` çalıştır. Simülatör kapısı cihaz kabulü değildir; ayrıntı `QA_FINAL_REPORT.md`.
+
+**2026-11-02 REL-09b:** Güncel yayın adı/kimliği Vocalart /
+`com.mennansevim.vocalart`; ADR-039, ADR-038'in bu iki kararını yerine geçirir.
+`test/tool/release_identity_test.dart` Android namespace/applicationId/label/
+Kotlin yolu ile iOS ana+test bundle kimlikleri/adlarını birlikte kilitler ve
+eski `com.resonia.resonia` platform kimliğini reddeder. Release checklist ve
+simülatör izin komutu güncel. Hedefli13/full1174 +2 skip, analyze/format temiz.
+İç `resonia` Dart/data adlarını migration olmadan topluca değiştirme. Bu kod
+kanıtı imza/provisioning/mağaza kaydı/fiziksel cihaz değildir; dış yayın
+kapıları açık, commit/push/deploy yok.
+
 **Güncelleme:** 2026-10-11 (Europe/Istanbul)  
 **Repo:** `/Users/sevimm/Documents/Projects/harmonia`  
 **Amaç:** Başka model konuşma geçmişi olmadan güvenle devam edebilsin.
@@ -69,6 +99,43 @@ AUDIO-01 kod kapısı da kapandı: `reference_engine_contract_test.dart` manifes
 ve loader'dan geçen sentetik PCM16 ile kısa buffer'ın Hz uydurmadığını ve
 C4/C5 mutlak oktavının korunduğunu doğrular. Full1043 + 1 skip. Bu BENCH-01,
 VAD-01 veya CAL-02'nin yerine geçmez; gerçek kayıt/cihaz skoru açma.
+
+AUDIO-03a: tek ses batch tanısal sonucu artık provenance'lı
+`VisualFeedbackFrame` ve Aurora `PitchFeedbackField` ile gösterilir. Signed
+cents/peak dışında güven ve kararlılık uydurulmaz; mock kaynak açık etiketlidir.
+Full1098 + 1 skip. Canlı frame, VAD, skor ve cihaz FPS'i hâlâ açık kapıdır.
+
+AUDIO-03b: `InputLevelSource` provenance taşır; recorder dBFS akışı yalnız
+enerji içeren kalibrasyon/cevap `VisualFeedbackFrame`'lerine dönüşür. Pitch
+ekseni, signed cents, confidence, stability veya skor üretilmez; fake kaynak
+test diye görünür. Full1102 + 2 skip. Canlı pitch, VAD ve fiziksel cihaz
+FPS/akustik kabulü AUDIO-03c/CAL-02/BENCH-01'de açıktır.
+
+AUDIO-04a: reviewed chord coordinator artık injection-only
+`ChordDiagnosticScreen` ile calibration → listen → sequential response →
+quality/segment/matcher aday sonucunu gösterebilir. Exact/any-order ve recall
+hedef gizleme testlidir; puan/history/mastery/AI yoktur. Placeholder rota
+kapalı kalır. Tam 1109 test geçti, 2 opt-in tur atlandı; gerçek
+piyano/insan/VAD/cihaz/eğitimci kabulü
+açıktır.
+
+AUDIO-04b: `ChordDiagnosticAttemptComposer` reviewed loader çıktısını fresh
+player + PCM-reader backend + worker + reference/capture/analyzer/coordinator
+zincirine bağlar. Mobil adapter factory var ama kurulum permission/play/capture
+başlatmaz ve placeholder rotayı açmaz. Invalid config allocation öncesi,
+backend/worker failure kaynak temizliğiyle fail-closed testlidir. Tam 1114 test
+geçti, 2 opt-in tur atlandı. Sonraki açma kapısı kullanıcının gerçek piyano
+kayıtları için ortak manifest/hash/hak/nota-akort-tını QA; ardından gerçek
+telefon + insan/VAD + eğitimci kabulüdür. No commit/push/deployment.
+
+AUDIO-04c: `ReviewedChordBankLoader` sabit direct-child
+`reviewed_chords.json` dosyasını bounded UTF-8/strict schema ile okur; 2/3/4
+kapsamı ve bütün WAV path/hash/header kontrolleri tamamlanmadan banka dönmez.
+Symlink, malformed/oversize manifest ve tek missing kayıt fail-closed; private
+root hata metnine girmez. Tam 1122 test geçti, 2 opt-in tur atlandı. Bunu
+müzikal etiket/hak/eğitim QA veya cihaz/insan kanıtı sayma; placeholder route
+kapalı. Sıradaki dış kapı kullanıcının gerçek dosyalarıyla ortak QA'dır; güvenli
+bağımsız işlerle devam edilebilir. No commit/push/deployment.
 
 ## 2c. 2026-10-29 — TRAINER-02 farklılaşma
 
@@ -1107,3 +1174,85 @@ the related session/app tests pass; full suite 1004 + one opt-in screenshot
 skip, analyze/format/diff clean. Do not add a pass threshold or progress write
 until real-phone human BENCH/VAD and educator acceptance exist. No commit, push
 or deployment.
+
+**2026-10-31 — RETRY-01d handoff:** Added
+`MelodyCandidateComparisonCard` to the diagnostic melody result. Every
+CORE-03 symbolic alignment step now explains the reference/response position
+and whether the candidate is tolerance-near, octave-shifted, different,
+missing or extra. The card explicitly rejects note-accuracy, verified-error
+and melody-memory claims and has no history/mastery/ranking write. Two new
+widget tests plus the existing session flow bring the full suite to **1124
+passed + 2 opt-in skipped**; analyze/format clean. Human voice/VAD, physical
+device and educator gates remain open. No commit, push or deployment.
+
+**2026-11-01 — REL-06e handoff:** Added strict schema-v1
+`AttemptAssistanceEvidence` and bound it to `ExerciseProtocol`. Rhythm result
+persistence now records session-observed reference plays plus pitch-hint,
+transposition and accompaniment use. Skill mastery remains backward compatible
+with legacy `referencePlays`, but malformed/conflicting evidence or any aid use
+cannot claim independent practice. Configured recall delay is policy metadata,
+not observed latency or memory evidence. Targeted 100 tests and the full suite
+pass: **1131 passed + 2 opt-in skipped**; analyze/format clean. Scoring
+thresholds and AI are unchanged. Continue REL-06 by binding other session types
+and protocol fingerprints; do not call device/voice/educator gates complete.
+No commit, push or deployment.
+
+**2026-11-01 — REL-06f handoff:** Added
+`ExerciseProtocolFingerprint` (`exercise-protocol-v1-sha256`) over the complete
+validated protocol JSON. Rhythm persistence writes it; configured rhythm
+cohorts, mastery, next-step, weekly report, starting check and resume require an
+exact valid match. Missing/different legacy evidence remains stored/readable but
+cannot promote learning. Protocol-less perception cohorts remain unchanged.
+Targeted 105 and full **1136 passed + 2 opt-in skipped**; analyze/format clean.
+Treat the digest as protocol identity only, never audio authenticity, rights,
+device or teaching evidence. Raise the algorithm label if schema/serialization
+changes. Other session bindings and all external acceptance gates remain open.
+No commit, push or deployment.
+
+**2026-11-01 — REL-07e handoff:** Local result history now deduplicates on
+both `attemptId` and `ExerciseResult.sessionId`. Identical evidence for the same
+session is idempotent even under a different attempt key; divergent evidence is
+a conflict and cannot overwrite or consume capacity. Batch import uses the same
+atomic plan. Persisted duplicate attempt/session identities fail closed as
+corrupt while preserving the file; no migration was run. Update test fixtures
+representing distinct rounds with distinct session ids—do not weaken the
+production guard. Targeted **41 tests** and full **1141 passed + 2 opt-in
+skipped**; analyze/format clean. This does not validate microphone/audio/device
+or teaching outcomes. External gates remain open. No commit, push or deployment.
+
+**2026-11-02 — SHELL-04p handoff:** `StartingCheckScreen` now uses the shared
+foreground refresh boundary. A true background return performs one local read;
+inactive/repeated-resume events do not. Replacing history, goal or catalog hides
+the stale summary until the new dependency resolves. The callback has no route,
+write, playback, capture or session-resume capability. Targeted **41 tests** and
+full **1143 passed + 2 opt-in skipped**; analyze/format clean. Physical device,
+offline/process-death and learner/educator acceptance remain open. No commit,
+push or deployment.
+
+**2026-11-02 — DATA-03e handoff:** Data transfer operations now snapshot their
+history/profile/preference dependencies and carry a widget generation token.
+Replacing dependencies cancels an old export before clipboard publication,
+invalidates an open import confirmation before any write, and suppresses stale
+status/callbacks. A write already started remains bound to its original store;
+never retarget it to the new repository. Two adversarial widget tests plus
+related regressions give **48 targeted tests** and full **1145 passed + 2
+opt-in skipped**; analyze/format clean. This is local async isolation, not
+account/sync/two-device or cross-store transaction proof. No commit, push or
+deployment.
+
+**2026-11-02 — DATA-03f handoff:** Export now treats the portable-preference
+read as a required pre-publication gate. If it fails after history loaded, no
+document is encoded, the platform clipboard is untouched, private exception
+details stay hidden and the action becomes retryable. Do not weaken this into a
+silent results-only export without an explicit product/schema decision.
+Targeted **49 tests** and full **1146 passed + 2 opt-in skipped**; analyze/format
+clean. Real clipboard/two-device/account/sync gates remain open. No commit,
+push or deployment.
+
+**2026-11-02 — DATA-03g handoff:** `LocalDataExport.encode` now enforces the
+same 5,000-entry and 4-MiB UTF-8 limits as decode. Count overflow is rejected
+before JSON construction; byte overflow is rejected before clipboard
+publication. The screen shows a bounded retryable message and leaks no payload.
+Targeted **51 tests** and full **1148 passed + 2 opt-in skipped**; analyze/format
+clean. Real clipboard/two-device/account/sync acceptance remains open. No
+commit, push or deployment.

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../../app/theme/resonia_theme.dart';
+import '../../../domain/lang.dart';
 
 enum ChunkyTone { primary, success, neutral, record }
 
@@ -422,7 +423,7 @@ class LessonProgressBar extends StatelessWidget {
     final palette = context.palette;
     return Semantics(
       label: semanticsLabel,
-      value: '%${(value * 100).round()}',
+      value: percent(value),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(8),
         child: SizedBox(
@@ -503,7 +504,7 @@ class LessonScaffold extends StatelessWidget {
     required this.top,
     this.bottom = const [],
     this.counter,
-    this.closeLabel = 'Çalışmayı kapat',
+    this.closeLabel,
   });
 
   /// Null for diagnostic sessions: never imply a measured score/progress.
@@ -511,7 +512,7 @@ class LessonScaffold extends StatelessWidget {
   final List<Widget> top;
   final List<Widget> bottom;
   final String? counter;
-  final String closeLabel;
+  final String? closeLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -531,7 +532,8 @@ class LessonScaffold extends StatelessWidget {
                 children: [
                   IconButton(
                     key: const Key('lesson_close'),
-                    tooltip: closeLabel,
+                    tooltip:
+                        closeLabel ?? tr('Çalışmayı kapat', 'Close exercise'),
                     icon: Icon(Icons.close_rounded, color: palette.muted),
                     onPressed: () => Navigator.of(context).maybePop(),
                   ),
@@ -540,7 +542,7 @@ class LessonScaffold extends StatelessWidget {
                     Expanded(
                       child: LessonProgressBar(
                         value: value,
-                        semanticsLabel: 'Tur ilerlemesi',
+                        semanticsLabel: tr('Tur ilerlemesi', 'Round progress'),
                       ),
                     ),
                   if (progress == null) const Spacer(),
@@ -647,8 +649,8 @@ class LevelPicker extends StatelessWidget {
     return Semantics(
       button: true,
       enabled: enabled,
-      label: 'Seviye: ${current.title}',
-      hint: enabled ? 'Değiştirmek için dokun' : null,
+      label: tr('Seviye: ${current.title}', 'Level: ${current.title}'),
+      hint: enabled ? tr('Değiştirmek için dokun', 'Tap to change') : null,
       excludeSemantics: true,
       child: InkWell(
         key: Key('${keyPrefix}_level_picker'),
@@ -670,7 +672,10 @@ class LevelPicker extends StatelessWidget {
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          Text('Seviye seç', style: text.titleLarge),
+                          Text(
+                            tr('Seviye seç', 'Choose a level'),
+                            style: text.titleLarge,
+                          ),
                           const SizedBox(height: ResoniaSpacing.md),
                           for (final c in choices) ...[
                             AnswerOption(

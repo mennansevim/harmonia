@@ -1,4 +1,5 @@
 import 'practice_preferences.dart';
+import 'reminder_planner.dart';
 
 enum ReminderPermission { unknown, denied, authorized, unavailable }
 
@@ -19,6 +20,12 @@ abstract interface class PracticeReminderPlatform {
   Future<void> scheduleDaily(PracticeReminderTime time);
   Future<void> cancelDaily();
   Future<bool> openSettings();
+}
+
+/// A platform that can also schedule a planned series of one-off reminders
+/// (`planReminders`) in place of the plain daily one.
+abstract interface class PlannedReminderPlatform {
+  Future<void> schedulePlan(List<PlannedReminder> plan);
 }
 
 class UnavailablePracticeReminderPlatform implements PracticeReminderPlatform {
@@ -127,6 +134,45 @@ class PracticeReminderCoordinator {
         }
         return ReminderUpdateOutcome.failed;
       }
+      return ReminderUpdateOutcome.disabled;
+    } catch (_) {
+      return ReminderUpdateOutcome.failed;
+    } finally {
+      _busy = false;
+    }
+  }
+
+  /// Replaces the schedule with [plan] when reminders are on and allowed.
+  /// Leaves everything as it is otherwise; returns whether it scheduled.
+  Future<bool> replan(List<PlannedReminder> plan) async {
+    final p = platform;
+    if (_busy || p is! PlannedReminderPlatform || plan.isEmpty) return false;
+    _busy = true;
+    try {
+      if (await preferences.loadReminderTime() == null) return false;
+      if (await platform.permission() != ReminderPermission.authorized) {
+        return false;
+      }
+      await (p as PlannedReminderPlatform).schedulePlan(plan);
+      return true;
+    } catch (_) {
+      return false;
+    } finally {
+      _busy = false;
+    }
+  }
+
+  /// "Delete my data": cancels the schedule and forgets every preference.
+  /// Unlike [disable], a failure never restores the old reminder.
+  Future<ReminderUpdateOutcome> wipe() async {
+    if (_busy) return ReminderUpdateOutcome.busy;
+    _busy = true;
+    try {
+      final permission = await platform.permission();
+      if (permission != ReminderPermission.unavailable) {
+        await platform.cancelDaily();
+      }
+      await preferences.clear();
       return ReminderUpdateOutcome.disabled;
     } catch (_) {
       return ReminderUpdateOutcome.failed;

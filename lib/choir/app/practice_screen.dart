@@ -7,6 +7,7 @@ import '../../trainer/ui/kit.dart';
 import '../audio/take_engine.dart';
 import '../domain/assignment.dart';
 import '../domain/choir.dart';
+import '../domain/part_ladder.dart';
 import '../midi/part_renderer.dart';
 import 'choir_scope.dart';
 import 'choir_text.dart';
@@ -38,8 +39,8 @@ class _PracticeScreenState extends State<PracticeScreen>
     with WidgetsBindingObserver {
   late final ChoirPlayer _player;
   late ChoirPart? _own = widget.part;
-  var _ownGain = 1.0;
-  var _othersGain = 0.45;
+  var _ownGain = PartStep.listen.ownGain;
+  var _othersGain = PartStep.listen.othersGain;
   var _metronome = false;
   var _tempo = 100;
   var _loop = false;
@@ -166,6 +167,15 @@ class _PracticeScreenState extends State<PracticeScreen>
     _player.seek(Duration.zero);
   }
 
+  PartStep? get _step =>
+      _own == null ? null : PartStep.matching(_ownGain, _othersGain, _tempo);
+
+  void _useStep(PartStep s) => _changed(() {
+    _ownGain = s.ownGain;
+    _othersGain = s.othersGain;
+    _tempo = s.tempo;
+  });
+
   @override
   Widget build(BuildContext context) {
     final text = CT.of(context);
@@ -212,6 +222,8 @@ class _PracticeScreenState extends State<PracticeScreen>
               ),
           ],
         ),
+        const SizedBox(height: 12),
+        _Steps(step: _step, enabled: own != null, onStep: _useStep),
         const SizedBox(height: 12),
         AppCard(
           padding: const EdgeInsets.fromLTRB(18, 14, 18, 8),
@@ -311,6 +323,88 @@ class _PracticeScreenState extends State<PracticeScreen>
         const SizedBox(height: 10),
         Text(text.synthNotice, style: TT.small),
       ],
+    );
+  }
+}
+
+/// The fading-support ladder ([PartStep]) over the mix controls. Moving a
+/// slider by hand leaves the ladder ("your own mix") without losing it.
+class _Steps extends StatelessWidget {
+  const _Steps({
+    required this.step,
+    required this.enabled,
+    required this.onStep,
+  });
+  final PartStep? step;
+  final bool enabled;
+  final ValueChanged<PartStep> onStep;
+
+  @override
+  Widget build(BuildContext context) {
+    final text = CT.of(context);
+    final s = step;
+    return AppCard(
+      key: const Key('practice_steps'),
+      padding: const EdgeInsets.fromLTRB(18, 14, 18, 14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(text.caps(text.stepsTitle), style: TT.caps),
+          const SizedBox(height: 6),
+          Text(enabled ? text.stepsBody : text.chooseOwnPart, style: TT.small),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              for (final p in PartStep.values)
+                Expanded(
+                  child: Semantics(
+                    button: true,
+                    selected: p == s,
+                    label: '${text.stepCount(p)}: ${text.stepName(p)}',
+                    child: GestureDetector(
+                      key: Key('practice_step_${p.name}'),
+                      onTap: enabled ? () => onStep(p) : null,
+                      child: Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 2),
+                        height: 8,
+                        decoration: BoxDecoration(
+                          color: !enabled
+                              ? TC.line
+                              : s != null && p.index <= s.index
+                              ? TC.primary
+                              : TC.line,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          if (enabled) ...[
+            const SizedBox(height: 10),
+            Text(
+              s == null
+                  ? text.ownMix
+                  : '${text.stepCount(s)} · ${text.stepName(s)}',
+              style: TT.title,
+            ),
+            if (s != null) ...[
+              const SizedBox(height: 4),
+              Text(text.stepHow(s), style: TT.body),
+            ],
+            if (s?.next != null)
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton(
+                  key: const Key('practice_next_step'),
+                  onPressed: () => onStep(s!.next!),
+                  child: Text(text.nextStep),
+                ),
+              ),
+          ],
+        ],
+      ),
     );
   }
 }

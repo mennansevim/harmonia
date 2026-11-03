@@ -37,9 +37,9 @@ Durum sözlüğü: **bekliyor / geliştiriliyor / kod tamamlandı / doğrulandı
 | REL-03 | Metrik örnek sayısı ve karşılaştırılabilir cohort | Invalid/eksik sonuç ortalamaya girmez; farklı zorluk/mod/sürüm reddedilir | Kod/test doğrulandı |
 | REL-04 | Monoton ritim event alignment, extra/missed, latency ve mutlak sapma | Greedy tuzak testi; ekstra tap 100 olmaz; karşıt sapmalar gizlenmez; boş referans reddedilir | Kod/test doğrulandı; eğitimci kalibrasyonu bekliyor |
 | REL-05 | Ezgi placeholder fail-closed | Aynı nota sayısı sıra/timing/memory başarısı üretmez; ölçüm yoksa null/status | Kod/test doğrulandı; gerçek analyzer değil |
-| REL-06 | Egzersiz v2: nota/vuruş dizisi, tuning, hint, gecikme, order/set | Geçersiz egzersiz tanımı runtime'da reddedilir; round-trip sözleşme | Kısmi: protocol/binding/round-trip + REL-06a 12TET label/frequency/A4 metadata guard testli; session/katalog ve gerçek audio QA bekliyor |
-| REL-07 | Analiz/puan için evidence/provenance; içerik kalite kontrolü | Mock/gerçek ayrımı, session id, puanlama sürümü; mutable veri ve kopya sonuç kontrolleri | Kısmi: deep snapshot, pitch provenance/source cohort ve fixture loader testli; diğer analyzer/dedup/etiket QA bekliyor |
-| REL-08 | Tekrarlanabilir kalite komutları / CI taslağı | Format, test, analyze; secret olmadan yerel çalışma; CI etkinleştirme ayrı | Yerel runner + test/sağlayıcı-bağımsız taslak kod-testli; 08a full suite `--concurrency 4` ile kaynak baskısına karşı sabit; hosted run açık |
+| REL-06 | Egzersiz v2: nota/vuruş dizisi, tuning, hint, gecikme, order/set | Geçersiz egzersiz tanımı runtime'da reddedilir; round-trip sözleşme | Kısmi: protocol/binding/round-trip, REL-06a 12TET guard, REL-06e yardım kanıtı ve REL-06f exact protocol fingerprint testli; diğer session bağları ve gerçek audio QA bekliyor |
+| REL-07 | Analiz/puan için evidence/provenance; içerik kalite kontrolü | Mock/gerçek ayrımı, session id, puanlama sürümü; mutable veri ve kopya sonuç kontrolleri | Kısmi: deep snapshot, pitch provenance/source cohort, fixture loader ve REL-07e attempt+session history dedup testli; diğer analyzer/etiket QA bekliyor |
+| REL-08 | Tekrarlanabilir kalite komutları / CI taslağı | Format, test, analyze; secret olmadan yerel çalışma; CI etkinleştirme ayrı | Yerel runner + test/sağlayıcı-bağımsız taslak kod-testli; 08a full suite `--concurrency 4` ile kaynak baskısına karşı sabit; 08b QA dashboard kapısı adım exit/süre/ilk hata ve bounded-redacted diagnostic kaydeder; 3 parser testi + gerçek kapı 1182/0/2; hosted run açık |
 
 R0 kod doğrulaması ses motorunun doğru duyduğunu kanıtlamaz. Pitch toleransları değiştirilmedi. Ritim coverage × timing fidelity formülü ilk deterministik implementasyondur, resmî sınav rubriği değildir. Gelişimde persistence/dedup/tuning/hint cohort ayrıntıları R2/R3'te genişletilir.
 
@@ -295,7 +295,7 @@ Kullanıcının A–Q modül listesi mevcut ID'lerle eşlendi; eksik kalanlar i�
 | QA-01a | P0 | Flutter erişilebilirlik kılavuz testleri (Android/iOS dokunma hedefi, etiketli hedef, metin kontrastı) | SHELL-01 | 5 widget testi; açık/koyu onboarding+home, oturum/ritim/lab/geçmiş | Ekran okuyucu manuel testi (VoiceOver/TalkBack) | Otomatik kılavuz ≠ tam erişilebilirlik | S | B | K |
 | UI-01b | P1 | Mevcut marka işaretinden iOS varsayılan/koyu/renklendirilmiş tek-boyut AppIcon kaynakları | UI-01, REL-09 | 4 asset testi; 1024 px, default opak, dark saydam, tinted gri tonlu; Xcode 27 actool uyarısız | Fiziksel iOS görünümü + profesyonel tasarım/mağaza QA | Sistem tint/maske görünümü cihazda farklılaşabilir | S | B | K/D |
 | UX-03a | P1 | Canlı giriş seviyesi göstergesi (record eklenti genliği, 100 ms, yalnız görüntü; tepe-tutma azalması sadece çizimde) | AUD-DEV-02 | 2 widget testi: etiketler, nota iddiası yok, yalnız mikrofon açıkken görünür | Cihazda dBFS doğrulaması | Platform genlik farkı | S | B | K |
-| SHELL-04 | P1 | **04a–o kısmi kod tamam:** tercihler, ortak durumlar, consumer recovery, güvenli yeni tur, Today/plan/harita/geçmiş ön plan yenilemesi ve dependency replacement. Today tercih store kimliğini revision'dan ayrı izler; eski store'daki bekleyen save yeni UI'a yayın yapamaz, store değişince eski tercihler yeni okuma boyunca görünmez; alan-bazlı read failure eski veriyi diriltmeden nötr uyarı/açık retry verir ve pending read sırasında hedef yazımı kapalıdır. Yarım ses/mikrofon oturumu restore edilmez. Kalan: gerçek cihaz/offline kabul matrisi | CORE-05 | Domain + widget durum matrisi; SHELL-04f 6, 04g 2, 04h 3, 04i 3, 04j 1, 04k 1, 04l 1, 04m 1, 04n 1, 04o güçlendirilmiş test | Gerçek cihaz/offline kabulü | Sessiz stale state veya unsafe media restore | S | B | K/D |
+| SHELL-04 | P1 | **04a–p kısmi kod tamam:** tercihler, ortak durumlar, consumer recovery, güvenli yeni tur, Today/plan/harita/geçmiş/başlangıç kontrolü ön plan yenilemesi ve dependency replacement. Today tercih store kimliğini revision'dan ayrı izler; eski store'daki bekleyen save yeni UI'a yayın yapamaz, store değişince eski tercihler yeni okuma boyunca görünmez; alan-bazlı read failure eski veriyi diriltmeden nötr uyarı/açık retry verir ve pending read sırasında hedef yazımı kapalıdır. Yarım ses/mikrofon oturumu restore edilmez. Kalan: gerçek cihaz/offline kabul matrisi | CORE-05 | Domain + widget durum matrisi; SHELL-04f 6, 04g 2, 04h 3, 04i 3, 04j 1, 04k 1, 04l 1, 04m 1, 04n 1, 04o güçlendirilmiş, 04p 2 yeni test | Gerçek cihaz/offline kabulü | Sessiz stale state veya unsafe media restore | S | B | K/D |
 | UXR-01 | P0 | Kullanıcı testi protokolü: ilk değer süresi, hata anlama, doğru sonraki eylem; düşük cihaz performansı | SHELL-01, SESSION-01 | Protokol ve önceden kayıtlı eşikler DESIGN_QA.md'de; ≥5 öğrenci + 1 eğitimci | Katılımcılar (kullanıcı koordinasyonu), cihazlar | Küçük örneklem | S hazırlık | B | Protokol hazır, yürütülmedi |
 | CAL-01 | P0 | Noise-floor kalibrasyonu, kayıt kalite kapısı (sessizlik/kırpılma/düşük SNR/yetersiz etkinlik/referans kuyruğu), route politikası, latency sözleşmesi (ölçülmedi varsayılanı), lab bağlantısı | AUD-DEV-02/04 | 31 birim/controller/widget testi; route/rate/yaş değişiminde kalibrasyon geçersiz; ölçülmemiş latency düzeltme üretmez | — | Eşikler hipotez | M | B | K |
 | CAL-02 | P0 | Cihaz route matrisi ve eşik doğrulaması: hoparlör/kablolu/Bluetooth/USB; iOS route raporu, Android çıkarımı | CAL-01 | Önceden kayıtlı eşiklerle sessiz/gürültülü oda, konuşma, sızıntı kayıtları; sonuçlara bakıp eşik gevşetme yok | ≥1 iOS + ≥1 düşük/orta Android, kulaklıklar | Android route belirsizliği | M | B | P |
@@ -315,12 +315,16 @@ Kullanıcının A–Q modül listesi mevcut ID'lerle eşlendi; eksik kalanlar i�
 | DATA-03b | P1 | Toplu yerel sonuç importu: mevcut dedup/conflict/kapasite kurallarını planla, dosyaya tek atomik commit; yazma hatasında görünür prefix yok | DATA-03a, CORE-05 | 2 memory/file batch +1 file failure +1 widget failure; mevcut import sonucu regresyonu | Gerçek cihazlar arası pano denemesi; bulut için DATA-01/02 | Batch'i bulut sync sanma; kapasite sonucu açık kalmalı | S | B | K/D |
 | DATA-03c | P1 | Export v2: günlük bütçe + haftalık hedefi strict taşır; v1 uyumlu. Hatırlatma/titreşim cihazda kalır; preference dosyasına atomik uygulanır | DATA-03a/b, SHELL-04a, GROW-01b | 1 codec migration +1 file preservation +1 widget import; full863 | Gerçek iki cihaz pano denemesi | History+preference iki ayrı store; kısmi sonuç açık raporlanmalı | S | B | K/D |
 | DATA-03d | P1 | Başarılı taşınabilir tercih importunu çalışan Bugün görünümüne revision ile uygula; sekme/rota durumu korunur, geç kalan eski okuma elenir | DATA-03c, SHELL-04i | 1 callback regresyonu +1 widget revision/sekme testi; full864 | Gerçek cihazda açık rota + import kabulü | Global reset veya eski async read ile yeni tercihi ezme | S | B | K/D |
+| DATA-03e | P1 | Veri taşıma işlemini history/profile/preference snapshot'ına bağla; dependency replacement eski export/import sonucu, pano yazımı veya onayı yeni kaynağa taşımasın | DATA-03b–d, SHELL-04i | 2 adversarial widget + export/import/preferences/history regresyonları; full1145 | Gerçek iki cihaz pano ve lifecycle kabulü | İşlem ortasında hesap/kaynak değişimi; cross-store atomiklik iddiası yok | S | B | K/D |
+| DATA-03f | P1 | Export için history ve taşınabilir tercihlerin tamamını panodan önce oku; tercih okuma hatasında kısmi belge/pano yazımı yok, bounded retry mesajı | DATA-03c/e | 1 widget failure + 49 ilgili regresyon; full1146 | Gerçek cihaz pano hatası/geri dönüş kabulü | Genel preference adapter hatasını özel ayrıntıyla sızdırma veya sonuç-only belgeyi tam sanma | S | B | K/D |
+| DATA-03g | P1 | Export encoder'ı import ile aynı 5000-entry/4-MB UTF-8 bütçesine bağla; limit aşımında clipboard çağrısı yok ve retry açık | DATA-03a/f | 1 unit entry+byte budget, 1 widget clipboard guard; 51 ilgili test; full1148 | Gerçek cihaz clipboard kapasitesi ve iki cihaz denemesi | Uygulamanın yeniden içe alamayacağı belge üretmesi | S | B | K/D |
 | LEARN-04a | P1 | Beceri raporu: durum sayıları, bilinmeyen beceriler, tek hedef + eylem; yüzde yok | LEARN-01a, LEARN-03b | 5 birim + 2 widget testi | Eğitimci rapor dili onayı | Yanlış yorum | S | B | K |
 | F06a/b | P1 | Hatalı tiz/pes, ritim ve tonik/derece sonucundan ilgili taslak mikroderse isteğe bağlı geçiş; otomatik medya ve ilerleme yazımı yok | LEARN-02a/b, RETRY-01 | 3 uçtan uca widget akışı + 3 ders catalog/codec regresyonu; history/player değişmez | Eğitimci metin/ses onayı + öğretim pilotu | Okumayı öğrenme kanıtı sanma | S | B | K/D |
 | RETRY-01c | P1 | Ezgi diagnostic adaylarını referansla sembolik sırada karşılaştır; ilk farklı referans için iki seslik puansız dinleme bağlamı | CORE-03a/b, CORE-04b/c | 2 suggestion +2 widget/route testi ve mevcut session alignment regresyonu; clean/extra-only abstention, no autoplay/score | VAD/insan sesi benchmark'ı, cihaz playback ve eğitimci kabulü | Adayı doğrulanmış hata/hafıza sonucu sanma | S | B | K/D |
 | GROW-01c | P1 | Gelişim ekranında rolling-7 çalışma özeti, önceki 7 gün hacim karşılaştırması, egzersiz kırılımı ve geçersiz ölçüm sayısı; başarı yüzdesi yok | CORE-05, GROW-01a | 5 domain + 1 widget; current cohort/rota, stale/future, local calendar sınırları | Kullanıcı rapor dili kabulü | Hacmi öğrenme artışı sanma | S | B | K/D |
 | SHELL-04a | P1 | Günlük bütçe tercihinin cihazda saklanması (bozuk → varsayılan) | REL-09 | P0 | Dağıtım kanalı (dev/beta), uygulama adı, release imzalama yapılandırması, iOS gizlilik manifesti, RELEASE_READINESS | SHELL-01 | 3 test + iOS/Android build | Keystore, Apple hesabı, uygulama kimliği kararı | Yanlış imza/ID | S | B | K |
 | OPS-01a | P1 | Yerel hata günlüğü (kişisel metin yok), global handler, kopyalanabilir rapor; servis yok | SHELL-01 | 4 test | Servis seçimi (OPS-01) | Eksik görünürlük | S | B | K |
+| REL-09b | P0 | Vocalart görünen adı ve `com.mennansevim.vocalart` iOS/Android mağaza kimliğini platform dosyalarında tek sözleşme ve regresyon testiyle kilitle; eski kimliği yayın yapılandırmasında reddet | REL-09, NAME-02 | 3 kimlik testi; hedefli 13/full1174, analyze/format temiz | Apple Team/provisioning, Android keystore, ilk mağaza kaydı ve imzalı arşiv | İlk yüklemeden sonra kimlik değiştirilemez; test imza veya mağaza sahipliği kanıtlamaz | S | B | K/D |
 | LEARN-03c | 3 birim + 1 widget testi | — | — | S | B | K |
 | LEARN-03c | P1 | Süreli günlük plan 5/12/15 dk: kontrol kuyruğu (1/3/7/14), zayıf tekrar, günlük yeni sınırı, gün içi sabit plan + ilerleme; plan ekranı/home | LEARN-03b | 13 domain + 6 widget testi; bütçe aşılmaz, boş süre açık, kontrol yalnız retention turuyla tamamlanır | Eğitimci süre/aralık onayı, öğrenme pilotu | Yanlış yük/aralık | S | B | K |
 | LEARN-03b | P1 | Beceri grafiği tabanlı günlük öneri (rota + tüm ölçülen egzersizler), algı kalıcılık kontrolü | LEARN-01a, PERC-01 | 6 planlayıcı + 1 controller testi; home kartı egzersiz türüne göre doğru ekranı açar | Eğitimci rota/ölçüt onayı | Yanlış sıralama | S | B | K |
@@ -890,3 +894,100 @@ kalır; aynı pitch class'ın C4/C5 örnekleri mutlak oktavı korur ve hedefe
 katlanmaz. İki entegrasyon regresyonu; full1043 + 1 koşullu skip,
 analyze/format temiz. Bu kod kapısı BENCH-01 insan holdout'u, VAD-01 veya
 CAL-02 fiziksel cihaz kabulünün yerine geçmez.
+
+### 2026-10-30 — AUDIO-03a analiz sonrası görsel geri bildirim
+
+`VisualFeedbackFrame`, ham signed-cents ve provenance bilgisini korurken UI
+değerlerini sınırları içinde doğrular. Tek ses ekranı yalnız tamamlanmış ve
+kalite kapısından geçmiş tanısal kanıtı Aurora ses alanına taşır: kayıt tepe
+seviyesi küre boyutunu, signed cents konumunu belirler; hiçbir renk başarı
+anlamına gelmez. Periyodik oran ve pitch dağılımı confidence/stability diye
+sunulmaz; ölçülmediklerinde null kalırlar. Reduced motion, büyük yazı, kaynak
+etiketi ve puansız açıklama testlidir. Tam paket **1098 geçti**, 1 koşullu
+ekran turu atlandı; analyze/format temiz. Canlı pitch frame akışı, cihaz FPS'i,
+insan/VAD doğrulaması AUDIO-03c, CAL-02 ve BENCH-01 kapılarıdır.
+
+### 2026-10-30 — AUDIO-03b canlı enerji frame'i
+
+`InputLevelSource` artık seviye akışının provenance bilgisini de zorunlu taşır.
+Plugin mikrofon, fake adapter test kaynağı olarak etiketlenir. Sınırlandırılmış
+dBFS projektörü kalibrasyon ve cevap fazlarında yalnız `level01` üretir;
+signed-cents/confidence/stability null kalır, geçersiz olaylarda abstain eder.
+Aurora alanı pitch ölçülmeyen canlı fazda tuning ekseni çizmez ve puansız,
+cihazlar arası kalibre edilmemiş enerji olduğunu açıklar. Hedefli 12 test ve
+tam **1102 test** geçti; 2 opt-in tur atlandı, analyze/format temiz. Canlı
+pitch frame'i, VAD, gerçek cihaz FPS/akustik kabul AUDIO-03c/CAL-02/BENCH-01
+kapısıdır.
+
+### 2026-10-30 — AUDIO-04a reviewed chord deneme ekranı
+
+`ChordDiagnosticScreen`, daha önce kod-testli olan reviewed WAV playback,
+kalibrasyon, tek sürekli monofonik cevap, kalite, worker, segment ve matcher
+zincirini tek puansız UX akışında birleştirir. Exact/any-order yönergesi,
+learning hedef etiketi ve recall hedef gizleme ayrı davranır. Canlı recorder
+alanı yalnız enerji gösterir. Sonuç, aday bazında aynı perde/oktav/farklı
+perde/eksik/fazla ayrımını açıklar; score/history/mastery/AI yazmaz. Üç yeni
+widget testi ve tam **1109 test** geçti; 2 opt-in tur atlandı, analyze/format
+temiz. Ekran yalnız dışarıdan doğrulanmış coordinator enjekte edilirse açılır;
+placeholder katalog/route sesler gelene kadar kapalıdır. Gerçek piano fixture,
+BENCH/VAD/cihaz/eğitimci kabulü hâlâ dış kapıdır.
+
+### 2026-10-31 — AUDIO-04b reviewed attempt composition
+
+`ChordDiagnosticAttemptComposer`, yalnız `ReviewedChordRecordingLoader`
+çıktısını kabul ederek player, PCM okuyabilen capture backend, pitch worker,
+reference/capture session, analyzer ve coordinator sahipliğini tek kurulum
+sınırında toplar. Geçersiz recall/tolerans/süre politikası native kaynak
+ayırmadan reddedilir. Backend veya worker kurulumu başarısızsa daha önce ayrılan
+kaynaklar kapatılır ve ilk hata korunur. Mobil fabrika gerçek adapter'ları
+seçer fakat oluşturma sırasında permission/play/capture/analysis başlatmaz.
+Beş composer testiyle tam **1114 test** geçti; 2 opt-in tur atlandı,
+analyze/format temiz. Placeholder katalog/route açılmadı; gerçek piyano QA,
+BENCH/VAD, cihaz ve eğitimci kabulü dış kapıdır.
+
+### 2026-10-31 — AUDIO-04c atomik reviewed chord bankası
+
+`ReviewedChordBankLoader`, yalnız kökün doğrudan çocuğu olan sabit
+`reviewed_chords.json` dosyasını bounded ve strict UTF-8/JSON/schema olarak
+okur. Manifest symlink/dizin olamaz; 2/3/4 ses kapsamı eksikse banka
+yayımlanmaz. Her kayıt mevcut path/hash/PCM16 header loader'ından geçer ve tek
+eksik/bozuk kayıt bütün sonucu reddeder; stream prefix'i ürün availability'si
+olamaz. Hatalar özel absolute root'u taşımaz. Sekiz hedefli testle tam
+**1122 test** geçti; 2 opt-in tur atlandı, analyze/format temiz. Bu atomik dosya
+kapısı nota/akort/tını/hak/eğitim incelemesi veya cihaz/insan kabulü değildir;
+placeholder route kapalıdır.
+
+### 2026-10-31 — RETRY-01d açıklayıcı ezgi aday karşılaştırması
+
+Kısa ezgi sonucunda sembolik hizalamanın bütün adımları artık referans ve aday
+bölüm sırasıyla görünür. Toleransa yakın, oktav farkı, farklı perde, eksik ve
+fazla adaylar ayrı dille açıklanır; önerilen iki seslik tekrarın dayanağı
+anlaşılır. Kart puan, başarı, doğrulanmış nota/hata veya hafıza ölçümü üretmez;
+history/mastery/sıralama yazma yolu yoktur. İki yeni widget testi ve mevcut
+session regresyonuyla tam **1124 test** geçti; 2 opt-in tur atlandı,
+analyze/format temiz. İnsan sesi/VAD, fiziksel cihaz ve eğitimci kabulü dış
+kapı olarak sürer.
+
+### 2026-11-01 — REL-06e yapılandırılmış oturum yardım kanıtı
+
+`AttemptAssistanceEvidence`, referans oynatma sayısını ve kullanılan perde
+ipucu/transpozisyon/eşlik yardımını protocol izinleriyle doğrular. Ritim sonucu
+bu kanıtı saklar; eski üst-seviye `referencePlays` alanı uyumluluk için korunur.
+Beceri grafiği yeni ve eski sonucu okuyabilir, ancak çelişkili/bozuk kanıtı veya
+herhangi bir yardımı bağımsız mastery saymaz. `configuredRecallDelayMs` yalnız
+egzersiz politikasıdır; ölçülmüş tepki gecikmesi ya da hafıza sonucu değildir.
+Tam **1131 test** geçti, 2 opt-in tur atlandı; analyze/format temiz. Scorer ve
+eşikler değişmedi. Diğer session türleri, protocol fingerprint ve dış ses/
+cihaz/eğitimci kapıları REL-06/07'yi açık tutar.
+
+### 2026-11-01 — REL-06f exact protokol kimliği
+
+`ExerciseProtocolFingerprint`, katı protocol schema v1 çıktısının sabit alan
+sırasını sürümlü SHA-256 kimliğe çevirir. Ritim sonucu kimliği measurements'a
+yazar; `ResultCohort.forConfiguredExercise` ve bütün ritim öğrenme tüketicileri
+yalnız exact kimliği kabul eder. Eksik, bozuk veya farklı kimlik history'den
+silinmez fakat mastery, sonraki adım, haftalık rapor ve devam hedefi üretmez.
+Protokolsüz pitch/interval algı kohortları değişmedi. Hedefli **105 test** ve
+tam **1136 test** geçti, 2 opt-in tur atlandı; analyze/format temiz. Bu hash
+ses dosyası/hak kaynağı doğrulaması değildir; protocol schema veya serialization
+değişirse algoritma etiketi de yükseltilmelidir.

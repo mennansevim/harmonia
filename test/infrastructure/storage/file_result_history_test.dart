@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -8,25 +9,26 @@ import 'package:resonia/domain/models/measurement_provenance.dart';
 import 'package:resonia/domain/models/score_metric.dart';
 import 'package:resonia/infrastructure/storage/file_result_history.dart';
 
-ResultHistoryEntry entry(String id, {double score = 80}) => ResultHistoryEntry(
-  attemptId: id,
-  result: ExerciseResult(
-    sessionId: id,
-    exerciseId: 'draft-rhythm-quarters',
-    skill: Skill.rhythm,
-    target: const {},
-    measurements: const {'matched': 3, 'missed': 0, 'extra': 0},
-    scores: ExerciseScores(
-      overall: ScoreMetric.measured(score),
-      timing: ScoreMetric.measured(score),
-    ),
-    createdAt: DateTime.utc(2026, 10, 11),
-    provenance: const MeasurementProvenance(
-      source: MeasurementSource.touch,
-      analyzerVersion: 'rhythm-imitation-1',
-    ),
-  ),
-);
+ResultHistoryEntry entry(String id, {double score = 80, String? sessionId}) =>
+    ResultHistoryEntry(
+      attemptId: id,
+      result: ExerciseResult(
+        sessionId: sessionId ?? id,
+        exerciseId: 'draft-rhythm-quarters',
+        skill: Skill.rhythm,
+        target: const {},
+        measurements: const {'matched': 3, 'missed': 0, 'extra': 0},
+        scores: ExerciseScores(
+          overall: ScoreMetric.measured(score),
+          timing: ScoreMetric.measured(score),
+        ),
+        createdAt: DateTime.utc(2026, 10, 11),
+        provenance: const MeasurementProvenance(
+          source: MeasurementSource.touch,
+          analyzerVersion: 'rhythm-imitation-1',
+        ),
+      ),
+    );
 
 void main() {
   late Directory dir;
@@ -56,6 +58,31 @@ void main() {
           final all = await h.load();
           expect(all, hasLength(1));
           expect(all.single.result.scores.overall.value, 80);
+        },
+      );
+
+      test(
+        'session identity cannot be counted twice under new attempt ids',
+        () async {
+          final h = make.value(10);
+          expect(
+            await h.record(entry('attempt-0001', sessionId: 'session-0001')),
+            RecordOutcome.recorded,
+          );
+          expect(
+            await h.record(entry('attempt-0002', sessionId: 'session-0001')),
+            RecordOutcome.duplicate,
+          );
+          expect(
+            await h.record(
+              entry('attempt-0003', sessionId: 'session-0001', score: 10),
+            ),
+            RecordOutcome.conflict,
+          );
+          final stored = await h.load();
+          expect(stored, hasLength(1));
+          expect(stored.single.attemptId, 'attempt-0001');
+          expect(stored.single.result.scores.overall.value, 80);
         },
       );
 
@@ -94,6 +121,25 @@ void main() {
           'attempt-0003',
         ]);
         expect(stored[1].result.scores.overall.value, 10);
+      });
+
+      test('batch deduplicates and conflicts on session identity', () async {
+        final h = make.value(2);
+        final report = await h.recordAll([
+          entry('attempt-0001', sessionId: 'session-0001'),
+          entry('attempt-0002', sessionId: 'session-0001'),
+          entry('attempt-0003', sessionId: 'session-0001', score: 10),
+          entry('attempt-0004', sessionId: 'session-0002'),
+        ]);
+
+        expect(report.count(RecordOutcome.recorded), 2);
+        expect(report.count(RecordOutcome.duplicate), 1);
+        expect(report.count(RecordOutcome.conflict), 1);
+        expect(report.count(RecordOutcome.storageFull), 0);
+        expect((await h.load()).map((e) => e.result.sessionId), [
+          'session-0001',
+          'session-0002',
+        ]);
       });
 
       test('delete one and clear all', () async {
@@ -149,6 +195,33 @@ void main() {
     await h.clear();
     expect(await h.load(), isEmpty);
   });
+
+  test(
+    'persisted duplicate session identities are corrupt and preserved',
+    () async {
+      final first = entry('attempt-0001', sessionId: 'session-0001');
+      final second = entry('attempt-0002', sessionId: 'session-0001');
+      final file = File('${dir.path}/result_history.json')
+        ..writeAsStringSync(
+          '{"schemaVersion":1,"entries":['
+          '${jsonEncode(first.toJson())},${jsonEncode(second.toJson())}]}',
+        );
+      final before = file.readAsStringSync();
+      final h = FileResultHistory(directory: () async => dir);
+
+      await expectLater(
+        h.load(),
+        throwsA(
+          isA<HistoryStorageException>().having(
+            (e) => e.failure,
+            'failure',
+            HistoryStorageFailure.corrupt,
+          ),
+        ),
+      );
+      expect(file.readAsStringSync(), before);
+    },
+  );
 
   test('failed file batch exposes no imported prefix', () async {
     var available = true;

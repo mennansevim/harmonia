@@ -1,0 +1,109 @@
+[
+  {
+    "id": "QA-DEF-010",
+    "screen": "Bugün, Ses, İlerleme, Ayarlar sekmeleri",
+    "severity": "P1",
+    "problem": "Çalışma biter, sonuç \"İlerleme sekmesine eklendi, +48 XP\" der; İlerleme yeniden başlatılana kadar 0 XP ve \"Henüz deneme yok\" gösterir.",
+    "root_cause": "Sekme gövdeleri const, TrainerScope store değişimini bağımlılara bildirmiyordu. Veri diske doğru yazılıyordu.",
+    "status": "Verified",
+    "regression": "practice_screens_layout_test: tabs show new practice; 09_quiz_to_results",
+    "before": "artifacts/evidence/QA-DEF-010_progress_before.png",
+    "after": "artifacts/evidence/QA-DEF-010_progress_after.png"
+  },
+  {
+    "id": "QA-DEF-001",
+    "screen": "Bugün ve tüm liste içi butonlar",
+    "severity": "P1",
+    "problem": "Ana CTA ve görevler tek erişilebilirlik öğesinde birleşiyordu; VoiceOver \"Çalışmaya başla\"yı ayrı seçip etkinleştiremiyordu.",
+    "root_cause": "BigButton Semantics container/onTap taşımıyordu, excludeSemantics gerçek dokunma eylemini gizliyordu; AppCard sınır değildi.",
+    "status": "Verified",
+    "regression": "test/trainer/kit_semantics_test.dart; Maestro hiyerarşisi"
+  },
+  {
+    "id": "QA-DEF-002",
+    "screen": "Onboarding > Süre",
+    "severity": "P3",
+    "problem": "Varsayılan 8 dakika seçeneklerde yoktu; hiçbir chip seçili değilken özet \"8 dakika\" diyordu.",
+    "root_cause": "TrainerStore varsayılanı onboarding seçenekleriyle eşleşmiyordu.",
+    "status": "Verified",
+    "regression": "trainer_store_test; 01_onboarding_fresh"
+  },
+  {
+    "id": "QA-DEF-003",
+    "screen": "Onboarding > Planın kuruldu (yatay)",
+    "severity": "P1",
+    "problem": "Yatay yönde ekran 65 px taşıyordu; \"Ana sayfaya git\" çalışmıyor, kurulum tamamlanamıyordu.",
+    "root_cause": "Sabit Column + Spacer, kaydırma yok; uygulama yatayı destekliyor.",
+    "status": "Verified",
+    "regression": "accessibility_audit_test yatay; 01_onboarding_fresh yatay",
+    "before": "artifacts/evidence/QA-DEF-003_ready_landscape_before.png",
+    "after": "artifacts/evidence/QA-DEF-003_ready_landscape_after.png"
+  },
+  {
+    "id": "QA-DEF-004",
+    "screen": "Ses aralığı testi > izin reddi",
+    "severity": "P2",
+    "problem": "İzin reddinde yalnız \"Tekrar dene\" vardı; iOS izni yeniden sormadığı için çıkmaz yoldu.",
+    "root_cause": "Trainer ekranı mevcut MicrophonePermissionRecovery yolunu kullanmıyordu.",
+    "status": "Verified",
+    "regression": "practice_screens_layout_test; 06_mic_permission_denied"
+  },
+  {
+    "id": "QA-DEF-005",
+    "screen": "Aralık testi (2× yazı), Kaç ses (yatay)",
+    "severity": "P2",
+    "problem": "Sabit düzen taştı; alt içerik erişilemez oluyordu.",
+    "root_cause": "Expanded + Spacer düzeninde kaydırma yoktu.",
+    "status": "Verified",
+    "regression": "practice_screens_layout_test (FitOrScroll)"
+  },
+  {
+    "id": "QA-DEF-006",
+    "screen": "Tüm uygulama (iOS en büyük erişilebilirlik yazısı)",
+    "severity": "P2",
+    "problem": "Yaklaşık 3× ölçekte Türkçe kelimeler heceden bölünüyor, karşılama S/A/T/B harfleri çubuklara biniyordu.",
+    "root_cause": "Metin ölçeğine üst sınır yoktu; düzen denetimi yalnız 2×'e kadardı.",
+    "status": "Verified",
+    "regression": "practice_screens_layout_test; 17e AX5 Maestro",
+    "before": "artifacts/evidence/QA-DEF-006_ax5_before.png"
+  },
+  {
+    "id": "QA-DEF-007",
+    "screen": "Bugün kartı",
+    "severity": "P3",
+    "problem": "Liste dipnotu kahraman kartıyla aynı öğede okunuyordu.",
+    "root_cause": "HeroCard semantics sınırı değildi.",
+    "status": "Verified",
+    "regression": "kit_semantics_test"
+  },
+  {
+    "id": "QA-DEF-008",
+    "screen": "Ayarlar satırları",
+    "severity": "P3",
+    "problem": "Alt başlık ile sağdaki değer neredeyse bitişikti.",
+    "root_cause": "Satırda değer öncesi boşluk yoktu.",
+    "status": "Verified",
+    "regression": "Regresyon testi yok; görsel doğrulandı (settings_notation_sheet)"
+  },
+  {
+    "id": "QA-DEF-009",
+    "screen": "Tüm uygulama (İngilizce cihaz)",
+    "severity": "P2",
+    "problem": "İngilizce cihazda arayüz Türkçe, koro modülü İngilizce: sekmede \"Choir\" ve karışık metinler.",
+    "root_cause": "Trainer ve Ses Atölyesi metinleri yalnız Türkçe yazılmıştı; locale yalnız koro modülünde kullanılıyordu.",
+    "status": "Verified",
+    "regression": "Ürün kararı: tam İngilizce. test/trainer/english_ui_test.dart (İngilizce cihazda kurulum, tüm sekmeler, beceri/pratik/ders/nefes/aralık/üyelik ekranları; Türkçe harf/kelime ve taşma yok); Maestro 11_english_tour iPhone Air EN geçti; Türkçe 01/05/10 yeniden geçti",
+    "after": "artifacts/evidence/en/06_today.png"
+  },
+  {
+    "id": "QA-DEF-011",
+    "screen": "Quiz > Karşılaştır (büyük yazı)",
+    "severity": "P3",
+    "problem": "\"DOĞRUSU\" etiketi \"DOĞRUS / U\" diye bölünüyordu.",
+    "root_cause": "Dar kutuda tek satır zorunluluğu yoktu.",
+    "status": "Verified",
+    "regression": "Regresyon testi yok; görsel kontrol",
+    "before": "artifacts/evidence/QA-DEF-011_compare_before.png",
+    "after": "artifacts/evidence/QA-DEF-011_compare_after.png"
+  }
+]

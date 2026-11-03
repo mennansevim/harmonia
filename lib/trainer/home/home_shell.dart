@@ -11,6 +11,7 @@ import '../domain/music.dart';
 import '../koro/koro_hub.dart';
 import '../koro/range_test.dart';
 import '../koro/voice_count.dart';
+import '../learn/review_cards.dart';
 import '../prepare/breath_screen.dart';
 import '../learn/lesson_flow.dart';
 import '../practice/practice_setup.dart';
@@ -20,6 +21,7 @@ import '../stats/stats_tab.dart';
 import '../ui/kit.dart';
 import 'daily_route.dart';
 import '../learn/skill_screen.dart';
+import '../../domain/lang.dart';
 
 class HomeShell extends StatefulWidget {
   const HomeShell({super.key});
@@ -48,12 +50,18 @@ class _HomeShellState extends State<HomeShell> {
       listenable: store,
       builder: (context, _) {
         final items = <_Destination>[
-          const _Destination('tab_0', Ic.sun, Ic.sun, 'Bugün', PlayTab()),
-          const _Destination(
+          _Destination(
+            'tab_0',
+            Ic.sun,
+            Ic.sun,
+            tr('Bugün', 'Today'),
+            PlayTab(),
+          ),
+          _Destination(
             'tab_1',
             Ic.audioLines,
             Ic.audioLines,
-            'Ses',
+            tr('Ses', 'Voice'),
             KoroHub(asTab: true),
           ),
           if (_showsChoir(store))
@@ -64,18 +72,18 @@ class _HomeShellState extends State<HomeShell> {
               CT.of(context).tabLabel,
               const ChoirTab(),
             ),
-          const _Destination(
+          _Destination(
             'tab_2',
             Ic.chartNoAxesCombined,
             Ic.chartNoAxesCombined,
-            'İlerleme',
+            tr('İlerleme', 'Progress'),
             StatsTab(),
           ),
-          const _Destination(
+          _Destination(
             'tab_3',
             Ic.settings2,
             Ic.settings2,
-            'Ayarlar',
+            tr('Ayarlar', 'Settings'),
             SettingsTab(),
           ),
         ];
@@ -179,7 +187,7 @@ class _NavBar extends StatelessWidget {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                              fontSize: 9,
+                              fontSize: 11,
                               fontWeight: i == index
                                   ? FontWeight.w700
                                   : FontWeight.w500,
@@ -242,19 +250,34 @@ class PlayTab extends StatefulWidget {
 }
 
 class _PlayTabState extends State<PlayTab> {
-  static const _months = [
-    'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', //
-    'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık',
-  ];
-  static const _weekdays = [
-    'Pazartesi',
-    'Salı',
-    'Çarşamba',
-    'Perşembe',
-    'Cuma',
-    'Cumartesi',
-    'Pazar',
-  ];
+  static List<String> get _months => Lang.en
+      ? const [
+          'January', 'February', 'March', 'April', 'May', 'June', //
+          'July', 'August', 'September', 'October', 'November', 'December',
+        ]
+      : const [
+          'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', //
+          'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık',
+        ];
+  static List<String> get _weekdays => Lang.en
+      ? const [
+          'Monday',
+          'Tuesday',
+          'Wednesday',
+          'Thursday',
+          'Friday',
+          'Saturday',
+          'Sunday',
+        ]
+      : const [
+          'Pazartesi',
+          'Salı',
+          'Çarşamba',
+          'Perşembe',
+          'Cuma',
+          'Cumartesi',
+          'Pazar',
+        ];
 
   /// Walks today's route: the breathing guide first (unless done or not in
   /// today's route), then the ear lesson.
@@ -267,7 +290,10 @@ class _PlayTabState extends State<PlayTab> {
         MaterialPageRoute(
           builder: (_) => BreathScreen(
             totalSeconds: route.breathSeconds,
-            stepLabel: 'ADIM 1 / ${route.stepCount}',
+            stepLabel: tr(
+              'ADIM 1 / ${route.stepCount}',
+              'STEP 1 / ${route.stepCount}',
+            ),
           ),
         ),
       );
@@ -289,16 +315,25 @@ class _PlayTabState extends State<PlayTab> {
         children: [
           Row(
             children: [
-              Expanded(child: Text('KENDİ RİTMİNDE', style: TT.crumb)),
+              Expanded(
+                child: Text(
+                  tr('KENDİ RİTMİNDE', 'AT YOUR OWN PACE'),
+                  style: TT.crumb,
+                ),
+              ),
               _StreakChip(days: store.streak),
             ],
           ),
           const SizedBox(height: 10),
-          const Text('Bugün', style: TT.h1),
+          Text(tr('Bugün', 'Today'), style: TT.h1),
           const SizedBox(height: 2),
           Text(
-            '${_weekdays[now.weekday - 1]}, ${now.day} '
-            '${_months[now.month - 1]}',
+            tr(
+              '${_weekdays[now.weekday - 1]}, ${now.day} '
+                  '${_months[now.month - 1]}',
+              '${_weekdays[now.weekday - 1]}, '
+                  '${_months[now.month - 1]} ${now.day}',
+            ),
             style: TT.small,
           ),
           const SizedBox(height: 18),
@@ -310,7 +345,7 @@ class _PlayTabState extends State<PlayTab> {
           ),
           const _ChoirDue(),
           const SizedBox(height: 20),
-          const Text('BECERİLER', style: TT.caps),
+          Text(tr('BECERİLER', 'SKILLS'), style: TT.caps),
           const SizedBox(height: 10),
           for (var i = 0; i < TrainerKind.values.length; i += 2)
             Padding(
@@ -409,7 +444,7 @@ class _StreakChip extends StatelessWidget {
   final int days;
   @override
   Widget build(BuildContext context) => Semantics(
-    label: '$days günlük seri',
+    label: tr('$days günlük seri', '$days-day streak'),
     excludeSemantics: true,
     child: Container(
       key: const Key('streak_badge'),
@@ -424,7 +459,7 @@ class _StreakChip extends StatelessWidget {
           Icon(Ic.sun, size: 18, color: days > 0 ? TC.onSun : TC.muted),
           const SizedBox(width: 5),
           Text(
-            '$days gün',
+            tr('$days gün', days == 1 ? '1 day' : '$days days'),
             style: TextStyle(
               fontWeight: FontWeight.w800,
               color: days > 0 ? TC.onSun : TC.muted,
@@ -444,11 +479,21 @@ Future<void> showVoicePartSheet(BuildContext context) {
     (sheet) => Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const Text('Sesin hangi aralığa yakın?', style: TT.h3),
+        Text(
+          tr(
+            'Sesin hangi aralığa yakın?',
+            'Which range is your voice close to?',
+          ),
+          style: TT.h3,
+        ),
         const SizedBox(height: 6),
-        const Text(
-          'Tenor ve bas seçilince dersler bir oktav pesten çalar. '
-          'Emin değilsen Ses sekmesindeki ses aralığı testi taslak bir öneri verir.',
+        Text(
+          tr(
+            'Tenor ve bas seçilince dersler bir oktav pesten çalar. '
+                'Emin değilsen Ses sekmesindeki ses aralığı testi taslak bir öneri verir.',
+            'With tenor or bass, lessons play an octave lower. '
+                'If you are not sure, the range test in the Voice tab gives a draft suggestion.',
+          ),
           style: TT.small,
         ),
         const SizedBox(height: 14),
@@ -465,7 +510,10 @@ Future<void> showVoicePartSheet(BuildContext context) {
             },
           ),
         TextLink(
-          'Seçme, varsayılan aralıkta çal',
+          tr(
+            'Seçme, varsayılan aralıkta çal',
+            'Skip, play in the default range',
+          ),
           onTap: () {
             store.voicePart = null;
             store.save();
@@ -497,36 +545,70 @@ class _DailyRoute extends StatelessWidget {
     final lessonDone = store.sessionToday;
     final breathDone = store.breathedToday;
     final hasRange = store.koroRange != null;
+    final due = store.dueReview;
     final lesson = next;
     final part = store.part;
     final steps = <_StepData>[
       if (route.breath)
         _StepData(
           key: 'route_breath',
-          title: 'Nefes',
-          subtitle:
-              '${route.breathSeconds ~/ 60} dk · yönlendirmeli, mikrofonsuz',
+          title: tr('Nefes', 'Breath'),
+          subtitle: tr(
+            '${route.breathSeconds ~/ 60} dk · yönlendirmeli, mikrofonsuz',
+            '${route.breathSeconds ~/ 60} min · guided, no microphone',
+          ),
           icon: Ic.wind,
           done: breathDone,
         ),
+      // Spaced review: shown while cards are due, ticked once done today.
+      if (due.isNotEmpty || store.reviewedToday)
+        _StepData(
+          key: 'route_review',
+          title: tr('Tekrar kartları', 'Review cards'),
+          subtitle: due.isEmpty
+              ? tr('Bugünlük tamam', 'Done for today')
+              : tr(
+                  '${due.length} kart · ~${(due.length * 15 / 60).ceil()} dk · karışık',
+                  '${due.length} cards · ~${(due.length * 15 / 60).ceil()} min · mixed',
+                ),
+          icon: Ic.repeat,
+          done: due.isEmpty,
+          onTap: due.isEmpty ? null : () => startReview(context),
+        ),
       _StepData(
         key: 'route_lesson',
-        title: lesson == null ? '${trainer.title} tamam' : lesson.title,
+        title: lesson == null
+            ? tr('${trainer.title} tamam', '${trainer.title} done')
+            : lesson.title,
         subtitle: lesson == null
-            ? 'Serbest pratikle devam et'
+            ? tr('Serbest pratikle devam et', 'Keep going with free practice')
             : lesson.kind == NodeKind.intro
-            ? '${trainer.shortTitle} · kısa tanıtım'
-            : '${trainer.shortTitle} · dinle, söyle, ayırt et',
+            ? tr(
+                '${trainer.shortTitle} · kısa tanıtım',
+                '${trainer.shortTitle} · short introduction',
+              )
+            : tr(
+                '${trainer.shortTitle} · dinle, söyle, ayırt et',
+                '${trainer.shortTitle} · listen, sing, tell apart',
+              ),
         icon: trainerIcon(trainer),
         done: lessonDone,
       ),
       if (route.voiceStep)
         _StepData(
           key: 'route_voice',
-          title: hasRange ? 'Kaç ses duyuyorsun?' : 'Ses aralığı testi',
+          title: hasRange
+              ? tr('Kaç ses duyuyorsun?', 'How many voices do you hear?')
+              : tr('Ses aralığı testi', 'Vocal range test'),
           subtitle: hasRange
-              ? 'Ses · 2/3/4 sesli dokuyu ayırt et'
-              : 'Ses · isteğe bağlı mikrofon, taslak ölçüm',
+              ? tr(
+                  'Ses · 2/3/4 sesli dokuyu ayırt et',
+                  'Voice · tell 2, 3 and 4-part textures apart',
+                )
+              : tr(
+                  'Ses · isteğe bağlı mikrofon, taslak ölçüm',
+                  'Voice · optional microphone, draft measurement',
+                ),
           icon: hasRange ? Ic.layers : Ic.mic,
           done: false,
           onTap: () => Navigator.of(context).push(
@@ -538,17 +620,23 @@ class _DailyRoute extends StatelessWidget {
         ),
     ];
     final pitch = route.breath
-        ? 'Nefesini hazırla, sesleri duy, istersen söyle.'
-        : 'Kısa gün: tek bir kulak dersi.';
+        ? tr(
+            'Nefesini hazırla, sesleri duy, istersen söyle.',
+            'Ready your breath, hear the notes, sing if you like.',
+          )
+        : tr(
+            'Kısa gün: tek bir kulak dersi.',
+            'Short day: a single ear lesson.',
+          );
     final String action;
     if (lessonDone) {
-      action = 'Bugünlük ders tamam';
+      action = tr('Bugünlük ders tamam', 'Today\'s lesson is done');
     } else if (lesson == null) {
-      action = 'Pratik yap';
+      action = tr('Pratik yap', 'Practise');
     } else if (breathDone || !route.breath) {
-      action = 'Derse başla';
+      action = tr('Derse başla', 'Start the lesson');
     } else {
-      action = 'Çalışmaya başla';
+      action = tr('Çalışmaya başla', 'Start practising');
     }
     final current = steps.indexWhere((s) => !s.done && s.onTap == null);
     return Column(
@@ -562,8 +650,8 @@ class _DailyRoute extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'GÜNLÜK RUTİN',
+                    Text(
+                      tr('GÜNLÜK RUTİN', 'DAILY ROUTINE'),
                       style: TextStyle(
                         color: TC.sun,
                         fontSize: 11,
@@ -574,21 +662,35 @@ class _DailyRoute extends StatelessWidget {
                     const SizedBox(height: 8),
                     Text(
                       part == null
-                          ? 'Sesine alan aç.'
-                          : '${part.title} için alan aç.',
+                          ? tr('Sesine alan aç.', 'Make room for your voice.')
+                          : tr(
+                              '${part.title} için alan aç.',
+                              'Make room for your ${part.title.toLowerCase()}.',
+                            ),
                       style: TT.display.copyWith(color: Colors.white),
                     ),
                     const SizedBox(height: 10),
                     Text(
-                      '~${store.dailyMinutes} dakika · $pitch',
+                      tr(
+                        '~${store.dailyMinutes} dakika · $pitch',
+                        '~${store.dailyMinutes} minutes · $pitch',
+                      ),
                       style: const TextStyle(
                         color: TC.heroMuted,
                         fontSize: 13.5,
                         height: 1.4,
                       ),
                     ),
-                    if (part == null)
-                      _PartLink(onTap: () => showVoicePartSheet(context)),
+                    // The route already offers the test when it has a voice step.
+                    if (part == null && !(route.voiceStep && !hasRange))
+                      // Measured, not asked (ADR-040).
+                      _PartLink(
+                        onTap: () => Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (_) => const RangeTestScreen(),
+                          ),
+                        ),
+                      ),
                   ],
                 ),
               ),
@@ -631,8 +733,11 @@ class _DailyRoute extends StatelessWidget {
               : onBegin,
         ),
         const SizedBox(height: 8),
-        const Text(
-          'Kayıtlar cihazdan çıkmaz; mikrofon adımları isteğe bağlıdır.',
+        Text(
+          tr(
+            'Kayıtlar cihazdan çıkmaz; mikrofon adımları isteğe bağlıdır.',
+            'Recordings never leave the device; microphone steps are optional.',
+          ),
           textAlign: TextAlign.center,
           style: TT.small,
         ),
@@ -670,12 +775,12 @@ class _PartLink extends StatelessWidget {
       style: TextButton.styleFrom(
         foregroundColor: TC.sun,
         padding: EdgeInsets.zero,
-        minimumSize: const Size(0, 44),
+        minimumSize: const Size(0, 48),
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
       ),
       icon: const Icon(Ic.audioLines, size: 18),
-      label: const Text(
-        'Ses aralığını seç',
+      label: Text(
+        tr('Ses aralığını ölç', 'Measure your range'),
         style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
       ),
     ),
@@ -726,8 +831,8 @@ class _RouteStep extends StatelessWidget {
                 color: TC.primarySoft,
                 shape: StadiumBorder(),
               ),
-              child: const Text(
-                'Şimdi',
+              child: Text(
+                tr('Şimdi', 'Now'),
                 style: TextStyle(
                   color: TC.ink,
                   fontSize: 11,

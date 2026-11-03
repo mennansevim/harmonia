@@ -8,6 +8,7 @@ import '../domain/music.dart';
 import '../domain/trainers.dart';
 import '../ui/kit.dart';
 import 'quiz.dart';
+import '../../domain/lang.dart';
 
 enum _Phase { answering, review, done }
 
@@ -101,8 +102,8 @@ class _QuizViewState extends State<QuizView> {
 
   String get _defaultPrompt => switch (_q.type) {
     QuestionType.identify => _q.trainer.question,
-    QuestionType.yesNo => 'Duyduğun bu mu?',
-    QuestionType.find => 'Seslerden hangisi?',
+    QuestionType.yesNo => tr('Duyduğun bu mu?', 'Is this what you heard?'),
+    QuestionType.find => tr('Seslerden hangisi?', 'Which of the sounds?'),
   };
 
   void _startTimer() {
@@ -132,7 +133,7 @@ class _QuizViewState extends State<QuizView> {
   void _timeout() {
     _record(false, null);
     setState(() {
-      _status = 'Süre doldu';
+      _status = tr('Süre doldu', 'Time is up');
       _correctPick = _q.answer;
       _phase = _Phase.done;
     });
@@ -162,17 +163,17 @@ class _QuizViewState extends State<QuizView> {
         _phase = _Phase.review;
         _reviewChoice = chosen;
         _correctPick = _q.type == QuestionType.find ? _q.answer : null;
-        _status = 'Karşılaştır';
+        _status = tr('Karşılaştır', 'Compare');
       });
       return;
     }
     if (widget.allowRetry && wasFirst && _q.type == QuestionType.identify) {
-      setState(() => _status = 'Bir daha dinle');
+      setState(() => _status = tr('Bir daha dinle', 'Listen once more'));
       return;
     }
     _countdown?.cancel();
     setState(() {
-      _status = 'Olmadı';
+      _status = tr('Olmadı', 'Not quite');
       _correctPick = _q.answer;
       _phase = _Phase.done;
     });
@@ -185,7 +186,9 @@ class _QuizViewState extends State<QuizView> {
     setState(() {
       _correctPick = chosen ?? _q.answer;
       _phase = _Phase.done;
-      _status = _records.last.correct ? 'Tam isabet!' : 'Doğru!';
+      _status = _records.last.correct
+          ? tr('Tam isabet!', 'Spot on!')
+          : tr('Doğru!', 'Right!');
     });
     _advanceSoon();
   }
@@ -251,10 +254,13 @@ class _QuizViewState extends State<QuizView> {
     _countdown?.cancel();
     final ok = await confirmDialog(
       context,
-      title: 'Pratik bitsin mi?',
-      message: 'Bu turdaki cevaplar sonuç olarak sayılmaz.',
-      cancel: 'Devam et',
-      confirm: 'Oturumu bitir',
+      title: tr('Pratik bitsin mi?', 'End practice?'),
+      message: tr(
+        'Bu turdaki cevaplar sonuç olarak sayılmaz.',
+        'Answers from this round will not count as results.',
+      ),
+      cancel: tr('Devam et', 'Keep going'),
+      confirm: tr('Oturumu bitir', 'End session'),
     );
     if (!mounted) return;
     if (!ok) {
@@ -431,11 +437,11 @@ class _QuizViewState extends State<QuizView> {
                 children: [
                   Expanded(
                     child: Semantics(
-                      label: 'Evet',
+                      label: tr('Evet', 'Yes'),
                       button: true,
                       excludeSemantics: true,
                       child: BigButton(
-                        label: 'Evet, bu',
+                        label: tr('Evet, bu', 'Yes, this one'),
                         color: TC.green,
                         onPressed: _phase == _Phase.answering
                             ? () => _yesNo(true)
@@ -446,11 +452,11 @@ class _QuizViewState extends State<QuizView> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: Semantics(
-                      label: 'Hayır',
+                      label: tr('Hayır', 'No'),
                       button: true,
                       excludeSemantics: true,
                       child: BigButton(
-                        label: 'Hayır, değil',
+                        label: tr('Hayır, değil', 'No, it isn\'t'),
                         color: TC.coral,
                         onPressed: _phase == _Phase.answering
                             ? () => _yesNo(false)
@@ -503,7 +509,7 @@ class _QuizViewState extends State<QuizView> {
           child: _phase == _Phase.review
               ? _review(target: _q.answer, heard: _reviewChoice)
               : BigButton(
-                  label: 'Bu ses',
+                  label: tr('Bu ses', 'This sound'),
                   color: _color,
                   onPressed:
                       _selectedSound != null && _phase == _Phase.answering
@@ -536,7 +542,7 @@ class _QuizViewState extends State<QuizView> {
               if (showHeard) ...[
                 Expanded(
                   child: _PlayPill(
-                    caption: 'SENİN CEVABIN',
+                    caption: tr('SENİN CEVABIN', 'YOUR ANSWER'),
                     text: _label(heard, long: true),
                     color: TC.coral,
                     onTap: () => play(heard),
@@ -546,7 +552,7 @@ class _QuizViewState extends State<QuizView> {
               ],
               Expanded(
                 child: _PlayPill(
-                  caption: 'DOĞRUSU',
+                  caption: tr('DOĞRUSU', 'CORRECT'),
                   text: _label(target, long: true),
                   color: TC.green,
                   onTap: () => play(target),
@@ -557,7 +563,12 @@ class _QuizViewState extends State<QuizView> {
           const SizedBox(height: 8),
           Text(itemFeel(_q.trainer, target), style: TT.small),
           const SizedBox(height: 12),
-          BigButton(label: _last ? 'Devam' : 'Sonraki soru', onPressed: _next),
+          BigButton(
+            label: _last
+                ? tr('Devam', 'Continue')
+                : tr('Sonraki soru', 'Next question'),
+            onPressed: _next,
+          ),
         ],
       ),
     );
@@ -614,7 +625,7 @@ class ListenDisc extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Semantics(
     button: true,
-    label: 'Tekrar dinle',
+    label: tr('Tekrar dinle', 'Listen again'),
     child: GestureDetector(
       onTap: onTap,
       child: ValueListenableBuilder<bool>(
@@ -655,7 +666,9 @@ class ListenDisc extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             Text(
-              secondsLeft != null ? '$secondsLeft sn' : 'Tekrar dinle',
+              secondsLeft != null
+                  ? tr('$secondsLeft sn', '$secondsLeft s')
+                  : tr('Tekrar dinle', 'Listen again'),
               style: TT.small.copyWith(fontWeight: FontWeight.w700),
             ),
           ],
@@ -812,7 +825,7 @@ class _SoundRow extends StatelessWidget {
         : TC.line;
     return Semantics(
       button: true,
-      label: 'Ses $letter',
+      label: tr('Ses $letter', 'Sound $letter'),
       selected: selected,
       excludeSemantics: true,
       child: AppCard(
@@ -840,7 +853,12 @@ class _SoundRow extends StatelessWidget {
             const SizedBox(width: 12),
             Expanded(
               child: Text(
-                selected ? 'Seçili · tekrar dinlemek için dokun' : 'Dinle',
+                selected
+                    ? tr(
+                        'Seçili · tekrar dinlemek için dokun',
+                        'Selected · tap to hear it again',
+                      )
+                    : tr('Dinle', 'Listen'),
                 style: TT.title,
               ),
             ),
@@ -880,9 +898,16 @@ class _PlayPill extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    caption,
-                    style: TT.caps.copyWith(color: color, fontSize: 10),
+                  // One line: at large text "DOĞRUSU" broke mid-word.
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: AlignmentDirectional.centerStart,
+                    child: Text(
+                      caption,
+                      maxLines: 1,
+                      softWrap: false,
+                      style: TT.caps.copyWith(color: color, fontSize: 10),
+                    ),
                   ),
                   Text(
                     text,

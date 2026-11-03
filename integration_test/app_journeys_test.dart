@@ -7,6 +7,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:resonia/infrastructure/storage/file_practice_preferences.dart';
 import 'package:resonia/trainer/app/trainer_app.dart';
 import 'package:resonia/trainer/domain/curriculum.dart';
 import 'package:resonia/trainer/domain/trainers.dart';
@@ -80,12 +81,9 @@ void main() {
     await tapKey(tester, 'get_started');
     await tapKey(tester, 'opt_singer');
     await tapKey(tester, 'ob_continue');
-    await tapKey(tester, 'opt_alto');
     await tapKey(tester, 'ob_continue');
     await tapKey(tester, 'opt_voice');
     await tapKey(tester, 'opt_interval');
-    await tapKey(tester, 'ob_continue');
-    await tapKey(tester, 'notation_letter');
     await tapKey(tester, 'ob_continue');
     await tapKey(tester, 'minutes_10');
     await tapKey(tester, 'ob_continue');
@@ -119,7 +117,6 @@ void main() {
     await tapKey(tester, 'get_started');
     await tapKey(tester, 'opt_singer');
     await tapKey(tester, 'ob_continue');
-    await tapKey(tester, 'opt_tenor');
     await tapKey(tester, 'ob_continue');
     await launch(tester);
     expect(find.byKey(const Key('get_started')), findsNothing);
@@ -188,7 +185,7 @@ void main() {
     await tapKey(tester, 'koro_range');
     // Intro only: starting would ask for the microphone.
     expect(find.byKey(const Key('range_title')), findsOneWidget);
-    await tester.tap(find.bySemanticsLabel('Geri').first);
+    await tester.tap(find.byTooltip('Geri').first);
     await settle(tester);
     await tapKey(tester, 'koro_voices');
     expect(find.text('Kaç ses duyuyorsun?'), findsOneWidget);
@@ -200,6 +197,18 @@ void main() {
     tester,
   ) async {
     await seedStore(_returning);
+    await FilePracticePreferences().saveHapticsEnabled(false);
+    final support = await getApplicationSupportDirectory();
+    final history = File('${support.path}/result_history.json');
+    await history.writeAsString('{}');
+    final media = await Directory(
+      '${support.path}/choir_media',
+    ).create(recursive: true);
+    await File('${media.path}/take.wav').writeAsString('audio');
+    final leftover = await (await getTemporaryDirectory()).createTemp(
+      'choir-take-',
+    );
+    await File('${leftover.path}/take.wav').writeAsString('audio');
     await launch(tester);
     await tapKey(tester, 'tab_3');
     await tapKey(tester, 'delete_data');
@@ -207,6 +216,13 @@ void main() {
     await settle(tester, 1500);
     expect(find.byKey(const Key('get_started')), findsOneWidget);
     expect((await storedDoc())?['onboardingDone'], isNot(true));
+    expect(await history.exists(), isFalse);
+    expect(
+      await File('${support.path}/practice_preferences.json').exists(),
+      isFalse,
+    );
+    expect(await media.exists(), isFalse);
+    expect(await leftover.exists(), isFalse);
 
     await launch(tester);
     expect(find.byKey(const Key('get_started')), findsOneWidget);

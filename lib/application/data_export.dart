@@ -23,8 +23,11 @@ class LocalDataExport {
     required DateTime exportedAt,
     PortablePracticePreferences? preferences,
   }) {
+    if (entries.length > maxEntries) {
+      throw const LocalDataFormatException('too_large');
+    }
     final t = exportedAt.toUtc();
-    return const JsonEncoder.withIndent('  ').convert({
+    final encoded = const JsonEncoder.withIndent('  ').convert({
       'format': format,
       'schemaVersion': schemaVersion,
       // Minute precision: no finer device timing than needed.
@@ -39,6 +42,10 @@ class LocalDataExport {
       'preferences': preferences?.toJson(),
       'results': [for (final e in entries) e.toJson()],
     });
+    if (utf8.encode(encoded).length > maxUtf8Bytes) {
+      throw const LocalDataFormatException('too_large');
+    }
+    return encoded;
   }
 
   /// Parses and validates the whole document before anything is applied.

@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:resonia/application/result_history.dart';
 import 'package:resonia/domain/learning/measured_exercise.dart';
 import 'package:resonia/domain/models/exercise_result.dart';
+import 'package:resonia/domain/models/exercise_protocol_fingerprint.dart';
 import 'package:resonia/domain/models/learner_profile.dart';
 import 'package:resonia/domain/models/measurement_provenance.dart';
 import 'package:resonia/domain/models/score_metric.dart';
@@ -14,12 +17,35 @@ class _BrokenHistory extends InMemoryResultHistory {
       throw const HistoryStorageException(HistoryStorageFailure.unavailable);
 }
 
+class _CountingHistory extends InMemoryResultHistory {
+  int loads = 0;
+
+  @override
+  Future<List<ResultHistoryEntry>> load() {
+    loads++;
+    return super.load();
+  }
+}
+
+class _PendingHistory extends InMemoryResultHistory {
+  final pending = Completer<List<ResultHistoryEntry>>();
+  int loads = 0;
+
+  @override
+  Future<List<ResultHistoryEntry>> load() {
+    loads++;
+    return pending.future;
+  }
+}
+
 ExerciseResult _clean(MeasuredExercise exercise) => ExerciseResult(
   sessionId: 'starting-screen',
   exerciseId: exercise.exerciseId,
   skill: exercise.cohort.skill,
   target: const {},
-  measurements: const {
+  measurements: {
+    ExerciseProtocolFingerprint.measurementKey:
+        ?exercise.cohort.protocolFingerprint,
     'correct': 8,
     'missed': 0,
     'extra': 0,
@@ -119,6 +145,82 @@ void main() {
     expect(find.textContaining('Verilerin silinmedi'), findsOneWidget);
     expect(find.text('Yeniden dene'), findsOneWidget);
     expect(find.byKey(const Key('starting_check_next')), findsNothing);
+  });
+
+  testWidgets(
+    'foreground return reloads once without restoring or opening a round',
+    (tester) async {
+      final history = _CountingHistory();
+      await tester.pumpWidget(
+        MaterialApp(
+          home: StartingCheckScreen(
+            goal: PracticeGoal.foundations,
+            history: history,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(history.loads, 1);
+
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      await tester.pumpAndSettle();
+      expect(history.loads, 1);
+
+      final exercise = defaultMeasuredCatalog().first;
+      await history.record(
+        ResultHistoryEntry(
+          attemptId: 'starting-foreground-1',
+          result: _clean(exercise),
+        ),
+      );
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      await tester.pumpAndSettle();
+
+      expect(history.loads, 2);
+      expect(find.textContaining('1/3 geçerli tur'), findsOneWidget);
+      expect(find.byType(Scaffold), findsOneWidget);
+
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      await tester.pumpAndSettle();
+      expect(history.loads, 2);
+    },
+  );
+
+  testWidgets('replacement history hides stale starting-check projection', (
+    tester,
+  ) async {
+    final old = InMemoryResultHistory();
+    final exercise = defaultMeasuredCatalog().first;
+    await old.record(
+      ResultHistoryEntry(attemptId: 'starting-old-1', result: _clean(exercise)),
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        home: StartingCheckScreen(goal: PracticeGoal.foundations, history: old),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.textContaining('1/3 geçerli tur'), findsOneWidget);
+
+    final next = _PendingHistory();
+    await tester.pumpWidget(
+      MaterialApp(
+        home: StartingCheckScreen(
+          goal: PracticeGoal.foundations,
+          history: next,
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(next.loads, 1);
+    expect(find.textContaining('1/3 geçerli tur'), findsNothing);
+    expect(find.text('Yerel sonuçların okunuyor.'), findsOneWidget);
+    next.pending.complete([]);
+    await tester.pumpAndSettle();
+    expect(find.textContaining('0/3 geçerli tur'), findsOneWidget);
   });
 
   testWidgets('narrow large text remains usable without a level claim', (

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:lucide_icons_flutter/lucide_icons_300.dart';
 
+import '../../domain/lang.dart';
 import '../domain/trainers.dart';
 
 /// The design's line icons, at the thin stroke its Figma frames use.
@@ -12,9 +13,9 @@ typedef Ic = LucideIcons300;
 /// indigo primary shared with the choir workshop, sun for streaks and one
 /// accent colour per skill.
 abstract final class TC {
-  static const primary = Color(0xFF7040E8);
-  static const primaryDeep = Color(0xFF4A22BE);
-  static const primarySoft = Color(0xFFEEE7FB);
+  static const primary = Color(0xFF6536D8);
+  static const primaryDeep = Color(0xFF451FB0);
+  static const primarySoft = Color(0xFFE9E0FA);
   static const koro = primary;
 
   /// Lime: the one bright accent. Always carries ink, never white.
@@ -36,15 +37,17 @@ abstract final class TC {
 
   /// Dark hero cards: a touch bluer than the text ink.
   static const hero = Color(0xFF27153E);
-  static const body = Color(0xFF4D4957);
-  static const muted = Color(0xFF6C6776);
-  static const faint = Color(0xFFBDB8C6);
-  static const line = Color(0xFFE8E3EB);
-  static const canvas = Color(0xFFF8F7F3);
+  static const body = Color(0xFF45404F);
+  static const muted = Color(0xFF5E5868);
+  static const faint = Color(0xFFADA6B6);
+  static const line = Color(0xFFE0D9E2);
+
+  /// Warm sand: dark enough that white cards stand off it (DESIGN-08).
+  static const canvas = Color(0xFFEDE6DA);
   static const card = Colors.white;
   static const heroMuted = Color(0xFFC6B8D9);
   static const navBar = Colors.white;
-  static const navPill = Color(0xFFEEE7FB);
+  static const navPill = Color(0xFFE9E0FA);
 }
 
 /// One accent for every skill, as on the choir screens; the icon tells
@@ -232,14 +235,32 @@ abstract final class TT {
   );
 }
 
-/// Turkish capitals for labels: Dart's toUpperCase maps i to I.
-String trCaps(String label) =>
-    label.replaceAll('i', 'İ').replaceAll('ı', 'I').toUpperCase();
+/// Capitals for labels. Dart's toUpperCase ignores Turkish, where i
+/// capitalises to İ and ı to I.
+String trCaps(String label) => Lang.en
+    ? label.toUpperCase()
+    : label.replaceAll('i', 'İ').replaceAll('ı', 'I').toUpperCase();
 
 void tapHaptic() => HapticFeedback.selectionClick();
 
 /// Full-width pill call to action. Pressing squeezes it slightly. A light
 /// fill (lime) carries ink text, a deep one white.
+/// Fills the screen so spacers work; scrolls only when the content no longer
+/// fits, as with large system text or a landscape phone.
+class FitOrScroll extends StatelessWidget {
+  const FitOrScroll({super.key, required this.child});
+  final Widget child;
+  @override
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, constraints) => SingleChildScrollView(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(minHeight: constraints.maxHeight),
+        child: IntrinsicHeight(child: child),
+      ),
+    ),
+  );
+}
+
 class BigButton extends StatefulWidget {
   const BigButton({
     super.key,
@@ -280,22 +301,26 @@ class _BigButtonState extends State<BigButton> {
         : light
         ? TC.ink
         : Colors.white;
+    void activate() {
+      tapHaptic();
+      widget.onPressed!();
+    }
+
+    // Its own node with its own action: inside a list item the button would
+    // otherwise melt into the item and VoiceOver could not activate it.
     return Semantics(
+      container: true,
       button: true,
       enabled: enabled,
       label: widget.label,
+      onTap: enabled ? activate : null,
       excludeSemantics: true,
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTapDown: enabled ? (_) => _press(true) : null,
         onTapCancel: () => _press(false),
         onTapUp: enabled ? (_) => _press(false) : null,
-        onTap: enabled
-            ? () {
-                tapHaptic();
-                widget.onPressed!();
-              }
-            : null,
+        onTap: enabled ? activate : null,
         child: AnimatedScale(
           scale: enabled && _down ? 0.97 : 1,
           duration: const Duration(milliseconds: 90),
@@ -448,13 +473,16 @@ class HeroCard extends StatelessWidget {
   /// Kept for callers that want no decoration; the card itself is plain now.
   final bool ring;
   @override
-  Widget build(BuildContext context) => Container(
-    padding: padding,
-    decoration: BoxDecoration(
-      color: TC.hero,
-      borderRadius: BorderRadius.circular(20),
+  Widget build(BuildContext context) => Semantics(
+    container: true,
+    child: Container(
+      padding: padding,
+      decoration: BoxDecoration(
+        color: TC.hero,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: child,
     ),
-    child: child,
   );
 }
 
@@ -487,14 +515,14 @@ class BackSquare extends StatelessWidget {
     super.key,
     this.onTap,
     this.icon = Ic.arrowLeft,
-    this.label = 'Geri',
+    this.label,
   });
   final VoidCallback? onTap;
   final IconData icon;
-  final String label;
+  final String? label;
   @override
   Widget build(BuildContext context) => IconButton(
-    tooltip: label,
+    tooltip: label ?? tr('Geri', 'Back'),
     constraints: const BoxConstraints.tightFor(width: 44, height: 44),
     padding: EdgeInsets.zero,
     onPressed: onTap ?? () => Navigator.of(context).maybePop(),
@@ -510,13 +538,13 @@ class CrumbBar extends StatelessWidget {
     required this.crumb,
     this.onBack,
     this.backIcon = Ic.arrowLeft,
-    this.backLabel = 'Geri',
+    this.backLabel,
     this.trailing,
   });
   final String crumb;
   final VoidCallback? onBack;
   final IconData backIcon;
-  final String backLabel;
+  final String? backLabel;
   final Widget? trailing;
   @override
   Widget build(BuildContext context) => Padding(
@@ -674,23 +702,26 @@ class AppCard extends StatelessWidget {
   final Color? border;
   final double radius;
   @override
-  Widget build(BuildContext context) => Container(
-    decoration: BoxDecoration(
-      color: color,
-      borderRadius: BorderRadius.circular(radius),
-      border: border == null ? null : Border.all(color: border!, width: 1.5),
-    ),
-    child: Material(
-      type: MaterialType.transparency,
-      child: InkWell(
+  Widget build(BuildContext context) => Semantics(
+    container: true,
+    child: Container(
+      decoration: BoxDecoration(
+        color: color,
         borderRadius: BorderRadius.circular(radius),
-        onTap: onTap == null
-            ? null
-            : () {
-                tapHaptic();
-                onTap!();
-              },
-        child: Padding(padding: padding, child: child),
+        border: border == null ? null : Border.all(color: border!, width: 1.5),
+      ),
+      child: Material(
+        type: MaterialType.transparency,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(radius),
+          onTap: onTap == null
+              ? null
+              : () {
+                  tapHaptic();
+                  onTap!();
+                },
+          child: Padding(padding: padding, child: child),
+        ),
       ),
     ),
   );

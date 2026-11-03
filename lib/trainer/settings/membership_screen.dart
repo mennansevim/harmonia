@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 
 import '../ui/kit.dart';
+import '../../domain/lang.dart';
 
-enum _Plan { premium, plus }
+enum _Plan { premium, plus, choir }
 
 /// Transparent membership preview. Nothing is sold yet: prices are not set,
 /// there is no store product and the call to action stays disabled. Plus is
-/// a real educator's written review, never AI text.
+/// a real educator's written review, never AI text. The choir module is a
+/// separate product (ADR-040): it is not part of Premium or Plus.
 class MembershipScreen extends StatefulWidget {
   const MembershipScreen({super.key});
   @override
@@ -19,17 +21,21 @@ class _MembershipScreenState extends State<MembershipScreen> {
   @override
   Widget build(BuildContext context) {
     final premium = _plan == _Plan.premium;
+    final choir = _plan == _Plan.choir;
     return Scaffold(
       backgroundColor: TC.canvas,
       body: SafeArea(
         child: Column(
           children: [
-            const CrumbBar(crumb: 'AYARLAR / ÜYELİK'),
+            CrumbBar(crumb: tr('AYARLAR / ÜYELİK', 'SETTINGS / MEMBERSHIP')),
             Expanded(
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(24, 4, 24, 24),
                 children: [
-                  const PageTitle('Önce değeri gör', subtitle: 'Şeffaf üyelik'),
+                  PageTitle(
+                    tr('Önce değeri gör', 'See the value first'),
+                    subtitle: tr('Şeffaf üyelik', 'Transparent membership'),
+                  ),
                   const SizedBox(height: 10),
                   const SizedBox(height: 16),
                   Segmented<_Plan>(
@@ -37,7 +43,11 @@ class _MembershipScreenState extends State<MembershipScreen> {
                     values: _Plan.values,
                     selected: _plan,
                     joined: true,
-                    label: (p) => p == _Plan.premium ? 'Premium' : 'Plus',
+                    label: (p) => switch (p) {
+                      _Plan.premium => 'Premium',
+                      _Plan.plus => 'Plus',
+                      _Plan.choir => tr('Koro', 'Choir'),
+                    },
                     onChanged: (p) => setState(() => _plan = p),
                   ),
                   const SizedBox(height: 12),
@@ -49,17 +59,32 @@ class _MembershipScreenState extends State<MembershipScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Tag(
-                          premium ? 'PLANLANIYOR' : 'PİLOT · KONTENJANLI',
+                          premium || choir
+                              ? tr('PLANLANIYOR', 'PLANNED')
+                              : tr(
+                                  'PİLOT · KONTENJANLI',
+                                  'PILOT · LIMITED PLACES',
+                                ),
                           color: TC.primary,
                         ),
                         const SizedBox(height: 14),
                         Text(
-                          premium ? 'Premium' : 'Plus · gerçek eğitimci',
+                          choir
+                              ? tr(
+                                  'Koro modülü · ayrı',
+                                  'Choir module · separate',
+                                )
+                              : premium
+                              ? 'Premium'
+                              : tr(
+                                  'Plus · gerçek eğitimci',
+                                  'Plus · a real educator',
+                                ),
                           style: TT.h2,
                         ),
                         const SizedBox(height: 6),
-                        const Text(
-                          'Fiyat henüz belirlenmedi',
+                        Text(
+                          tr('Fiyat henüz belirlenmedi', 'Price not set yet'),
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.w800,
@@ -68,16 +93,49 @@ class _MembershipScreenState extends State<MembershipScreen> {
                         ),
                         const SizedBox(height: 16),
                         for (final f
-                            in premium
-                                ? const [
-                                    'Süreye göre kişisel günlük rota',
-                                    'Ayrıntılı hata tekrarı ve haftalık rapor',
-                                    'Konservatuvar hazırlık programları',
+                            in choir
+                                ? [
+                                    tr(
+                                      'Şefin ödevleri ve çok sesli eşlik kayıtları',
+                                      'Your conductor\'s assignments and part-mixed accompaniment',
+                                    ),
+                                    tr(
+                                      'Eşlikle öğrenme: dinle → partin önde → partin yok',
+                                      'Learn with the choir: listen → part in front → part missing',
+                                    ),
+                                    tr(
+                                      'Eşlikli kayıt ve şefin yazılı geri bildirimi',
+                                      'Accompanied takes and your conductor\'s written feedback',
+                                    ),
                                   ]
-                                : const [
-                                    'Premium’daki her şey',
-                                    'Ayda 1 yazılı eğitimci değerlendirmesi',
-                                    'Açık teslim süresi ve kaydı silme seçeneği',
+                                : premium
+                                ? [
+                                    tr(
+                                      'Süreye göre kişisel günlük rota',
+                                      'A personal daily route for your time',
+                                    ),
+                                    tr(
+                                      'Ayrıntılı hata tekrarı ve haftalık rapor',
+                                      'Detailed mistake review and a weekly report',
+                                    ),
+                                    tr(
+                                      'Konservatuvar hazırlık programları',
+                                      'Conservatoire preparation programmes',
+                                    ),
+                                  ]
+                                : [
+                                    tr(
+                                      'Premium’daki her şey',
+                                      'Everything in Premium',
+                                    ),
+                                    tr(
+                                      'Ayda 1 yazılı eğitimci değerlendirmesi',
+                                      'One written educator review a month',
+                                    ),
+                                    tr(
+                                      'Açık teslim süresi ve kaydı silme seçeneği',
+                                      'A clear turnaround and the option to delete your take',
+                                    ),
                                   ])
                           Padding(
                             padding: const EdgeInsets.only(bottom: 12),
@@ -100,20 +158,39 @@ class _MembershipScreenState extends State<MembershipScreen> {
                             ),
                           ),
                         const SizedBox(height: 6),
-                        const BigButton(
+                        BigButton(
                           key: Key('membership_cta'),
-                          label: 'Henüz satışta değil',
+                          label: tr('Henüz satışta değil', 'Not on sale yet'),
                           onPressed: null,
                         ),
                         const SizedBox(height: 10),
                         Text(
-                          premium
-                              ? 'Satışa açıldığında deneme bitişi, yenileme tutarı, '
-                                    'iptal ve satın alımı geri yükleme satın almadan '
-                                    'önce görünecek. Bugün tüm çalışmalar ücretsiz.'
-                              : 'Yorumu gerçek bir eğitimci yazar; yapay zekâ metni '
-                                    'eğitimci yorumu diye sunulmaz. Kontenjan ve '
-                                    'teslim süresi pilotta belirlenecek.',
+                          choir
+                              ? tr(
+                                  'Koro modülü Premium ve Plus\'tan ayrı satılır; '
+                                      'ses, nefes ve kulak çalışması onsuz da açık kalır. '
+                                      'Koro ya da korist başına fiyat henüz belirlenmedi.',
+                                  'The choir module is sold apart from Premium and Plus; '
+                                      'voice, breath and ear work stay open without it. '
+                                      'Per-choir or per-singer pricing is not set yet.',
+                                )
+                              : premium
+                              ? tr(
+                                  'Satışa açıldığında deneme bitişi, yenileme tutarı, '
+                                      'iptal ve satın alımı geri yükleme satın almadan '
+                                      'önce görünecek. Bugün tüm çalışmalar ücretsiz.',
+                                  'When it goes on sale, the trial end, renewal price, '
+                                      'cancelling and restoring purchases will show before '
+                                      'you buy. All practice is free today.',
+                                )
+                              : tr(
+                                  'Yorumu gerçek bir eğitimci yazar; yapay zekâ metni '
+                                      'eğitimci yorumu diye sunulmaz. Kontenjan ve '
+                                      'teslim süresi pilotta belirlenecek.',
+                                  'A real educator writes the review; AI text is never '
+                                      'presented as an educator\'s review. Places and '
+                                      'turnaround will be set in the pilot.',
+                                ),
                           textAlign: TextAlign.center,
                           style: TT.small.copyWith(fontSize: 12.5),
                         ),

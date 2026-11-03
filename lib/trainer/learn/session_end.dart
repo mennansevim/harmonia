@@ -6,6 +6,7 @@ import '../domain/trainers.dart';
 import '../quiz/quiz.dart';
 import '../quiz/quiz_view.dart';
 import '../ui/kit.dart';
+import '../../domain/lang.dart';
 
 /// End of a lesson, gate or free session in two layers: a headline result
 /// with what was measured, not measured or experimental, then the per-item
@@ -42,19 +43,38 @@ class SessionEnd extends StatelessWidget {
     final gate = node?.isGate ?? false;
     final strong = s.accuracy >= 0.7;
     final verdict = gate
-        ? (passed ? 'Ara durak geçildi' : 'Ara durak için %80 gerekiyor')
+        ? (passed
+              ? tr('Ara durak geçildi', 'Checkpoint passed')
+              : tr('Ara durak için %80 gerekiyor', 'The checkpoint needs 80%'))
         : node == null
-        ? 'Serbest çalışma bitti'
-        : (strong ? 'Ders tamamlandı' : 'Bu ders bir tur daha istiyor');
+        ? tr('Serbest çalışma bitti', 'Free practice finished')
+        : (strong
+              ? tr('Ders tamamlandı', 'Lesson complete')
+              : tr(
+                  'Bu ders bir tur daha istiyor',
+                  'This lesson wants another round',
+                ));
     final note = gate
         ? (passed
-              ? 'Öncesindeki dersler de tamamlandı.'
-              : 'Dersleri sırayla çalışıp tekrar deneyebilirsin.')
+              ? tr(
+                  'Öncesindeki dersler de tamamlandı.',
+                  'The lessons before it are complete too.',
+                )
+              : tr(
+                  'Dersleri sırayla çalışıp tekrar deneyebilirsin.',
+                  'Work through the lessons in order and try again.',
+                ))
         : node == null
-        ? 'Sonuçlar İlerleme sekmesine eklendi.'
+        ? tr(
+            'Sonuçlar İlerleme sekmesine eklendi.',
+            'Results were added to the Progress tab.',
+          )
         : (strong
-              ? 'Sıradaki ders açıldı.'
-              : 'Ders listesinden istediğin zaman tekrar et.');
+              ? tr('Sıradaki ders açıldı.', 'The next lesson is open.')
+              : tr(
+                  'Ders listesinden istediğin zaman tekrar et.',
+                  'Repeat it from the lesson list whenever you like.',
+                ));
     final xp = s.correct * 10 + (s.total - s.correct) * 2;
     final items = s.byItem().entries.toList()
       ..sort(
@@ -99,8 +119,10 @@ class SessionEnd extends StatelessWidget {
                       child: Row(
                         children: [
                           Semantics(
-                            label:
-                                '${s.total} sorudan ${s.correct} ilk denemede doğru',
+                            label: tr(
+                              '${s.total} sorudan ${s.correct} ilk denemede doğru',
+                              '${s.correct} of ${s.total} right on the first try',
+                            ),
                             excludeSemantics: true,
                             child: SizedBox(
                               width: 96,
@@ -123,7 +145,10 @@ class SessionEnd extends StatelessWidget {
                                   ),
                                   const SizedBox(height: 3),
                                   Text(
-                                    '/ ${s.total} ilk deneme',
+                                    tr(
+                                      '/ ${s.total} ilk deneme',
+                                      '/ ${s.total} first tries',
+                                    ),
                                     style: TextStyle(
                                       color: Colors.white.withValues(
                                         alpha: 0.78,
@@ -154,8 +179,10 @@ class SessionEnd extends StatelessWidget {
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  'Dokunma yanıtlarından ölçüldü · '
-                                  '%${(s.accuracy * 100).round()}',
+                                  tr(
+                                    'Dokunma yanıtlarından ölçüldü · ${percent(s.accuracy)}',
+                                    'Measured from your taps · ${percent(s.accuracy)}',
+                                  ),
                                   style: TextStyle(
                                     color: Colors.white.withValues(alpha: 0.78),
                                     fontSize: 12.5,
@@ -186,7 +213,12 @@ class SessionEnd extends StatelessWidget {
                           const SizedBox(width: 10),
                           Expanded(
                             child: Text(
-                              '${store.streak} gün üst üste çalıştın',
+                              tr(
+                                '${store.streak} gün üst üste çalıştın',
+                                store.streak == 1
+                                    ? 'You practised today'
+                                    : 'You practised ${store.streak} days in a row',
+                              ),
                               style: TT.title.copyWith(color: TC.onSun),
                             ),
                           ),
@@ -197,41 +229,63 @@ class SessionEnd extends StatelessWidget {
                   const SizedBox(height: 12),
                   _Evidence(
                     key: const Key('evidence_measured'),
-                    status: 'ÖLÇÜLDÜ',
+                    status: tr('ÖLÇÜLDÜ', 'MEASURED'),
                     statusColor: TC.green,
                     title: weakest == null
-                        ? 'Tüm sesler ilk denemede doğru'
-                        : '${label(weakest.key)} ayrımı',
+                        ? tr(
+                            'Tüm sesler ilk denemede doğru',
+                            'Every sound right on the first try',
+                          )
+                        : tr(
+                            '${label(weakest.key)} ayrımı',
+                            'Telling ${label(weakest.key)} apart',
+                          ),
                     body: weakest == null
-                        ? 'Bu turda karışan ses yok.'
+                        ? tr(
+                            'Bu turda karışan ses yok.',
+                            'Nothing got mixed up this round.',
+                          )
                         : missed.length == 1
-                        ? '${weakest.value.$2 - weakest.value.$1} soruda karıştı'
-                        : '${weakest.value.$2 - weakest.value.$1} soruda karıştı · '
-                              'toplam ${missed.length} seste hata var',
+                        ? tr(
+                            '${weakest.value.$2 - weakest.value.$1} soruda karıştı',
+                            'Mixed up in ${weakest.value.$2 - weakest.value.$1} questions',
+                          )
+                        : tr(
+                            '${weakest.value.$2 - weakest.value.$1} soruda karıştı · '
+                                'toplam ${missed.length} seste hata var',
+                            'Mixed up in ${weakest.value.$2 - weakest.value.$1} questions · '
+                                'mistakes on ${missed.length} sounds in all',
+                          ),
                     action: weakest == null || retryConfig == null
                         ? null
                         : (
-                            'Yanlışları tekrar et',
+                            tr('Yanlışları tekrar et', 'Retry the misses'),
                             () => _retry(context, missed),
                           ),
                   ),
                   if (sang)
-                    const _Evidence(
+                    _Evidence(
                       key: Key('evidence_sing'),
-                      status: 'DENEYSEL',
+                      status: tr('DENEYSEL', 'EXPERIMENTAL'),
                       statusColor: TC.amber,
-                      title: 'Söyle adımı',
-                      body:
-                          'Söyleme puanlanmaz. Mikrofonu açtıysan gördüğün '
-                          'sent farkı yalnız tanısaldı.',
+                      title: tr('Söyle adımı', 'Singing step'),
+                      body: tr(
+                        'Söyleme puanlanmaz. Mikrofonu açtıysan gördüğün '
+                            'sent farkı yalnız tanısaldı.',
+                        'Singing is not scored. If you turned the microphone on, '
+                            'the cent difference you saw was diagnostic only.',
+                      ),
                     ),
                   if (store.breathedToday)
-                    const _Evidence(
+                    _Evidence(
                       key: Key('evidence_breath'),
-                      status: 'ÖLÇÜLMEDİ',
+                      status: tr('ÖLÇÜLMEDİ', 'NOT MEASURED'),
                       statusColor: TC.muted,
-                      title: 'Nefes',
-                      body: 'Yönlendirme tamamlandı; kalite puanı üretilmedi.',
+                      title: tr('Nefes', 'Breath'),
+                      body: tr(
+                        'Yönlendirme tamamlandı; kalite puanı üretilmedi.',
+                        'Guidance completed; no quality score was produced.',
+                      ),
                     ),
                   if (upNext != null && !gate) ...[
                     const SizedBox(height: 4),
@@ -251,14 +305,20 @@ class SessionEnd extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'Sıradaki: ${upNext.title}',
+                                  tr(
+                                    'Sıradaki: ${upNext.title}',
+                                    'Next: ${upNext.title}',
+                                  ),
                                   style: TT.title.copyWith(
                                     color: TC.primary,
                                     fontSize: 14.5,
                                   ),
                                 ),
-                                const Text(
-                                  'Bugün sekmesindeki rotadan başlar',
+                                Text(
+                                  tr(
+                                    'Bugün sekmesindeki rotadan başlar',
+                                    'Starts from the route in the Today tab',
+                                  ),
                                   style: TT.small,
                                 ),
                               ],
@@ -279,8 +339,11 @@ class SessionEnd extends StatelessWidget {
                       childrenPadding: const EdgeInsets.symmetric(
                         horizontal: 4,
                       ),
-                      title: const Text(
-                        'AYRINTILI KANIT · SORU BAZINDA',
+                      title: Text(
+                        tr(
+                          'AYRINTILI KANIT · SORU BAZINDA',
+                          'DETAILED EVIDENCE · BY QUESTION',
+                        ),
                         style: TT.caps,
                       ),
                       subtitle: Text('+$xp XP', style: TT.small),
@@ -292,11 +355,15 @@ class SessionEnd extends StatelessWidget {
                             total: e.value.$2,
                             color: color,
                           ),
-                        const Padding(
+                        Padding(
                           padding: EdgeInsets.only(top: 6, bottom: 4),
                           child: Text(
-                            'Yalnız ilk denemeler sayılır. Kısa tekrar bu '
-                            'sonuçları ve ilerlemeyi değiştirmez.',
+                            tr(
+                              'Yalnız ilk denemeler sayılır. Kısa tekrar bu '
+                                  'sonuçları ve ilerlemeyi değiştirmez.',
+                              'Only first tries count. A quick retry does not change '
+                                  'these results or your progress.',
+                            ),
                             style: TT.small,
                           ),
                         ),
@@ -310,7 +377,7 @@ class SessionEnd extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
               child: BigButton(
                 key: const Key('session_done'),
-                label: 'Bitti',
+                label: tr('Bitti', 'Done'),
                 onPressed: onDone,
               ),
             ),
@@ -343,7 +410,7 @@ class SessionEnd extends StatelessWidget {
     final result = await Navigator.of(context).push<QuizSummary>(
       MaterialPageRoute(
         builder: (routeContext) => QuizView(
-          title: 'Kısa tekrar',
+          title: tr('Kısa tekrar', 'Quick retry'),
           questions: questions,
           record: false,
           showCounter: true,
@@ -357,8 +424,12 @@ class SessionEnd extends StatelessWidget {
       SnackBar(
         key: const Key('retry_result'),
         content: Text(
-          'Kısa tekrar: ${result.correct}/${result.total} · '
-          'ilerlemene ve istatistiklerine yazılmadı.',
+          tr(
+            'Kısa tekrar: ${result.correct}/${result.total} · '
+                'ilerlemene ve istatistiklerine yazılmadı.',
+            'Quick retry: ${result.correct}/${result.total} · '
+                'not added to your progress or statistics.',
+          ),
         ),
       ),
     );

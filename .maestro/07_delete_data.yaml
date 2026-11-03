@@ -1,0 +1,25 @@
+# Settings → delete data returns to a clean first run.
+appId: com.mennansevim.vocalart
+name: Verilerimi sil
+tags: [critical]
+---
+- runFlow: subflows/onboard_quick.yaml
+- tapOn: "Ayarlar"
+- scrollUntilVisible:
+    element: "Verilerimi sil"
+    direction: DOWN
+- tapOn: "Verilerimi sil"
+- takeScreenshot: delete_confirm
+- assertVisible: "Tüm veriler silinsin mi\\?"
+- tapOn: "Vazgeç"
+- assertVisible: "Verilerimi sil"
+- tapOn: "Verilerimi sil"
+- tapOn: "Sil.*"
+- extendedWaitUntil:
+    visible: "Başlayalım"
+    timeout: 10000
+- stopApp
+- launchApp
+- extendedWaitUntil:
+    visible: "Başlayalım"
+    timeout: 15000

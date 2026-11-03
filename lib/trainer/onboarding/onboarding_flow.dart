@@ -4,8 +4,11 @@ import '../app/scope.dart';
 import '../domain/music.dart';
 import '../domain/trainers.dart';
 import '../home/daily_route.dart';
+import '../koro/range_test.dart';
 import '../settings/settings_tab.dart';
+import '../state/trainer_store.dart';
 import '../ui/kit.dart';
+import '../../domain/lang.dart';
 
 /// Vocalart's short first run: how you use Vocalart, your vocal range
 /// (optional), what to train and how often. Personal practice is the same
@@ -19,7 +22,7 @@ class OnboardingFlow extends StatefulWidget {
   State<OnboardingFlow> createState() => _OnboardingFlowState();
 }
 
-enum Ob { welcome, role, part, focus, notation, minutes, reminder, ready }
+enum Ob { welcome, role, part, focus, minutes, reminder, ready }
 
 class _OnboardingFlowState extends State<OnboardingFlow> {
   Ob _step = Ob.welcome;
@@ -34,7 +37,12 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
     if (_ready) return;
     _ready = true;
     final saved = _answers['obStep'];
-    if (saved is String) _step = Ob.values.asNameMap()[saved] ?? Ob.welcome;
+    // 'notation' was a step until DESIGN-08; resume just after it.
+    if (saved is String) {
+      _step = saved == 'notation'
+          ? Ob.minutes
+          : Ob.values.asNameMap()[saved] ?? Ob.welcome;
+    }
   }
 
   void _go(Ob next, {bool forward = true}) {
@@ -77,6 +85,13 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
     widget.onFinished(begin);
   }
 
+  String? _measuredRange(TrainerStore store) {
+    final r = store.koroRange?.split('-').map(int.tryParse).toList();
+    if (r == null || r.length != 2 || r.contains(null)) return null;
+    return '${PitchClass.midiName(r[0]!, store.notation)} – '
+        '${PitchClass.midiName(r[1]!, store.notation)}';
+  }
+
   @override
   Widget build(BuildContext context) => Scaffold(
     backgroundColor: TC.canvas,
@@ -98,16 +113,42 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
   Widget _page() {
     final store = TrainerScope.of(context).store;
     return switch (_step) {
-      Ob.welcome => _Welcome(onStart: _next),
+      Ob.welcome => _Welcome(
+        onStart: () {
+          // No notation question: Do Re Mi in Turkish, C D E in English.
+          // Settings can change it.
+          store.notation = Lang.en ? NoteNotation.letter : NoteNotation.solfege;
+          _next();
+        },
+      ),
       Ob.role => _choices(
-        'Vocalart\'ı nasıl kullanacaksın?',
-        'Ses, nefes ve kulak çalışması herkes için aynı. '
-            'Koro ödevleri ayrı bir sekmede açılır.',
+        tr('Vocalart\'ı nasıl kullanacaksın?', 'How will you use Vocalart?'),
+        tr(
+          'Ses, nefes ve kulak çalışması herkes için aynı. '
+              'Koro ödevleri ayrı bir sekmede açılır.',
+          'Voice, breath and ear work is the same for everyone. '
+              'Choir assignments open in a separate tab.',
+        ),
         [
-          ('solo', Ic.userRound, 'Sesimi ve kulağımı geliştirmek istiyorum'),
-          ('musician', Ic.piano, 'Enstrüman çalıyorum'),
-          ('singer', Ic.mic, 'Bir koroda söylüyorum'),
-          ('conductor', Ic.users, 'Koro şefi / eğitmeniyim'),
+          (
+            'solo',
+            Ic.userRound,
+            tr(
+              'Sesimi ve kulağımı geliştirmek istiyorum',
+              'I want to improve my voice and ear',
+            ),
+          ),
+          (
+            'musician',
+            Ic.piano,
+            tr('Enstrüman çalıyorum', 'I play an instrument'),
+          ),
+          ('singer', Ic.mic, tr('Bir koroda söylüyorum', 'I sing in a choir')),
+          (
+            'conductor',
+            Ic.users,
+            tr('Koro şefi / eğitmeniyim', 'I am a conductor / teacher'),
+          ),
         ],
         selected: [if (_answers['role'] is String) _answers['role'] as String],
         onTap: (id) {
@@ -116,82 +157,57 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
           setState(() {});
         },
       ),
-      Ob.part => _choices(
-        'Sesin hangi aralığa yakın?',
-        'Dersler bu aralıkta çalar; tenor ve bas bir oktav pesten duyar. '
-            'Bilmiyorsan atla, Ses sekmesindeki testle sonra bulursun.',
-        [for (final p in VoicePart.values) (p.name, Ic.audioLines, p.title)],
-        selected: [?store.voicePart],
-        optional: true,
-        onTap: (id) {
-          // Tapping the chosen range again clears it.
-          store.voicePart = store.voicePart == id ? null : id;
-          store.save();
-          setState(() {});
-        },
+      // No voice-group question: the range is measured, or skipped (ADR-040).
+      Ob.part => _Frame(
+        step: _step,
+        onBack: _back,
+        onNext: _next,
+        button: store.koroRange == null
+            ? tr('Atla', 'Skip')
+            : tr('Devam', 'Continue'),
+        title: tr('Ses aralığını ölçelim', 'Let us measure your range'),
+        subtitle: tr(
+          'Piyano bir nota çalar, sen tekrar edersin; birkaç dakika sürer. '
+              'Dersler ölçülen aralıkta çalar. İstersen atla, Ses sekmesinden '
+              'sonra ölçersin.',
+          'The piano plays a note and you repeat it; it takes a few minutes. '
+              'Lessons then play in the measured range. Skip it if you like '
+              'and measure later in the Voice tab.',
+        ),
+        child: _RangeStep(
+          measured: _measuredRange(store),
+          onMeasure: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(builder: (_) => const RangeTestScreen()),
+          ),
+        ),
       ),
       Ob.focus => _choices(
-        'Önce neye odaklanalım?',
-        'Birden fazla seçebilirsin.',
+        tr('Önce neye odaklanalım?', 'What should we focus on first?'),
+        tr('Birden fazla seçebilirsin.', 'You can pick more than one.'),
         [
-          ('voice', Ic.audioLines, 'Ses: aralık, ritim, ezgi'),
+          (
+            'voice',
+            Ic.audioLines,
+            tr('Ses: aralık, ritim, ezgi', 'Voice: range, rhythm, melody'),
+          ),
           for (final k in TrainerKind.values) (k.id, trainerIcon(k), k.title),
         ],
         selected: _list('focus'),
         multi: true,
         onTap: (id) => _toggle('focus', id),
       ),
-      Ob.notation => _Frame(
-        step: _step,
-        onBack: _back,
-        onNext: _next,
-        title: 'Notaları nasıl yazalım?',
-        subtitle: 'Ayarlar\'dan istediğin zaman değiştirebilirsin.',
-        child: Column(
-          children: [
-            for (final (n, big, small) in [
-              (NoteNotation.solfege, 'Do  Re  Mi', 'Solfej'),
-              (NoteNotation.letter, 'C  D  E', 'Harf isimleri'),
-            ])
-              Padding(
-                padding: const EdgeInsets.only(bottom: 10),
-                child: AppCard(
-                  key: Key('notation_${n.name}'),
-                  border: store.notation == n ? TC.primary : null,
-                  color: store.notation == n ? TC.primarySoft : Colors.white,
-                  onTap: () {
-                    store.notation = n;
-                    store.save();
-                    setState(() {});
-                  },
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          big,
-                          style: const TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: 2,
-                            color: TC.ink,
-                          ),
-                        ),
-                      ),
-                      Text(small, style: TT.small),
-                    ],
-                  ),
-                ),
-              ),
-          ],
-        ),
-      ),
       Ob.minutes => _Frame(
         step: _step,
         onBack: _back,
         onNext: _next,
-        title: 'Günde kaç dakika ayırabilirsin?',
-        subtitle:
-            'Kısa ama her gün çalışmak, uzun ama seyrek çalışmaktan iyidir.',
+        title: tr(
+          'Günde kaç dakika ayırabilirsin?',
+          'How many minutes a day can you spare?',
+        ),
+        subtitle: tr(
+          'Kısa ama her gün çalışmak, uzun ama seyrek çalışmaktan iyidir.',
+          'A little every day beats a lot now and then.',
+        ),
         child: Wrap(
           spacing: 10,
           runSpacing: 10,
@@ -199,7 +215,7 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
             for (final m in const [3, 5, 10, 15, 20])
               ChoiceChip(
                 key: Key('minutes_$m'),
-                label: Text('$m dk'),
+                label: Text(tr('$m dk', '$m min')),
                 selected: store.dailyMinutes == m,
                 showCheckmark: false,
                 labelStyle: TextStyle(
@@ -243,7 +259,9 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
     step: _step,
     onBack: _back,
     onNext: selected.isEmpty && !optional ? null : _next,
-    button: selected.isEmpty && optional ? 'Atla' : 'Devam',
+    button: selected.isEmpty && optional
+        ? tr('Atla', 'Skip')
+        : tr('Devam', 'Continue'),
     title: title,
     subtitle: subtitle,
     child: Column(
@@ -278,6 +296,50 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
 }
 
 /// Shared page frame: step counter, title, scrollable body, continue button.
+class _RangeStep extends StatelessWidget {
+  const _RangeStep({required this.measured, required this.onMeasure});
+  final String? measured;
+  final VoidCallback onMeasure;
+  @override
+  Widget build(BuildContext context) => AppCard(
+    key: const Key('ob_measure_range'),
+    padding: const EdgeInsets.all(16),
+    border: measured == null ? null : TC.primary,
+    color: measured == null ? Colors.white : TC.primarySoft,
+    onTap: onMeasure,
+    child: Row(
+      children: [
+        const Icon(Ic.mic, color: TC.primary),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                measured == null
+                    ? tr('Şimdi ölç', 'Measure now')
+                    : tr('Ölçüldü: $measured', 'Measured: $measured'),
+                style: TT.title,
+              ),
+              const SizedBox(height: 2),
+              Text(
+                measured == null
+                    ? tr(
+                        'Dinle ve tekrar et · mikrofon',
+                        'Listen and repeat · microphone',
+                      )
+                    : tr('Tekrar ölçmek için dokun', 'Tap to measure again'),
+                style: TT.small,
+              ),
+            ],
+          ),
+        ),
+        const Icon(Ic.chevronRight, color: TC.muted),
+      ],
+    ),
+  );
+}
+
 class _Frame extends StatelessWidget {
   const _Frame({
     required this.step,
@@ -286,7 +348,8 @@ class _Frame extends StatelessWidget {
     required this.child,
     this.subtitle,
     this.onNext,
-    this.button = 'Devam',
+    this.button,
+    this.showButton = true,
   });
   final Ob step;
   final VoidCallback onBack;
@@ -295,9 +358,10 @@ class _Frame extends StatelessWidget {
   final Widget child;
   final VoidCallback? onNext;
   final String? button;
+  final bool showButton;
 
   /// Steps between welcome and ready.
-  static const _count = 6;
+  static const _count = 5;
 
   @override
   Widget build(BuildContext context) => Column(
@@ -339,12 +403,12 @@ class _Frame extends StatelessWidget {
           ],
         ),
       ),
-      if (button != null)
+      if (showButton)
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
           child: BigButton(
             key: const Key('ob_continue'),
-            label: button!,
+            label: button ?? tr('Devam', 'Continue'),
             onPressed: onNext,
           ),
         ),
@@ -356,16 +420,21 @@ class _Welcome extends StatelessWidget {
   const _Welcome({required this.onStart});
   final VoidCallback onStart;
   @override
-  Widget build(BuildContext context) => Padding(
+  Widget build(BuildContext context) => FitOrScroll(child: _content());
+
+  Widget _content() => Padding(
     padding: const EdgeInsets.fromLTRB(24, 16, 24, 16),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         const Spacer(),
-        const _ChoirMark(),
-        const SizedBox(height: 32),
-        const Text(
-          'Sesini ve kulağını\nher gün geliştir',
+        const TrainerBadge(color: TC.primary, icon: Ic.music2, size: 64),
+        const SizedBox(height: 24),
+        Text(
+          tr(
+            'Sesini ve kulağını\nher gün geliştir',
+            'Grow your voice\nand ear every day',
+          ),
           style: TextStyle(
             fontFamily: 'Lora',
             fontSize: 34,
@@ -374,79 +443,81 @@ class _Welcome extends StatelessWidget {
             color: TC.ink,
           ),
         ),
-        const SizedBox(height: 12),
-        const Text(
-          'Nefesini hazırla, kulağını eğit, ritmi ve ezgiyi tekrar et. '
-          'Ölçemediğimiz şeyi puanlamayız.',
+        const SizedBox(height: 10),
+        Text(
+          tr(
+            'Günde birkaç dakika, kendi hızında. Ne yapacağını her gün Bugün sekmesi söyler.',
+            'A few minutes a day, at your pace. The Today tab tells you what to do each day.',
+          ),
           style: TT.body,
         ),
+        const SizedBox(height: 24),
+        // What the app offers, in the order the tabs show it.
+        for (final (icon, title, body) in [
+          (
+            Ic.ear,
+            tr('Kulak', 'Ear'),
+            tr(
+              'Nota, aralık, akor ve dizi; kısa derslerle',
+              'Notes, intervals, chords and scales in short lessons',
+            ),
+          ),
+          (
+            Ic.mic,
+            tr('Ses', 'Voice'),
+            tr(
+              'Nefes, ses aralığı, ritim ve ezgi tekrarı',
+              'Breath, vocal range, rhythm and melody echo',
+            ),
+          ),
+          (
+            Ic.users,
+            tr('Koro', 'Choir'),
+            tr(
+              'Şefin ödevleri ve eşlikle parti çalışması',
+              'Your conductor\'s assignments and part practice',
+            ),
+          ),
+        ])
+          Padding(
+            padding: const EdgeInsets.only(bottom: 10),
+            child: AppCard(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              child: Row(
+                children: [
+                  Icon(icon, color: TC.primary),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(title, style: TT.title),
+                        Text(body, style: TT.small),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         const Spacer(flex: 2),
         BigButton(
           key: const Key('get_started'),
-          label: 'Başlayalım',
+          label: tr('Başlayalım', 'Get started'),
           onPressed: onStart,
         ),
         const SizedBox(height: 8),
-        const Text(
-          'Hesap gerekmez · veriler bu cihazda kalır',
+        Text(
+          tr(
+            'Hesap gerekmez · veriler bu cihazda kalır',
+            'No account needed · data stays on this device',
+          ),
           textAlign: TextAlign.center,
           style: TT.small,
         ),
       ],
     ),
   );
-}
-
-/// Four stacked voice lines (S/A/T/B) as the welcome illustration.
-class _ChoirMark extends StatelessWidget {
-  const _ChoirMark();
-  @override
-  Widget build(BuildContext context) {
-    const parts = [
-      ('S', TC.coral, 0.92),
-      ('A', TC.amber, 0.74),
-      ('T', TC.teal, 0.58),
-      ('B', TC.primary, 0.44),
-    ];
-    return ExcludeSemantics(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          for (final (label, color, width) in parts)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 10),
-              child: Row(
-                children: [
-                  SizedBox(
-                    width: 22,
-                    child: Text(
-                      label,
-                      style: TextStyle(
-                        fontWeight: FontWeight.w900,
-                        color: color,
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    child: FractionallySizedBox(
-                      alignment: Alignment.centerLeft,
-                      widthFactor: width,
-                      child: Container(
-                        height: 14,
-                        decoration: BoxDecoration(
-                          color: color,
-                          borderRadius: BorderRadius.circular(7),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-        ],
-      ),
-    );
-  }
 }
 
 class _Reminder extends StatefulWidget {
@@ -475,23 +546,28 @@ class _ReminderState extends State<_Reminder> {
   Widget build(BuildContext context) => _Frame(
     step: widget.step,
     onBack: widget.onBack,
-    title: 'Günlük hatırlatma ister misin?',
-    subtitle:
-        'Her akşam 19:00\'da tek bir bildirim. Ayarlar\'dan kapatabilirsin.',
-    button: null,
+    title: tr(
+      'Günlük hatırlatma ister misin?',
+      'Would you like a daily reminder?',
+    ),
+    subtitle: tr(
+      'Her akşam 19:00\'da tek bir bildirim. Ayarlar\'dan kapatabilirsin.',
+      'One notification at 19:00 each evening. You can turn it off in Settings.',
+    ),
+    showButton: false,
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         BigButton(
           key: const Key('reminder_allow'),
-          label: 'Hatırlat',
+          label: tr('Hatırlat', 'Remind me'),
           icon: Ic.bellRing,
           busy: _busy,
           onPressed: _allow,
         ),
         const SizedBox(height: 6),
         TextLink(
-          'Şimdilik hayır',
+          tr('Şimdilik hayır', 'Not now'),
           key: const Key('reminder_skip'),
           onTap: _busy ? () {} : widget.onNext,
         ),
@@ -517,56 +593,84 @@ class _Ready extends StatelessWidget {
     final rows = [
       (
         Ic.mic,
-        'Aralık',
-        store.part?.title ?? 'Seçilmedi · Ses sekmesinde test et',
-      ),
-      (trainerIcon(trainer), 'İlk ders', trainer.title),
-      if (DailyRoute.forMinutes(store.dailyMinutes).voiceStep)
-        (Ic.audioLines, 'Ses', 'Rotanın sonunda bir ses adımı'),
-      (Ic.timer, 'Günlük', '${store.dailyMinutes} dakika'),
-      // Honest about the choir module: not built yet (ADR-035).
-      if (role == 'singer' || role == 'conductor')
-        (Ic.users, 'Koro', 'Koro modülü henüz yok'),
-    ];
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          const Text('HAZIR', style: TT.caps),
-          const SizedBox(height: 4),
-          const Text('Planın kuruldu', style: TT.h1),
-          const SizedBox(height: 20),
-          AppCard(
-            child: Column(
-              children: [
-                for (final (icon, label, value) in rows)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    child: Row(
-                      children: [
-                        Icon(icon, color: TC.primary),
-                        const SizedBox(width: 12),
-                        SizedBox(
-                          width: 70,
-                          child: Text(label, style: TT.small),
-                        ),
-                        Expanded(child: Text(value, style: TT.title)),
-                      ],
-                    ),
-                  ),
-              ],
+        tr('Aralık', 'Range'),
+        store.part?.title ??
+            tr(
+              'Ölçülmedi · Ses sekmesinde ölç',
+              'Not measured · measure it in the Voice tab',
             ),
+      ),
+      (trainerIcon(trainer), tr('İlk ders', 'First lesson'), trainer.title),
+      if (DailyRoute.forMinutes(store.dailyMinutes).voiceStep)
+        (
+          Ic.audioLines,
+          tr('Ses', 'Voice'),
+          tr(
+            'Rotanın sonunda bir ses adımı',
+            'A voice step at the end of the route',
           ),
-          const Spacer(),
-          BigButton(
-            key: const Key('today_session_begin'),
-            label: 'İlk derse başla',
-            icon: Ic.play,
-            onPressed: onBegin,
+        ),
+      (
+        Ic.timer,
+        tr('Günlük', 'Daily'),
+        tr('${store.dailyMinutes} dakika', '${store.dailyMinutes} minutes'),
+      ),
+      if (role == 'singer' || role == 'conductor')
+        (
+          Ic.users,
+          tr('Koro', 'Choir'),
+          tr(
+            'Ödevlerin Koro sekmesinde',
+            'Your assignments are in the Choir tab',
           ),
-          Center(child: TextLink('Ana sayfaya git', onTap: onLater)),
-        ],
+        ),
+    ];
+    return FitOrScroll(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(tr('HAZIR', 'READY'), style: TT.caps),
+            const SizedBox(height: 4),
+            Text(tr('Planın kuruldu', 'Your plan is ready'), style: TT.h1),
+            const SizedBox(height: 20),
+            AppCard(
+              child: Column(
+                children: [
+                  for (final (icon, label, value) in rows)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: Row(
+                        children: [
+                          Icon(icon, color: TC.primary),
+                          const SizedBox(width: 12),
+                          SizedBox(
+                            width: 70,
+                            child: Text(label, style: TT.small),
+                          ),
+                          Expanded(child: Text(value, style: TT.title)),
+                        ],
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            const Spacer(),
+            BigButton(
+              key: const Key('today_session_begin'),
+              label: tr('İlk derse başla', 'Start the first lesson'),
+              icon: Ic.play,
+              onPressed: onBegin,
+            ),
+            Center(
+              child: TextLink(
+                tr('Ana sayfaya git', 'Go to home'),
+                onTap: onLater,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

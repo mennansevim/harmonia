@@ -9,6 +9,7 @@ import 'package:resonia/choir/app/choir_scope.dart';
 import 'package:resonia/choir/app/choir_screen.dart';
 import 'package:resonia/choir/app/choir_text.dart';
 import 'package:resonia/choir/app/choir_tab.dart';
+import 'package:resonia/choir/app/practice_screen.dart';
 import 'package:resonia/choir/app/review_screen.dart';
 import 'package:resonia/choir/app/take_screen.dart';
 import 'package:resonia/choir/audio/take_engine.dart';
@@ -16,6 +17,7 @@ import 'package:resonia/choir/data/choir_bundle.dart';
 import 'package:resonia/choir/data/choir_store.dart';
 import 'package:resonia/choir/domain/assignment.dart';
 import 'package:resonia/choir/domain/choir.dart';
+import 'package:resonia/choir/domain/part_ladder.dart';
 import 'package:resonia/choir/domain/submission.dart';
 import 'package:resonia/domain/audio/capture_quality.dart';
 import 'package:resonia/trainer/app/scope.dart';
@@ -486,6 +488,7 @@ void main() {
     for (final screen in <Widget>[
       const AssignmentScreen(assignmentId: 'a1'),
       TakeScreen(assignment: a, piece: a.piece('p1')!),
+      PracticeScreen(piece: a.piece('p1')!, part: ChoirPart.alto),
       const ChoirScreen(choirId: 'c1'),
     ]) {
       await tester.pumpWidget(
@@ -500,5 +503,41 @@ void main() {
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
     }
+  });
+
+  test('part steps fade the own part out, ending in a part-missing mix', () {
+    final steps = PartStep.values;
+    expect(steps.first.sing, isFalse);
+    expect(steps.last.ownGain, 0);
+    for (var i = 2; i < steps.length; i++) {
+      expect(steps[i].ownGain, lessThan(steps[i - 1].ownGain));
+    }
+    expect(PartStep.lead.next, PartStep.together);
+    expect(PartStep.alone.next, isNull);
+    expect(PartStep.matching(0.25, 0.8, 100), PartStep.carry);
+    expect(PartStep.matching(0.5, 0.5, 100), isNull);
+  });
+
+  testWidgets('practice starts on the listen step and walks the ladder', (
+    tester,
+  ) async {
+    final (_, a) = await singerSetup();
+    await tester.pumpWidget(
+      app(PracticeScreen(piece: a.piece('p1')!, part: ChoirPart.alto)),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('1/5. basamak · Dinle'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('practice_next_step')));
+    await tester.pumpAndSettle();
+    expect(find.text('2/5. basamak · Partin önde'), findsOneWidget);
+    expect(find.text('%80'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('practice_step_alone')));
+    await tester.pumpAndSettle();
+    expect(find.text('5/5. basamak · Partin yok'), findsOneWidget);
+    expect(find.byKey(const Key('practice_next_step')), findsNothing);
+    // Full choir has no own part, so the ladder waits for a part.
+    await tester.tap(find.byKey(const Key('practice_full')));
+    await tester.pumpAndSettle();
+    expect(find.text('Basamaklar için partini seç.'), findsOneWidget);
   });
 }

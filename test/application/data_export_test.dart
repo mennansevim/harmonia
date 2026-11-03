@@ -161,6 +161,41 @@ void main() {
     expect(reason(big), 'too_large');
   });
 
+  test('encode enforces entry and UTF-8 budgets before publication', () {
+    expect(
+      () => _export(
+        List.filled(LocalDataExport.maxEntries + 1, entry('attempt-0001')),
+      ),
+      throwsA(
+        isA<LocalDataFormatException>().having(
+          (e) => e.reason,
+          'reason',
+          'too_large',
+        ),
+      ),
+    );
+
+    final raw = entry('attempt-large').toJson();
+    final result = Map<String, Object?>.from(
+      raw['result']! as Map<String, Object?>,
+    );
+    result['target'] = {'label': 'x' * LocalDataExport.maxUtf8Bytes};
+    final oversized = ResultHistoryEntry.fromJson({
+      'attemptId': 'attempt-large',
+      'result': result,
+    });
+    expect(
+      () => _export([oversized]),
+      throwsA(
+        isA<LocalDataFormatException>().having(
+          (e) => e.reason,
+          'reason',
+          'too_large',
+        ),
+      ),
+    );
+  });
+
   test('errors never echo the pasted text', () {
     try {
       LocalDataExport.decode('{"secret": "my-private-note"');

@@ -4,7 +4,9 @@ import 'package:resonia/domain/content/rhythm_patterns.dart';
 import 'package:resonia/domain/learning/measured_exercise.dart';
 import 'package:resonia/domain/learning/skill_graph.dart';
 import 'package:resonia/domain/models/exercise.dart';
+import 'package:resonia/domain/models/attempt_assistance_evidence.dart';
 import 'package:resonia/domain/models/exercise_result.dart';
+import 'package:resonia/domain/models/exercise_protocol_fingerprint.dart';
 import 'package:resonia/domain/models/learner_profile.dart';
 import 'package:resonia/domain/models/measurement_provenance.dart';
 import 'package:resonia/domain/models/score_metric.dart';
@@ -28,6 +30,14 @@ SkillNode _node(
 );
 
 final _day = DateTime(2026, 10, 11, 10);
+String _protocolFingerprint(String exerciseId) =>
+    ExerciseProtocolFingerprint.compute(
+      draftRhythmPatterns
+          .singleWhere((p) => p.exercise.exercise.id == exerciseId)
+          .exercise
+          .protocol,
+    );
+
 ExerciseResult _r(
   String exerciseId,
   DateTime at, {
@@ -35,18 +45,23 @@ ExerciseResult _r(
   int plays = 1,
   bool retention = false,
   String version = RhythmImitationOutcome.version,
+  Map<String, Object?>? assistance,
 }) => ExerciseResult(
   sessionId: 's',
   exerciseId: exerciseId,
   skill: Skill.rhythm,
   target: const {},
   measurements: {
+    ExerciseProtocolFingerprint.measurementKey: _protocolFingerprint(
+      exerciseId,
+    ),
     'missed': missed,
     'extra': 0,
     'late': 0,
     'early': 0,
     'meanAbsoluteOffsetMs': 20,
     'referencePlays': plays,
+    AttemptAssistanceEvidence.measurementKey: ?assistance,
     'retentionCheck': retention,
   },
   scores: ExerciseScores(timing: ScoreMetric.measured(90)),
@@ -177,6 +192,37 @@ void main() {
         MasteryState.practicing,
       );
     });
+
+    test(
+      'structured aid use and malformed evidence cannot become independent',
+      () {
+        Map<String, Object?> aided() => AttemptAssistanceEvidence(
+          referencePlaysCompleted: 1,
+          pitchHintsUsed: 1,
+          transpositionUsed: false,
+          accompanimentUsed: false,
+          configuredRecallDelayMs: 0,
+        ).toJson();
+        expect(
+          _state('pulse-tap', [
+            _r(q, _day, assistance: aided()),
+            _r(q, _day.add(const Duration(minutes: 1)), assistance: aided()),
+          ]),
+          MasteryState.supported,
+        );
+        expect(
+          _state('pulse-tap', [
+            _r(q, _day, assistance: const {'schemaVersion': 1}),
+            _r(
+              q,
+              _day.add(const Duration(minutes: 1)),
+              assistance: const {'schemaVersion': 1},
+            ),
+          ]),
+          MasteryState.supported,
+        );
+      },
+    );
 
     test('unattempted linked exercise caps the skill at practicing', () {
       final eighths = [

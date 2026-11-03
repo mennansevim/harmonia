@@ -1,4 +1,4 @@
-# Resonia
+# Vocalart
 
 Konservatuvar hazırlığı için kişisel kulak, ritim, ezgi ve ses koçu.
 

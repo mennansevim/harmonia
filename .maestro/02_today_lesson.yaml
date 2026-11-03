@@ -1,0 +1,16 @@
+# Today's route: breath guide (skipped) into the intro lesson.
+appId: com.mennansevim.vocalart
+name: Bugün — nefes ve ilk ders
+tags: [critical]
+---
+- runFlow: subflows/onboard_quick.yaml
+- scrollUntilVisible:
+    element: "Çalışmaya başla"
+    direction: DOWN
+- tapOn: "Çalışmaya başla"
+- takeScreenshot: breath
+- scrollUntilVisible:
+    element: "Nefesi atla, derse geç"
+    direction: DOWN
+- tapOn: "Nefesi atla, derse geç"
+- takeScreenshot: lesson_intro_or_next

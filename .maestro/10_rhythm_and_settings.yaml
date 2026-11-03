@@ -1,0 +1,42 @@
+# Mic-free rhythm drill and every settings sub-page.
+appId: com.mennansevim.vocalart
+name: Ritim ve ayar sayfaları
+tags: [regression]
+---
+- runFlow: subflows/onboard_quick.yaml
+- tapOn: "Ses"
+- scrollUntilVisible:
+    element: "Ritim tekrarı.*"
+    direction: DOWN
+- tapOn: "Ritim tekrarı.*"
+- waitForAnimationToEnd
+- takeScreenshot: rhythm_intro
+- tapOn: ".*kapat"
+- waitForAnimationToEnd
+- tapOn: "Ayarlar"
+- tapOn: "Nota gösterimi.*"
+- waitForAnimationToEnd
+- takeScreenshot: settings_notation_sheet
+- tapOn: "C D E.*"
+- waitForAnimationToEnd
+# The row behind the sheet must follow the choice at once.
+- assertVisible: ".*Harf.*"
+- scrollUntilVisible:
+    element: "Gizlilik"
+    direction: DOWN
+- tapOn: "Gizlilik"
+- waitForAnimationToEnd
+- takeScreenshot: settings_privacy
+- tapOn:
+    text: "Geri|Tamam"
+- waitForAnimationToEnd
+- tapOn: "Kullanım koşulları"
+- waitForAnimationToEnd
+- takeScreenshot: settings_terms
+- tapOn:
+    text: "Geri|Tamam"
+- waitForAnimationToEnd
+- tapOn: "Premium ve Plus.*"
+- waitForAnimationToEnd
+- takeScreenshot: settings_membership
+- assertVisible: "Henüz satışta değil"

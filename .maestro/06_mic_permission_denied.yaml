@@ -1,0 +1,26 @@
+# Microphone denied: the range test must explain and offer a way out.
+appId: com.mennansevim.vocalart
+name: Mikrofon izni reddedildi
+tags: [critical]
+---
+- runFlow: subflows/onboard_quick.yaml
+- launchApp:
+    stopApp: true
+    permissions:
+      microphone: deny
+- tapOn: "Ses"
+- scrollUntilVisible:
+    element: "Ses aralığı testi.*"
+    direction: DOWN
+- tapOn: "Ses aralığı testi.*"
+- tapOn: "Başla"
+- takeScreenshot: range_mic_denied
+- extendedWaitUntil:
+    visible: "Mikrofon izni gerekli"
+    timeout: 8000
+- assertVisible: "Ayarları aç"
+- assertVisible: "Tekrar dene"
+- takeScreenshot: range_mic_denied_message
+- tapOn: "Ayarları aç"
+- waitForAnimationToEnd
+- takeScreenshot: range_system_settings

@@ -106,6 +106,27 @@ void main() {
     },
   );
 
+  test('file clear removes every preference, even a corrupt file', () async {
+    final p = FilePracticePreferences(directory: () async => dir);
+    await p.saveDailyBudget(DailyBudget.five);
+    await p.saveWeeklyGoal(WeeklyPracticeGoal.four);
+    await p.saveReminderTime(PracticeReminderTime(hour: 19, minute: 0));
+    await p.saveHapticsEnabled(false);
+    await p.clear();
+    final f = File('${dir.path}/practice_preferences.json');
+    expect(await f.exists(), isFalse);
+    final restored = FilePracticePreferences(directory: () async => dir);
+    expect(await restored.loadDailyBudget(), isNull);
+    expect(await restored.loadWeeklyGoal(), isNull);
+    expect(await restored.loadReminderTime(), isNull);
+    expect(await restored.loadHapticsEnabled(), isTrue);
+
+    await f.writeAsString('{not json');
+    await restored.clear();
+    expect(await f.exists(), isFalse);
+    await restored.clear();
+  });
+
   test(
     'file keeps daily budget and weekly goal through independent saves',
     () async {

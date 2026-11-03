@@ -12,6 +12,11 @@ void main() {
 
   setUp(() => now = DateTime(2026, 10, 29, 9));
 
+  test('default daily minutes is a value onboarding offers', () {
+    // QA-DEF-002: 8 had no chip, yet the summary promised "8 dakika".
+    expect(const [3, 5, 10, 15, 20], contains(make().dailyMinutes));
+  });
+
   test('first node is open, later ones unlock in order, gates always open', () {
     final s = make();
     final path = trainerPaths[TrainerKind.interval]!;

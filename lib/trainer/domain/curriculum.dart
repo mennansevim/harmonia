@@ -1,5 +1,6 @@
 import 'music.dart';
 import 'trainers.dart';
+import '../../domain/lang.dart';
 
 enum NodeKind { intro, lesson, checkpoint, finalExam }
 
@@ -90,8 +91,11 @@ TrainerPath _ladder(
       id: '${kind.id}-intro',
       trainer: kind,
       kind: NodeKind.intro,
-      title: 'Başlarken',
-      subtitle: '${kind.title} nasıl çalışılır?',
+      title: tr('Başlarken', 'Getting started'),
+      subtitle: tr(
+        '${kind.title} nasıl çalışılır?',
+        'How to practise ${kind.title}',
+      ),
     ),
   ];
   var n = 0;
@@ -129,8 +133,11 @@ TrainerPath _ladder(
         id: '${kind.id}-cp$gates',
         trainer: kind,
         kind: NodeKind.checkpoint,
-        title: 'Ara durak $gates',
-        subtitle: '${pool.length} ${kind.unitWord}, karışık sırayla.',
+        title: tr('Ara durak $gates', 'Checkpoint $gates'),
+        subtitle: tr(
+          '${pool.length} ${kind.unitWord}, karışık sırayla.',
+          '${pool.length} ${kind.unitWord}, in mixed order.',
+        ),
         items: List.of(pool),
       ),
     );
@@ -139,11 +146,21 @@ TrainerPath _ladder(
   for (var i = 0; i < stages.length; i++) {
     final s = stages[i];
     pool.addAll(s.add);
-    lesson('Yeni: ${s.add.map(name).join(' ve ')}', s.why, s.add);
+    lesson(
+      tr(
+        'Yeni: ${s.add.map(name).join(' ve ')}',
+        'New: ${s.add.map(name).join(' and ')}',
+      ),
+      s.why,
+      s.add,
+    );
     if (i > 0) {
       lesson(
-        'Karışık tekrar',
-        '${pool.length} ${kind.unitWord} yan yana.',
+        tr('Karışık tekrar', 'Mixed review'),
+        tr(
+          '${pool.length} ${kind.unitWord} yan yana.',
+          '${pool.length} ${kind.unitWord} side by side.',
+        ),
         const [],
       );
     }
@@ -163,8 +180,11 @@ TrainerPath _ladder(
       id: '${kind.id}-final',
       trainer: kind,
       kind: NodeKind.finalExam,
-      title: 'Konser provası',
-      subtitle: 'Tüm ${kind.unitWord} türleri, her bölgede.',
+      title: tr('Konser provası', 'Dress rehearsal'),
+      subtitle: tr(
+        'Tüm ${kind.unitWord} türleri, her bölgede.',
+        'Every type of ${kind.unitWord}, in every register.',
+      ),
       items: List.of(pool),
       registers: _anyReg,
       direction: IntervalDirection.mixed,
@@ -177,56 +197,120 @@ List<_Stage> _one(List<(String, String)> rows) => [
   for (final (id, why) in rows) _Stage([id], why),
 ];
 
-final Map<TrainerKind, TrainerPath> trainerPaths = {
+/// Built once per wording language: lesson titles are part of the data.
+final _paths = <bool, Map<TrainerKind, TrainerPath>>{};
+
+Map<TrainerKind, TrainerPath> get trainerPaths =>
+    _paths[Lang.en] ??= _buildPaths();
+
+Map<TrainerKind, TrainerPath> _buildPaths() => {
   // Notes in a tonal ear-training order: tonic, triad, then scale steps,
   // leading tone, and the chromatic notes last.
   TrainerKind.pitch: _ladder(
     TrainerKind.pitch,
     [
       ..._one([
-        ('0', 'Akortun başladığı referans ses.'),
-        ('4', 'Majör üçlünün ortası.'),
-        ('7', 'Üçlünün tepesi; tonik ile birlikte en sık ses.'),
-        ('2', 'Do ile Mi arasındaki basamak.'),
-        ('5', 'Mi\'nin yarım ses üstü.'),
-        ('9', 'Sol\'ün bir tam ses üstü.'),
-        ('11', 'Do\'ya çeken yeden ses.'),
-        ('10', 'İlk değiştirilmiş ses.'),
-        ('6', 'Fa ile Sol arası.'),
-        ('3', 'Re ile Mi arası.'),
+        (
+          '0',
+          tr(
+            'Akortun başladığı referans ses.',
+            'The reference note tuning starts from.',
+          ),
+        ),
+        ('4', tr('Majör üçlünün ortası.', 'The middle of the major triad.')),
+        (
+          '7',
+          tr(
+            'Üçlünün tepesi; tonik ile birlikte en sık ses.',
+            'The top of the triad; with the tonic, the most common note.',
+          ),
+        ),
+        (
+          '2',
+          tr(
+            'Do ile Mi arasındaki basamak.',
+            'The step between the tonic and the third.',
+          ),
+        ),
+        ('5', tr('Mi\'nin yarım ses üstü.', 'A semitone above the third.')),
+        ('9', tr('Sol\'ün bir tam ses üstü.', 'A whole tone above the fifth.')),
+        (
+          '11',
+          tr(
+            'Do\'ya çeken yeden ses.',
+            'The leading tone that pulls to the tonic.',
+          ),
+        ),
+        ('10', tr('İlk değiştirilmiş ses.', 'The first altered note.')),
+        ('6', tr('Fa ile Sol arası.', 'Between the fourth and the fifth.')),
+        ('3', tr('Re ile Mi arası.', 'Between the second and the third.')),
       ]),
-      const _Stage(['8', '1'], 'Kalan iki değiştirilmiş ses.'),
+      _Stage(
+        ['8', '1'],
+        tr('Kalan iki değiştirilmiş ses.', 'The two remaining altered notes.'),
+      ),
     ],
-    const [
+    [
       _Drill(
-        'Pes bölge',
-        'Aynı notalar bir oktav aşağıda.',
+        tr('Pes bölge', 'Low register'),
+        tr(
+          'Aynı notalar bir oktav aşağıda.',
+          'The same notes an octave lower.',
+        ),
         registers: [Register.low],
       ),
       _Drill(
-        'Tiz bölge',
-        'Aynı notalar bir oktav yukarıda.',
+        tr('Tiz bölge', 'High register'),
+        tr(
+          'Aynı notalar bir oktav yukarıda.',
+          'The same notes an octave higher.',
+        ),
         registers: [Register.high],
       ),
     ],
-    const [
+    [
       IntroSlide(
-        'Notayı adıyla tanımak',
-        'Burada bir sesi duyup hangi nota olduğunu söylemeyi çalışırsın. '
-            'Ezgiyi okumadan önce zihninde duymanın ve doğru sesten başlamanın temeli budur.',
+        tr('Notayı adıyla tanımak', 'Knowing a note by name'),
+        tr(
+          'Burada bir sesi duyup hangi nota olduğunu söylemeyi çalışırsın. '
+              'Ezgiyi okumadan önce zihninde duymanın ve doğru sesten başlamanın temeli budur.',
+          'Here you hear a sound and practise saying which note it is. '
+              'It is the base for hearing a melody in your head before you read it, and for starting on the right note.',
+        ),
         [
-          'Her basamak tek bir yeni nota ekler.',
-          'Önce dinlersin, sonra kendi sesinle söylersin, sonra ayırt edersin.',
-          'Ara duraklar bildiğin yerleri atlamanı sağlar.',
+          tr(
+            'Her basamak tek bir yeni nota ekler.',
+            'Each step adds one new note.',
+          ),
+          tr(
+            'Önce dinlersin, sonra kendi sesinle söylersin, sonra ayırt edersin.',
+            'First you listen, then you sing it, then you tell it apart.',
+          ),
+          tr(
+            'Ara duraklar bildiğin yerleri atlamanı sağlar.',
+            'Checkpoints let you skip what you already know.',
+          ),
         ],
       ),
       IntroSlide(
-        'Doğru dinleme',
-        'Her notayı Do\'ya göre düşün: ne kadar yukarıda?',
+        tr('Doğru dinleme', 'Listening well'),
+        tr(
+          'Her notayı Do\'ya göre düşün: ne kadar yukarıda?',
+          'Think of each note against the tonic: how far up is it?',
+        ),
         [
-          'Ses aralığını seçtiysen sesler senin aralığında çalar.',
-          'Yanlış cevaptan sonra iki sesi yan yana dinle.',
-          'Kısa ve her gün çalışmak en iyi sonucu verir.',
+          tr(
+            'Ses aralığını ölçtüysen sesler senin aralığında çalar.',
+            'If you measured your range, notes play in your range.',
+          ),
+          tr(
+            'Yanlış cevaptan sonra iki sesi yan yana dinle.',
+            'After a wrong answer, hear the two notes side by side.',
+          ),
+          tr(
+            'Kısa ve her gün çalışmak en iyi sonucu verir.',
+            'Short daily practice works best.',
+          ),
         ],
       ),
     ],
@@ -236,54 +320,124 @@ final Map<TrainerKind, TrainerPath> trainerPaths = {
   TrainerKind.interval: _ladder(
     TrainerKind.interval,
     _one([
-      ('M2', 'Ezgilerin çoğu tam ses adımlarla ilerler.'),
-      ('m2', 'Yarım ses; yeden ve geçişlerde.'),
-      ('M3', 'Majör akorun alt aralığı.'),
-      ('m3', 'Minör akorun alt aralığı.'),
-      ('P5', 'Çok sesli müzikte en sağlam uyumlardan biri.'),
-      ('P4', 'Girişlerde sık duyulan sıçrama.'),
-      ('P8', 'Farklı bölgelerde aynı nota adı.'),
-      ('M6', 'Küçük 3\'lünün çevrimi.'),
-      ('m6', 'Büyük 3\'lünün çevrimi.'),
-      ('m7', 'Dominant akorun dış sesleri.'),
-      ('M7', 'Oktava yarım ses kala.'),
-      ('A4', 'Oktavın tam ortası.'),
+      (
+        'M2',
+        tr(
+          'Ezgilerin çoğu tam ses adımlarla ilerler.',
+          'Most melodies move in whole steps.',
+        ),
+      ),
+      (
+        'm2',
+        tr(
+          'Yarım ses; yeden ve geçişlerde.',
+          'A semitone; in leading tones and passing notes.',
+        ),
+      ),
+      (
+        'M3',
+        tr('Majör akorun alt aralığı.', 'The lower interval of a major chord.'),
+      ),
+      (
+        'm3',
+        tr('Minör akorun alt aralığı.', 'The lower interval of a minor chord.'),
+      ),
+      (
+        'P5',
+        tr(
+          'Çok sesli müzikte en sağlam uyumlardan biri.',
+          'One of the most stable consonances in part singing.',
+        ),
+      ),
+      (
+        'P4',
+        tr(
+          'Girişlerde sık duyulan sıçrama.',
+          'A leap often heard at the start of a tune.',
+        ),
+      ),
+      (
+        'P8',
+        tr(
+          'Farklı bölgelerde aynı nota adı.',
+          'The same note name in another register.',
+        ),
+      ),
+      ('M6', tr('Küçük 3\'lünün çevrimi.', 'The inversion of a minor 3rd.')),
+      ('m6', tr('Büyük 3\'lünün çevrimi.', 'The inversion of a major 3rd.')),
+      (
+        'm7',
+        tr(
+          'Dominant akorun dış sesleri.',
+          'The outer notes of a dominant chord.',
+        ),
+      ),
+      ('M7', tr('Oktava yarım ses kala.', 'A semitone short of the octave.')),
+      ('A4', tr('Oktavın tam ortası.', 'The exact middle of the octave.')),
     ]),
-    const [
+    [
       _Drill(
-        'Aşağı doğru',
-        'Aralıklar yukarıdan aşağı.',
+        tr('Aşağı doğru', 'Downwards'),
+        tr('Aralıklar yukarıdan aşağı.', 'Intervals from top to bottom.'),
         direction: IntervalDirection.descending,
       ),
       _Drill(
-        'Birlikte çalınan',
-        'İki ses aynı anda, armonik aralık.',
+        tr('Birlikte çalınan', 'Played together'),
+        tr(
+          'İki ses aynı anda, armonik aralık.',
+          'Both notes at once, a harmonic interval.',
+        ),
         direction: IntervalDirection.mixed,
       ),
       _Drill(
-        'Farklı bölgeler',
-        'Pes ve tiz başlangıç notaları.',
+        tr('Farklı bölgeler', 'Other registers'),
+        tr('Pes ve tiz başlangıç notaları.', 'Low and high starting notes.'),
         registers: _anyReg,
       ),
     ],
-    const [
+    [
       IntroSlide(
-        'İki ses arasındaki mesafe',
-        'Aralık, iki notanın arasındaki uzaklıktır. Ezgiyi doğru kurmanın ve '
-            'çok sesli müzikte diğer seslerle uyumun anahtarıdır.',
+        tr('İki ses arasındaki mesafe', 'The distance between two notes'),
+        tr(
+          'Aralık, iki notanın arasındaki uzaklıktır. Ezgiyi doğru kurmanın ve '
+              'çok sesli müzikte diğer seslerle uyumun anahtarıdır.',
+          'An interval is the distance between two notes. It is the key to '
+              'building a melody correctly and to blending with other parts.',
+        ),
         [
-          'Mesafeler yarım ses sayısıyla anlatılır.',
-          'Her aralık için bir solfej örneği verilir (ör. Do → Mi).',
-          'Önce yukarı doğru, sonra aşağı ve birlikte çalışırsın.',
+          tr(
+            'Mesafeler yarım ses sayısıyla anlatılır.',
+            'Distances are counted in semitones.',
+          ),
+          tr(
+            'Her aralık için bir solfej örneği verilir (ör. Do → Mi).',
+            'Each interval comes with an example (e.g. C → E).',
+          ),
+          tr(
+            'Önce yukarı doğru, sonra aşağı ve birlikte çalışırsın.',
+            'You practise upwards first, then downwards and together.',
+          ),
         ],
       ),
       IntroSlide(
-        'Nasıl çalışılır',
-        'Duyduğun iki sesi içinden ya da sesli söyle; mesafeyi bildiğin bir örnekle karşılaştır.',
+        tr('Nasıl çalışılır', 'How to practise'),
+        tr(
+          'Duyduğun iki sesi içinden ya da sesli söyle; mesafeyi bildiğin bir örnekle karşılaştır.',
+          'Sing the two notes in your head or out loud; compare the distance with an example you know.',
+        ),
         [
-          'Yeni aralık önce tek başına, sonra diğerleriyle karışık gelir.',
-          'Söyleme adımı ölçülmez; yalnız alışkanlık içindir.',
-          'Ara durakta %80 ile önceki dersler tamamlanır.',
+          tr(
+            'Yeni aralık önce tek başına, sonra diğerleriyle karışık gelir.',
+            'A new interval comes alone first, then mixed with the others.',
+          ),
+          tr(
+            'Söyleme adımı ölçülmez; yalnız alışkanlık içindir.',
+            'The singing step is not measured; it only builds the habit.',
+          ),
+          tr(
+            'Ara durakta %80 ile önceki dersler tamamlanır.',
+            'Scoring 80% at a checkpoint completes the lessons before it.',
+          ),
         ],
       ),
     ],
@@ -291,33 +445,88 @@ final Map<TrainerKind, TrainerPath> trainerPaths = {
   TrainerKind.chord: _ladder(
     TrainerKind.chord,
     [
-      const _Stage(['maj', 'min'], 'Tonal repertuvarın iki temel rengi.'),
+      _Stage(
+        ['maj', 'min'],
+        tr(
+          'Tonal repertuvarın iki temel rengi.',
+          'The two basic colours of tonal music.',
+        ),
+      ),
       ..._one([
-        ('dom7', 'Çözülmek isteyen dört sesli akor.'),
-        ('dim', 'İki küçük 3\'lüden oluşan dar akor.'),
-        ('min7', 'Minör akora eklenen 7\'li.'),
-        ('maj7', 'Majör akora eklenen büyük 7\'li.'),
-        ('aug', 'İki büyük 3\'lüden oluşan geniş akor.'),
-        ('hdim7', 'Eksik üçlünün 7\'li hâli.'),
-        ('dim7', 'Simetrik dört sesli akor.'),
+        (
+          'dom7',
+          tr(
+            'Çözülmek isteyen dört sesli akor.',
+            'A four-note chord that wants to resolve.',
+          ),
+        ),
+        (
+          'dim',
+          tr(
+            'İki küçük 3\'lüden oluşan dar akor.',
+            'A narrow chord of two minor 3rds.',
+          ),
+        ),
+        (
+          'min7',
+          tr('Minör akora eklenen 7\'li.', 'A minor chord with a 7th added.'),
+        ),
+        (
+          'maj7',
+          tr(
+            'Majör akora eklenen büyük 7\'li.',
+            'A major chord with a major 7th added.',
+          ),
+        ),
+        (
+          'aug',
+          tr(
+            'İki büyük 3\'lüden oluşan geniş akor.',
+            'A wide chord of two major 3rds.',
+          ),
+        ),
+        (
+          'hdim7',
+          tr('Eksik üçlünün 7\'li hâli.', 'The diminished triad with a 7th.'),
+        ),
+        (
+          'dim7',
+          tr('Simetrik dört sesli akor.', 'A symmetrical four-note chord.'),
+        ),
       ]),
     ],
-    const [
+    [
       _Drill(
-        'Farklı bölgeler',
-        'Akorlar pes ve tiz bölgede.',
+        tr('Farklı bölgeler', 'Other registers'),
+        tr(
+          'Akorlar pes ve tiz bölgede.',
+          'Chords in the low and high registers.',
+        ),
         registers: _anyReg,
       ),
     ],
-    const [
+    [
       IntroSlide(
-        'Akorun niteliği',
-        'Birlikte çalan seslerin oluşturduğu türü tanırsın. Akorun içindeki '
-            'seslerin görevini duymak, kendi sesini doğru yere oturtmayı kolaylaştırır.',
+        tr('Akorun niteliği', 'Chord quality'),
+        tr(
+          'Birlikte çalan seslerin oluşturduğu türü tanırsın. Akorun içindeki '
+              'seslerin görevini duymak, kendi sesini doğru yere oturtmayı kolaylaştırır.',
+          'You recognise the type that notes form when played together. Hearing '
+              'what each note does in a chord makes it easier to place your own voice.',
+        ),
         [
-          'Her akor türü bir formülle anlatılır (ör. kök + büyük 3\'lü + tam 5\'li).',
-          'Dinlerken önce sesler tek tek, sonra birlikte çalar.',
-          'Söyleme adımında akorun en pes sesini mırıldanırsın.',
+          tr(
+            'Her akor türü bir formülle anlatılır (ör. kök + büyük 3\'lü + tam 5\'li).',
+            'Each chord type has a formula (e.g. root + major 3rd + perfect 5th).',
+          ),
+          tr(
+            'Dinlerken önce sesler tek tek, sonra birlikte çalar.',
+            'The notes play one by one first, then together.',
+          ),
+          tr(
+            'Söyleme adımında akorun en pes sesini mırıldanırsın.',
+            'In the singing step you hum the lowest note of the chord.',
+          ),
         ],
       ),
     ],
@@ -325,35 +534,90 @@ final Map<TrainerKind, TrainerPath> trainerPaths = {
   TrainerKind.scale: _ladder(
     TrainerKind.scale,
     [
-      const _Stage(['major', 'natural_minor'], 'Tonal müziğin iki ana dizisi.'),
+      _Stage(
+        ['major', 'natural_minor'],
+        tr(
+          'Tonal müziğin iki ana dizisi.',
+          'The two main scales of tonal music.',
+        ),
+      ),
       ..._one([
-        ('harmonic_minor', 'Yeden sesi tizleşmiş minör.'),
-        ('pentatonic_major', 'Halk ezgilerinde sık beş sesli dizi.'),
-        ('dorian', 'Re\'den başlayan mod.'),
-        ('mixolydian', 'Sol\'den başlayan mod.'),
-        ('melodic_minor', '6. ve 7. derecesi tiz minör.'),
-        ('pentatonic_minor', 'Minörden türeyen beş sesli dizi.'),
-        ('lydian', 'Fa\'dan başlayan mod.'),
-        ('phrygian', 'Mi\'den başlayan mod.'),
-        ('blues', 'Minör pentatonik ve artık 4\'lü.'),
+        (
+          'harmonic_minor',
+          tr(
+            'Yeden sesi tizleşmiş minör.',
+            'Minor with a raised leading tone.',
+          ),
+        ),
+        (
+          'pentatonic_major',
+          tr(
+            'Halk ezgilerinde sık beş sesli dizi.',
+            'A five-note scale common in folk tunes.',
+          ),
+        ),
+        ('dorian', tr('Re\'den başlayan mod.', 'The mode that starts on D.')),
+        (
+          'mixolydian',
+          tr('Sol\'den başlayan mod.', 'The mode that starts on G.'),
+        ),
+        (
+          'melodic_minor',
+          tr(
+            '6. ve 7. derecesi tiz minör.',
+            'Minor with a raised 6th and 7th.',
+          ),
+        ),
+        (
+          'pentatonic_minor',
+          tr(
+            'Minörden türeyen beş sesli dizi.',
+            'A five-note scale drawn from minor.',
+          ),
+        ),
+        ('lydian', tr('Fa\'dan başlayan mod.', 'The mode that starts on F.')),
+        ('phrygian', tr('Mi\'den başlayan mod.', 'The mode that starts on E.')),
+        (
+          'blues',
+          tr(
+            'Minör pentatonik ve artık 4\'lü.',
+            'Minor pentatonic plus the augmented 4th.',
+          ),
+        ),
       ]),
     ],
-    const [
+    [
       _Drill(
-        'Farklı bölgeler',
-        'Diziler farklı başlangıç notalarından.',
+        tr('Farklı bölgeler', 'Other registers'),
+        tr(
+          'Diziler farklı başlangıç notalarından.',
+          'Scales from other starting notes.',
+        ),
         registers: _anyReg,
       ),
     ],
-    const [
+    [
       IntroSlide(
-        'Dizinin yapısı',
-        'Dizi, notaların tam ve yarım ses adımlarla sıralanışıdır. Hangi diziyi '
-            'duyduğunu bilmek ezgiyi okumanı ve tekrar etmeni kolaylaştırır.',
+        tr('Dizinin yapısı', 'How a scale is built'),
+        tr(
+          'Dizi, notaların tam ve yarım ses adımlarla sıralanışıdır. Hangi diziyi '
+              'duyduğunu bilmek ezgiyi okumanı ve tekrar etmeni kolaylaştırır.',
+          'A scale is notes in order, in whole and half steps. Knowing which scale '
+              'you hear makes a melody easier to read and repeat.',
+        ),
         [
-          'Her dizi T (tam) ve Y (yarım) adımlarla gösterilir.',
-          'Diziyi belirleyen ses merdivende işaretlenir.',
-          'Söyleme adımında diziyi nota adlarıyla çıkarsın.',
+          tr(
+            'Her dizi T (tam) ve Y (yarım) adımlarla gösterilir.',
+            'Each scale is written in W (whole) and H (half) steps.',
+          ),
+          tr(
+            'Diziyi belirleyen ses merdivende işaretlenir.',
+            'The note that defines the scale is marked on the ladder.',
+          ),
+          tr(
+            'Söyleme adımında diziyi nota adlarıyla çıkarsın.',
+            'In the singing step you sing up the scale with note names.',
+          ),
         ],
       ),
     ],
@@ -361,28 +625,78 @@ final Map<TrainerKind, TrainerPath> trainerPaths = {
   TrainerKind.progression: _ladder(
     TrainerKind.progression,
     _one([
-      ('I-IV-V-I', 'Tonal kadansın temel hâli.'),
-      ('I-IV-I-V', 'Tonik ile alt dominant arasında gidiş geliş.'),
-      ('I-V-vi-IV', 'Dominanttan 6. dereceye iniş.'),
-      ('i-iv-i-V', 'Minör tonda kadans.'),
-      ('I-vi-IV-V', '6. derece üzerinden kadansa.'),
-      ('vi-IV-I-V', '6. derecenin minörüyle başlayan dizi.'),
-      ('ii-V-I', '7\'li akorlarla kadans.'),
-      ('I-iii-IV-V', '3. derece üzerinden yükseliş.'),
-      ('i-VI-III-VII', 'Minör tonikten majör akorlara.'),
+      (
+        'I-IV-V-I',
+        tr('Tonal kadansın temel hâli.', 'The basic tonal cadence.'),
+      ),
+      (
+        'I-IV-I-V',
+        tr(
+          'Tonik ile alt dominant arasında gidiş geliş.',
+          'Back and forth between tonic and subdominant.',
+        ),
+      ),
+      (
+        'I-V-vi-IV',
+        tr(
+          'Dominanttan 6. dereceye iniş.',
+          'A fall from the dominant to the 6th.',
+        ),
+      ),
+      ('i-iv-i-V', tr('Minör tonda kadans.', 'A cadence in a minor key.')),
+      (
+        'I-vi-IV-V',
+        tr('6. derece üzerinden kadansa.', 'Through the 6th into the cadence.'),
+      ),
+      (
+        'vi-IV-I-V',
+        tr(
+          '6. derecenin minörüyle başlayan dizi.',
+          'Starts on the minor chord of the 6th.',
+        ),
+      ),
+      ('ii-V-I', tr('7\'li akorlarla kadans.', 'A cadence with 7th chords.')),
+      (
+        'I-iii-IV-V',
+        tr('3. derece üzerinden yükseliş.', 'A climb through the 3rd.'),
+      ),
+      (
+        'i-VI-III-VII',
+        tr(
+          'Minör tonikten majör akorlara.',
+          'From the minor tonic to major chords.',
+        ),
+      ),
     ]),
-    const [
-      _Drill('Farklı tonlar', 'Aynı dizi başka tonlarda.', registers: _anyReg),
+    [
+      _Drill(
+        tr('Farklı tonlar', 'Other keys'),
+        tr('Aynı dizi başka tonlarda.', 'The same progression in other keys.'),
+        registers: _anyReg,
+      ),
     ],
-    const [
+    [
       IntroSlide(
-        'Akorların sırası',
-        'Bir eserin armonisi akorların belirli sıralarla ilerlemesidir. '
-            'En pes sesin yolu çoğu zaman bu sırayı ele verir.',
+        tr('Akorların sırası', 'The order of chords'),
+        tr(
+          'Bir eserin armonisi akorların belirli sıralarla ilerlemesidir. '
+              'En pes sesin yolu çoğu zaman bu sırayı ele verir.',
+          'The harmony of a piece is chords moving in set orders. '
+              'The path of the lowest note often gives the order away.',
+        ),
         [
-          'Dereceler Roma rakamıyla yazılır: büyük harf majör, küçük harf minör.',
-          'Dinlerken en pes sesi takip et.',
-          'Söyleme adımında bas sesini mırıldanırsın.',
+          tr(
+            'Dereceler Roma rakamıyla yazılır: büyük harf majör, küçük harf minör.',
+            'Degrees are written in Roman numerals: upper case major, lower case minor.',
+          ),
+          tr(
+            'Dinlerken en pes sesi takip et.',
+            'Follow the lowest note as you listen.',
+          ),
+          tr(
+            'Söyleme adımında bas sesini mırıldanırsın.',
+            'In the singing step you hum the bass note.',
+          ),
         ],
       ),
     ],

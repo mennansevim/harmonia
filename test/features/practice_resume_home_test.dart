@@ -4,6 +4,7 @@ import 'package:resonia/app/app_services.dart';
 import 'package:resonia/application/result_history.dart';
 import 'package:resonia/domain/learning/measured_exercise.dart';
 import 'package:resonia/domain/models/exercise_result.dart';
+import 'package:resonia/domain/models/exercise_protocol_fingerprint.dart';
 import 'package:resonia/domain/models/learner_profile.dart';
 import 'package:resonia/domain/models/measurement_provenance.dart';
 import 'package:resonia/domain/models/score_metric.dart';
@@ -15,7 +16,11 @@ ExerciseResult _validResult(MeasuredExercise exercise) => ExerciseResult(
   exerciseId: exercise.exerciseId,
   skill: exercise.cohort.skill,
   target: const {},
-  measurements: const {'correct': 6},
+  measurements: {
+    'correct': 6,
+    ExerciseProtocolFingerprint.measurementKey:
+        ?exercise.cohort.protocolFingerprint,
+  },
   scores: ExerciseScores(accuracy: ScoreMetric.measured(75)),
   createdAt: DateTime.now().subtract(const Duration(minutes: 1)),
   exerciseMode: exercise.cohort.mode,

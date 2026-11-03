@@ -13,7 +13,15 @@ val keystoreProperties = Properties().apply {
     val f = rootProject.file("key.properties")
     if (f.exists()) f.inputStream().use { load(it) }
 }
-val hasReleaseKey = keystoreProperties.getProperty("storeFile") != null
+val releaseKeyFields = listOf("storeFile", "storePassword", "keyAlias", "keyPassword")
+val releaseStorePath = keystoreProperties.getProperty("storeFile")
+val hasReleaseKey =
+    releaseKeyFields.all { !keystoreProperties.getProperty(it).isNullOrBlank() } &&
+        releaseStorePath != null && rootProject.file(releaseStorePath).isFile
+val allowDebugReleaseSigning =
+    providers.gradleProperty("allowDebugReleaseSigning").orNull == "true"
+val releaseTaskRequested =
+    gradle.startParameter.taskNames.any { it.contains("release", ignoreCase = true) }
 
 android {
     namespace = "com.mennansevim.vocalart"
@@ -54,7 +62,20 @@ android {
             if (hasReleaseKey) {
                 signingConfig = signingConfigs.getByName("release")
             } else {
-                logger.warn("Resonia: android/key.properties yok; release DEBUG anahtarıyla imzalanıyor (mağazaya yüklenemez).")
+                if (releaseTaskRequested && !allowDebugReleaseSigning) {
+                    throw GradleException(
+                        "Vocalart release imzasi hazir degil: android/key.properties " +
+                            "ve gecerli keystore gerekli. Yalniz yerel build kaniti icin " +
+                            "-PallowDebugReleaseSigning=true acikca verilebilir; bu cikti " +
+                            "magazaya yuklenemez.",
+                    )
+                }
+                if (allowDebugReleaseSigning) {
+                    logger.warn(
+                        "Vocalart: explicit local override ile release DEBUG anahtariyla " +
+                            "imzalaniyor; magazaya yuklenemez.",
+                    )
+                }
                 signingConfig = signingConfigs.getByName("debug")
             }
         }

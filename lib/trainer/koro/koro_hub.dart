@@ -10,8 +10,10 @@ import '../domain/music.dart';
 import '../stats/stats_tab.dart';
 import '../ui/kit.dart';
 import 'aksak_patterns.dart';
+import 'clap_rhythm.dart';
 import 'range_test.dart';
 import 'voice_count.dart';
+import '../../domain/lang.dart';
 
 /// Voice workshop ("Ses" tab, for every learner — ADR-035): single-voice and
 /// 2/3/4-voice work built on the Resonia capture/pitch core. Status tags stay honest about what is
@@ -26,7 +28,14 @@ class KoroHub extends StatelessWidget {
     final scope = TrainerScope.of(context);
     if (!scope.liveAudio && legacy) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Bu çalışma yalnız cihazda açılır.')),
+        SnackBar(
+          content: Text(
+            tr(
+              'Bu çalışma yalnız cihazda açılır.',
+              'This exercise opens on a device only.',
+            ),
+          ),
+        ),
       );
       return;
     }
@@ -55,14 +64,20 @@ class KoroHub extends StatelessWidget {
           children: [
             if (asTab)
               tabHeader(
-                'Sesini tanı',
-                'Ses Atölyesi',
+                tr('Sesini tanı', 'Know your voice'),
+                tr('Ses Atölyesi', 'Voice Lab'),
                 store.part == null
-                    ? 'Ses aralığı, ritim, ezgi, çok seslilik'
-                    : '${store.part!.title} aralığında çalışma',
+                    ? tr(
+                        'Ses aralığı, ritim, ezgi, çok seslilik',
+                        'Range, rhythm, melody, part singing',
+                      )
+                    : tr(
+                        '${store.part!.title} aralığında çalışma',
+                        'Practice in the ${store.part!.title.toLowerCase()} range',
+                      ),
               )
             else
-              const TopBar(title: 'Ses Atölyesi'),
+              TopBar(title: tr('Ses Atölyesi', 'Voice Lab')),
             Expanded(
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
@@ -71,10 +86,16 @@ class KoroHub extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('SES ÇALIŞMASI', style: TT.heroCaps),
+                        Text(
+                          tr('SES ÇALIŞMASI', 'VOICE WORK'),
+                          style: TT.heroCaps,
+                        ),
                         const SizedBox(height: 12),
                         Text(
-                          'Tek sesliden dört sesliye',
+                          tr(
+                            'Tek sesliden dört sesliye',
+                            'From one voice to four',
+                          ),
                           style: TT.display.copyWith(
                             color: Colors.white,
                             fontSize: 28,
@@ -82,8 +103,11 @@ class KoroHub extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 10),
-                        const Text(
-                          'Sesini tanı, ritmi ve ezgiyi tekrar et, aksak ölçülere alış, çok sesli dokuyu duy.',
+                        Text(
+                          tr(
+                            'Sesini tanı, ritmi ve ezgiyi tekrar et, aksak ölçülere alış, çok sesli dokuyu duy.',
+                            'Know your voice, repeat rhythms and melodies, get used to odd metres, hear part textures.',
+                          ),
                           style: TextStyle(
                             color: TC.heroMuted,
                             fontSize: 13,
@@ -93,23 +117,32 @@ class KoroHub extends StatelessWidget {
                       ],
                     ),
                   ),
-                  const _Section('TEST'),
+                  _Section(tr('SES TESPİTİ', 'VOICE DETECTION')),
                   _Row(
                     key: const Key('koro_range'),
                     icon: Ic.audioLines,
-                    title: 'Ses aralığı testi',
+                    title: tr('Ses aralığı testi', 'Vocal range test'),
                     subtitle: rangeText == null
-                        ? 'En pes ve en tiz rahat notanı ölç'
-                        : 'Son ölçüm: $rangeText',
-                    tag: 'DENEYSEL',
+                        ? tr(
+                            'Piyanoyu dinle, tekrar et; aralığın çıksın',
+                            'Hear the piano, repeat it; find your range',
+                          )
+                        : tr(
+                            'Son ölçüm: $rangeText',
+                            'Last measured: $rangeText',
+                          ),
+                    tag: tr('DENEYSEL', 'EXPERIMENTAL'),
                     onTap: () => _push(context, const RangeTestScreen()),
                   ),
-                  const _Section('TEK SESLİ'),
+                  _Section(tr('TEK SESLİ', 'ONE VOICE')),
                   _Row(
                     icon: Ic.speech,
-                    title: 'Dinle ve söyle',
-                    subtitle: 'Tek notayı duy, aynı perdeyi söyle',
-                    tag: 'DENEYSEL',
+                    title: tr('Dinle ve söyle', 'Listen and sing'),
+                    subtitle: tr(
+                      'Tek notayı duy, aynı perdeyi söyle',
+                      'Hear a single note, sing the same pitch',
+                    ),
+                    tag: tr('DENEYSEL', 'EXPERIMENTAL'),
                     onTap: () => _push(
                       context,
                       const SingleToneSessionScreen(),
@@ -118,9 +151,12 @@ class KoroHub extends StatelessWidget {
                   ),
                   _Row(
                     icon: Ic.music2,
-                    title: 'Ezgi tekrarı',
-                    subtitle: 'Kısa ezgiyi dinle, hafızandan söyle',
-                    tag: 'DENEYSEL',
+                    title: tr('Ezgi tekrarı', 'Melody echo'),
+                    subtitle: tr(
+                      'Kısa ezgiyi dinle, hafızandan söyle',
+                      'Hear a short melody, sing it from memory',
+                    ),
+                    tag: tr('DENEYSEL', 'EXPERIMENTAL'),
                     onTap: () => _push(
                       context,
                       const MelodySessionScreen(),
@@ -129,9 +165,12 @@ class KoroHub extends StatelessWidget {
                   ),
                   _Row(
                     icon: Ic.pointer,
-                    title: 'Ritim tekrarı',
-                    subtitle: 'Duyduğun ritmi dokunarak tekrar et',
-                    tag: 'TASLAK',
+                    title: tr('Ritim tekrarı', 'Rhythm echo'),
+                    subtitle: tr(
+                      'Duyduğun ritmi dokunarak tekrar et',
+                      'Tap back the rhythm you hear',
+                    ),
+                    tag: tr('TASLAK', 'DRAFT'),
                     onTap: () => _push(
                       context,
                       RhythmImitationScreen(history: scope.history),
@@ -139,11 +178,25 @@ class KoroHub extends StatelessWidget {
                     ),
                   ),
                   _Row(
+                    key: const Key('koro_clap'),
+                    icon: Ic.hand,
+                    title: tr('Alkışla ritim', 'Clap the rhythm'),
+                    subtitle: tr(
+                      'Batı ve Türk müziğinden rastgele ritim, ellerle senkron',
+                      'Random Western and Turkish rhythms, in time with the hands',
+                    ),
+                    tag: tr('TASLAK', 'DRAFT'),
+                    onTap: () => _push(context, const ClapRhythmScreen()),
+                  ),
+                  _Row(
                     key: const Key('koro_aksak'),
                     icon: Ic.chartLine,
-                    title: 'Aksak ritim',
-                    subtitle: '5/8, 7/8, 9/8 ve 10/8 kalıpları',
-                    tag: 'TASLAK',
+                    title: tr('Aksak ritim', 'Odd-metre rhythm'),
+                    subtitle: tr(
+                      '5/8, 7/8, 9/8 ve 10/8 kalıpları',
+                      '5/8, 7/8, 9/8 and 10/8 patterns',
+                    ),
+                    tag: tr('TASLAK', 'DRAFT'),
                     onTap: () => _push(
                       context,
                       RhythmImitationScreen(
@@ -153,20 +206,29 @@ class KoroHub extends StatelessWidget {
                       legacy: true,
                     ),
                   ),
-                  const _Section('ÇOK SESLİ (2 / 3 / 4)'),
+                  _Section(tr('ÇOK SESLİ (2 / 3 / 4)', 'PARTS (2 / 3 / 4)')),
                   _Row(
                     key: const Key('koro_voices'),
                     icon: Ic.layers,
-                    title: 'Kaç ses duyuyorsun?',
-                    subtitle: '2, 3 ya da 4 sesli dokuyu ayırt et',
-                    tag: 'DİNLEME',
+                    title: tr(
+                      'Kaç ses duyuyorsun?',
+                      'How many voices do you hear?',
+                    ),
+                    subtitle: tr(
+                      '2, 3 ya da 4 sesli dokuyu ayırt et',
+                      'Tell 2, 3 or 4-part textures apart',
+                    ),
+                    tag: tr('DİNLEME', 'LISTENING'),
                     onTap: () => _push(context, const VoiceCountScreen()),
                   ),
                   _Row(
                     icon: Ic.piano,
-                    title: '2 / 3 / 4 sesli tekrar',
-                    subtitle: 'Piyano kaydındaki sesleri tek tek söyle',
-                    tag: 'KAYIT BEKLENİYOR',
+                    title: tr('2 / 3 / 4 sesli tekrar', '2 / 3 / 4-part echo'),
+                    subtitle: tr(
+                      'Piyano kaydındaki sesleri tek tek söyle',
+                      'Sing each part of a piano recording in turn',
+                    ),
+                    tag: tr('YAKINDA', 'COMING SOON'),
                     muted: true,
                     onTap: () => _push(
                       context,
@@ -175,9 +237,13 @@ class KoroHub extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  const Text(
-                    'Mikrofon ölçümleri deneyseldir; cihaz ve insan sesi doğrulaması tamamlanmadı. '
-                    'Sonuçlar puan ya da sınav notu değildir.',
+                  Text(
+                    tr(
+                      'Mikrofon ölçümleri deneyseldir; cihaz ve insan sesi doğrulaması tamamlanmadı. '
+                          'Sonuçlar puan ya da sınav notu değildir.',
+                      'Microphone measurements are experimental; device and human voice validation is not complete. '
+                          'Results are not scores or exam marks.',
+                    ),
                     style: TT.small,
                     textAlign: TextAlign.center,
                   ),

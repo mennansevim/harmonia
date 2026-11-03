@@ -7,6 +7,7 @@ import '../../domain/learning/skill_graph.dart';
 import '../../domain/learning/starting_check.dart';
 import '../../domain/models/learner_profile.dart';
 import '../common/content_status_panel.dart';
+import '../common/foreground_refresh_state.dart';
 import '../common/ui/resonia_ui.dart';
 import '../learning/exercise_launcher.dart';
 
@@ -28,7 +29,8 @@ class StartingCheckScreen extends StatefulWidget {
   State<StartingCheckScreen> createState() => _StartingCheckScreenState();
 }
 
-class _StartingCheckScreenState extends State<StartingCheckScreen> {
+class _StartingCheckScreenState
+    extends ForegroundRefreshState<StartingCheckScreen> {
   late Future<StartingCheckSummary> _summary = _loadForView();
 
   Future<StartingCheckSummary> _loadForView() {
@@ -50,6 +52,19 @@ class _StartingCheckScreenState extends State<StartingCheckScreen> {
   void _reload() => setState(() {
     _summary = _loadForView();
   });
+
+  @override
+  void refreshAfterForeground() => _reload();
+
+  @override
+  void didUpdateWidget(covariant StartingCheckScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!identical(oldWidget.history, widget.history) ||
+        oldWidget.goal != widget.goal ||
+        !identical(oldWidget.catalog, widget.catalog)) {
+      _reload();
+    }
+  }
 
   Future<void> _open(MeasuredExercise exercise) async {
     await Navigator.of(context).push<void>(

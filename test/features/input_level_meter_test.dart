@@ -30,7 +30,7 @@ void main() {
     expect(find.textContaining('doğru olduğunu göstermez'), findsOneWidget);
   });
 
-  testWidgets('session shows the meter only while the mic is open', (
+  testWidgets('session shows level-only Aurora evidence while mic is open', (
     tester,
   ) async {
     tester.view.physicalSize = const Size(800, 1800);
@@ -47,17 +47,20 @@ void main() {
         ),
       ),
     );
-    expect(find.byKey(const Key('input_level_meter')), findsNothing);
+    expect(find.byKey(const Key('live_visual_feedback_field')), findsNothing);
     await tester.tap(find.byKey(const Key('session_calibrate')));
     await tester.pump();
     await tester.pump();
-    expect(find.byKey(const Key('input_level_meter')), findsOneWidget);
+    expect(find.byKey(const Key('live_visual_feedback_field')), findsOneWidget);
     backend.levels.add(-30);
     await tester.pump();
-    expect(find.text('Giriş seviyesi: uygun'), findsOneWidget);
+    expect(find.text('Ortam giriş seviyesi'), findsOneWidget);
+    expect(find.textContaining('perde ölçülmüyor'), findsOneWidget);
+    expect(find.textContaining('Test kaynağı'), findsOneWidget);
+    expect(find.textContaining('merkeze yakın'), findsNothing);
     await tester.pump(const Duration(seconds: 2));
     await tester.pumpAndSettle();
-    expect(find.byKey(const Key('input_level_meter')), findsNothing);
+    expect(find.byKey(const Key('live_visual_feedback_field')), findsNothing);
     await tester.pumpWidget(const SizedBox());
     await tester.pumpAndSettle();
   });

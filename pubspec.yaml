@@ -1,5 +1,5 @@
 name: resonia
-description: "Resonia — Türkçe kulak, ritim ve ezgi eğitimi (konservatuvar ve koro hazırlığı)."
+description: "Vocalart — Türkçe kulak, ritim ve ezgi eğitimi (konservatuvar ve koro hazırlığı)."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -78,6 +78,7 @@ flutter:
   uses-material-design: true
   assets:
     - assets/audio/piano/chords/catalog.json
+    - assets/audio/piano/notes/
 
   # SIL OFL 1.1: licences in assets/fonts/OFL-*.txt. Static Latin subsets cut
   # from the Google Fonts variable sources so FontWeight selects them reliably.

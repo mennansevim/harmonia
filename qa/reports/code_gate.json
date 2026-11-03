@@ -1,0 +1,26 @@
+{
+  "ts": "2026-11-03 09:07",
+  "status": "passed",
+  "failedStep": null,
+  "format": "temiz",
+  "analyze": "temiz",
+  "passed": 1185,
+  "failed": 0,
+  "skipped": 2,
+  "steps": {
+    "format": {
+      "exitCode": 0,
+      "seconds": 1.5
+    },
+    "analyze": {
+      "exitCode": 0,
+      "seconds": 5.11
+    },
+    "tests": {
+      "exitCode": 0,
+      "seconds": 73.26
+    }
+  },
+  "testFailures": [],
+  "diagnosticTail": []
+}

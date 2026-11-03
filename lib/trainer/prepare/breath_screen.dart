@@ -6,21 +6,32 @@ import 'package:flutter/services.dart';
 
 import '../app/scope.dart';
 import '../ui/kit.dart';
+import '../../domain/lang.dart';
 
 /// One phase of the guided breathing loop.
 class BreathPhase {
-  const BreathPhase(this.label, this.verb, this.seconds);
-  final String label;
-  final String verb;
+  const BreathPhase(
+    this._label,
+    this._verb,
+    this.seconds,
+    this._labelEn,
+    this._verbEn,
+  );
+  final String _label;
+  final String _verb;
+  final String _labelEn;
+  final String _verbEn;
   final int seconds;
+  String get label => tr(_label, _labelEn);
+  String get verb => tr(_verb, _verbEn);
 }
 
 /// Draft layout pattern (in 4 · hold 2 · out 6). Not an educator-approved
 /// prescription; replace when EDU-01 content arrives.
 const breathPattern = [
-  BreathPhase('Al', 'Nefes al', 4),
-  BreathPhase('Tut', 'Tut', 2),
-  BreathPhase('Ver', 'Yavaşça ver', 6),
+  BreathPhase('Al', 'Nefes al', 4, 'In', 'Breathe in'),
+  BreathPhase('Tut', 'Tut', 2, 'Hold', 'Hold'),
+  BreathPhase('Ver', 'Yavaşça ver', 6, 'Out', 'Breathe out slowly'),
 ];
 
 int get _cycleSeconds => breathPattern.fold(0, (s, p) => s + p.seconds);
@@ -29,14 +40,10 @@ int get _cycleSeconds => breathPattern.fold(0, (s, p) => s + p.seconds);
 /// microphone stays off and nothing is measured or scored; finishing only
 /// ticks today's route step. Pops `true` to continue the route, `null` on back.
 class BreathScreen extends StatefulWidget {
-  const BreathScreen({
-    super.key,
-    this.totalSeconds = 120,
-    this.stepLabel = 'ADIM 1 / 3',
-  });
+  const BreathScreen({super.key, this.totalSeconds = 120, this.stepLabel});
 
   final int totalSeconds;
-  final String stepLabel;
+  final String? stepLabel;
 
   @override
   State<BreathScreen> createState() => _BreathScreenState();
@@ -129,14 +136,26 @@ class _BreathScreenState extends State<BreathScreen>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('HAZIRLA · ${widget.stepLabel}', style: TT.caps),
+                      Text(
+                        tr(
+                          'HAZIRLA · ${widget.stepLabel ?? 'ADIM 1 / 3'}',
+                          'PREPARE · ${widget.stepLabel ?? 'STEP 1 / 3'}',
+                        ),
+                        style: TT.caps,
+                      ),
                       const SizedBox(height: 2),
-                      const Text('Nefesi hazırla', style: TT.h2),
+                      Text(
+                        tr('Nefesi hazırla', 'Prepare your breath'),
+                        style: TT.h2,
+                      ),
                     ],
                   ),
                 ),
                 Semantics(
-                  label: 'Kalan süre ${_clock(_totalMs - _elapsedMs)}',
+                  label: tr(
+                    'Kalan süre ${_clock(_totalMs - _elapsedMs)}',
+                    'Time left ${_clock(_totalMs - _elapsedMs)}',
+                  ),
                   excludeSemantics: true,
                   child: Text(
                     _clock(_totalMs - _elapsedMs),
@@ -159,10 +178,16 @@ class _BreathScreenState extends State<BreathScreen>
                   Semantics(
                     liveRegion: true,
                     label: _done
-                        ? 'Nefes yönlendirmesi tamamlandı'
+                        ? tr(
+                            'Nefes yönlendirmesi tamamlandı',
+                            'Breathing guide complete',
+                          )
                         : _paused
-                        ? 'Duraklatıldı'
-                        : '${phase.verb}, $left saniye',
+                        ? tr('Duraklatıldı', 'Paused')
+                        : tr(
+                            '${phase.verb}, $left saniye',
+                            '${phase.verb}, $left seconds',
+                          ),
                     excludeSemantics: true,
                     child: SizedBox(
                       width: 168,
@@ -194,9 +219,9 @@ class _BreathScreenState extends State<BreathScreen>
                               const SizedBox(height: 5),
                               Text(
                                 _done
-                                    ? 'Tamamlandı'
+                                    ? tr('Tamamlandı', 'Complete')
                                     : _paused
-                                    ? 'Duraklatıldı'
+                                    ? tr('Duraklatıldı', 'Paused')
                                     : phase.verb,
                                 style: TT.small,
                               ),
@@ -238,10 +263,15 @@ class _BreathScreenState extends State<BreathScreen>
                     ],
                   ),
                   const SizedBox(height: 14),
-                  const Text(
-                    'Omuzlarını serbest bırak. Zorlanır ya da başın dönerse '
-                    'dur. Bu taslak bir yönlendirmedir; ölçüm ya da tıbbi '
-                    'değerlendirme değildir.',
+                  Text(
+                    tr(
+                      'Omuzlarını serbest bırak. Zorlanır ya da başın dönerse '
+                          'dur. Bu taslak bir yönlendirmedir; ölçüm ya da tıbbi '
+                          'değerlendirme değildir.',
+                      'Let your shoulders go. Stop if it strains you or you feel '
+                          'dizzy. This is a draft guide; it is not a measurement or '
+                          'a medical assessment.',
+                    ),
                     textAlign: TextAlign.center,
                     style: TT.small,
                   ),
@@ -254,16 +284,19 @@ class _BreathScreenState extends State<BreathScreen>
                 Expanded(
                   child: _MiniCard(
                     icon: Ic.wind,
-                    title: '$cycles döngü',
-                    subtitle: 'Tamamlanan',
+                    title: tr(
+                      '$cycles döngü',
+                      cycles == 1 ? '1 cycle' : '$cycles cycles',
+                    ),
+                    subtitle: tr('Tamamlanan', 'Completed'),
                   ),
                 ),
                 const SizedBox(width: 9),
-                const Expanded(
+                Expanded(
                   child: _MiniCard(
                     icon: Ic.micOff,
-                    title: 'Sessiz mod',
-                    subtitle: 'Mikrofon kapalı',
+                    title: tr('Sessiz mod', 'Quiet mode'),
+                    subtitle: tr('Mikrofon kapalı', 'Microphone off'),
                   ),
                 ),
               ],
@@ -272,21 +305,26 @@ class _BreathScreenState extends State<BreathScreen>
             if (_done)
               BigButton(
                 key: const Key('breath_continue'),
-                label: 'Derse geç',
+                label: tr('Derse geç', 'On to the lesson'),
                 icon: Ic.arrowRight,
                 onPressed: () => Navigator.of(context).pop(true),
               )
             else ...[
               BigButton(
                 key: const Key('breath_pause'),
-                label: _paused ? 'Devam et' : 'Duraklat',
+                label: _paused
+                    ? tr('Devam et', 'Resume')
+                    : tr('Duraklat', 'Pause'),
                 icon: _paused ? Ic.play : Ic.pause,
                 onPressed: () => setState(() => _paused = !_paused),
               ),
               const SizedBox(height: 8),
               SoftButton(
                 key: const Key('breath_skip'),
-                label: 'Nefesi atla, derse geç',
+                label: tr(
+                  'Nefesi atla, derse geç',
+                  'Skip breathing, go to the lesson',
+                ),
                 onPressed: () => Navigator.of(context).pop(true),
               ),
             ],

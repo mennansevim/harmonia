@@ -5,6 +5,7 @@ import '../../infrastructure/audio/asset_chord_recording_catalog.dart';
 import '../../app/theme/resonia_theme.dart';
 import '../common/content_status_panel.dart';
 import '../common/ui/resonia_ui.dart';
+import '../../domain/lang.dart';
 
 /// Prerecorded chord placeholders only: no permission, player or scorer.
 class ChordPlaceholderScreen extends StatefulWidget {
@@ -44,31 +45,42 @@ class _ChordPlaceholderScreenState extends State<ChordPlaceholderScreen> {
   @override
   Widget build(BuildContext context) => LessonScaffold(
     progress: null,
-    counter: 'Kapalı',
-    closeLabel: 'Piyano örneklerini kapat',
+    counter: tr('Kapalı', 'Closed'),
+    closeLabel: tr('Piyano örneklerini kapat', 'Close piano examples'),
     top: [
-      const Align(
+      Align(
         alignment: AlignmentDirectional.centerStart,
-        child: StatusPill('Kayıt bekleniyor'),
+        child: StatusPill(tr('Kayıt bekleniyor', 'Awaiting recordings')),
       ),
       const SizedBox(height: ResoniaSpacing.md),
       Text(
-        '2 / 3 / 4 sesli piyano',
+        tr('2 / 3 / 4 sesli piyano', '2 / 3 / 4-part piano'),
         style: Theme.of(context).textTheme.headlineSmall,
       ),
       const SizedBox(height: ResoniaSpacing.sm),
-      const Text(
-        'Birlikte dinle, tek tek söyle. Kayıtlar doğrulanınca bu bölüm açılacak.',
+      Text(
+        tr(
+          'Birlikte dinle, tek tek söyle. Kayıtlar doğrulanınca bu bölüm açılacak.',
+          'Hear them together, sing them one by one. This section opens once the recordings are verified.',
+        ),
       ),
       const SizedBox(height: 8),
-      const Text('Şimdilik ses çalınmaz, mikrofon açılmaz ve puan üretilmez.'),
+      Text(
+        tr(
+          'Şimdilik ses çalınmaz, mikrofon açılmaz ve puan üretilmez.',
+          'For now nothing plays, the microphone stays off and no score is made.',
+        ),
+      ),
       ExpansionTile(
         key: const Key('chord_help'),
         tilePadding: EdgeInsets.zero,
-        title: const Text('Nasıl çalışacak?'),
-        children: const [
+        title: Text(tr('Nasıl çalışacak?', 'How will it work?')),
+        children: [
           Text(
-            'Hazır piyano kaydındaki sesleri birlikte dinleyecek, referans bittikten sonra notaları birer birer söyleyeceksin. Kayıtlar geldiğinde nota, oktav, akort, ses kalitesi ve kullanım hakları birlikte kontrol edilecek. Canlı akor tanıma yapılmıyor.',
+            tr(
+              'Hazır piyano kaydındaki sesleri birlikte dinleyecek, referans bittikten sonra notaları birer birer söyleyeceksin. Kayıtlar geldiğinde nota, oktav, akort, ses kalitesi ve kullanım hakları birlikte kontrol edilecek. Canlı akor tanıma yapılmıyor.',
+              'You will hear the notes of a ready-made piano recording together, then sing them one by one after the reference. When the recordings arrive, notes, octaves, tuning, sound quality and usage rights will be checked together. There is no live chord recognition.',
+            ),
           ),
         ],
       ),
@@ -77,17 +89,23 @@ class _ChordPlaceholderScreenState extends State<ChordPlaceholderScreen> {
         future: _catalog,
         builder: (context, snapshot) {
           if (snapshot.connectionState != ConnectionState.done) {
-            return const ContentStatusPanel(
+            return ContentStatusPanel(
               key: Key('chord_loading'),
               kind: ContentStatusKind.loading,
-              message: 'Örnek listesi yükleniyor…',
+              message: tr(
+                'Örnek listesi yükleniyor…',
+                'Loading the example list…',
+              ),
             );
           }
           if (snapshot.hasError) {
             return ContentStatusPanel(
               key: const Key('chord_error'),
               kind: ContentStatusKind.error,
-              message: 'Örnek listesi yüklenemedi. Ses testi başlatılmadı.',
+              message: tr(
+                'Örnek listesi yüklenemedi. Ses testi başlatılmadı.',
+                'The example list could not load. No audio test was started.',
+              ),
               onRetry: _reload,
             );
           }
@@ -101,25 +119,36 @@ class _ChordPlaceholderScreenState extends State<ChordPlaceholderScreen> {
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         Text(
-                          '${slot.voiceCount} sesli örnek',
+                          tr(
+                            '${slot.voiceCount} sesli örnek',
+                            '${slot.voiceCount}-part example',
+                          ),
                           style: Theme.of(context).textTheme.titleLarge,
                         ),
                         const SizedBox(height: 8),
-                        const Text('Piyano kaydı bekleniyor'),
+                        Text(
+                          tr(
+                            'Piyano kaydı bekleniyor',
+                            'Awaiting the piano recording',
+                          ),
+                        ),
                         const SizedBox(height: 12),
                         ChunkyButton(
                           key: Key('chord_listen_${slot.voiceCount}'),
                           onPressed: null,
                           icon: Icons.play_arrow,
                           tone: ChunkyTone.neutral,
-                          label: 'Piyano örneğini dinle',
+                          label: tr(
+                            'Piyano örneğini dinle',
+                            'Hear the piano example',
+                          ),
                         ),
                         const SizedBox(height: ResoniaSpacing.sm),
                         ChunkyButton(
                           key: Key('chord_repeat_${slot.voiceCount}'),
                           onPressed: null,
                           tone: ChunkyTone.neutral,
-                          label: 'Sırayla tekrar et',
+                          label: tr('Sırayla tekrar et', 'Repeat in turn'),
                         ),
                       ],
                     ),

@@ -1,5 +1,13 @@
 # Resonia — Architecture
 
+**REL-09b yayın kimliği (2026-11-02):** Kullanıcıya/mağazaya dönük kimlik
+Vocalart / `com.mennansevim.vocalart`tır. Android namespace, applicationId,
+launcher label ve Kotlin activity package yolu; iOS ana/test target bundle
+kimlikleri ve Info.plist adları tek regresyon testinde bağlanır. Dart paket adı,
+iç sınıf adları, `RESONIA_CHANNEL` ve `.resonia` veri uzantısı migration
+sınırıdır ve bu marka değişiminde yeniden adlandırılmaz. Bu test signing,
+provisioning, mağaza kaydı veya cihaz kabulü yerine geçmez.
+
 ## Mimari prensipler
 
 21:40 TRT heartbeat: CAL-03a `LatencyEstimator` pure Dart bounded trial
@@ -148,7 +156,7 @@ Başarı kararı için oktav toleransı gizlice uygulanmamalıdır. Bir oktav ha
 
 2/3/4 sesli referans birlikte çalınır, kullanıcı ayrı ayrı söyler. Bilinen referans nota listesi + monofonik frame motoru + nota segmentleri + sıra/set eşleştirmesi kullanılır. Eşzamanlı mikrofon multipitch ayrı bir analyzer ve AR-GE kapısıdır; mevcut `PitchAnalyzer`'a tek frequency alanında saklanmaz.
 
-`VisualFeedbackFrame` ölçümden UI'ya tek yönlü gider: phase, enerji, signed cents, confidence, aktif nota ve tamamlanan segmentler. Görsel smoothing skoru değiştirmez. Dinle-hatırla sınavında playback ve mic response fazları ayrılır. V2 skor geçişi model/scorer/ekranda yapıldı; gerçek frame/capture ve görsel pipeline henüz yok.
+`VisualFeedbackFrame` ölçümden UI'ya tek yönlü gider: phase, enerji, signed cents, nullable confidence/stability, aktif nota ve tamamlanan segmentler. AUDIO-03a yalnız kalite kapılı batch analiz sonucunu Aurora alanına bağlar; görsel smoothing skoru veya ham sent değerini değiştirmez. AUDIO-03b recorder dBFS akışını provenance'lı kalibrasyon/cevap enerji frame'lerine bağlar; burada pitch ekseni çizilmez ve sent/güven/kararlılık null kalır. Dinle-hatırla sınavında playback ve mic response fazları ayrılır. Canlı pitch frame'i ve cihaz performans kapısı henüz yok.
 
 Sözleşmeler, benchmark ve iş sırası: [AUDIO_ENGINE_PLAN.md](./AUDIO_ENGINE_PLAN.md).
 
@@ -1044,6 +1052,38 @@ not reset the selected tab or route stack. A local generation token rejects
 late completions from older reads. This signal is process-local invalidation,
 not account identity, synchronization, persistence or media-session restore.
 
+## DATA-03e — Transfer operation source binding (2026-11-02)
+
+Each clipboard export captures one history, profile, preference repository and
+clock snapshot. Each import captures one history and preference target before
+showing confirmation. A widget dependency generation invalidates pending work:
+an old export cannot publish clipboard/status after replacement, and an old
+confirmation cannot redirect its document into the newly displayed store.
+
+If replacement happens after an atomic history write has already started, that
+write remains owned by its original repository; it is never retargeted. Its
+late callback/status is suppressed for the new projection. This is an in-process
+source-isolation rule, not cancellation of filesystem syscalls, account identity,
+cross-store atomicity or cloud conflict resolution.
+
+## DATA-03f — Complete export read barrier (2026-11-02)
+
+Clipboard publication is after both history and portable-preference reads for
+the captured operation source. A preference read failure aborts before document
+encoding and before the platform clipboard call, even when history was read
+successfully. The UI receives a bounded retry state and never the adapter's
+exception details. This deliberately prefers no export over a silently partial
+document; it does not make the two stores transactional or remotely synced.
+
+## DATA-03g — Symmetric transfer budgets (2026-11-02)
+
+The local encoder and decoder share the same 5,000-result and 4-MiB UTF-8
+limits. Entry count is rejected before JSON construction; encoded byte size is
+checked before any platform clipboard call. An over-budget local state therefore
+cannot produce a document that this application would refuse on re-import.
+Budget failures expose only `too_large`, never payload text. This is an
+in-process memory/clipboard guard, not physical clipboard or transport QA.
+
 ## SHELL-04j — Preference store identity is projection state (2026-10-25)
 
 Today caches two values from `PracticePreferencesRepository`, so repository
@@ -1109,6 +1149,16 @@ This bound is part of the immutable argv contract and is visible in `--plan`;
 it avoids delegating resource pressure to each host's default worker count.
 Execution remains sequential and fail-fast, with no network fetch, build,
 upload, deployment or hosted-CI activation added by default.
+
+## REL-08b — Local QA failure evidence (2026-11-03)
+
+The simulator QA dashboard's code gate records each format/analyze/test process
+exit code and elapsed time, the first failing step, bounded failed-test names
+and errors, and a bounded process tail when a tool exits without a test
+failure. Repository paths are replaced before persistence. Flutter test uses
+the same four-worker bound as the canonical quality runner. These diagnostics
+are local observability only: they neither retry a failed gate nor convert it
+to success, and they do not prove device, audio, teaching or release quality.
 
 ## CONS-01a — Reviewed prerecorded chord manifest boundary (2026-10-27)
 
@@ -1247,6 +1297,41 @@ or close invalidates pending worker completion so stale evidence cannot surface.
 Quality retry, unavailable analysis and candidate diagnostic are separate
 states. The coordinator owns no persistence, score, mastery or AI side effect.
 
+## AUDIO-04a — Reviewed chord diagnostic UI (2026-10-30)
+
+`ChordDiagnosticScreen` is an injection-only presentation boundary around
+`ChordResponseAttemptCoordinator`. It cannot load placeholder assets or
+construct a session itself. It renders explicit calibration, complete reviewed
+playback, sequential monophonic capture, quality/worker/segment/matcher states,
+and candidate-only exact/any-order explanations. Learning mode may reveal
+reviewed targets; recall mode hides them. Recorder visuals are energy-only. The
+screen owns and closes the coordinator by default, cancels on background, and
+writes no score, history, mastery or AI input. Production catalog routing
+remains closed until reviewed user piano files exist.
+
+## AUDIO-04b — Reviewed attempt composition (2026-10-31)
+
+`ChordDiagnosticAttemptComposer` is the only app-layer owner that turns one
+already loaded `LoadedChordRecording` into a complete diagnostic attempt. It
+allocates a fresh reference player, requires an `AudioRecordingReader` capture
+backend, creates the pitch worker and binds reference session → capture session
+→ analyzer → coordinator. Configuration is validated before allocation where
+possible; partial construction closes resources while preserving the original
+failure. `createMobileChordDiagnosticAttempt` selects the mobile adapters but
+does not perform IO. Catalog availability and navigation remain separate and
+closed until reviewed recordings exist.
+
+## AUDIO-04c — Atomic reviewed chord bank (2026-10-31)
+
+`ReviewedChordBankLoader` is the availability boundary above the per-recording
+loader. A fixed direct-child manifest must pass bounded UTF-8, JSON and strict
+schema parsing, include all 2/3/4 voice counts, and every referenced WAV must
+pass path, symlink, hash and header checks. Only then is an immutable
+`LoadedChordBank` published. A sequential loader stream is never interpreted as
+partial readiness. Errors expose bounded codes/recording IDs, not the private
+root. This boundary performs no playback, permission, capture or analysis and
+does not certify musical labels, rights or teaching suitability.
+
 ## TRAINER-04a — Optional pitch production composition (2026-10-29)
 
 `TrainerPitchSingTarget` is the immutable bridge from one pitch lesson item to
@@ -1281,3 +1366,74 @@ write path to `TrainerStore`, result history, mastery, completion or unlocks.
 Factory construction failure is a neutral, skippable availability state. This
 preserves agency and keeps UI implementation evidence separate from physical
 device, human-voice/VAD and teaching acceptance.
+
+## RETRY-01d — Explanatory melody candidate projection (2026-10-31)
+
+`MelodyCandidateComparisonCard` is a read-only projection of
+`PitchSequenceEvidence`. It preserves reference/response order and renders all
+symbolic step kinds without converting them into a pass, score, verified note
+or memory result. The candidate tolerance is disclosed, as are missing/extra
+segments and the unvalidated segmentation/voice boundary. The projection has
+no repository, history, mastery, ranking or AI dependency. It may explain a
+reference-only practice suggestion, but cannot certify that the learner made
+an error; BENCH/VAD, physical device and educator acceptance remain external.
+
+## REL-06e — Session-observed assistance evidence (2026-11-01)
+
+`AttemptAssistanceEvidence` is the strict persistence boundary between an
+exercise protocol and what a session reports using: completed reference plays,
+pitch hints, transposition and accompaniment. Protocol permissions and bounded
+quotas are checked before evidence is accepted. `configuredRecallDelayMs` is a
+policy declaration only; it must never be interpreted as observed response
+latency or memory performance.
+
+Rhythm persistence writes both the structured evidence and its legacy
+`referencePlays` mirror. Mastery reads legacy records for migration but requires
+the two representations to agree when both exist. Unknown, malformed,
+conflicting or assisted evidence fails closed to supported practice and cannot
+claim independence. This does not change scoring thresholds and does not yet
+bind every session type or provide a protocol fingerprint.
+
+## REL-06f — Exact protocol fingerprint (2026-11-01)
+
+`ExerciseProtocolFingerprint` hashes the deterministic schema-v1 JSON emitted
+by a validated `ExerciseProtocol` and prefixes the digest with
+`exercise-protocol-v1-sha256`. The versioned label is part of the identity; a
+schema or serialization-order change must introduce a new label rather than
+silently reinterpreting persisted evidence.
+
+Rhythm results persist the fingerprint inside immutable measurements.
+Configured rhythm cohorts require an exact, syntactically valid match before a
+result can influence mastery, recommendations, reports or resume. Legacy
+records without the value remain readable history but are deliberately not
+comparable evidence. Perception exercises without `ExerciseProtocol` keep a
+null fingerprint requirement. This digest authenticates neither an audio asset
+nor its rights metadata; those remain separate reviewed-fixture boundaries.
+
+## REL-07e — Local history identity boundary (2026-11-01)
+
+`ResultHistoryRepository` treats both `attemptId` and persisted
+`ExerciseResult.sessionId` as uniqueness keys. Exact evidence repeated under a
+new attempt key is idempotent; divergent evidence for one session is a conflict
+and never overwrites the first record. The shared batch planner applies these
+rules before capacity accounting, preserving all-or-nothing imports.
+
+The file adapter validates identity uniqueness after strict decoding. An
+already ambiguous file fails as corrupt and remains untouched; there is no
+implicit repair or migration. The export decoder may parse duplicate sessions,
+but repository insertion is the authority that reports duplicate/conflict and
+prevents partial writes. This is local integrity, not account synchronization
+or proof that the originating audio/session was authentic.
+
+## SHELL-04p — Starting-check projection lifecycle (2026-11-02)
+
+`StartingCheckScreen` now shares `ForegroundRefreshState` with the other
+read-only local evidence consumers. Only a real background return invalidates
+and reloads its summary; transient inactive states do not churn reads. Replacing
+history, goal or catalog also creates a new projection and hides the old one
+behind the existing loading state until the new dependency resolves.
+
+The refresh callback can only replace a local read future. It cannot navigate,
+record history, resume an exercise, start playback or open the microphone.
+Process death, physical-device lifecycle ordering and offline acceptance remain
+external gates; this package only closes the widget/state isolation boundary.

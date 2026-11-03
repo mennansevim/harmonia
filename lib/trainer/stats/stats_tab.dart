@@ -6,6 +6,7 @@ import '../app/scope.dart';
 import '../domain/trainers.dart';
 import '../state/trainer_store.dart';
 import '../ui/kit.dart';
+import '../../domain/lang.dart';
 
 /// Progress tab: a choir-themed level from local XP, then the learner's own
 /// evidence (no unlock gate, no leaderboard: there is no account server).
@@ -20,10 +21,13 @@ class StatsTab extends StatelessWidget {
       child: ListView(
         padding: EdgeInsets.zero,
         children: [
-          const _Header(
-            'Bu cihazda',
-            'İlerleme',
-            'Yalnız bu cihazdaki kendi kanıtın',
+          _Header(
+            tr('Bu cihazda', 'On this device'),
+            tr('İlerleme', 'Progress'),
+            tr(
+              'Yalnız bu cihazdaki kendi kanıtın',
+              'Only your own evidence, on this device',
+            ),
           ),
           Padding(
             padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
@@ -45,12 +49,12 @@ class StatsTab extends StatelessWidget {
 /// Practice ladder derived from total XP (10 per correct answer, 2 per
 /// try). Role-neutral apprentice → master names: Personal is for everyone
 /// (ADR-035), not only choir singers.
-const practiceLevels = [
-  (0, 'Dinleyici', Ic.ear),
-  (500, 'Çırak', Ic.mic),
-  (1500, 'Kalfa', Ic.speech),
-  (4000, 'Usta', Ic.star),
-  (8000, 'Üstat', Ic.fileMusic),
+List<(int, String, IconData)> get practiceLevels => [
+  (0, tr('Dinleyici', 'Listener'), Ic.ear),
+  (500, tr('Çırak', 'Apprentice'), Ic.mic),
+  (1500, tr('Kalfa', 'Journeyman'), Ic.speech),
+  (4000, tr('Usta', 'Master'), Ic.star),
+  (8000, tr('Üstat', 'Virtuoso'), Ic.fileMusic),
   (15000, 'Maestro', Ic.crown),
 ];
 
@@ -80,7 +84,10 @@ class _LevelCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('SEVİYE ${i + 1} · $xp XP', style: TT.heroCaps),
+                    Text(
+                      tr('SEVİYE ${i + 1} · $xp XP', 'LEVEL ${i + 1} · $xp XP'),
+                      style: TT.heroCaps,
+                    ),
                     const SizedBox(height: 10),
                     Text(
                       level.$2,
@@ -116,8 +123,14 @@ class _LevelCard extends StatelessWidget {
           const SizedBox(height: 10),
           Text(
             next == null
-                ? 'En üst seviyedesin · bu hafta ${store.weeklyXp()} XP'
-                : '${next.$2} için ${next.$1 - xp} XP · bu hafta ${store.weeklyXp()} XP',
+                ? tr(
+                    'En üst seviyedesin · bu hafta ${store.weeklyXp()} XP',
+                    'You are at the top level · ${store.weeklyXp()} XP this week',
+                  )
+                : tr(
+                    '${next.$2} için ${next.$1 - xp} XP · bu hafta ${store.weeklyXp()} XP',
+                    '${next.$1 - xp} XP to ${next.$2} · ${store.weeklyXp()} XP this week',
+                  ),
             style: const TextStyle(
               color: TC.heroMuted,
               fontSize: 12,
@@ -170,7 +183,9 @@ class _Unlocked extends StatelessWidget {
       for (final d in week) store.days[dayKey(d)]?.questions ?? 0,
     ];
     final peak = counts.fold(1, math.max);
-    const labels = ['Pt', 'Sa', 'Ça', 'Pe', 'Cu', 'Ct', 'Pz'];
+    final labels = Lang.en
+        ? const ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su']
+        : const ['Pt', 'Sa', 'Ça', 'Pe', 'Cu', 'Ct', 'Pz'];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -178,7 +193,10 @@ class _Unlocked extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('SON 7 GÜN · SORU', style: TT.caps),
+              Text(
+                tr('SON 7 GÜN · SORU', 'LAST 7 DAYS · QUESTIONS'),
+                style: TT.caps,
+              ),
               const SizedBox(height: 14),
               SizedBox(
                 height: 120,
@@ -226,7 +244,10 @@ class _Unlocked extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 20),
-        const Text('BECERİLER · İLK DENEME DOĞRULUĞU', style: TT.caps),
+        Text(
+          tr('BECERİLER · İLK DENEME DOĞRULUĞU', 'SKILLS · FIRST-TRY ACCURACY'),
+          style: TT.caps,
+        ),
         const SizedBox(height: 10),
         _TrainerList(store: store),
       ],
@@ -268,7 +289,7 @@ class _TrainerList extends StatelessWidget {
                             Text(
                               _accuracy(store, k) == null
                                   ? '—'
-                                  : '%${(_accuracy(store, k)! * 100).round()}',
+                                  : percent(_accuracy(store, k)!),
                               style: TT.title.copyWith(color: trainerColor(k)),
                             ),
                           ],
@@ -304,7 +325,7 @@ double? _accuracy(TrainerStore store, TrainerKind k) {
 
 String _bestLine(TrainerStore store, TrainerKind k) {
   final reps = store.trainerReps(k);
-  if (reps == 0) return 'Henüz deneme yok';
+  if (reps == 0) return tr('Henüz deneme yok', 'No attempts yet');
   final best = store
       .itemStats(k)
       .entries
@@ -315,8 +336,9 @@ String _bestLine(TrainerStore store, TrainerKind k) {
       );
   final bestLabel = best == null
       ? ''
-      : ' · en iyi ${itemLabel(k, best.key, notation: store.notation, long: true)}';
-  return '$reps tekrar$bestLabel';
+      : tr(' · en iyi ', ' · best ') +
+            itemLabel(k, best.key, notation: store.notation, long: true);
+  return tr('$reps tekrar$bestLabel', '$reps reps$bestLabel');
 }
 
 /// Per-skill evidence table: every item with first-attempt accuracy and
@@ -346,7 +368,7 @@ class TrainerStatsScreen extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
-            const CrumbBar(crumb: 'İLERLEME / BECERİ'),
+            CrumbBar(crumb: tr('İLERLEME / BECERİ', 'PROGRESS / SKILL')),
             Expanded(
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(24, 4, 24, 32),
@@ -364,24 +386,29 @@ class TrainerStatsScreen extends StatelessWidget {
                               _Figure(
                                 attempts == 0
                                     ? '—'
-                                    : '%${(correct * 100 / attempts).round()}',
-                                'doğruluk',
+                                    : percent(correct / attempts),
+                                tr('doğruluk', 'accuracy'),
                                 color,
                               ),
-                              _Figure('$attempts', 'cevap', TC.ink),
                               _Figure(
-                                week.isEmpty
-                                    ? '—'
-                                    : '%${(week.last * 100).round()}',
-                                'son gün',
+                                '$attempts',
+                                tr('cevap', 'answers'),
+                                TC.ink,
+                              ),
+                              _Figure(
+                                week.isEmpty ? '—' : percent(week.last),
+                                tr('son gün', 'last day'),
                                 TC.ink,
                               ),
                             ],
                           ),
                         ),
                         const SizedBox(height: 20),
-                        const Text(
-                          'ÖĞE BAZINDA · ZAYIFTAN GÜÇLÜYE',
+                        Text(
+                          tr(
+                            'ÖĞE BAZINDA · ZAYIFTAN GÜÇLÜYE',
+                            'BY ITEM · WEAKEST TO STRONGEST',
+                          ),
                           style: TT.caps,
                         ),
                         const SizedBox(height: 8),
@@ -444,8 +471,11 @@ class TrainerStatsScreen extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 14),
-                        const Text(
-                          'Yalnız bu cihazdaki dinleme cevapları; sınav ya da eğitimci değerlendirmesi değildir.',
+                        Text(
+                          tr(
+                            'Yalnız bu cihazdaki dinleme cevapları; sınav ya da eğitimci değerlendirmesi değildir.',
+                            'Listening answers on this device only; not an exam or an educator\'s assessment.',
+                          ),
                           style: TT.small,
                         ),
                       ],

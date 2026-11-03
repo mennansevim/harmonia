@@ -4,6 +4,7 @@ import '../../app/theme/resonia_theme.dart';
 import '../../domain/learning/micro_lesson.dart';
 import '../../domain/learning/skill_graph.dart';
 import '../common/ui/resonia_ui.dart';
+import '../../domain/lang.dart';
 
 /// Text draft reader only. No recorder/player, completion marker or history.
 class MicroLessonScreen extends StatelessWidget {
@@ -13,13 +14,16 @@ class MicroLessonScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) => LessonScaffold(
     progress: null,
-    counter: 'Taslak',
-    closeLabel: 'Mikroders okumasını kapat',
+    counter: tr('Taslak', 'Draft'),
+    closeLabel: tr('Mikroders okumasını kapat', 'Close the micro-lesson'),
     top: [
-      const Align(
+      Align(
         alignment: AlignmentDirectional.centerStart,
         child: StatusPill(
-          'Metin taslağı • Eğitimci onayı bekliyor',
+          tr(
+            'Metin taslağı • Eğitimci onayı bekliyor',
+            'Draft text • Awaiting educator approval',
+          ),
           key: Key('lesson_review_notice'),
         ),
       ),
@@ -34,24 +38,35 @@ class MicroLessonScreen extends StatelessWidget {
       const SizedBox(height: ResoniaSpacing.sm),
       Text(
         lesson.dimension == SkillDimension.perception
-            ? 'Hedef boyutu: Algı'
-            : 'Hedef boyutu: Üretim',
+            ? tr('Hedef boyutu: Algı', 'Target dimension: Perception')
+            : tr('Hedef boyutu: Üretim', 'Target dimension: Production'),
       ),
       const SizedBox(height: ResoniaSpacing.sm),
       Text(lesson.objective),
       const SizedBox(height: ResoniaSpacing.sm),
-      const Text(
-        'Yalnız metin okuma. Ses, mikrofon, puan ve ilerleme kaydı yok. Okumak, öğrenme kanıtı değildir.',
+      Text(
+        tr(
+          'Yalnız metin okuma. Ses, mikrofon, puan ve ilerleme kaydı yok. Okumak, öğrenme kanıtı değildir.',
+          'Reading only. No sound, microphone, score or progress record. Reading is not proof of learning.',
+        ),
         key: Key('lesson_no_mastery_notice'),
       ),
       ExpansionTile(
         key: const Key('lesson_content_info'),
         tilePadding: EdgeInsets.zero,
-        title: const Text('Ders bilgisi'),
+        title: Text(tr('Ders bilgisi', 'Lesson info')),
         children: [
-          Text('İçerik sürümü: ${lesson.contentVersion}'),
-          const Text(
-            'Ses örnekleri ve eğitimci onayı doğrulanmadan çalışmalar açılmaz. Bu metin bir sınav veya tamamlanmış ders değildir.',
+          Text(
+            tr(
+              'İçerik sürümü: ${lesson.contentVersion}',
+              'Content version: ${lesson.contentVersion}',
+            ),
+          ),
+          Text(
+            tr(
+              'Ses örnekleri ve eğitimci onayı doğrulanmadan çalışmalar açılmaz. Bu metin bir sınav veya tamamlanmış ders değildir.',
+              'Exercises stay closed until sound examples and educator approval are verified. This text is not an exam or a completed lesson.',
+            ),
           ),
         ],
       ),
@@ -77,14 +92,23 @@ class MicroLessonScreen extends StatelessWidget {
                   const SizedBox(height: ResoniaSpacing.sm),
                   Text(
                     step.awaitsExamples
-                        ? 'Ses örnekleri henüz eklenmedi.'
-                        : 'Örnek kimlikleri tanımlı; sesler ve eğitimci onayı doğrulanmadı.',
+                        ? tr(
+                            'Ses örnekleri henüz eklenmedi.',
+                            'Sound examples have not been added yet.',
+                          )
+                        : tr(
+                            'Örnek kimlikleri tanımlı; sesler ve eğitimci onayı doğrulanmadı.',
+                            'Example IDs are defined; the sounds and educator approval are not verified.',
+                          ),
                   ),
                   ChunkyButton(
                     key: Key('lesson_practice_${step.phase.name}'),
                     onPressed: null,
                     tone: ChunkyTone.neutral,
-                    label: 'Çalışma henüz açılamıyor',
+                    label: tr(
+                      'Çalışma henüz açılamıyor',
+                      'The exercise cannot open yet',
+                    ),
                   ),
                 ],
               ],
@@ -95,7 +119,7 @@ class MicroLessonScreen extends StatelessWidget {
     bottom: [
       ChunkyButton(
         key: const Key('lesson_reader_back'),
-        label: 'Geri dön',
+        label: tr('Geri dön', 'Go back'),
         tone: ChunkyTone.neutral,
         onPressed: () => Navigator.of(context).maybePop(),
       ),
@@ -104,9 +128,15 @@ class MicroLessonScreen extends StatelessWidget {
 }
 
 String _phaseTitle(LessonPhase phase) => switch (phase) {
-  LessonPhase.explanation => 'Kavramı anla',
-  LessonPhase.contrast => 'Örnekleri karşılaştır',
-  LessonPhase.guidedPractice => 'Destekli çalış',
-  LessonPhase.independentCheck => 'Yeni örnekle kontrol et',
-  LessonPhase.delayedCheck => 'Daha sonra yeniden kontrol et',
+  LessonPhase.explanation => tr('Kavramı anla', 'Understand the idea'),
+  LessonPhase.contrast => tr('Örnekleri karşılaştır', 'Compare examples'),
+  LessonPhase.guidedPractice => tr('Destekli çalış', 'Practise with support'),
+  LessonPhase.independentCheck => tr(
+    'Yeni örnekle kontrol et',
+    'Check with a new example',
+  ),
+  LessonPhase.delayedCheck => tr(
+    'Daha sonra yeniden kontrol et',
+    'Check again later',
+  ),
 };

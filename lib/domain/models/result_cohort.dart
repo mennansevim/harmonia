@@ -1,4 +1,6 @@
 import 'exercise.dart';
+import 'exercise_protocol.dart';
+import 'exercise_protocol_fingerprint.dart';
 import 'exercise_result.dart';
 import 'measurement_provenance.dart';
 
@@ -14,6 +16,7 @@ class ResultCohort {
     required this.scoringVersion,
     required this.source,
     required this.analyzerVersion,
+    this.protocolFingerprint,
   });
 
   factory ResultCohort.forExercise(
@@ -32,6 +35,23 @@ class ResultCohort {
     analyzerVersion: analyzerVersion,
   );
 
+  factory ResultCohort.forConfiguredExercise(
+    ConfiguredExercise exercise, {
+    required MeasurementSource source,
+    required String analyzerVersion,
+    String scoringVersion = '2',
+  }) => ResultCohort(
+    exerciseId: exercise.exercise.id,
+    skill: exercise.exercise.skill,
+    mode: exercise.exercise.mode,
+    difficulty: exercise.exercise.difficulty,
+    contentVersion: exercise.exercise.contentVersion,
+    scoringVersion: scoringVersion,
+    source: source,
+    analyzerVersion: analyzerVersion,
+    protocolFingerprint: ExerciseProtocolFingerprint.compute(exercise.protocol),
+  );
+
   final String exerciseId;
   final Skill skill;
   final ExerciseMode mode;
@@ -40,6 +60,7 @@ class ResultCohort {
   final String scoringVersion;
   final MeasurementSource source;
   final String analyzerVersion;
+  final String? protocolFingerprint;
 
   bool matches(ExerciseResult result) =>
       result.exerciseId == exerciseId &&
@@ -49,5 +70,9 @@ class ResultCohort {
       result.contentVersion == contentVersion &&
       result.scoringVersion == scoringVersion &&
       result.provenance.source == source &&
-      result.provenance.analyzerVersion == analyzerVersion;
+      result.provenance.analyzerVersion == analyzerVersion &&
+      (protocolFingerprint == null ||
+          (ExerciseProtocolFingerprint.isValid(protocolFingerprint!) &&
+              result.measurements[ExerciseProtocolFingerprint.measurementKey] ==
+                  protocolFingerprint));
 }

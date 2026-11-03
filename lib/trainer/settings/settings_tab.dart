@@ -5,6 +5,7 @@ import '../../application/practice_preferences.dart';
 import '../../application/practice_reminder.dart';
 import '../../choir/app/choir_scope.dart';
 import '../../choir/app/choir_tab.dart';
+import '../../choir/data/choir_store.dart';
 import '../app/scope.dart';
 import '../audio/synth.dart';
 import '../domain/music.dart';
@@ -13,8 +14,9 @@ import '../state/trainer_store.dart';
 import '../stats/stats_tab.dart';
 import '../ui/kit.dart';
 import 'membership_screen.dart';
+import '../../domain/lang.dart';
 
-const appVersionLabel = 'Sürüm 1.0 (beta)';
+String get appVersionLabel => tr('Sürüm 1.0 (beta)', 'Version 1.0 (beta)');
 
 String? _rangeLabel(TrainerStore store) {
   final r = store.koroRange?.split('-').map(int.tryParse).toList();
@@ -26,7 +28,12 @@ String? _rangeLabel(TrainerStore store) {
 Future<String?> setReminder(BuildContext context, bool on) async {
   final scope = TrainerScope.of(context);
   final reminders = scope.reminders;
-  if (reminders == null) return 'Bildirimler bu cihazda kullanılamıyor.';
+  if (reminders == null) {
+    return tr(
+      'Bildirimler bu cihazda kullanılamıyor.',
+      'Notifications are not available on this device.',
+    );
+  }
   final outcome = on
       ? await reminders.enable(PracticeReminderTime(hour: 19, minute: 0))
       : await reminders.disable();
@@ -38,12 +45,18 @@ Future<String?> setReminder(BuildContext context, bool on) async {
     case ReminderUpdateOutcome.denied:
       scope.store.notifications = false;
       scope.store.save();
-      return 'Bildirim izni verilmedi. iOS Ayarlar\'dan açabilirsin.';
+      return tr(
+        'Bildirim izni verilmedi. iOS Ayarlar\'dan açabilirsin.',
+        'Notification permission was not given. You can turn it on in iOS Settings.',
+      );
     case ReminderUpdateOutcome.unavailable:
     case ReminderUpdateOutcome.failed:
     case ReminderUpdateOutcome.busy:
       scope.store.save();
-      return 'Hatırlatıcı şu an ayarlanamadı.';
+      return tr(
+        'Hatırlatıcı şu an ayarlanamadı.',
+        'The reminder could not be set right now.',
+      );
   }
   scope.store.save();
   return null;
@@ -60,7 +73,11 @@ class SettingsTab extends StatelessWidget {
       child: ListView(
         padding: EdgeInsets.zero,
         children: [
-          tabHeader('Senin düzenin', 'Ayarlar', 'Deneyimini özelleştir'),
+          tabHeader(
+            tr('Senin düzenin', 'Your setup'),
+            tr('Ayarlar', 'Settings'),
+            tr('Deneyimini özelleştir', 'Make it yours'),
+          ),
           Padding(
             padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
             child: Column(
@@ -86,11 +103,17 @@ class SettingsTab extends StatelessWidget {
                             Text(
                               store.part == null
                                   ? 'Vocalart'
-                                  : 'Çalışma aralığı: ${store.part!.title}',
+                                  : tr(
+                                      'Çalışma aralığı: ${store.part!.title}',
+                                      'Practice range: ${store.part!.title}',
+                                    ),
                               style: TT.title,
                             ),
-                            const Text(
-                              'İlerlemen yalnız bu cihazda saklanıyor',
+                            Text(
+                              tr(
+                                'İlerlemen yalnız bu cihazda saklanıyor',
+                                'Your progress is kept only on this device',
+                              ),
                               style: TT.small,
                             ),
                           ],
@@ -99,38 +122,66 @@ class SettingsTab extends StatelessWidget {
                     ],
                   ),
                 ),
-                const _Caption('SES'),
+                _Caption(tr('SES', 'VOICE')),
                 _Group([
                   _Item(
                     key: const Key('settings_part'),
                     icon: Ic.mic,
-                    title: 'Çalışma aralığım',
-                    value: store.part?.title ?? 'Seçilmedi',
+                    title: tr('Çalışma aralığım', 'My practice range'),
+                    value: store.part?.title ?? tr('Seçilmedi', 'Not chosen'),
                     onTap: () => showVoicePartSheet(context),
                   ),
                   _Item(
                     icon: Ic.audioLines,
-                    title: 'Ses aralığım',
-                    subtitle: 'Ses sekmesindeki testle ölçülür',
-                    value: _rangeLabel(store) ?? 'Ölçülmedi',
+                    title: tr('Ses aralığım', 'My vocal range'),
+                    subtitle: tr(
+                      'Ses sekmesindeki testle ölçülür',
+                      'Measured by the test in the Voice tab',
+                    ),
+                    value:
+                        _rangeLabel(store) ?? tr('Ölçülmedi', 'Not measured'),
                   ),
                 ]),
-                const _Caption('TERCİHLER'),
+                _Caption(tr('TERCİHLER', 'PREFERENCES')),
                 _Group([
                   _Item(
+                    key: const Key('settings_language'),
+                    icon: Ic.languages,
+                    title: tr('Dil', 'Language'),
+                    value: switch (store.language) {
+                      'tr' => 'Türkçe',
+                      'en' => 'English',
+                      _ => tr('Cihaz dili', 'Device language'),
+                    },
+                    onTap: () => _pick<String>(
+                      context,
+                      tr('Dil', 'Language'),
+                      const ['device', 'tr', 'en'],
+                      store.language ?? 'device',
+                      (l) => switch (l) {
+                        'tr' => 'Türkçe',
+                        'en' => 'English',
+                        _ => tr('Cihaz dili', 'Device language'),
+                      },
+                      (l) => store
+                        ..language = l == 'device' ? null : l
+                        ..save(),
+                    ),
+                  ),
+                  _Item(
                     icon: Ic.music2,
-                    title: 'Nota gösterimi',
+                    title: tr('Nota gösterimi', 'Note names'),
                     value: store.notation == NoteNotation.solfege
-                        ? 'Solfej (Do Re Mi)'
-                        : 'Harf (C D E)',
+                        ? tr('Solfej (Do Re Mi)', 'Solfège (Do Re Mi)')
+                        : tr('Harf (C D E)', 'Letters (C D E)'),
                     onTap: () => _pick<NoteNotation>(
                       context,
-                      'Nota gösterimi',
+                      tr('Nota gösterimi', 'Note names'),
                       NoteNotation.values,
                       store.notation,
                       (n) => n == NoteNotation.solfege
-                          ? 'Do Re Mi (solfej)'
-                          : 'C D E (harf)',
+                          ? tr('Do Re Mi (solfej)', 'Do Re Mi (solfège)')
+                          : tr('C D E (harf)', 'C D E (letters)'),
                       (n) => store
                         ..notation = n
                         ..save(),
@@ -138,12 +189,15 @@ class SettingsTab extends StatelessWidget {
                   ),
                   _Item(
                     icon: Ic.arrowLeftRight,
-                    title: 'Transpozisyon',
-                    subtitle: 'Yalnız pratik modu',
+                    title: tr('Transpozisyon', 'Transposition'),
+                    subtitle: tr('Yalnız pratik modu', 'Practice mode only'),
                     value: PitchClass.name(store.transposition, store.notation),
                     onTap: () => _pick<int>(
                       context,
-                      'Hangi notayı Do duyacaksın?',
+                      tr(
+                        'Hangi notayı Do duyacaksın?',
+                        'Which note should sound as ${PitchClass.name(0, store.notation)}?',
+                      ),
                       List.generate(12, (i) => i),
                       store.transposition,
                       (i) => PitchClass.name(i, store.notation),
@@ -154,11 +208,11 @@ class SettingsTab extends StatelessWidget {
                   ),
                   _Item(
                     icon: Ic.volume2,
-                    title: 'Ses',
+                    title: tr('Ses', 'Sound'),
                     value: store.timbre.label,
                     onTap: () => _pick<Timbre>(
                       context,
-                      'Enstrüman sesi',
+                      tr('Enstrüman sesi', 'Instrument sound'),
                       Timbre.values,
                       store.timbre,
                       (t) => t.label,
@@ -172,8 +226,8 @@ class SettingsTab extends StatelessWidget {
                   ),
                   _Toggle(
                     icon: Ic.keyboard,
-                    title: 'Klavye',
-                    subtitle: 'Yalnız nota eğitimi',
+                    title: tr('Klavye', 'Keyboard'),
+                    subtitle: tr('Yalnız nota eğitimi', 'Note training only'),
                     value: store.keyboard,
                     onChanged: (v) => store
                       ..keyboard = v
@@ -181,8 +235,11 @@ class SettingsTab extends StatelessWidget {
                   ),
                   _Toggle(
                     icon: Ic.lightbulb,
-                    title: 'Cevap ipuçları',
-                    subtitle: 'Kaçırınca seçtiğini doğru cevapla karşılaştır',
+                    title: tr('Cevap ipuçları', 'Answer hints'),
+                    subtitle: tr(
+                      'Kaçırınca seçtiğini doğru cevapla karşılaştır',
+                      'After a miss, compare your pick with the right answer',
+                    ),
                     value: store.hints,
                     onChanged: (v) => store
                       ..hints = v
@@ -191,8 +248,11 @@ class SettingsTab extends StatelessWidget {
                   _Toggle(
                     key: const Key('notifications_toggle'),
                     icon: Ic.bell,
-                    title: 'Bildirimler',
-                    subtitle: 'Her akşam 19:00 hatırlatma',
+                    title: tr('Bildirimler', 'Notifications'),
+                    subtitle: tr(
+                      'Her akşam 19:00 hatırlatma',
+                      'A reminder at 19:00 each evening',
+                    ),
                     value: store.notifications,
                     onChanged: (v) async {
                       final messenger = ScaffoldMessenger.of(context);
@@ -203,13 +263,16 @@ class SettingsTab extends StatelessWidget {
                     },
                   ),
                 ]),
-                const _Caption('ÜYELİK'),
+                _Caption(tr('ÜYELİK', 'MEMBERSHIP')),
                 _Group([
                   _Item(
                     key: const Key('settings_choir'),
                     icon: Ic.users,
-                    title: 'Koro modülü',
-                    subtitle: 'Ödev, eşlikli kayıt, şefin geri bildirimi',
+                    title: tr('Koro modülü', 'Choir module'),
+                    subtitle: tr(
+                      'Ödev, eşlikli kayıt, şefin geri bildirimi',
+                      'Assignments, accompanied takes, conductor feedback',
+                    ),
                     onTap: () => Navigator.of(context).push(
                       MaterialPageRoute<void>(
                         builder: (_) => const ChoirTab(asTab: false),
@@ -219,9 +282,12 @@ class SettingsTab extends StatelessWidget {
                   _Item(
                     key: const Key('settings_membership'),
                     icon: Ic.gem,
-                    title: 'Premium ve Plus',
-                    subtitle: 'Bugün tüm çalışmalar ücretsiz',
-                    value: 'Yakında',
+                    title: tr('Premium ve Plus', 'Premium and Plus'),
+                    subtitle: tr(
+                      'Bugün tüm çalışmalar ücretsiz',
+                      'All practice is free today',
+                    ),
+                    value: tr('Yakında', 'Soon'),
                     onTap: () => Navigator.of(context).push(
                       MaterialPageRoute<void>(
                         builder: (_) => const MembershipScreen(),
@@ -229,47 +295,64 @@ class SettingsTab extends StatelessWidget {
                     ),
                   ),
                 ]),
-                const _Caption('HAKKINDA'),
+                _Caption(tr('HAKKINDA', 'ABOUT')),
                 _Group([
                   _Item(
                     icon: Ic.circleHelp,
-                    title: 'Nasıl çalışır?',
+                    title: tr('Nasıl çalışır?', 'How does it work?'),
                     onTap: () => _info(
                       context,
-                      'Nasıl çalışır?',
-                      'Her eğitmenin bir Öğren yolu (dersler, kontrol noktaları, final) ve bir Pratik modu vardır. '
-                          'Dersler yeni sesi tanıtır, hızlı kontrolle pekiştirir, sonra pratikte ölçer. '
-                          'Sesler cihazda sentezlenir. Ses Atölyesi mikrofonla ses aralığı ve tekrar çalışmaları sunar; '
-                          'bu ölçümler deneyseldir ve eğitimci değerlendirmesinin yerini tutmaz.',
+                      tr('Nasıl çalışır?', 'How does it work?'),
+                      tr(
+                        'Her eğitmenin bir Öğren yolu (dersler, kontrol noktaları, final) ve bir Pratik modu vardır. '
+                            'Dersler yeni sesi tanıtır, hızlı kontrolle pekiştirir, sonra pratikte ölçer. '
+                            'Sesler cihazda sentezlenir. Ses Atölyesi mikrofonla ses aralığı ve tekrar çalışmaları sunar; '
+                            'bu ölçümler deneyseldir ve eğitimci değerlendirmesinin yerini tutmaz.',
+                        'Each trainer has a Learn path (lessons, checkpoints, a final) and a Practice mode. '
+                            'Lessons introduce a new sound, reinforce it with a quick check, then measure it in practice. '
+                            'Sounds are synthesised on the device. The Voice Lab offers range and repeat exercises with the microphone; '
+                            'these measurements are experimental and do not replace an educator\'s assessment.',
+                      ),
                     ),
                   ),
                   _Item(
                     icon: Ic.shield,
-                    title: 'Gizlilik',
+                    title: tr('Gizlilik', 'Privacy'),
                     onTap: () => _info(
                       context,
-                      'Gizlilik',
-                      'Cevapların, ilerlemen ve tercihlerin yalnız bu cihazda saklanır. Hesap, reklam ya da izleme yoktur. '
-                          'Mikrofon yalnız kaydı sen başlattığında kullanılır; kayıtlar yüklenmez. '
-                          'Koro kayıtların yalnız sen paylaşırsan şefe gider.',
+                      tr('Gizlilik', 'Privacy'),
+                      tr(
+                        'Cevapların, ilerlemen ve tercihlerin yalnız bu cihazda saklanır. Hesap, reklam ya da izleme yoktur. '
+                            'Mikrofon yalnız kaydı sen başlattığında kullanılır; kayıtlar yüklenmez. '
+                            'Koro kayıtların yalnız sen paylaşırsan şefe gider.',
+                        'Your answers, progress and preferences are kept only on this device. There is no account, advertising or tracking. '
+                            'The microphone is used only when you start a recording; recordings are not uploaded. '
+                            'Your choir takes reach the conductor only if you share them.',
+                      ),
                     ),
                   ),
                   _Item(
                     icon: Ic.fileMusic,
-                    title: 'Kullanım koşulları',
+                    title: tr('Kullanım koşulları', 'Terms of use'),
                     onTap: () => _info(
                       context,
-                      'Kullanım koşulları',
-                      'Vocalart beta sürümündedir. İçerik taslaktır, eğitimci onayından geçmemiştir ve sınav başarısı garantisi vermez.',
+                      tr('Kullanım koşulları', 'Terms of use'),
+                      tr(
+                        'Vocalart beta sürümündedir. İçerik taslaktır, eğitimci onayından geçmemiştir ve sınav başarısı garantisi vermez.',
+                        'Vocalart is in beta. The content is a draft, has not been approved by educators and does not guarantee exam success.',
+                      ),
                     ),
                   ),
                   _Item(
                     icon: Ic.heart,
-                    title: 'Teşekkürler',
+                    title: tr('Teşekkürler', 'Thanks'),
                     onTap: () => _info(
                       context,
-                      'Teşekkürler',
-                      'Flutter, just_audio, record ve açık kaynak topluluğuna. Tüm sesler uygulama içinde sentezlenir; lisanslı kayıt kullanılmaz.',
+                      tr('Teşekkürler', 'Thanks'),
+                      tr(
+                        'Flutter, just_audio, record ve açık kaynak topluluğuna. Tüm sesler uygulama içinde sentezlenir; lisanslı kayıt kullanılmaz.',
+                        'To Flutter, just_audio, record and the open source community. All sounds are synthesised in the app; no licensed recordings are used.',
+                      ),
                     ),
                   ),
                 ]),
@@ -277,20 +360,23 @@ class SettingsTab extends StatelessWidget {
                 _Group([
                   _Item(
                     icon: Ic.logOut,
-                    title: 'Baştan başla',
-                    subtitle: 'Tanıtımı yeniden göster, ilerlemeyi sıfırla',
-                    onTap: () => _reset(context, store),
+                    title: tr('Baştan başla', 'Start over'),
+                    subtitle: tr(
+                      'Tanıtımı yeniden göster, ilerlemeyi sıfırla',
+                      'Show the introduction again, reset progress',
+                    ),
+                    onTap: () => _reset(context),
                   ),
                   _Item(
                     key: const Key('delete_data'),
                     icon: Ic.trash2,
                     iconColor: TC.red,
-                    title: 'Verilerimi sil',
-                    onTap: () => _reset(context, store),
+                    title: tr('Verilerimi sil', 'Delete my data'),
+                    onTap: () => _reset(context),
                   ),
                 ]),
                 const SizedBox(height: 16),
-                const Text(
+                Text(
                   appVersionLabel,
                   textAlign: TextAlign.center,
                   style: TT.small,
@@ -304,19 +390,56 @@ class SettingsTab extends StatelessWidget {
     );
   }
 
-  static Future<void> _reset(BuildContext context, TrainerStore store) async {
+  static Future<void> _reset(BuildContext context) async {
     final ok = await confirmDialog(
       context,
-      title: 'Tüm veriler silinsin mi?',
-      message:
-          'Bu cihazdaki ilerleme, istatistik ve tercihler silinir. Geri alınamaz.',
-      cancel: 'Vazgeç',
-      confirm: 'Sil',
+      title: tr('Tüm veriler silinsin mi?', 'Delete all data?'),
+      message: tr(
+        'Bu cihazdaki ilerleme, sonuçlar, tercihler, hatırlatma ve koro '
+            'kayıtları silinir. Geri alınamaz.',
+        'Progress, results, preferences, the reminder and choir takes on '
+            'this device are deleted. This cannot be undone.',
+      ),
+      cancel: tr('Vazgeç', 'Cancel'),
+      confirm: tr('Sil', 'Delete'),
     );
     if (!ok || !context.mounted) return;
-    final choir = ChoirScope.maybeOf(context)?.store;
-    await store.resetAll();
-    await choir?.clearAll();
+    final messenger = ScaffoldMessenger.of(context);
+    final deleted = await _wipe(
+      TrainerScope.read(context),
+      ChoirScope.maybeOf(context)?.store,
+    );
+    if (deleted) return;
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(
+          tr(
+            'Veriler silinemedi. Bir kısmı silinmiş olabilir, tekrar dene.',
+            'The data could not be deleted. Some of it may be gone; try again.',
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// The trainer store goes last: emptying it leaves this screen, so a failure
+  /// stays visible here. Every step is safe to repeat on retry.
+  static Future<bool> _wipe(TrainerScope scope, ChoirStore? choir) async {
+    try {
+      final reminder = await scope.reminders?.wipe();
+      if (reminder == ReminderUpdateOutcome.failed ||
+          reminder == ReminderUpdateOutcome.busy) {
+        return false;
+      }
+      await scope.history?.clear();
+      await choir?.clearAll();
+      final temp = await scope.purgeTempAudio?.call();
+      if (temp != null && !temp.clean) return false;
+      await scope.store.resetAll();
+      return true;
+    } catch (_) {
+      return false;
+    }
   }
 
   static void _info(BuildContext context, String title, String body) =>
@@ -329,7 +452,10 @@ class SettingsTab extends StatelessWidget {
             const SizedBox(height: 10),
             Text(body, style: TT.body),
             const SizedBox(height: 16),
-            BigButton(label: 'Tamam', onPressed: () => Navigator.pop(context)),
+            BigButton(
+              label: tr('Tamam', 'OK'),
+              onPressed: () => Navigator.pop(context),
+            ),
           ],
         ),
       );
@@ -445,11 +571,17 @@ class _Item extends StatelessWidget {
               ],
             ),
           ),
-          if (value != null)
-            Text(
-              value!,
-              style: const TextStyle(color: TC.body, fontSize: 13.5),
+          if (value != null) ...[
+            const SizedBox(width: 8),
+            // Shares the row with the title so a long value wraps, not overflows.
+            Flexible(
+              child: Text(
+                value!,
+                textAlign: TextAlign.end,
+                style: const TextStyle(color: TC.body, fontSize: 13.5),
+              ),
             ),
+          ],
           const Icon(Ic.chevronRight, color: TC.faint),
         ],
       ),
@@ -472,39 +604,48 @@ class _Toggle extends StatelessWidget {
   final bool value;
   final ValueChanged<bool> onChanged;
   @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-    child: Row(
-      children: [
-        Container(
-          width: 34,
-          height: 34,
-          decoration: BoxDecoration(
-            color: const Color(0xFFF0EFF8),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Icon(icon, size: 19, color: TC.body),
+  // The whole row is the target: the bare switch is under 44 points tall and
+  // a screen reader would announce it without its title.
+  Widget build(BuildContext context) => MergeSemantics(
+    child: GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      excludeFromSemantics: true,
+      onTap: () => onChanged(!value),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        child: Row(
+          children: [
+            Container(
+              width: 34,
+              height: 34,
+              decoration: BoxDecoration(
+                color: const Color(0xFFF0EFF8),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(icon, size: 19, color: TC.body),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: TT.title),
+                  if (subtitle != null)
+                    Text(
+                      subtitle!,
+                      style: const TextStyle(fontSize: 12, color: TC.muted),
+                    ),
+                ],
+              ),
+            ),
+            CupertinoSwitch(
+              value: value,
+              activeTrackColor: TC.primary,
+              onChanged: onChanged,
+            ),
+          ],
         ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(title, style: TT.title),
-              if (subtitle != null)
-                Text(
-                  subtitle!,
-                  style: const TextStyle(fontSize: 12, color: TC.muted),
-                ),
-            ],
-          ),
-        ),
-        CupertinoSwitch(
-          value: value,
-          activeTrackColor: TC.primary,
-          onChanged: onChanged,
-        ),
-      ],
+      ),
     ),
   );
 }

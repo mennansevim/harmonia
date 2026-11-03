@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:resonia/choir/data/choir_bundle.dart';
 import 'package:resonia/infrastructure/audio/orphan_audio_cleaner.dart';
 
 void main() {
@@ -37,6 +38,65 @@ void main() {
     expect(other.existsSync(), isTrue);
     expect(File('${other.path}/recording.wav').existsSync(), isTrue);
     expect(stray.existsSync(), isTrue);
+  });
+
+  test('removes choir takes, mixes, voice notes and shared bundles', () async {
+    final take = dir('choir-take-a', [
+      'vocal.wav',
+      'accompaniment.wav',
+      'take.wav',
+    ]);
+    final practice = dir('choir-practice-b', ['mix-3.wav', 'mix-4.wav']);
+    final voice = dir('choir-voice-c', ['voice.wav']);
+    final bundle = dir('choir-bundle-d', ['Ödev-1.$bundleExtension']);
+    final report = await OrphanAudioCleaner(() async => root).run();
+    expect(report.removedDirectories, 4);
+    expect(report.clean, isTrue);
+    for (final d in [take, practice, voice, bundle]) {
+      expect(d.existsSync(), isFalse);
+    }
+  });
+
+  test('bundle suffix stays in step with the choir layer', () {
+    expect(OrphanAudioCleaner.bundleSuffix, '.$bundleExtension');
+  });
+
+  test('a choir directory with unknown content is kept by run', () async {
+    final d = dir('choir-take-odd', ['take.wav', 'notes.txt']);
+    final report = await OrphanAudioCleaner(() async => root).run();
+    expect(report.keptDirectories, 1);
+    expect(File('${d.path}/notes.txt').existsSync(), isTrue);
+  });
+
+  test('purge removes user data whatever it holds, keeps the clip', () async {
+    final take = dir('choir-take-a', ['take.wav', 'notes.txt']);
+    Directory('${take.path}/nested').createSync();
+    final lab = dir('resonia-audio-lab-b', ['partial.bin']);
+    final clip = dir('resonia-clip-live', ['clip.wav']);
+    final other = dir('someone-else', ['take.wav']);
+    final report = await OrphanAudioCleaner(() async => root).purge();
+    expect(report.removedDirectories, 2);
+    expect(report.clean, isTrue);
+    expect(take.existsSync(), isFalse);
+    expect(lab.existsSync(), isFalse);
+    expect(File('${clip.path}/clip.wav').existsSync(), isTrue);
+    expect(File('${other.path}/take.wav').existsSync(), isTrue);
+  });
+
+  test('purge does not follow a link out of the temp root', () async {
+    final outside = await Directory.systemTemp.createTemp('outside-');
+    addTearDown(() => outside.delete(recursive: true));
+    File('${outside.path}/take.wav').writeAsStringSync('keep');
+    Link('${root.path}/choir-take-link').createSync(outside.path);
+    await OrphanAudioCleaner(() async => root).purge();
+    expect(File('${outside.path}/take.wav').existsSync(), isTrue);
+  });
+
+  test('purge reports an unavailable temp root', () async {
+    final report = await OrphanAudioCleaner(
+      () async => throw const FileSystemException('denied'),
+    ).purge();
+    expect(report.clean, isFalse);
   });
 
   test('unexpected content keeps the directory and is reported', () async {

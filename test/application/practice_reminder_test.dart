@@ -55,6 +55,48 @@ class _FailingPreferences extends InMemoryPracticePreferences {
 }
 
 void main() {
+  group('wipe', () {
+    final time = PracticeReminderTime(hour: 18, minute: 45);
+
+    test('cancels the schedule and forgets every preference', () async {
+      final preferences = InMemoryPracticePreferences();
+      await preferences.saveReminderTime(time);
+      await preferences.saveWeeklyGoal(WeeklyPracticeGoal.three);
+      final platform = _Platform()..current = ReminderPermission.denied;
+      final coordinator = PracticeReminderCoordinator(
+        preferences: preferences,
+        platform: platform,
+      );
+      expect(await coordinator.wipe(), ReminderUpdateOutcome.disabled);
+      expect(platform.cancels, 1);
+      expect(await preferences.loadReminderTime(), isNull);
+      expect(await preferences.loadWeeklyGoal(), isNull);
+    });
+
+    test('still clears preferences where reminders are unavailable', () async {
+      final preferences = InMemoryPracticePreferences();
+      await preferences.saveWeeklyGoal(WeeklyPracticeGoal.three);
+      final coordinator = PracticeReminderCoordinator(
+        preferences: preferences,
+        platform: const UnavailablePracticeReminderPlatform(),
+      );
+      expect(await coordinator.wipe(), ReminderUpdateOutcome.disabled);
+      expect(await preferences.loadWeeklyGoal(), isNull);
+    });
+
+    test('a failed cancel fails and never reschedules', () async {
+      final preferences = InMemoryPracticePreferences();
+      await preferences.saveReminderTime(time);
+      final platform = _Platform()..failure = StateError('native detail');
+      final coordinator = PracticeReminderCoordinator(
+        preferences: preferences,
+        platform: platform,
+      );
+      expect(await coordinator.wipe(), ReminderUpdateOutcome.failed);
+      expect(platform.schedules, 0);
+    });
+  });
+
   test(
     'enable requests permission, verifies schedule, then persists',
     () async {

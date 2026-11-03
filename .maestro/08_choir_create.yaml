@@ -1,0 +1,29 @@
+# Create a choir with Turkish and emoji text and a very long name.
+appId: com.mennansevim.vocalart
+name: Koro oluştur
+tags: [critical]
+---
+- runFlow: subflows/onboard_quick.yaml
+- tapOn: "Koro"
+- takeScreenshot: choir_intro
+- tapOn: "Koro oluştur"
+- takeScreenshot: choir_form_empty
+- tapOn: "Oluştur"
+- takeScreenshot: choir_form_empty_submit
+- tapOn: "Koronun adı"
+- waitForAnimationToEnd
+- inputText: "Çağrı Şen Ödemiş Üniversitesi Karma Korosu Yüksek Lisans Topluluğu 🎵"
+- takeScreenshot: choir_form_keyboard
+# The keyboard arrives late and shifts the sheet; focus follows a moment after.
+- waitForAnimationToEnd
+- tapOn: "Adın"
+- waitForAnimationToEnd
+- tapOn: "Adın"
+- waitForAnimationToEnd
+- inputText: "Ayşe"
+- waitForAnimationToEnd
+- takeScreenshot: choir_form_filled
+- assertVisible: "Ayşe"
+- tapOn: "Oluştur"
+- waitForAnimationToEnd
+- takeScreenshot: choir_created

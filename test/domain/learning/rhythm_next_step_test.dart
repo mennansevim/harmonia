@@ -4,6 +4,7 @@ import 'package:resonia/domain/content/rhythm_patterns.dart';
 import 'package:resonia/domain/learning/rhythm_next_step.dart';
 import 'package:resonia/domain/models/exercise.dart';
 import 'package:resonia/domain/models/exercise_result.dart';
+import 'package:resonia/domain/models/exercise_protocol_fingerprint.dart';
 import 'package:resonia/domain/models/measurement_provenance.dart';
 import 'package:resonia/domain/models/score_metric.dart';
 
@@ -30,13 +31,18 @@ ExerciseResult _r(
   target: const {},
   measurements: valid
       ? {
+          ExerciseProtocolFingerprint.measurementKey:
+              ExerciseProtocolFingerprint.compute(p.exercise.protocol),
           'missed': missed,
           'extra': extra,
           'late': late,
           'early': 0,
           'meanAbsoluteOffsetMs': meanAbs,
         }
-      : const {},
+      : {
+          ExerciseProtocolFingerprint.measurementKey:
+              ExerciseProtocolFingerprint.compute(p.exercise.protocol),
+        },
   scores: valid
       ? ExerciseScores(timing: ScoreMetric.measured(80))
       : const ExerciseScores(),
