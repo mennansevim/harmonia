@@ -146,6 +146,17 @@ class RhythmImitationController extends ChangeNotifier {
     _set(RhythmImitationPhase.idle);
   }
 
+  /// From a finished result: a fresh attempt on the same pattern (or the
+  /// same excerpt), with a fresh listen quota.
+  Future<void> retry() async {
+    if (phase != RhythmImitationPhase.finished) return;
+    ++_epoch;
+    _resetAttempt();
+    retentionCheck = false;
+    _set(RhythmImitationPhase.idle);
+    await listen();
+  }
+
   /// Starts the recommended action as a fresh attempt on its pattern.
   void applyNextStep() {
     final step = nextStep;
@@ -153,6 +164,19 @@ class RhythmImitationController extends ChangeNotifier {
     selectPattern(step.pattern!);
     retentionCheck = step.kind == NextStepKind.delayedCheck;
     notifyListeners();
+  }
+
+  /// The next pattern in catalog (easy→hard) order, or null at the end.
+  RhythmPattern? get followingPattern {
+    final i = catalog.indexOf(_pattern);
+    return i < 0 || i + 1 >= catalog.length ? null : catalog[i + 1];
+  }
+
+  /// Moves on to [followingPattern] as a fresh attempt. Navigation only:
+  /// it records nothing and does not count as mastery.
+  void advancePattern() {
+    final next = followingPattern;
+    if (next != null) selectPattern(next);
   }
 
   /// Allowed before the first tap; switching resets the attempt evidence.
@@ -221,8 +245,33 @@ class RhythmImitationController extends ChangeNotifier {
       notifyListeners();
     }
     _idle?.cancel();
-    _idle = Timer(idleTimeout, () => unawaited(finish()));
+    _idle = Timer(finishWait, () => unawaited(finish()));
   }
+
+  /// Silence that ends the answer. Once every expected beat has a tap, the
+  /// student need not wait the full [idleTimeout]: the answer ends after the
+  /// pattern's longest gap plus the unchanged match window (at least
+  /// [minFinishWait]). A later tap could only have been an extra beat.
+  Duration get finishWait {
+    final reference = _referenceMs;
+    if (_taps.length < reference.length) return idleTimeout;
+    var gap = 0;
+    for (var i = 1; i < reference.length; i++) {
+      gap = max(gap, reference[i] - reference[i - 1]);
+    }
+    final wait = Duration(
+      milliseconds: max(
+        minFinishWait.inMilliseconds,
+        gap + RhythmImitationOutcome.matchToleranceMs,
+      ),
+    );
+    return wait < idleTimeout ? wait : idleTimeout;
+  }
+
+  static const minFinishWait = Duration(milliseconds: 600);
+
+  /// Number of beats the current reference (pattern or excerpt) has.
+  int get expectedTaps => _referenceMs.length;
 
   Future<void> finish() async {
     if (phase != RhythmImitationPhase.tapping &&

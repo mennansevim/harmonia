@@ -9,7 +9,7 @@ void main() {
   const faint = Color(0xFFE6E8EF);
 
   Widget page(List<Widget> children) => MaterialApp(
-    theme: ThemeData(fontFamily: 'Inter'),
+    theme: ThemeData(fontFamily: 'Manrope'),
     home: Scaffold(
       backgroundColor: Colors.white,
       body: Column(

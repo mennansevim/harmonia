@@ -306,7 +306,6 @@ class _LessonFlowState extends State<LessonFlow> with WidgetsBindingObserver {
               child: BigButton(
                 key: const Key('lesson_next'),
                 label: button,
-                color: color,
                 onPressed: _forward,
               ),
             ),

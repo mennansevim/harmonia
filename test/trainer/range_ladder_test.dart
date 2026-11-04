@@ -236,9 +236,11 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Ses aralığını bul'), findsOneWidget);
     await tester.tap(find.text('Başla'));
-    await tester.pumpAndSettle();
+    // The idle orb on the comfort page breathes forever: no settle.
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
     expect(find.text('Önce rahat bir ses'), findsOneWidget);
-    await tester.tap(find.text('Söyle (2 sn)'));
+    await tester.tap(find.text('Söyle (3 sn)'));
     for (
       var i = 0;
       i < 400 && find.byKey(const Key('range_result')).evaluate().isEmpty;
@@ -277,7 +279,9 @@ void main() {
     );
     await tester.pumpAndSettle();
     await tester.tap(find.text('Başla'));
-    await tester.pumpAndSettle();
+    // The idle orb on the comfort page breathes forever: no settle.
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
     await tester.tap(find.text('La3 notasından başla'));
     await tester.pump();
     Future<void> release() async {

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../app/theme/resonia_theme.dart';
 import '../../features/chord_exercise/chord_placeholder_screen.dart';
-import '../../features/melody/melody_session_screen.dart';
 import '../../features/rhythm_imitation/rhythm_imitation_screen.dart';
 import '../../features/single_tone_session/single_tone_session_screen.dart';
 import '../app/scope.dart';
@@ -16,6 +15,7 @@ import '../stats/stats_tab.dart';
 import '../ui/kit.dart';
 import 'aksak_patterns.dart';
 import 'clap_rhythm.dart';
+import 'melody_echo.dart';
 import 'range_test.dart';
 import 'voice_count.dart';
 import '../../domain/lang.dart';
@@ -45,15 +45,6 @@ extension on _Category {
     _Category.voice => tr('Ses', 'Voice'),
     _Category.rhythm => tr('Ritim', 'Rhythm'),
     _Category.parts => tr('Çok sesli', 'Parts'),
-  };
-
-  String get section => switch (this) {
-    _Category.all => '',
-    _Category.warmup => tr('ISINMA', 'WARM-UP'),
-    _Category.ear => tr('KULAK EĞİTİMİ', 'EAR TRAINING'),
-    _Category.voice => tr('TEK SESLİ', 'ONE VOICE'),
-    _Category.rhythm => tr('RİTİM', 'RHYTHM'),
-    _Category.parts => tr('ÇOK SESLİ (2 / 3 / 4)', 'PARTS (2 / 3 / 4)'),
   };
 }
 
@@ -86,10 +77,22 @@ class _Exercise {
 
 class _KoroHubState extends State<KoroHub> {
   var _category = _Category.all;
+  final _search = TextEditingController();
+  var _query = '';
 
-  void _push(Widget screen, {bool legacy = false}) {
+  @override
+  void dispose() {
+    _search.dispose();
+    super.dispose();
+  }
+
+  /// Turkish-aware lower case, so "ISINMA" finds "Isınma".
+  static String _fold(String s) =>
+      (Lang.en ? s : s.replaceAll('I', 'ı').replaceAll('İ', 'i')).toLowerCase();
+
+  void _push(Widget screen, {bool legacy = false, bool deviceOnly = false}) {
     final scope = TrainerScope.of(context);
-    if (!scope.liveAudio && legacy) {
+    if (!scope.liveAudio && (legacy || deviceOnly)) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -158,11 +161,11 @@ class _KoroHubState extends State<KoroHub> {
         icon: Ic.music2,
         title: tr('Ezgi tekrarı', 'Melody echo'),
         subtitle: tr(
-          'Kısa ezgiyi dinle, hafızandan söyle',
-          'Hear a short melody, sing it from memory',
+          'Dinle, söyle, karşılaştır; kolaydan zora',
+          'Listen, sing, compare; easy to hard',
         ),
         tag: experimental,
-        onTap: () => _push(const MelodySessionScreen(), legacy: true),
+        onTap: () => _push(const MelodyEchoScreen(), deviceOnly: true),
       ),
       _Exercise(
         category: _Category.rhythm,
@@ -182,8 +185,8 @@ class _KoroHubState extends State<KoroHub> {
         icon: Ic.hand,
         title: tr('Alkışla ritim', 'Clap the rhythm'),
         subtitle: tr(
-          'Batı ve Türk müziğinden rastgele ritim',
-          'Random Western and Turkish rhythms',
+          'Dinle, sıra sende alkışla; kolaydan zora',
+          'Listen, then clap it back; easy to hard',
         ),
         tag: draft,
         onTap: () => _push(const ClapRhythmScreen()),
@@ -241,13 +244,17 @@ class _KoroHubState extends State<KoroHub> {
         range != null && range.length == 2 && range.every((m) => m != null)
         ? '${PitchClass.midiName(range[0]!, store.notation)} – ${PitchClass.midiName(range[1]!, store.notation)}'
         : null;
-    final all = _exercises();
-    final shown = _category == _Category.all
-        ? [
-            for (final c in _Category.values.skip(1))
-              if (all.any((e) => e.category == c)) c,
-          ]
-        : [_category];
+    final q = _fold(_query.trim());
+    final shown = [
+      for (final c in _Category.values.skip(1))
+        for (final e in _exercises())
+          if (e.category == c &&
+              (_category == _Category.all || _category == c) &&
+              (q.isEmpty ||
+                  _fold(e.title).contains(q) ||
+                  _fold(e.subtitle).contains(q)))
+            e,
+    ];
     return Scaffold(
       backgroundColor: TC.canvas,
       body: SafeArea(
@@ -256,13 +263,10 @@ class _KoroHubState extends State<KoroHub> {
           children: [
             if (widget.asTab)
               tabHeader(
-                tr('Keşfet', 'Explore'),
+                tr('Ses laboratuvarı', 'Voice lab'),
                 tr('Egzersizler', 'Exercises'),
                 store.part == null
-                    ? tr(
-                        'Kulak, ses aralığı, ritim, çok seslilik',
-                        'Ear, range, rhythm, part singing',
-                      )
+                    ? ''
                     : tr(
                         '${store.part!.title} aralığında çalışma',
                         'Practice in the ${store.part!.title.toLowerCase()} range',
@@ -271,8 +275,15 @@ class _KoroHubState extends State<KoroHub> {
               )
             else
               TopBar(title: tr('Egzersizler', 'Exercises')),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 6, 20, 4),
+              child: _SearchField(
+                controller: _search,
+                onChanged: (v) => setState(() => _query = v),
+              ),
+            ),
             SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(24, 4, 24, 4),
+              padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
               key: const Key('lib_categories'),
               scrollDirection: Axis.horizontal,
               child: Row(
@@ -291,23 +302,29 @@ class _KoroHubState extends State<KoroHub> {
             ),
             Expanded(
               child: ListView(
-                padding: const EdgeInsets.fromLTRB(24, 0, 24, 32),
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 32),
                 children: [
-                  if (_category == _Category.all ||
-                      _category == _Category.voice) ...[
+                  if (q.isEmpty &&
+                      (_category == _Category.all ||
+                          _category == _Category.voice)) ...[
                     const SizedBox(height: 8),
                     _RangeCard(
                       rangeText: rangeText,
                       onTap: () => _push(const RangeTestScreen()),
                     ),
                   ],
-                  for (final c in shown) ...[
-                    _Section(c.section),
-                    _Grid([
-                      for (final e in all)
-                        if (e.category == c) e,
-                    ]),
-                  ],
+                  _Section(
+                    _category == _Category.all
+                        ? tr('Tüm egzersizler', 'All exercises')
+                        : _category.label,
+                    tr(
+                      '${shown.length} egzersiz',
+                      shown.length == 1
+                          ? '1 exercise'
+                          : '${shown.length} exercises',
+                    ),
+                  ),
+                  if (shown.isEmpty) const _Empty() else _Grid(shown),
                   const SizedBox(height: 16),
                   Text(
                     tr(
@@ -329,13 +346,97 @@ class _KoroHubState extends State<KoroHub> {
   }
 }
 
-class _Section extends StatelessWidget {
-  const _Section(this.text);
-  final String text;
+class _SearchField extends StatelessWidget {
+  const _SearchField({required this.controller, required this.onChanged});
+  final TextEditingController controller;
+  final ValueChanged<String> onChanged;
+  @override
+  Widget build(BuildContext context) => Container(
+    constraints: const BoxConstraints(minHeight: 48),
+    margin: const EdgeInsets.only(bottom: 4),
+    padding: const EdgeInsets.only(left: 14, right: 6),
+    decoration: BoxDecoration(
+      color: TC.card,
+      borderRadius: BorderRadius.circular(16),
+      border: Border.all(color: TC.line),
+      boxShadow: const [BoxShadow(color: TC.cardShadow, offset: Offset(0, 4))],
+    ),
+    child: Row(
+      children: [
+        const Icon(Ic.search, color: TC.muted, size: 20),
+        const SizedBox(width: 10),
+        Expanded(
+          child: TextField(
+            key: const Key('lib_search'),
+            controller: controller,
+            onChanged: onChanged,
+            textInputAction: TextInputAction.search,
+            style: const TextStyle(fontSize: 14, color: TC.ink),
+            decoration: InputDecoration(
+              isDense: true,
+              contentPadding: const EdgeInsets.symmetric(vertical: 15),
+              border: InputBorder.none,
+              hintText: tr('Egzersiz ara', 'Search exercises'),
+              hintStyle: const TextStyle(color: TC.muted, fontSize: 14),
+            ),
+          ),
+        ),
+        ListenableBuilder(
+          listenable: controller,
+          builder: (context, _) => controller.text.isEmpty
+              ? const SizedBox.shrink()
+              : IconButton(
+                  tooltip: tr('Aramayı temizle', 'Clear search'),
+                  onPressed: () {
+                    controller.clear();
+                    onChanged('');
+                  },
+                  icon: const Icon(Ic.x, size: 18, color: TC.body),
+                ),
+        ),
+      ],
+    ),
+  );
+}
+
+class _Empty extends StatelessWidget {
+  const _Empty();
   @override
   Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.only(top: 22, bottom: 10, left: 4),
-    child: Text(text, style: TT.caps),
+    padding: const EdgeInsets.symmetric(vertical: 48),
+    child: Column(
+      children: [
+        const Icon(Ic.search, color: TC.faint, size: 28),
+        const SizedBox(height: 12),
+        Text(
+          tr('Egzersiz bulunamadı', 'No exercise found'),
+          style: TT.title.copyWith(color: TC.body),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          tr('Başka bir arama deneyebilirsin.', 'Try another search.'),
+          style: TT.small,
+        ),
+      ],
+    ),
+  );
+}
+
+class _Section extends StatelessWidget {
+  const _Section(this.text, this.count);
+  final String text;
+  final String count;
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(top: 20, bottom: 10),
+    child: Row(
+      children: [
+        Expanded(
+          child: Semantics(header: true, child: Text(text, style: TT.section)),
+        ),
+        Text(count, style: TT.small),
+      ],
+    ),
   );
 }
 
@@ -369,19 +470,24 @@ class _CategoryChip extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
             decoration: ShapeDecoration(
-              color: selected ? TC.ink : Colors.white,
+              color: selected ? TC.hero : TC.card,
               shape: StadiumBorder(
                 side: selected
                     ? BorderSide.none
                     : const BorderSide(color: TC.line),
               ),
+              shadows: selected
+                  ? const [
+                      BoxShadow(color: Color(0xFFCFC4DB), offset: Offset(0, 3)),
+                    ]
+                  : null,
             ),
             child: Text(
               label,
               style: TextStyle(
                 color: selected ? Colors.white : TC.body,
                 fontSize: 13,
-                fontWeight: FontWeight.w600,
+                fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
               ),
             ),
           ),
@@ -391,7 +497,8 @@ class _CategoryChip extends StatelessWidget {
   );
 }
 
-/// Wide card on top: the (experimental) range test and its last result.
+/// Wide coral card on top: the (experimental) range test and its last
+/// result.
 class _RangeCard extends StatelessWidget {
   const _RangeCard({required this.rangeText, required this.onTap});
   final String? rangeText;
@@ -399,48 +506,97 @@ class _RangeCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) => AppCard(
     key: const Key('koro_range'),
-    color: TC.primarySoft,
-    padding: const EdgeInsets.all(16),
+    color: TC.coralSoft,
+    padding: EdgeInsets.zero,
     onTap: onTap,
-    child: Row(
+    child: Stack(
       children: [
-        Container(
-          width: 48,
-          height: 48,
-          decoration: BoxDecoration(
-            color: TC.primary,
-            borderRadius: BorderRadius.circular(14),
+        Positioned(
+          right: -18,
+          bottom: -50,
+          child: IgnorePointer(
+            child: Container(
+              width: 145,
+              height: 145,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: const Color(0x38FF6259), width: 24),
+              ),
+            ),
           ),
-          child: const Icon(Ic.audioLines, color: Colors.white),
         ),
-        const SizedBox(width: 14),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+        Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
             children: [
-              Text(
-                tr('Ses aralığı testi', 'Vocal range test'),
-                style: TT.title,
+              Container(
+                width: 60,
+                height: 60,
+                decoration: BoxDecoration(
+                  color: TC.coral,
+                  borderRadius: BorderRadius.circular(18),
+                  boxShadow: const [
+                    BoxShadow(color: TC.coralShadow, offset: Offset(0, 5)),
+                  ],
+                ),
+                child: const Icon(Ic.mic, color: Colors.white, size: 28),
               ),
-              const SizedBox(height: 2),
-              Text(
-                rangeText == null
-                    ? tr(
-                        'Piyanoyu dinle, tekrar et; aralığın çıksın',
-                        'Hear the piano, repeat it; find your range',
-                      )
-                    : tr(
-                        'Son ölçüm: $rangeText · taslak',
-                        'Last measured: $rangeText · draft',
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      trCaps(
+                        tr(
+                          'Sesli egzersiz · deneysel',
+                          'Voice exercise · experimental',
+                        ),
                       ),
-                style: TT.small.copyWith(color: TC.body),
+                      style: TT.caps.copyWith(
+                        color: TC.coralDeep,
+                        fontSize: 9,
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      tr('Ses aralığını ölç', 'Measure your range'),
+                      style: TT.title.copyWith(fontSize: 15),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      rangeText == null
+                          ? tr(
+                              'Piyanoyu dinle, tekrar et · mikrofon gerekli',
+                              'Hear the piano, repeat it · microphone needed',
+                            )
+                          : tr(
+                              'Son ölçüm: $rangeText · taslak',
+                              'Last measured: $rangeText · draft',
+                            ),
+                      style: TT.small.copyWith(color: const Color(0xFF6E5558)),
+                    ),
+                  ],
+                ),
               ),
-              const SizedBox(height: 6),
-              Tag(tr('DENEYSEL', 'EXPERIMENTAL'), color: TC.koro),
+              const SizedBox(width: 8),
+              Container(
+                width: 34,
+                height: 34,
+                decoration: const BoxDecoration(
+                  color: Color(0x9EFFFFFF),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Ic.chevronRight,
+                  color: TC.coralDeep,
+                  size: 20,
+                ),
+              ),
             ],
           ),
         ),
-        const Icon(Ic.chevronRight, color: TC.primary),
       ],
     ),
   );
@@ -460,11 +616,11 @@ class _Grid extends StatelessWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Expanded(child: _ExerciseCard(items[i])),
+                Expanded(child: _ExerciseCard(items[i], tone: i)),
                 const SizedBox(width: 10),
                 Expanded(
                   child: i + 1 < items.length
-                      ? _ExerciseCard(items[i + 1])
+                      ? _ExerciseCard(items[i + 1], tone: i + 1)
                       : const SizedBox.shrink(),
                 ),
               ],
@@ -476,8 +632,9 @@ class _Grid extends StatelessWidget {
 }
 
 class _ExerciseCard extends StatelessWidget {
-  const _ExerciseCard(this.e);
+  const _ExerciseCard(this.e, {required this.tone});
   final _Exercise e;
+  final int tone;
   @override
   Widget build(BuildContext context) => Opacity(
     opacity: e.muted ? 0.7 : 1,
@@ -488,23 +645,15 @@ class _ExerciseCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              color: TC.primarySoft,
-              borderRadius: BorderRadius.circular(11),
-            ),
-            child: Icon(e.icon, color: TC.primary, size: 20),
-          ),
-          const SizedBox(height: 10),
-          Text(e.title, style: TT.title),
+          ToneIcon(e.icon, tone: tone, size: 43),
+          const SizedBox(height: 14),
+          Text(e.title, style: TT.title.copyWith(height: 1.3)),
           const SizedBox(height: 2),
           Text(e.subtitle, style: TT.small),
           const SizedBox(height: 10),
           const Spacer(),
           if (e.progress != null)
-            ProgressBar(value: e.progress!, height: 4)
+            ProgressBar(value: e.progress!, height: 3, color: TC.primaryFill)
           else if (e.tag != null)
             Tag(e.tag!, color: e.muted ? TC.muted : TC.koro),
         ],

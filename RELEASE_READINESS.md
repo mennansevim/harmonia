@@ -1,6 +1,6 @@
 # Vocalart — Yayın hazırlığı (canlıya çıkış açıkları)
 
-**Güncelleme:** 2026-11-03 · Kaynaklar: CURRENT_ROADMAP, IMPLEMENTATION_ROADMAP §5–§11.
+**Güncelleme:** 2026-11-04 · Kaynaklar: CURRENT_ROADMAP, IMPLEMENTATION_ROADMAP §5–§11.
 Durum sözlüğü roadmap ile aynı; kod-test geçmesi cihaz/pilot/yayın kabulü değildir.
 
 Tür: **K** = kodla kapatılabilir, **Ka** = kullanıcı kararı, **D** = dış kaynak
@@ -21,11 +21,11 @@ Tür: **K** = kodla kapatılabilir, **Ka** = kullanıcı kararı, **D** = dış 
 | Açık | Tür | Durum / gereken |
 |---|---|---|
 | Android derleme ortamı | D | Debug APK derlendi (2026-10-14; Gradle CMake 3.22.1'i kendisi kurdu). cmdline-tools eksik, `flutter doctor --android-licenses` onaylanmadı; gerçek Android cihaz/emülatörde çalıştırılmadı |
-| Release imzalama | Ka/D | Android release görevi geçerli dört alanlı `key.properties` + var olan keystore olmadan fail-closed; yalnız yerel derleme kanıtı için açık `-PallowDebugReleaseSigning=true` istisnası var ve mağazaya yüklenemez. Keystore üretimi/saklanması kullanıcıda. iOS: ücretli bireysel team `L3Z9U2B39K` projede tanımlı, otomatik imzalama; makinede yalnız Apple Development sertifikası, Vocalart için App Store profili yok (Xcode ilk imzalı arşivde üretir) |
-| TestFlight yüklemesi (REL-10) | D | 2026-11-03: beta kanalında imzasız `flutter build ipa --no-codesign` arşivi geçti (188,6 MB, 1.0.0+1); 1024 ana ikon arşivde opak; `ITSAppUsesNonExemptEncryption=false` eklendi ve testli. Kalan: App Store Connect uygulama kaydı, imzalı IPA, yükleme (kullanıcı yetkisi). Dış test için gizlilik politikası URL'si + Beta App Review |
+| Release imzalama | Ka/D | Android release görevi geçerli dört alanlı `key.properties` + var olan keystore olmadan fail-closed; yalnız yerel derleme kanıtı için açık `-PallowDebugReleaseSigning=true` istisnası var ve mağazaya yüklenemez. Keystore üretimi/saklanması kullanıcıda. iOS App Store IPA, Apple Distribution sertifikası ve `com.mennansevim.vocalart` App Store profiliyle üretildi; profil 2027-09-25'e kadar geçerli |
+| TestFlight yüklemesi (REL-10–13) | D | Güncel imzalı `Vocalart.ipa` 1.0.0 build 4. Yerel doğrulayıcı bundle/ad/sürüm, executable, CodeResources, şifreleme beyanı, exact Apple Team/Profile kimliği, imzalı production entitlement zinciri ve `codesign --verify --deep --strict` kapılarını geçti. Upload yapılmadı; kullanıcı yetkisi gerekir. Dış test için gizlilik politikası URL'si + Beta App Review gerekir |
 | Uygulama kimliği | K/D | `com.mennansevim.vocalart` iOS ve Android'de uygulandı; platform tutarlılığı otomatik testli. İlk mağaza kaydı/Team ID ve imzalı arşiv dış kapı |
 | Uygulama ikonu / açılış ekranı | K/D | Koddan üretilen marka ikonu; iOS tek-boyut varsayılan/koyu/renklendirilmiş kaynakları asset-testli ve Xcode 27 actool uyarısız, Android uyarlanabilir + tek renk; tema renginde açılış ekranı. Fiziksel görünüm, profesyonel tasarım kabulü ve mağaza ekran görüntüleri açık |
-| Sürüm numarası | K | `1.0.0+1`; her yüklemede build numarası artırılmalı (CI yok) |
+| Sürüm numarası | K | Pubspec ve güncel imzalı IPA `1.0.0+4`; REL-11b doğrulayıcı artifact sürümünü pubspec ile exact-match denetler. Her yeni yüklemede pubspec build numarası önce artırılmalı |
 | Gerçek cihazda gezinti | D | Simulator build başarılı, elle gezinti/gerçek iPhone/Android testi yok |
 | Mikrofon izni kalıcı ret → Ayarlar | D | SHELL-02 kod/build tamam (`permission_handler` 12.0.3); fiziksel iOS/Android ret, ayar açma ve uygulamaya dönüş QA bekliyor |
 | Gizlilik politikası URL'si | D | Mağaza zorunlu; metin + barındırma + hukuk incelemesi (LAUNCH-01) |
@@ -74,6 +74,8 @@ CURRENT_ROADMAP › "Kalan işler — 2026-10-15".
 
 ```sh
 dart tool/quality_check.dart
+python3 -I scripts/release/test_verify_ios_ipa.py
+python3 -I scripts/release/verify_ios_ipa.py build/ios/ipa/Vocalart.ipa
 flutter build ios --simulator --debug --dart-define=RESONIA_CHANNEL=beta
 flutter build apk --release --dart-define=RESONIA_CHANNEL=beta   # geçerli key.properties yoksa bilerek durur
 # Yalnız yerel release derleme kanıtı; oluşan debug-imzalı çıktı mağazaya yüklenmez:

@@ -9,6 +9,24 @@ import 'package:resonia/trainer/koro/clap_rhythm.dart';
 
 import 'trainer_app_test.dart' show app, memoryStore, settle, tapKey;
 
+class _Ear implements ClapListener {
+  void Function(int ms)? _onClap;
+  bool stopped = false;
+  void clap(int ms) => _onClap?.call(ms);
+  @override
+  Future<bool> requestPermission() async => true;
+  @override
+  Future<void> start(void Function(int ms) onClap) async {
+    stopped = false;
+    _onClap = onClap;
+  }
+
+  @override
+  Future<void> stop() async => stopped = true;
+  @override
+  Future<void> close() async {}
+}
+
 class _Player implements ReferenceClipPlayer {
   final played = <List<int>>[];
   @override
@@ -69,29 +87,45 @@ void main() {
     });
   });
 
-  testWidgets('hands follow the clap onsets in order', (tester) async {
+  test('clap rhythms go from easy to hard', () {
+    final ladder = clapRhythmsEasyToHard;
+    expect(ladder, hasLength(clapRhythms.length));
+    expect(ladder.map((r) => r.id).toSet(), hasLength(ladder.length));
+    // The first rhythm is all on the beat; the syncopated clave comes later.
+    expect(ladder.first.beats.every((b) => b == b.floorToDouble()), isTrue);
+    expect(
+      ladder.indexWhere((r) => r.id == 'draft-clap-son-clave'),
+      greaterThan(ladder.indexWhere((r) => r.id == 'draft-clap-waltz')),
+    );
+  });
+
+  testWidgets('listen, count in, clap back, and a clean echo levels up', (
+    tester,
+  ) async {
     final store = memoryStore({'onboardingDone': true, 'setupDone': true});
     await store.load();
     await tester.pumpWidget(app(store));
     await settle(tester);
     final player = _Player();
+    final ear = _Ear();
     Navigator.of(tester.element(find.byType(HomeShell))).push(
       MaterialPageRoute<void>(
-        builder: (_) =>
-            ClapRhythmScreen(player: player, random: math.Random(3)),
+        builder: (_) => ClapRhythmScreen(player: player, listener: ear),
       ),
     );
     await settle(tester);
-    final title = tester
-        .widget<Text>(find.byKey(const Key('clap_title')))
-        .data!;
-    final rhythm = clapRhythms.firstWhere((r) => r.title == title);
+    final rhythm = clapRhythmsEasyToHard.first;
+    expect(
+      tester.widget<Text>(find.byKey(const Key('clap_title'))).data,
+      rhythm.title,
+    );
     Color fill(int i) =>
         ((tester.widget<Container>(find.byKey(Key('clap_beat_$i'))).decoration
                 as BoxDecoration)
             .color)!;
     final empty = fill(0);
-    await tester.tap(find.byKey(const Key('clap_again')));
+    await tester.tap(find.byKey(const Key('clap_start')));
+    await tester.pump();
     await tester.pump();
     expect(player.played, hasLength(1));
     final ms = rhythm.onsetsMs;
@@ -99,11 +133,37 @@ void main() {
     await tester.pump();
     expect(fill(0), isNot(empty));
     expect(fill(1), empty);
-    await tester.pump(const Duration(milliseconds: 10));
-    expect(fill(1), isNot(empty));
-    await tester.pump(Duration(milliseconds: ms.last + 500));
-    expect(fill(ms.length - 1), isNot(empty));
-    await settle(tester);
+    await tester.pump(Duration(milliseconds: ms.last + 600));
+    // Count-in: four beats at the rhythm's tempo, with its own click track.
+    expect(tester.widget<Text>(find.byKey(const Key('clap_status'))).data, '1');
+    expect(player.played, hasLength(2));
+    await tester.pump(Duration(milliseconds: (4 * 60000 / rhythm.bpm).round()));
+    await tester.pump();
+    await tester.pump();
+    // Count-in, then the "go" cue, then the microphone opens.
+    expect(player.played, hasLength(3));
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump();
+    expect(find.byKey(const Key('your_turn')), findsOneWidget);
+    expect(
+      tester.widget<Text>(find.byKey(const Key('your_turn_action'))).data,
+      'Alkışla!',
+    );
+    // A late start and steady latency do not matter: the first clap anchors.
+    for (final o in ms) {
+      ear.clap(o + 700 + (o.isEven ? 30 : -20));
+      await tester.pump(const Duration(milliseconds: 1));
+    }
+    await tester.pump(const Duration(seconds: 3));
+    await tester.pump();
+    expect(
+      tester.widget<Text>(find.byKey(const Key('clap_status'))).data,
+      'Ritmi yakaladın',
+    );
+    expect(ear.stopped, isTrue);
+    expect(store.clapLevel, 1);
+    expect(find.byKey(const Key('clap_next')), findsOneWidget);
+    await tester.pumpWidget(const SizedBox());
   });
 
   testWidgets('Settings switches the app language and remembers it', (

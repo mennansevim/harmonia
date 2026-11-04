@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:math' as math;
+import 'dart:typed_data';
 import 'package:audio_session/audio_session.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:path_provider/path_provider.dart';
@@ -18,7 +20,27 @@ class PluginAudioLabBackend
         AudioLabBackend,
         AudioRecordingReader,
         AudioRouteProbe,
-        InputLevelSource {
+        InputLevelSource,
+        LiveSampleSource {
+  /// [livePcm]: record through the plugin's PCM stream instead of its file
+  /// writer, so [liveSamples] carries the audio while it is captured. The
+  /// same owned WAV file is written at stop, so [readRecording] and every
+  /// analysis after it are unchanged.
+  PluginAudioLabBackend({this.livePcm = false});
+  final bool livePcm;
+  static const _rateHz = 48000;
+  final _live = StreamController<List<double>>.broadcast();
+  StreamSubscription<Uint8List>? _pcmSubscription;
+  final _pcm = BytesBuilder(copy: false);
+  int? _carry;
+
+  /// Live mono samples (−1…1, 48 kHz) while capturing; [livePcm] only.
+  /// Display use: nothing here is measured or kept beyond the capture.
+  @override
+  Stream<List<double>> get liveSamples => _live.stream;
+  @override
+  int get liveSampleRateHz => _rateHz;
+
   final _events = StreamController<AudioLabInterruption>.broadcast();
   final _levels = StreamController<double>.broadcast();
   StreamSubscription<Amplitude>? _levelSubscription;
@@ -103,17 +125,32 @@ class PluginAudioLabBackend
   Future<void> startCapture() async {
     await _initialize();
     _capturing = true;
-    await _recorder!.start(
-      const RecordConfig(
-        encoder: AudioEncoder.wav,
-        sampleRate: 48000,
-        numChannels: 1,
-        autoGain: false,
-        echoCancel: false,
-        noiseSuppress: false,
-      ),
-      path: _file('recording').path,
+    const config = RecordConfig(
+      encoder: AudioEncoder.wav,
+      sampleRate: _rateHz,
+      numChannels: 1,
+      autoGain: false,
+      echoCancel: false,
+      noiseSuppress: false,
     );
+    if (livePcm) {
+      await _stopLevels();
+      _pcm.clear();
+      _carry = null;
+      final stream = await _recorder!.startStream(
+        const RecordConfig(
+          encoder: AudioEncoder.pcm16bits,
+          sampleRate: _rateHz,
+          numChannels: 1,
+          autoGain: false,
+          echoCancel: false,
+          noiseSuppress: false,
+        ),
+      );
+      _pcmSubscription = stream.listen(_onPcm, onError: (Object _) {});
+      return;
+    }
+    await _recorder!.start(config, path: _file('recording').path);
     await _stopLevels();
     _levelSubscription = _recorder!
         .onAmplitudeChanged(const Duration(milliseconds: 100))
@@ -125,13 +162,79 @@ class PluginAudioLabBackend
         }, onError: (Object _) {});
   }
 
+  /// Little-endian 16-bit mono; a byte split across chunks is carried over.
+  /// Bounded by the WAV read budget: later audio is dropped, not grown.
+  void _onPcm(Uint8List chunk) {
+    var bytes = chunk;
+    if (_carry != null) {
+      bytes = Uint8List(chunk.length + 1)
+        ..[0] = _carry!
+        ..setRange(1, chunk.length + 1, chunk);
+      _carry = null;
+    }
+    final even = bytes.length & ~1;
+    if (even < bytes.length) _carry = bytes[even];
+    if (even == 0) return;
+    if (_pcm.length + even <= _maxPcmBytes) {
+      _pcm.add(Uint8List.sublistView(bytes, 0, even));
+    }
+    final view = ByteData.sublistView(bytes, 0, even);
+    final samples = List<double>.generate(
+      even ~/ 2,
+      (i) => view.getInt16(i * 2, Endian.little) / 32768,
+    );
+    var sum = 0.0;
+    for (final x in samples) {
+      sum += x * x;
+    }
+    final rms = math.sqrt(sum / samples.length);
+    if (!_levels.isClosed) {
+      _levels.add(
+        rms <= 0 ? -160.0 : (20 * math.log(rms) / math.ln10).clamp(-160, 0),
+      );
+    }
+    if (!_live.isClosed) _live.add(samples);
+  }
+
+  /// [readLabWav]'s budget minus the 44-byte header.
+  static const _maxPcmBytes = 4224044 - 44;
+
+  Future<void> _writePcmWav() async {
+    final data = _pcm.takeBytes();
+    final header = ByteData(44)
+      ..setUint32(0, 0x52494646) // RIFF
+      ..setUint32(4, 36 + data.length, Endian.little)
+      ..setUint32(8, 0x57415645) // WAVE
+      ..setUint32(12, 0x666d7420) // fmt
+      ..setUint32(16, 16, Endian.little)
+      ..setUint16(20, 1, Endian.little)
+      ..setUint16(22, 1, Endian.little)
+      ..setUint32(24, _rateHz, Endian.little)
+      ..setUint32(28, _rateHz * 2, Endian.little)
+      ..setUint16(32, 2, Endian.little)
+      ..setUint16(34, 16, Endian.little)
+      ..setUint32(36, 0x64617461) // data
+      ..setUint32(40, data.length, Endian.little);
+    await _file(
+      'recording',
+    ).writeAsBytes([...header.buffer.asUint8List(), ...data], flush: true);
+  }
+
   @override
   Future<CapturedAudio> stopCapture() async {
     await _stopLevels();
-    final path = await _recorder!.stop();
-    _capturing = false;
-    if (path != _file('recording').path) {
-      throw const FormatException('Unexpected recording file');
+    if (livePcm) {
+      await _recorder!.stop();
+      await _pcmSubscription?.cancel();
+      _pcmSubscription = null;
+      _capturing = false;
+      await _writePcmWav();
+    } else {
+      final path = await _recorder!.stop();
+      _capturing = false;
+      if (path != _file('recording').path) {
+        throw const FormatException('Unexpected recording file');
+      }
     }
     final wav = await readLabWav(_file('recording'));
     return CapturedAudio(
@@ -156,6 +259,9 @@ class PluginAudioLabBackend
   @override
   Future<void> discardCapture() async {
     await _stopLevels();
+    await _pcmSubscription?.cancel();
+    _pcmSubscription = null;
+    _pcm.clear();
     if (_capturing) {
       await _recorder!.cancel();
       _capturing = false;
@@ -237,6 +343,7 @@ class PluginAudioLabBackend
     }
     await attempt(_stopLevels);
     await attempt(_levels.close);
+    await attempt(_live.close);
     await attempt(_events.close);
     if (failure != null) Error.throwWithStackTrace(failure!, failureStack!);
   }

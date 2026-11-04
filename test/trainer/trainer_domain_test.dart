@@ -257,6 +257,53 @@ void main() {
       },
     );
 
+    group('range evidence trims silence around the voice', () {
+      const rate = 16000;
+      List<double> silence(double seconds) =>
+          List.filled((seconds * rate).round(), 0.0);
+      List<double> tone(double seconds, {double hz = 220}) => Pcm16Wav.tone(
+        frequencyHz: hz,
+        sampleRateHz: rate,
+        durationSeconds: seconds,
+      ).samples;
+      RangeTake take(List<double> samples) => evaluateRangeEvidence(
+        RecordingPitchAnalyzer().analyze(samples: samples, sampleRateHz: rate),
+      );
+
+      test('a late start in a 3 s take still counts', () {
+        // Under the old whole-take ratio a 1.6 s reaction left too little
+        // of the take periodic; only the sung part is judged now.
+        final late = take([...silence(1.6), ...tone(1.4)]);
+        expect(late.hz, closeTo(220, 2));
+        final tail = take([...silence(0.4), ...tone(1.2), ...silence(1.4)]);
+        expect(tail.hz, closeTo(220, 2));
+      });
+
+      test('a blip shorter than the minimum voice is unmeasured', () {
+        final blip = take([...silence(1.3), ...tone(0.4), ...silence(1.3)]);
+        expect(blip.hz, isNull);
+        expect(blip.failure, contains('kısa'));
+      });
+
+      test('a voice that keeps dropping out is unmeasured', () {
+        final choppy = take([
+          for (var i = 0; i < 4; i++) ...[...tone(0.12), ...silence(0.6)],
+          ...tone(0.12),
+        ]);
+        expect(choppy.hz, isNull);
+        expect(choppy.failure, isNotNull);
+      });
+
+      test('trimming does not forgive an octave jump', () {
+        final jump = take([
+          ...silence(0.8),
+          ...tone(1.0),
+          ...tone(1.0, hz: 110),
+        ]);
+        expect(jump.hz, isNull);
+      });
+    });
+
     test('lower choir parts hear lessons one octave down', () {
       final node = trainerPaths[TrainerKind.interval]!.nodes.firstWhere(
         (n) => n.registers.contains(Register.high),

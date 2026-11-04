@@ -129,6 +129,13 @@ class TrainerStore extends ChangeNotifier {
   String? lastStreakCelebrated;
   String? koroRange;
 
+  /// Melody echo level reached (0-based). Practice progress only: it never
+  /// feeds XP, streak, mastery or history.
+  int melodyEchoLevel = 0;
+
+  /// Clap-back rhythm reached (0-based, easy to hard). Practice progress only.
+  int clapLevel = 0;
+
   /// App language picked in Settings: 'tr', 'en', or null for the device's.
   String? language;
 
@@ -210,6 +217,8 @@ class TrainerStore extends ChangeNotifier {
     seenTrainerSheets.clear();
     lastStreakCelebrated = null;
     koroRange = null;
+    melodyEchoLevel = 0;
+    clapLevel = 0;
     breathDay = null;
     language = null;
     memory.clear();
@@ -439,6 +448,8 @@ class TrainerStore extends ChangeNotifier {
     'seenSheets': seenTrainerSheets.toList(),
     'lastStreakCelebrated': lastStreakCelebrated,
     'koroRange': koroRange,
+    'melodyEchoLevel': melodyEchoLevel,
+    'clapLevel': clapLevel,
     'breathDay': breathDay,
     'language': language,
     'memoryModel': memoryModelVersion,
@@ -527,6 +538,8 @@ class TrainerStore extends ChangeNotifier {
       );
     lastStreakCelebrated = get<String>(doc, 'lastStreakCelebrated');
     koroRange = get<String>(doc, 'koroRange');
+    melodyEchoLevel = (get<int>(doc, 'melodyEchoLevel') ?? 0).clamp(0, 99);
+    clapLevel = (get<int>(doc, 'clapLevel') ?? 0).clamp(0, 99);
     breathDay = get<String>(doc, 'breathDay');
     memory.clear();
     // Another model version's half-lives mean something else: start over

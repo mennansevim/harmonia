@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import '../../choir/app/choir_scope.dart';
@@ -55,7 +57,7 @@ class _HomeShellState extends State<HomeShell> {
             Ic.house,
             Ic.house,
             tr('Bugün', 'Today'),
-            PlayTab(),
+            PlayTab(onSeeAll: () => setState(() => _tab = 'tab_1')),
           ),
           _Destination(
             'tab_1',
@@ -133,8 +135,15 @@ class _NavBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return DecoratedBox(
       decoration: const BoxDecoration(
-        color: Colors.white,
+        color: TC.navBar,
         border: Border(top: BorderSide(color: TC.line)),
+        boxShadow: [
+          BoxShadow(
+            color: Color(0x0F342553),
+            blurRadius: 24,
+            offset: Offset(0, -8),
+          ),
+        ],
       ),
       child: SafeArea(
         top: false,
@@ -161,18 +170,18 @@ class _NavBar extends StatelessWidget {
                         children: [
                           AnimatedContainer(
                             duration: const Duration(milliseconds: 180),
-                            width: 42,
+                            width: 40,
                             height: 28,
-                            decoration: ShapeDecoration(
+                            decoration: BoxDecoration(
                               color: i == index
                                   ? TC.navPill
                                   : Colors.transparent,
-                              shape: const StadiumBorder(),
+                              borderRadius: BorderRadius.circular(14),
                             ),
                             child: Icon(
                               items[i].icon,
-                              color: i == index ? TC.primary : TC.muted,
-                              size: 19,
+                              color: i == index ? TC.hero : TC.muted,
+                              size: 21,
                             ),
                           ),
                           const SizedBox(height: 6),
@@ -183,9 +192,9 @@ class _NavBar extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 11,
                               fontWeight: i == index
-                                  ? FontWeight.w700
-                                  : FontWeight.w500,
-                              color: i == index ? TC.primary : TC.muted,
+                                  ? FontWeight.w800
+                                  : FontWeight.w600,
+                              color: i == index ? TC.hero : TC.body,
                             ),
                           ),
                         ],
@@ -238,41 +247,15 @@ Future<void> startTodaySession(TrainerStore store, NavigatorState nav) async {
 }
 
 class PlayTab extends StatefulWidget {
-  const PlayTab({super.key});
+  const PlayTab({super.key, this.onSeeAll});
+
+  /// "Tümünü gör": switches to the Exercises tab.
+  final VoidCallback? onSeeAll;
   @override
   State<PlayTab> createState() => _PlayTabState();
 }
 
 class _PlayTabState extends State<PlayTab> {
-  static List<String> get _months => Lang.en
-      ? const [
-          'January', 'February', 'March', 'April', 'May', 'June', //
-          'July', 'August', 'September', 'October', 'November', 'December',
-        ]
-      : const [
-          'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', //
-          'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık',
-        ];
-  static List<String> get _weekdays => Lang.en
-      ? const [
-          'Monday',
-          'Tuesday',
-          'Wednesday',
-          'Thursday',
-          'Friday',
-          'Saturday',
-          'Sunday',
-        ]
-      : const [
-          'Pazartesi',
-          'Salı',
-          'Çarşamba',
-          'Perşembe',
-          'Cuma',
-          'Cumartesi',
-          'Pazar',
-        ];
-
   /// Walks today's route: the breathing guide first (unless done or not in
   /// today's route), then the ear lesson.
   Future<void> _beginToday() async {
@@ -299,131 +282,296 @@ class _PlayTabState extends State<PlayTab> {
   @override
   Widget build(BuildContext context) {
     final store = TrainerScope.of(context).store;
-    final now = store.now;
     final focus = focusTrainer(store);
     final next = store.nextNode(focus);
     final resume = TrainerKind.values
         .where((k) => k.id == store.lastTrainer)
         .firstOrNull;
     final name = store.username.trim();
-    return SafeArea(
-      bottom: false,
-      child: ListView(
-        padding: const EdgeInsets.fromLTRB(24, 14, 24, 28),
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  trCaps(
-                    tr(
-                      '${_weekdays[now.weekday - 1]}, ${now.day} '
-                          '${_months[now.month - 1]}',
-                      '${_weekdays[now.weekday - 1]}, '
-                          '${_months[now.month - 1]} ${now.day}',
+    return Stack(
+      children: [
+        // The design's lavender ring behind the header, top right.
+        const Positioned(
+          top: -74,
+          right: -84,
+          child: IgnorePointer(
+            child: Opacity(
+              opacity: 0.68,
+              child: SizedBox.square(
+                dimension: 220,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.fromBorderSide(
+                      BorderSide(color: Color(0xFFECE2FF), width: 42),
                     ),
                   ),
-                  style: TT.crumb,
                 ),
               ),
-              _StreakChip(days: store.streak),
-              const SizedBox(width: 8),
-              const ProfileButton(),
-            ],
-          ),
-          const SizedBox(height: 10),
-          Text(
-            name.isEmpty
-                ? tr('Merhaba', 'Hello')
-                : tr('Merhaba, $name', 'Hello, $name'),
-            style: TT.h1,
-          ),
-          const SizedBox(height: 2),
-          Text(
-            tr(
-              'Bu hafta ${_weekDays(store)} gün çalıştın.',
-              _weekDays(store) == 1
-                  ? 'You practised 1 day this week.'
-                  : 'You practised ${_weekDays(store)} days this week.',
             ),
-            style: TT.small,
           ),
-          const SizedBox(height: 18),
-          _DailyRoute(
-            store: store,
-            trainer: focus,
-            next: next,
-            onBegin: _beginToday,
-          ),
-          const SizedBox(height: 22),
-          Text(tr('HIZLI EGZERSİZLER', 'QUICK EXERCISES'), style: TT.caps),
-          const SizedBox(height: 10),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            clipBehavior: Clip.none,
-            child: IntrinsicHeight(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
+        ),
+        SafeArea(
+          bottom: false,
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(20, 14, 20, 28),
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  for (final k in TrainerKind.values) ...[
-                    if (k != TrainerKind.values.first)
-                      const SizedBox(width: 10),
-                    SizedBox(width: 132, child: _QuickCard(kind: k)),
-                  ],
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 6),
+                        Text(
+                          trCaps(
+                            name.isEmpty
+                                ? tr('Merhaba', 'Hello')
+                                : tr('Merhaba $name', 'Hello $name'),
+                          ),
+                          style: TT.crumb,
+                        ),
+                        const SizedBox(height: 6),
+                        Semantics(
+                          header: true,
+                          child: Text(
+                            tr(
+                              'Bugün sesin nasıl?',
+                              'How is your voice today?',
+                            ),
+                            style: TT.h1,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          tr(
+                            'Sesini çalıştırmaya hazır mısın?',
+                            'Ready to work your voice?',
+                          ),
+                          style: TT.body.copyWith(color: TC.muted),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  _StreakChip(days: store.streak),
+                  const SizedBox(width: 4),
+                  const ProfileButton(),
                 ],
               ),
-            ),
+              const SizedBox(height: 18),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: _WeekChip(store: store),
+              ),
+              const SizedBox(height: 14),
+              _DailyRoute(
+                store: store,
+                trainer: focus,
+                next: next,
+                onBegin: _beginToday,
+              ),
+              const SizedBox(height: 18),
+              _SectionHeading(
+                tr('Hızlı egzersizler', 'Quick exercises'),
+                action: widget.onSeeAll == null
+                    ? null
+                    : (tr('Tümünü gör', 'See all'), widget.onSeeAll!),
+              ),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                clipBehavior: Clip.none,
+                child: IntrinsicHeight(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      for (final (i, k) in TrainerKind.values.indexed) ...[
+                        if (i > 0) const SizedBox(width: 10),
+                        SizedBox(
+                          width: 116,
+                          child: _QuickCard(kind: k, tone: i, store: store),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+              if (resume != null) ...[
+                const SizedBox(height: 18),
+                _SectionHeading(
+                  tr('Kaldığın yerden', 'Pick up where you left'),
+                ),
+                _ResumeCard(kind: resume, store: store),
+              ],
+              const _ChoirDue(),
+            ],
           ),
-          if (resume != null) ...[
-            const SizedBox(height: 22),
-            Text(
-              tr('KALDIĞIN YERDEN', 'PICK UP WHERE YOU LEFT'),
-              style: TT.caps,
-            ),
-            const SizedBox(height: 10),
-            _ResumeCard(kind: resume, store: store),
-          ],
-          const _ChoirDue(),
-        ],
-      ),
+        ),
+      ],
     );
   }
+}
 
-  /// Days with at least one answered question since Monday.
-  static int _weekDays(TrainerStore store) {
+/// Sentence-case section title with an optional violet link on the right.
+class _SectionHeading extends StatelessWidget {
+  const _SectionHeading(this.title, {this.action});
+  final String title;
+  final (String, VoidCallback)? action;
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(bottom: 8),
+    child: Row(
+      children: [
+        Expanded(
+          child: Semantics(header: true, child: Text(title, style: TT.section)),
+        ),
+        if (action case (final label, final onTap))
+          TextButton(
+            key: const Key('today_see_all'),
+            onPressed: onTap,
+            style: TextButton.styleFrom(
+              foregroundColor: TC.primary,
+              minimumSize: const Size(48, 44),
+              padding: const EdgeInsets.only(left: 8),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  label,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const Icon(Ic.chevronRight, size: 16),
+              ],
+            ),
+          ),
+      ],
+    ),
+  );
+}
+
+/// "Bu hafta N gün" with a dot per weekday, Monday first; a dot fills on a
+/// day with at least one answered question.
+class _WeekChip extends StatelessWidget {
+  const _WeekChip({required this.store});
+  final TrainerStore store;
+  @override
+  Widget build(BuildContext context) {
     final now = store.now;
     final monday = DateTime(now.year, now.month, now.day - (now.weekday - 1));
-    return [
-      for (var i = 0; i < now.weekday; i++)
-        store.activeOn(DateTime(monday.year, monday.month, monday.day + i)),
-    ].where((a) => a).length;
+    final active = [
+      for (var i = 0; i < 7; i++)
+        i < now.weekday &&
+            store.activeOn(DateTime(monday.year, monday.month, monday.day + i)),
+    ];
+    final days = active.where((a) => a).length;
+    return Semantics(
+      label: tr(
+        'Bu hafta $days gün çalıştın',
+        days == 1
+            ? 'You practised 1 day this week'
+            : 'You practised $days days this week',
+      ),
+      excludeSemantics: true,
+      child: Container(
+        key: const Key('week_chip'),
+        padding: const EdgeInsets.fromLTRB(6, 6, 12, 6),
+        decoration: BoxDecoration(
+          color: TC.card,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x12342553),
+              blurRadius: 24,
+              offset: Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 26,
+              height: 26,
+              decoration: const BoxDecoration(
+                color: TC.primarySoft,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Ic.target, color: TC.primary, size: 15),
+            ),
+            const SizedBox(width: 8),
+            Text(tr('Bu hafta', 'This week'), style: TT.small),
+            const SizedBox(width: 6),
+            Text(
+              tr('$days gün', days == 1 ? '1 day' : '$days days'),
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w800,
+                color: TC.ink,
+              ),
+            ),
+            const SizedBox(width: 8),
+            for (final a in active)
+              Container(
+                width: 5,
+                height: 5,
+                margin: const EdgeInsets.only(left: 3),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: a ? TC.primaryFill : const Color(0xFFE3DFE5),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
   }
 }
 
 /// A one-tap shortcut into a skill (Hızlı egzersizler row).
 class _QuickCard extends StatelessWidget {
-  const _QuickCard({required this.kind});
+  const _QuickCard({
+    required this.kind,
+    required this.tone,
+    required this.store,
+  });
   final TrainerKind kind;
+  final int tone;
+  final TrainerStore store;
   @override
   Widget build(BuildContext context) => AppCard(
     key: Key('quick_${kind.id}'),
-    padding: const EdgeInsets.all(14),
+    radius: 22,
+    padding: const EdgeInsets.all(13),
     onTap: () => openSkill(context, kind),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          width: 36,
-          height: 36,
-          decoration: BoxDecoration(
-            color: TC.primarySoft,
-            borderRadius: BorderRadius.circular(11),
+    child: ConstrainedBox(
+      constraints: const BoxConstraints(minHeight: 100),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ToneIcon(trainerIcon(kind), tone: tone),
+          const SizedBox(height: 18),
+          const Spacer(),
+          Text(
+            kind.shortTitle,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TT.title.copyWith(fontSize: 13, height: 1.3),
           ),
-          child: Icon(trainerIcon(kind), color: TC.primary, size: 20),
-        ),
-        const SizedBox(height: 10),
-        Text(kind.shortTitle, style: TT.title),
-      ],
+          const SizedBox(height: 2),
+          Text(
+            tr(
+              '${store.completedCount(kind)}/${trainerPaths[kind]!.lessonCount} ders',
+              '${store.completedCount(kind)}/${trainerPaths[kind]!.lessonCount} lessons',
+            ),
+            style: TT.small.copyWith(fontSize: 11),
+          ),
+        ],
+      ),
     ),
   );
 }
@@ -439,37 +587,43 @@ class _ResumeCard extends StatelessWidget {
     final total = trainerPaths[kind]!.lessonCount;
     return AppCard(
       key: const Key('today_resume'),
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(12),
       onTap: () => openSkill(context, kind),
       child: Row(
         children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: TC.primarySoft,
-              borderRadius: BorderRadius.circular(13),
-            ),
-            child: Icon(trainerIcon(kind), color: TC.primary),
-          ),
+          ToneIcon(trainerIcon(kind), size: 48),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(kind.title, style: TT.title),
-                const SizedBox(height: 2),
                 Text(
-                  tr('$done / $total ders', '$done / $total lessons'),
+                  tr(
+                    'Ders ${math.min(done + 1, total)}/$total',
+                    'Lesson ${math.min(done + 1, total)}/$total',
+                  ),
                   style: TT.small,
                 ),
                 const SizedBox(height: 8),
-                ProgressBar(value: store.mastery(kind), height: 4),
+                ProgressBar(
+                  value: store.mastery(kind),
+                  height: 3,
+                  color: TC.primaryFill,
+                ),
               ],
             ),
           ),
-          const SizedBox(width: 8),
-          const Icon(Ic.chevronRight, color: TC.muted),
+          const SizedBox(width: 10),
+          Container(
+            width: 32,
+            height: 32,
+            decoration: const BoxDecoration(
+              color: TC.primarySoft,
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(Ic.chevronRight, color: TC.primary, size: 18),
+          ),
         ],
       ),
     );
@@ -487,50 +641,60 @@ class _ChoirDue extends StatelessWidget {
     final (choir, assignment) = next;
     final text = CT.of(context);
     return Padding(
-      padding: const EdgeInsets.only(top: 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Text(text.caps(text.choirUpdates), style: TT.caps),
-          const SizedBox(height: 10),
-          AppCard(
-            key: const Key('today_choir_due'),
-            padding: const EdgeInsets.all(14),
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute<void>(
-                builder: (_) => AssignmentScreen(assignmentId: assignment.id),
-              ),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    color: TC.primarySoft,
-                    borderRadius: BorderRadius.circular(11),
-                  ),
-                  child: const Icon(Ic.music2, color: TC.primary, size: 20),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(assignment.title, style: TT.title),
-                      Text(
-                        '${choir.name} · '
-                        '${text.dueLabel(store.now, assignment.dueAt!)}',
-                        style: TT.small,
-                      ),
-                    ],
-                  ),
-                ),
-                const Icon(Ic.chevronRight, color: TC.muted),
-              ],
+      padding: const EdgeInsets.only(top: 12),
+      child: Semantics(
+        button: true,
+        child: InkWell(
+          key: const Key('today_choir_due'),
+          borderRadius: BorderRadius.circular(16),
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (_) => AssignmentScreen(assignmentId: assignment.id),
             ),
           ),
-        ],
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: 60),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: Row(
+                children: [
+                  const ToneIcon(Ic.users, tone: 1, size: 38),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(choir.name, style: TT.title.copyWith(height: 1.3)),
+                        Text(assignment.title, style: TT.small),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 5,
+                    ),
+                    decoration: const ShapeDecoration(
+                      color: TC.coralSoft,
+                      shape: StadiumBorder(),
+                    ),
+                    child: Text(
+                      text.dueLabel(store.now, assignment.dueAt!),
+                      style: const TextStyle(
+                        color: TC.coralDeep,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                  const Icon(Ic.chevronRight, color: TC.muted, size: 18),
+                ],
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -545,21 +709,37 @@ class _StreakChip extends StatelessWidget {
     excludeSemantics: true,
     child: Container(
       key: const Key('streak_badge'),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+      height: 38,
+      margin: const EdgeInsets.only(top: 5),
+      padding: const EdgeInsets.symmetric(horizontal: 11),
       decoration: BoxDecoration(
-        color: days > 0 ? TC.sun : TC.primarySoft,
-        borderRadius: BorderRadius.circular(20),
+        color: days > 0 ? TC.streak : TC.card,
+        borderRadius: BorderRadius.circular(19),
+        border: Border.all(color: const Color(0x14714817)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Ic.sun, size: 18, color: days > 0 ? TC.onSun : TC.muted),
-          const SizedBox(width: 5),
+          Icon(
+            Ic.flame,
+            size: 16,
+            color: days > 0 ? const Color(0xFFE8A748) : TC.muted,
+          ),
+          const SizedBox(width: 4),
           Text(
-            tr('$days gün', days == 1 ? '1 day' : '$days days'),
+            '$days',
             style: TextStyle(
+              fontSize: 13,
               fontWeight: FontWeight.w800,
-              color: days > 0 ? TC.onSun : TC.muted,
+              color: days > 0 ? TC.onStreak : TC.muted,
+            ),
+          ),
+          const SizedBox(width: 3),
+          Text(
+            tr('gün', days == 1 ? 'day' : 'days'),
+            style: TextStyle(
+              fontSize: 12,
+              color: days > 0 ? TC.onStreak : TC.muted,
             ),
           ),
         ],
@@ -649,6 +829,7 @@ class _DailyRoute extends StatelessWidget {
       if (route.breath)
         _StepData(
           key: 'route_breath',
+          short: tr('Nefes', 'Breath'),
           title: tr('Nefes', 'Breath'),
           subtitle: tr(
             '${route.breathSeconds ~/ 60} dk · yönlendirmeli, mikrofonsuz',
@@ -661,6 +842,7 @@ class _DailyRoute extends StatelessWidget {
       if (due.isNotEmpty || store.reviewedToday)
         _StepData(
           key: 'route_review',
+          short: tr('Tekrar', 'Review'),
           title: tr('Tekrar kartları', 'Review cards'),
           subtitle: due.isEmpty
               ? tr('Bugünlük tamam', 'Done for today')
@@ -674,6 +856,7 @@ class _DailyRoute extends StatelessWidget {
         ),
       _StepData(
         key: 'route_lesson',
+        short: tr('Ders', 'Lesson'),
         title: lesson == null
             ? tr('${trainer.title} tamam', '${trainer.title} done')
             : lesson.title,
@@ -694,6 +877,7 @@ class _DailyRoute extends StatelessWidget {
       if (route.voiceStep)
         _StepData(
           key: 'route_voice',
+          short: tr('Ses', 'Voice'),
           title: hasRange
               ? tr('Kaç ses duyuyorsun?', 'How many voices do you hear?')
               : tr('Ses aralığı testi', 'Vocal range test'),
@@ -716,15 +900,6 @@ class _DailyRoute extends StatelessWidget {
           ),
         ),
     ];
-    final pitch = route.breath
-        ? tr(
-            'Nefesini hazırla, sesleri duy, istersen söyle.',
-            'Ready your breath, hear the notes, sing if you like.',
-          )
-        : tr(
-            'Kısa gün: tek bir kulak dersi.',
-            'Short day: a single ear lesson.',
-          );
     final String action;
     if (lessonDone) {
       action = tr('Bugünlük ders tamam', 'Today\'s lesson is done');
@@ -737,49 +912,90 @@ class _DailyRoute extends StatelessWidget {
     }
     final current = steps.indexWhere((s) => !s.done && s.onTap == null);
     final doneCount = steps.where((s) => s.done).length;
+    final percent = steps.isEmpty
+        ? 0
+        : (100 * doneCount / steps.length).round();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         HeroCard(
+          orbs: HeroOrbs.plan,
+          padding: const EdgeInsets.all(21),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(tr('BUGÜNÜN PLANI', 'TODAY\'S PLAN'), style: TT.heroCaps),
-              const SizedBox(height: 8),
-              Text(
-                part == null
-                    ? tr('Sesine alan aç.', 'Make room for your voice.')
-                    : tr(
-                        '${part.title} için alan aç.',
-                        'Make room for your ${part.title.toLowerCase()}.',
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      tr('SANA ÖZEL · BUGÜN', 'FOR YOU · TODAY'),
+                      style: TT.heroCaps,
+                    ),
+                  ),
+                  Text(
+                    tr(
+                      '~${store.dailyMinutes} DK',
+                      '~${store.dailyMinutes} MIN',
+                    ),
+                    style: TT.heroCaps,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 18),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 230),
+                  child: Text(
+                    part == null
+                        ? tr(
+                            'Sesini aç,\nritmini yakala',
+                            'Open your voice,\nfind your rhythm',
+                          )
+                        : tr(
+                            '${part.title} için alan aç',
+                            'Make room for your ${part.title.toLowerCase()}',
+                          ),
+                    style: TT.display.copyWith(
+                      color: Colors.white,
+                      fontSize: 28,
+                      fontWeight: FontWeight.w800,
+                      height: 1.08,
+                      letterSpacing: -1.1,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 22),
+              _PlanBar(
+                done: [for (final s in steps) s.done],
+                labels: [for (final s in steps) s.short],
+              ),
+              const SizedBox(height: 9),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      tr(
+                        '$doneCount/${steps.length} tamamlandı',
+                        '$doneCount/${steps.length} done',
                       ),
-                style: TT.display.copyWith(color: Colors.white),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                tr(
-                  '~${store.dailyMinutes} dakika · $pitch',
-                  '~${store.dailyMinutes} minutes · $pitch',
-                ),
-                style: const TextStyle(
-                  color: TC.heroMuted,
-                  fontSize: 13.5,
-                  height: 1.4,
-                ),
-              ),
-              const SizedBox(height: 16),
-              _PlanBar(done: [for (final s in steps) s.done]),
-              const SizedBox(height: 8),
-              Text(
-                tr(
-                  '$doneCount / ${steps.length} adım tamam',
-                  '$doneCount / ${steps.length} steps done',
-                ),
-                style: const TextStyle(
-                  color: TC.heroMuted,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                ),
+                      style: const TextStyle(
+                        color: TC.heroMuted,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  Text(
+                    '%$percent',
+                    style: const TextStyle(
+                      color: TC.heroMuted,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
               ),
               // The route already offers the test when it has a voice step.
               if (part == null && !(route.voiceStep && !hasRange))
@@ -798,7 +1014,7 @@ class _DailyRoute extends StatelessWidget {
               BigButton(
                 key: const Key('today_begin'),
                 label: action,
-                icon: Ic.sparkles,
+                icon: Ic.play,
                 onPressed: lessonDone
                     ? null
                     : lesson == null
@@ -834,23 +1050,41 @@ class _DailyRoute extends StatelessWidget {
   }
 }
 
-/// One segment per route step; as many segments as the route has today.
+/// One labelled segment per route step; as many as the route has today.
 class _PlanBar extends StatelessWidget {
-  const _PlanBar({required this.done});
+  const _PlanBar({required this.done, required this.labels});
   final List<bool> done;
+  final List<String> labels;
   @override
   Widget build(BuildContext context) => ExcludeSemantics(
     child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         for (var i = 0; i < done.length; i++) ...[
-          if (i > 0) const SizedBox(width: 6),
+          if (i > 0) const SizedBox(width: 5),
           Expanded(
-            child: Container(
-              height: 6,
-              decoration: BoxDecoration(
-                color: done[i] ? TC.teal : const Color(0xFF3A3D55),
-                borderRadius: BorderRadius.circular(4),
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: done[i] ? TC.sun : TC.heroTrack,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+                const SizedBox(height: 7),
+                Text(
+                  labels[i],
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: done[i] ? Colors.white : TC.heroMuted,
+                    fontSize: 11,
+                    fontWeight: done[i] ? FontWeight.w700 : FontWeight.w500,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -862,6 +1096,7 @@ class _PlanBar extends StatelessWidget {
 class _StepData {
   const _StepData({
     required this.key,
+    required this.short,
     required this.title,
     required this.subtitle,
     required this.icon,
@@ -869,6 +1104,9 @@ class _StepData {
     this.onTap,
   });
   final String key;
+
+  /// The label under its segment on the plan card.
+  final String short;
   final String title;
   final String subtitle;
   final IconData icon;
@@ -910,23 +1148,21 @@ class _RouteStep extends StatelessWidget {
     padding: const EdgeInsets.only(bottom: 8),
     child: AppCard(
       key: Key(data.key),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(13),
       onTap: data.onTap,
       child: Row(
         children: [
-          Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              color: data.done ? TC.green : TC.primarySoft,
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(
-              data.done ? Ic.check : data.icon,
-              color: data.done ? Colors.white : TC.primary,
-              size: 18,
-            ),
-          ),
+          data.done
+              ? Container(
+                  width: 38,
+                  height: 38,
+                  decoration: BoxDecoration(
+                    color: TC.limeSoft,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(Ic.check, color: TC.green, size: 19),
+                )
+              : ToneIcon(data.icon, size: 38),
           const SizedBox(width: 13),
           Expanded(
             child: Column(
@@ -941,7 +1177,7 @@ class _RouteStep extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: const ShapeDecoration(
-                color: TC.primarySoft,
+                color: TC.sun,
                 shape: StadiumBorder(),
               ),
               child: Text(

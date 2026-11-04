@@ -82,6 +82,7 @@ void main() {
     await tapKey(tester, 'opt_singer');
     await tapKey(tester, 'ob_continue');
     await tapKey(tester, 'ob_continue');
+    await tapKey(tester, 'ob_continue');
     await tapKey(tester, 'opt_voice');
     await tapKey(tester, 'opt_interval');
     await tapKey(tester, 'ob_continue');
@@ -116,6 +117,7 @@ void main() {
     await launch(tester);
     await tapKey(tester, 'get_started');
     await tapKey(tester, 'opt_singer');
+    await tapKey(tester, 'ob_continue');
     await tapKey(tester, 'ob_continue');
     await tapKey(tester, 'ob_continue');
     await launch(tester);

@@ -5,6 +5,8 @@ import '../domain/music.dart';
 import '../domain/trainers.dart';
 import '../home/daily_route.dart';
 import '../koro/range_test.dart';
+import '../prepare/mic_check_screen.dart';
+import '../../domain/audio/mic_check.dart';
 import '../settings/settings_tab.dart';
 import '../state/trainer_store.dart';
 import '../ui/kit.dart';
@@ -22,12 +24,15 @@ class OnboardingFlow extends StatefulWidget {
   State<OnboardingFlow> createState() => _OnboardingFlowState();
 }
 
-enum Ob { welcome, role, part, focus, minutes, reminder, ready }
+enum Ob { welcome, role, mic, part, focus, minutes, reminder, ready }
 
 class _OnboardingFlowState extends State<OnboardingFlow> {
   Ob _step = Ob.welcome;
   bool _forward = true;
   bool _ready = false;
+
+  /// Last mic check of this run; not persisted, so it never goes stale.
+  MicCheckStatus? _micStatus;
 
   Map<String, Object?> get _answers => TrainerScope.of(context).store.answers;
 
@@ -156,6 +161,33 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
           store.save();
           setState(() {});
         },
+      ),
+      // MIC-01: optional; the microphone opens only from the check screen.
+      Ob.mic => _Frame(
+        step: _step,
+        onBack: _back,
+        onNext: _next,
+        button: _micStatus == null
+            ? tr('Atla', 'Skip')
+            : tr('Devam', 'Continue'),
+        title: tr('Mikrofonunu deneyelim', 'Let us try your microphone'),
+        subtitle: tr(
+          'Ses egzersizlerinden önce sesinin net alınıp alınmadığını ve '
+              'ortamda gürültü olup olmadığını gör. Ayarlar\'dan sonra da '
+              'açabilirsin.',
+          'Before voice exercises, see whether your voice comes through '
+              'clearly and whether the room is noisy. You can also open it '
+              'later in Settings.',
+        ),
+        child: _MicStep(
+          status: _micStatus,
+          onCheck: () async {
+            final status = await Navigator.of(context).push<MicCheckStatus?>(
+              MaterialPageRoute(builder: (_) => const MicCheckScreen()),
+            );
+            if (mounted && status != null) setState(() => _micStatus = status);
+          },
+        ),
       ),
       // No voice-group question: the range is measured, or skipped (ADR-040).
       Ob.part => _Frame(
@@ -295,7 +327,50 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
   );
 }
 
-/// Shared page frame: step counter, title, scrollable body, continue button.
+class _MicStep extends StatelessWidget {
+  const _MicStep({required this.status, required this.onCheck});
+  final MicCheckStatus? status;
+  final VoidCallback onCheck;
+  @override
+  Widget build(BuildContext context) => AppCard(
+    key: const Key('ob_mic_check'),
+    padding: const EdgeInsets.all(16),
+    border: status == MicCheckStatus.ready ? TC.primary : null,
+    color: status == MicCheckStatus.ready ? TC.primarySoft : Colors.white,
+    onTap: onCheck,
+    child: Row(
+      children: [
+        const Icon(Ic.mic, color: TC.primary),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                status == null
+                    ? tr('Mikrofonu test et', 'Check the microphone')
+                    : micCheckStatusLabel(status!),
+                style: TT.title,
+              ),
+              const SizedBox(height: 2),
+              Text(
+                status == null
+                    ? tr(
+                        'Sessizlik ve rahat bir "aaa" · yaklaşık 10 sn',
+                        'Silence and an easy "aaa" · about 10 s',
+                      )
+                    : tr('Tekrar denemek için dokun', 'Tap to try again'),
+                style: TT.small,
+              ),
+            ],
+          ),
+        ),
+        const Icon(Ic.chevronRight, color: TC.muted),
+      ],
+    ),
+  );
+}
+
 class _RangeStep extends StatelessWidget {
   const _RangeStep({required this.measured, required this.onMeasure});
   final String? measured;
@@ -340,6 +415,7 @@ class _RangeStep extends StatelessWidget {
   );
 }
 
+/// Shared page frame: step counter, title, scrollable body, continue button.
 class _Frame extends StatelessWidget {
   const _Frame({
     required this.step,
@@ -361,7 +437,7 @@ class _Frame extends StatelessWidget {
   final bool showButton;
 
   /// Steps between welcome and ready.
-  static const _count = 5;
+  static const _count = 6;
 
   @override
   Widget build(BuildContext context) => Column(

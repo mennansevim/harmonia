@@ -83,3 +83,73 @@ List<RhythmPattern> _buildDraftRhythm() => List.unmodifiable([
     difficulty: 2,
   ),
 ]);
+
+/// Deterministic easy→hard key, derived only from the pattern's own data:
+/// the authored difficulty tag, then syncopated entries (an off-beat onset
+/// whose beat has no onset), then off-beat subdivisions, then the shortest
+/// gap between onsets in ms (shorter is harder), then the onset count.
+/// A content-ordering heuristic, not a measured difficulty or a rubric.
+class RhythmPatternDifficulty implements Comparable<RhythmPatternDifficulty> {
+  RhythmPatternDifficulty.of(RhythmPattern p)
+    : authored = p.exercise.exercise.difficulty,
+      syncopations = _syncopations(p.exercise.protocol.rhythmOnsetsBeats),
+      offBeats = p.exercise.protocol.rhythmOnsetsBeats
+          .where((b) => b != b.floorToDouble())
+          .length,
+      shortestGapMs = _shortestGapMs(p.exercise.protocol),
+      onsets = p.exercise.protocol.rhythmOnsetsBeats.length;
+
+  final int authored, syncopations, offBeats, onsets;
+  final double shortestGapMs;
+
+  static int _syncopations(List<double> beats) {
+    final onBeats = {
+      for (final b in beats)
+        if (b == b.floorToDouble()) b,
+    };
+    return beats
+        .where(
+          (b) => b != b.floorToDouble() && !onBeats.contains(b.floorToDouble()),
+        )
+        .length;
+  }
+
+  static double _shortestGapMs(ExerciseProtocol protocol) {
+    final beats = protocol.rhythmOnsetsBeats;
+    final bpm = protocol.tempoBpm;
+    if (beats.length < 2) return double.infinity;
+    var gap = double.infinity;
+    for (var i = 1; i < beats.length; i++) {
+      final d = beats[i] - beats[i - 1];
+      if (d < gap) gap = d;
+    }
+    return gap * 60000 / bpm;
+  }
+
+  @override
+  int compareTo(RhythmPatternDifficulty o) {
+    for (final c in [
+      authored.compareTo(o.authored),
+      syncopations.compareTo(o.syncopations),
+      offBeats.compareTo(o.offBeats),
+      o.shortestGapMs.compareTo(shortestGapMs),
+      onsets.compareTo(o.onsets),
+    ]) {
+      if (c != 0) return c;
+    }
+    return 0;
+  }
+}
+
+/// [patterns] from easy to hard; ties keep their catalog order.
+List<RhythmPattern> orderedEasyToHard(List<RhythmPattern> patterns) {
+  final indexed = [
+    for (final (i, p) in patterns.indexed)
+      (i, p, RhythmPatternDifficulty.of(p)),
+  ];
+  indexed.sort((a, b) {
+    final c = a.$3.compareTo(b.$3);
+    return c != 0 ? c : a.$1.compareTo(b.$1);
+  });
+  return List.unmodifiable([for (final e in indexed) e.$2]);
+}

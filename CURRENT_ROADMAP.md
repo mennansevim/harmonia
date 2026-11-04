@@ -1,9 +1,270 @@
 # Resonia — Current Roadmap
 
-**Tarih:** 2026-11-04 (son güncelleme: DESIGN-13 Gelişim ve Koro)
+**Tarih:** 2026-11-05 (son güncelleme: FX-02 alkış kutlaması)
 **Durum:** Faz 1 — güvenilirlik sözleşmeleri, yerel kayıt laboratuvarı, deneysel DSP/worker, kalibrasyon/kalite kapısı ve misafir uygulama kabuğu kod-test seviyesinde. Tek ses skor ekranı hâlâ simülasyon; fiziksel cihaz, insan sesi benchmark'ı, eğitimci içerik onayı ve öğretim pilotu kapıları açık. **Hiçbir modül cihazda/pilotta doğrulanmış veya yayında değil.**
 **Sahip:** Mennan Sevim  
 **Platform:** Flutter mobil uygulama; ileride web ve öğretmen paneli
+
+**2026-11-05 — FX-04 ses dalgaları (aralık testi dinleme anı):** Kullanıcı
+15 taslak arasından "ses dalgaları"nı seçti (`docs/design/range_listening_lab.html`,
+yayınlı taslak sayfası). Merdivendeki `PitchTrail` ve küre yerine
+`VoiceWaves` (`lib/trainer/koro/voice_waves.dart`): altı katmanlı, farklı hız
+ve derinlikte akan dalgalar; sağ kenar "şimdi", sol az önce söylenen; her
+an perdeye göre renkli (lavanta pes, mercan tiz, lime notada). Piyano
+çalarken nota bandında gri dalga, sonra öğrencinin ayrı cümlesi.
+Akıcılık: 1€ filtresi (minCutoff 0,8 Hz, beta 0,004; ±6 sent titreme
+±2,4'e iner, iki yarım seslik sıçrama 250 ms'de oturur), 120 Hz sabit
+örnekli geçmiş, orta nokta eğrileri, Siri tipi sönümleme, yumuşak kenar
+(tanh), sessizlikte cümle bölme, ses girişinde kabarma, notaya oturunca
+parıltı. "Notada" rengi ladder geçme kuralından türetilir
+(`rangeToleranceCents`·(1−`rangePassMark`/100) = 40 sent); rubrik, eşik,
+puan değişmedi, yalnız gösterge. `PitchTrail` kaldırıldı; küre yalnız rahat
+ses sayfasında. 7 yeni test. Tam test **1306 geçti, 2 skip**; analyze ve
+format temiz. Simülatörde piyano dalgası görüldü; simülatör mikrofonu
+sessiz olduğundan ses dalgası test içinde PNG'ye çizilerek kontrol edildi.
+**Gerçek cihaz/mikrofonla görülmedi**; 120 Hz ekranda his kanıtsız.
+
+**2026-11-05 — FX-03 dinleme küresi (Shazam tarzı):** Yeniden kullanılabilir
+`AudioReactiveOrb` (`lib/trainer/ui/audio_reactive_orb.dart`): büyük
+mikrofon çekirdeği (radyal gradyan + parıltı), 5 eşmerkezli halka, sürekli
+nefes + genliğe bağlı büyüme; durumlar idle / listening / soundDetected
+(yumuşatılmış seviye eşiği, histerezisli) / completed. Seviye mevcut
+`record` genlik akışından (100 ms) gelir; kare başına kare-hızından bağımsız
+EMA (hızlı yükseliş 60 ms, yavaş bırakış 280 ms) titremeyi siler. Tek
+`AnimationController` saati, `CustomPainter(repaint:)` + `RepaintBoundary`,
+widget ağacı yeniden kurulmaz; azaltılmış harekette saat durur. Küre
+mikrofonu kendisi açmaz (yakalamayla çakışmasın diye). Aralık testinde:
+rahat ses sayfası (dokunulabilir idle küre → dinleme) ve merdivende
+çal/dinle/geri bildirim/dönüş (tutunca completed). Puan, eşik, rubrik
+değişmedi; seviye yalnız gösterge. Sınır: fiziksel iPhone'da 60/120 Hz his
+görülmedi. Testler: 6 yeni; `range_ladder_test` iki `pumpAndSettle` sabit
+pump'a çevrildi (idle küre sürekli nefes alır). Analyze temiz; tam test
+**1298 geçti, 2 skip, 1 hata** — hata FX-02'nin eşzamanlı
+`applause_burst_test`'i; format kapısı da yalnız `applause_burst.dart`'ta
+duruyor.
+
+**2026-11-05 — FX-02 alkış kutlaması (etkileşim 1/3):** Hareket
+araştırması `docs/design/motion_lab.html` (5 referans uygulama, 6 canlı
+prototip, simüle ses). İlk etkileşim olarak yeniden kullanılabilir
+`ApplauseBurst` (`lib/trainer/ui/applause_burst.dart`): lime rozet
+`SpringSimulation` (420/14) ile girer, üç "alkış" dalgası halka + konfeti
+(42 parça, kapalı form yol, kare başına ayırma yok) ve dokunsal
+(medium + 2× light, `ResoniaHapticsScope` ve widget bayrağına bağlı) verir.
+Azaltılmış harekette yalnız rozet ve tek dokunsal. Yalnız Alkışla ritim
+ekranında gerçek analiz `_passed` olduğunda `_cheers++` ile çalar; puan,
+eşik, rubrik değişmedi. Lottie/Rive eklenmedi (yerel çizim yeterli).
+Sınır: fiziksel iPhone'da his/dokunsal/kare süresi henüz görülmedi; mevcut
+alkış algılama hâlâ enerji onseti (`ClapOnsetDetector`), alkış
+sınıflandırması değil. Sıradaki: seviye görselleştirici, sonra iOS
+SoundAnalysis değerlendirmesi. Tam kapı **1299 test + 2 skip temiz (format, analyze, test)**.
+
+**2026-11-05 — ECHO-TRAIN-01 alkış eğitimi, canlı ezgi grafiği, dokunma
+sesi (simülatör geri bildirimi):** Alkışla ritim artık bir eğitim modülü:
+dinle (eller alkışlar) → tempoda 4'lük sayım → titreşim + "başla" sesi →
+limon "SIRA SENDE · Alkışla!" bandı, mikrofon açık → alkışlar canlı olarak
+"Sen" çizgisine düşer → referansla vuruş vuruş karşılaştırma (ortak ritim
+eşleştiricisi, değişmeyen ±120 ms; ilk alkış çapa, gecikme sayılmaz) →
+tam eşleşmede sonraki ritim. 12 ritim kolaydan zora (senkop → vuruş dışı →
+en kısa aralık → alkış sayısı); seviye `TrainerStore.clapLevel`. Alkış sesi
+yeniden sentezlendi (3–4 mikro patlama + 1,2 kHz gövde + oda yansıması).
+`ClapOnsetDetector` (5 ms enerji sıçraması, 90 ms bekleme, 150 ms ısınma)
+yalnız sentetik alkışla test edildi; gerçek alkış/cihaz/oda ölçülmedi.
+Ezgi tekrarı: söylerken referans bantları ve canlı perde izi aynı grafikte
+(süre referansa esnetilir, çünkü yalnız sıra/perde karşılaştırılır); oktav
+farkıyla söylenince ezgi kişinin oktavına taşınabilir (oktav hatası yine
+tuttu sayılmaz); 250 sent üstü "çok pes/tiz"; aynı "Sıra sende · Söyle!"
+bandı. Ritim tekrarında her dokunuş referansın tıkını çalar (önceden
+yüklenmiş 3 oynatıcı). 1287 test geçti; simülatörde alkış akışı görüldü,
+gerçek cihazda denenmedi.
+
+**2026-11-05 — RANGE-VIS-01 aralık testi görselleri (B + C):** Dinleme
+sırasında hedef nota ±50 sentlik bir şerit; sesin, kalınlığı giriş
+seviyesine bağlı parlak bir iz bırakır (şeritteyken yeşil, dışında mor,
+uçta sent etiketi). Gerçek değerlendirme "tuttu" derse şerit ve klavye tuşu
+kısa süre parlar. Basamak çubukları ve sonuçtaki basamak yerine piyano
+klavyesi: ulaşılan tuşlar limon, hedef tuş çerçeveli, canlı perde tuşların
+üstünde nokta; sonuçta en pes–en tiz ayracı. Canlı perde için
+`PluginAudioLabBackend(livePcm: true)` kaydı PCM akışıyla alır ve aynı WAV
+dosyasını yazar (sonraki analiz değişmez); `LivePitchTracker` 16 kHz'e
+indirip 20 ms'de bir deneysel YIN karesi verir. Canlı değer yalnız
+gösterimdir; tuttu/tutmadı kararı ve eşikler değişmedi. Cihazda denenmedi:
+akış kaydının iOS/Android'de dosya kaydıyla aynı örnekleri verdiği ve canlı
+YIN'in ana iş parçacığında takılma yapmadığı doğrulanmadı.
+
+**2026-11-05 — MEL-ECHO-01 ezgi tekrarı yeniden (TestFlight geri
+bildirimi):** Koro kütüphanesindeki `Ezgi tekrarı` artık
+`lib/trainer/koro/melody_echo.dart`: önce referans çalar (notalar perde
+yüksekliğine göre dizili hap olarak sırayla yanar), sonra mikrofon 8 sn
+dinler (`Bitirdim`), ardından iki desen karşılaştırılır: nota nota
+`Tuttu / n sent tiz·pes / Oktav farkı / Duyulmadı` ve mevcut perde izi
+(`GhostRibbonView`). Tek birincil eylem: geçtiyse `Sonraki ezgi`, değilse
+`Tekrar dinle ve söyle` (ikincil `Başka ezgi`). Kolaydan zora 6 seviye, 30
+ezgi (`melody_echo_levels.dart`: 3 ses adım → 3 ses atlama → 4 ses adım →
+4 ses atlama → 5 ses akan → 5 ses geniş/renkli), her biri ölçülen aralığa
+(yoksa seçilen koro partisine) ±2 yarım ses rastgele tonla yerleşir.
+İlerleme kapısı yeni bir rubrik değil: mevcut
+`PitchSequenceEvidence.wholeSequenceCorrect` (±50 sent, oktav hatası ve
+fazladan ses geçmez). Seviye `TrainerStore.melodyEchoLevel` olarak saklanır;
+XP/seri/ustalık/geçmişe yazılmaz. Referans hâlâ sentetik ton (piyano kaydı
+değil) ve her yeni ezgi oturumu 2 sn ortam ölçümüyle açılır. Eski
+`MelodySessionScreen` kodda duruyor, kütüphaneden bağlantısı kalktı.
+Alkışla ritim: Lucide el ikonları yerine parmaklı iki avuç `CustomPainter`
+çizimi (bilekten açılıp kapanır, temasta kıvılcım). 1281 test geçti;
+gerçek ses/cihazda denenmedi, ilerleme kapısı insan sesiyle kalibre
+edilmedi.
+
+**2026-11-05 — RHY-UX-01 ritim tekrarı sadeleştirme (TestFlight geri
+bildirimi):** Desenler `orderedEasyToHard` ile içerikten türetilen
+deterministik anahtara göre sıralanır (yazılı zorluk etiketi → senkop →
+alt bölüm → en kısa aralık ms → vuruş sayısı). Mevcut ritim ve aksak
+katalogları bu sırayla zaten uyumluydu; asıl eksik ilerleme eylemiydi —
+`Sonraki desene geç` eklendi (yalnız gezinme, kayıt/ustalık sayılmaz).
+Cevap sırasında vuruş alanı 200 → 136 px; sonuç gelince dinle kartı ve vuruş
+alanı kalkar, sonuç + tek birincil eylem görünür (sonraki adım kartı ya da
+`Tekrar dene`). Hedefli tekrar sonunda tekrarlanan başlık, vuruş çipleri,
+`Tam zamanında hâlini göster` ve ölçüm ayrıntısı kalktı; birincil eylem
+`Devam: tam deseni çal`. Puanlı denemede vuruş çipleri `Ölçüm ayrıntısı`
+altına indi. Her beklenen vuruş alındıysa otomatik bitiş 2,5 sn yerine
+desenin en uzun aralığı + değişmeyen ±120 ms penceresi (en az 0,6 sn;
+dörtlüklerde 0,87 sn); eksik vuruşta 2,5 sn kalır. Rubrik/tolerans
+değişmedi; sınır: tam cevaptan sonraki geç fazladan vuruş artık
+yakalanmaz. 1276 test geçti; cihazda/TestFlight'ta denenmedi.
+
+**2026-11-04 — REL-11e imzalı entitlement zinciri:** IPA kapısı artık ana
+uygulamanın gömülü imzalı entitlement plist'ini doğrudan `codesign` ile okur;
+`application-identifier`, Apple Team ID ve `get-task-allow=false` değerlerini
+App Store profile ve beklenen uygulama kimliğiyle exact-match doğrular. Eksik,
+debug'a açık veya başka profile ait imzalı entitlement fail-closed reddedilir.
+Python paketi **9 test**; güncel gerçek 1.0.0 build 4 IPA profile + imza +
+entitlement zincirinden geçti. Upload, Apple sunucu kabulü ve cihaz kurulumu
+yapılmadı.
+
+**2026-11-04 — REL-14 IPA 1.0.0+5:** FX-01 (Hayalet Şerit, Transient
+Hizalama) dahil çalışma ağacından imzalı App Store IPA:
+`build/ios/ipa/Vocalart.ipa` 33,5 MB, 1.0.0 build 5 (`pubspec.yaml` +4 → +5).
+Doğrulayıcı 9/9 test; gerçek IPA `passed` (Apple Distribution L3Z9U2B39K,
+profile 2027-09-25). Önceki build 4 `build/ios/ipa-1.0.0+4/`. Commit yok,
+yükleme yok, cihazda çalıştırılmadı; açılış görseli hâlâ Flutter varsayılanı.
+
+**2026-11-04 — FX-01 yankı efektleri (tasarım 1 ve 4):** Kullanıcı onayıyla
+`design-exports/yanki-efektleri` keşfindeki iki öneri koda taşındı.
+Ezgi tekrarı sonucuna **Hayalet Şerit** (`GhostRibbonView`): hizalanan her
+aday bölümün arkasında referans sesi aligner'ın kendi ±50 sent bandıyla çizilir,
+kayıttaki perde kareleri ham sent farkına göre (bant içi / dışı / oktav farkı /
+eşleşmedi) renkli bir şerit olarak soldan sağa çizilir; oktav katlanmaz,
+sessizlik boşluk kalır. Ritim tekrarı sonucuna **Transient Hizalama**
+(`TransientAlignmentView`): üstte referans tıklar, altta dokunuşlar, eşleşen
+çiftler bağla birleşir, ±120/±10 ms pencereleri gölgeli, en büyük kayma
+yazılı, "tam zamanında hâli" düğmesi dokunuşları vuruşa kaydırır. Puan,
+rubrik, tolerans, geçmiş kaydı değişmedi; outcome'lara yalnız çizim verisi
+(`recording`, `referenceOnsetsMs`, `userOnsetsMs`) eklendi, tolerans
+sabitleri tek kaynağa (`RhythmAnalysisDefaults`) alındı. Sınır: canlı perde
+akışı olmadığı için şerit kayıttan sonra oynar (canlı değil); ritim dokunuş
+olduğu için alt şeritte dalga formu yok. Gerçek cihaz/mikrofonla
+görülmedi. Tam kapı **1269 test + 2 skip** temiz.
+
+**2026-11-04 — REL-13 IPA 1.0.0+4:** DESIGN-14 (yeni Figma şablonu,
+Manrope) ve RANGE-03 (3 sn aralık çekimi, sessizlik kırpma) içeren çalışma
+ağacından imzalı App Store IPA: `build/ios/ipa/Vocalart.ipa` 33,5 MB,
+1.0.0 build 4 (`pubspec.yaml` +3 → +4). Doğrulayıcı 9/9 test; gerçek IPA
+`passed` (Apple Distribution L3Z9U2B39K, imzalı entitlement zinciri,
+profile 2027-09-25). Önceki build 3
+`build/ios/ipa-1.0.0+3/`. Değişiklikler commit edilmedi. Açılış görseli hâlâ
+Flutter varsayılanı. Yükleme yok; cihazda çalıştırılmadı.
+
+**2026-11-04 — RANGE-03 aralık çekimi:** Kullanıcı onayıyla aralık testi
+çekimi 2 → 3 sn oldu; `evaluateRangeEvidence` süreklilik oranını tüm çekim
+yerine ilk–son periyodik çerçeve arasında ölçüyor (baştaki/sondaki sessizlik
+cezalandırılmıyor). Gereken ses miktarı eskisiyle aynı: en az **0,7 sn**
+(eski 2 sn × 0,35) ve bu bölümde ≥0,35 süreklilik; ±80 sent dağılım ve
+yanlış oktav kuralları değişmedi. Önce sentetik deneyle 1,4 sn gecikmeli doğru
+sesin reddedildiği görüldü; YIN çekirdeği diğer 12 senaryoda (bas, soprano,
+zayıf temel, vibrato, gürültü, 48 kHz) doğru, kullanıcının
+`voice-recognizer/main.py` FFT-tepe yöntemi oktav/ayna hataları yaptı ve
+kullanılmadı. Yeni 4 regresyon testi; tam kapı **1263 test + 2 skip** temiz.
+Eşikler hâlâ taslak; **gerçek cihaz/insan sesiyle doğrulanmadı**.
+
+**2026-11-04 — DESIGN-14 yeni Figma Make şablonu:** `outer-cane-45483491.figma.site`
+tasarımının son CSS katmanı (krem `#F8F5EF` zemin, `#FFFEFA` kartlar ve sert
+alt gölge, `#432A72` aubergine hero, `#D9F574` lime ana düğme, `#FF6259`
+mercan ve `#7455DB` lavanta vurgular) `TC` tokenlarına ve ortak bileşenlere
+taşındı. Metin renkleri 4.5:1 için koyulaştırıldı (`primary #6849CC`,
+`coralDeep #B63E38`, `muted #6F6877`, `green #4F741B`). Bugün: "MERHABA AD"
+eyebrow, "Bugün sesin nasıl?", seri çipi, baş harfli avatar, haftanın 7 günü
+noktalı "Bu hafta N gün" çipi (gerçek aktif günler; uydurma 5 gün hedefi yok),
+orb'lu plan kartı, etiketli adım çubuğu, lime "play" düğmesi, "Hızlı
+egzersizler · Tümünü gör" (Egzersizler sekmesine geçer), "Kaldığın yerden" ve
+koro satırı. Egzersizler: "Egzersiz ara" araması, mor aktif çipler, mercan
+"Ses aralığını ölç" kartı, "Tüm egzersizler · N egzersiz", renk döngülü ızgara
+ve boş durum. Gelişim: mercan halkalı seviye kartı, lime madalya, cümle
+düzeni başlıklar. Ders/sonuç/koro ana düğmeleri lime; geri düğmesi yuvarlak
+kart. **Bilinçli sapmalar:** tasarımdaki dakika/seviye/%XP gibi ölçülmeyen
+değerler yerine gerçek ders sayıları; rota adım listesi (tekrar kartları ve
+ses adımı erişimi için) plan kartının altında korundu; yazı tipi kullanıcı onayıyla
+Manrope (`googlefonts/manrope` statik 400–800, OFL lisansı
+`assets/fonts/OFL-Manrope.txt`); ince çizim nedeniyle `TT.small` w500 ve
+alt menü pasif etiketi `TC.body` w600. Tam kalite kapısı
+**1259 test + 2 opt-in skip**, analyze/format temiz. Görseller
+`design-exports/figma-yeni-sablon-2026-11-04/`. **Simülatör/cihazda
+denetlenmedi.**
+
+**2026-11-04 — REL-11d Apple sahiplik zinciri:** IPA kapısı profile
+`TeamIdentifier`, entitlement team kimliği ve exact application-identifier'ı
+beklenen `L3Z9U2B39K` / `com.mennansevim.vocalart` ile bağlıyor. Codesign
+ayrıntılarında da exact bundle/team ve ilk authority `Apple Distribution:`
+olmalı; suffix veya başka team imzası reddediliyor. Python paketi **9 test**;
+güncel gerçek 1.0.0 build 3 IPA bu kapıların tümünden geçti. Upload veya Apple
+sunucu kabulü değildir. Tam kalite kapısı **1259 test + 2 opt-in skip**,
+analyze/format temiz geçti.
+
+**2026-11-04 — MIC-01 mikrofon testi:** Tanışma akışına isteğe bağlı
+"Mikrofonunu deneyelim" adımı (rol ile aralık arasında, `Ob.mic`, 6 adım) ve
+Ayarlar > Ses > "Mikrofon testi" girişi eklendi. Akış: kullanıcı başlatınca
+izin → 3 sn sessizlik (`NoiseFloorCalibrator`) → 3 sn rahat "aaa"
+(`CaptureQualityAssessor`, ölçülen tabanla). Sonuç: Hazır · Ortam gürültülü ·
+Ses çok kısık · Ses çok yüksek/kırpılıyor · İzin yok · Ölçülemedi; her biri
+kısa öneri, hazır olmayanlarda "Sayılmadı · puan değil". **Yeni eşik yok**;
+mevcut kalite kapısı hipotezleri kullanılıyor. Ham klipler okunup hemen
+siliniyor, sonuç kalıcı yazılmıyor. Fake backend + sentetik sinyalle
+widget/birim testleri (hazır, gürültülü, kısık, kırpılan, sessizlikte
+konuşma, izin reddi, kayıt hatası, iptal, ses yolu değişimi, kesinti,
+erişilebilirlik). Tam kalite kapısı **1259 test + 2 opt-in skip** temiz.
+**Gerçek cihaz/mikrofonda doğrulanmadı**; eşikler cihaz benchmark'ı bekliyor.
+Ortak `TopBar` geri butonu 44 pt (Android 48 dp kuralına uymuyor, ayrı iş).
+
+**2026-11-04 — REL-11c iOS codesign kapısı:** IPA doğrulayıcı duplicate
+archive path'i reddediyor; bounded ve symlinksiz artifact'ı geçici dizine
+açıp ana bundle ile nested içerikleri `codesign --verify --deep --strict`
+kapısından geçiriyor. İmza doğrulayıcı hatası başarıya çevrilmiyor. Python
+paketi **7 test**; gerçek `Vocalart.ipa` codesign exit 0 geçti. Bu Apple
+sunucu kabulü, upload veya fiziksel cihazda açılma kanıtı değildir. Tam kalite
+kapısı **1236 test + 2 opt-in skip**, analyze/format temiz geçti.
+
+**2026-11-04 — REL-11b iOS sürüm tek kaynağı:** İmzalı IPA export sırasında
+build 2 olmuşken pubspec 1'de kalmıştı. `pubspec.yaml` artık `1.0.0+2` ve
+doğrulayıcı strict `semver+build` değerini artifact içindeki marketing/build
+sürümüyle exact-match karşılaştırıyor. Eski veya Xcode tarafından sessizce
+değiştirilmiş artifact fail-closed reddedilir. Python paketi **5 test**;
+mevcut gerçek IPA kaynakla 1.0.0+2 eşleşerek geçti. Tam kalite kapısı
+**1235 test + 2 opt-in skip**, analyze/format temiz. Upload yapılmadı.
+
+**2026-11-04 — REL-11a iOS artifact doğrulama kapısı:** İmzalı IPA için
+salt-okunur, fail-closed yerel doğrulayıcı eklendi. Bounded ZIP/path/symlink,
+tek ana app, Vocalart kimliği/adı, sürüm/build, minimum iOS, şifreleme beyanı,
+executable, CodeResources ve App Store provisioning entitlement/süre kapıları
+var. **3 Python testi geçti.** Mevcut `Vocalart.ipa` gerçek doğrulamada geçti:
+`com.mennansevim.vocalart`, 1.0.0 build 2, iOS 15.0, App Store profili
+2027-09-25'e kadar geçerli. Tam kalite kapısı **1235 test + 2 opt-in skip**,
+analyze/format temiz geçti. Bu upload/App Store kabulü veya fiziksel cihaz
+kanıtı değildir; yükleme yapılmadı.
+
+**2026-11-04 — REL-12 tasarım IPA'sı:** Commit 4e7591e (DESIGN-09…13,
+NAV-02) üzerinde imzalı App Store IPA üretildi: `build/ios/ipa/Vocalart.ipa`
+33,2 MB, 1.0.0 build 3 (`pubspec.yaml` 1.0.0+3; Xcode otomatik build
+artırma kapalı export ile). Doğrulayıcı 7/7 test, gerçek IPA `passed`
+(codesign, App Store profile 2027-09-25). Önceki build 2 IPA
+`build/ios/ipa-1.0.0+2/` altında. Açılış görseli hâlâ Flutter varsayılanı.
+Yükleme yok; cihazda çalıştırılmadı.
 
 **2026-11-04 — DESIGN-13 Gelişim ve Koro:** Gelişim'de seviye kartı
 teal ilerleme ve sayılan değerlerle (toplam soru, aktif gün, seri; dakika

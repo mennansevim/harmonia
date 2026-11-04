@@ -196,8 +196,8 @@ class _Summary extends StatelessWidget {
         const SizedBox(height: 12),
         ProgressBar(
           value: mastery,
-          color: TC.teal,
-          track: const Color(0xFF3A3D55),
+          color: TC.sun,
+          track: TC.heroTrack,
           height: 6,
         ),
         const SizedBox(height: 16),
@@ -207,7 +207,6 @@ class _Summary extends StatelessWidget {
               ? tr('Tüm dersler tamam', 'All lessons done')
               : tr('Derse başla', 'Start the lesson'),
           icon: Ic.play,
-          color: Colors.white,
           onPressed: onNext,
         ),
         const SizedBox(height: 4),

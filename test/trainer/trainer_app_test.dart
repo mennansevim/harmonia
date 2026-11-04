@@ -139,6 +139,10 @@ void main() {
     expect(find.text('Vocalart\'ı nasıl kullanacaksın?'), findsOneWidget);
     await tapKey(tester, 'opt_singer');
     await tapKey(tester, 'ob_continue');
+    // MIC-01: the optional microphone check comes before the range.
+    expect(find.text('Mikrofonunu deneyelim'), findsOneWidget);
+    expect(find.byKey(const Key('ob_mic_check')), findsOneWidget);
+    await tapKey(tester, 'ob_continue');
     // No voice-group question: the range step offers a measurement or a skip.
     expect(find.text('Ses aralığını ölçelim'), findsOneWidget);
     expect(find.text('Sesin hangi aralığa yakın?'), findsNothing);
@@ -185,6 +189,7 @@ void main() {
     await tapKey(tester, 'get_started');
     await tapKey(tester, 'opt_solo');
     await tapKey(tester, 'ob_continue');
+    await tapKey(tester, 'ob_continue');
     expect(find.text('Ses aralığını ölçelim'), findsOneWidget);
     expect(find.byKey(const Key('ob_measure_range')), findsOneWidget);
     expect(find.text('Atla'), findsOneWidget);
@@ -194,6 +199,44 @@ void main() {
     expect(store.voicePart, isNull);
   });
 
+  testWidgets('onboarding mic step opens the check and can be skipped', (
+    tester,
+  ) async {
+    final store = memoryStore();
+    await store.load();
+    await tester.pumpWidget(app(store));
+    await settle(tester);
+    await tapKey(tester, 'get_started');
+    await tapKey(tester, 'opt_solo');
+    await tapKey(tester, 'ob_continue');
+    expect(find.text('2/6'), findsOneWidget);
+    expect(find.text('Atla'), findsOneWidget);
+    await tapKey(tester, 'ob_mic_check');
+    expect(find.text('Sesin net geliyor mu?'), findsOneWidget);
+    // Widget tests have no live audio: neutral, never a failed check.
+    await tapKey(tester, 'mic_check_start');
+    expect(find.text('Bu cihazda başlatılamadı'), findsOneWidget);
+    await tapKey(tester, 'mic_check_secondary');
+    expect(find.text('Mikrofonunu deneyelim'), findsOneWidget);
+    expect(find.text('Mikrofonu test et'), findsOneWidget);
+    await tapKey(tester, 'ob_continue');
+    expect(find.text('Ses aralığını ölçelim'), findsOneWidget);
+  });
+
+  testWidgets('settings reopens the microphone check', (tester) async {
+    final store = memoryStore({'onboardingDone': true, 'setupDone': true});
+    await store.load();
+    await tester.pumpWidget(app(store));
+    await settle(tester);
+    await tapKey(tester, 'open_settings');
+    await tapKey(tester, 'settings_mic_check');
+    expect(find.text('Sesin net geliyor mu?'), findsOneWidget);
+    expect(find.byKey(const Key('mic_check_start')), findsOneWidget);
+    await tester.tap(find.byTooltip('Geri').last);
+    await settle(tester);
+    expect(find.byKey(const Key('settings_mic_check')), findsOneWidget);
+  });
+
   testWidgets('a measured range turns the skip into continue', (tester) async {
     final store = memoryStore({'koroRange': '48-67'});
     await store.load();
@@ -201,6 +244,7 @@ void main() {
     await settle(tester);
     await tapKey(tester, 'get_started');
     await tapKey(tester, 'opt_solo');
+    await tapKey(tester, 'ob_continue');
     await tapKey(tester, 'ob_continue');
     expect(find.text('Ölçüldü: Do3 – Sol4'), findsOneWidget);
     expect(find.text('Devam'), findsOneWidget);
@@ -216,7 +260,7 @@ void main() {
     await tester.pumpWidget(app(store));
     await settle(tester);
     expect(find.text('Günde kaç dakika ayırabilirsin?'), findsOneWidget);
-    expect(find.text('4/5'), findsOneWidget);
+    expect(find.text('5/6'), findsOneWidget);
   });
 
   testWidgets('resumes onboarding at the saved step after a restart', (
@@ -355,7 +399,7 @@ void main() {
           (w) => w is Scrollable && w.axisDirection == AxisDirection.down,
         )
         .last;
-    expect(find.text('Ses aralığı testi'), findsOneWidget);
+    expect(find.text('Ses aralığını ölç'), findsOneWidget);
     await tester.scrollUntilVisible(
       find.text('YAKINDA'),
       200,

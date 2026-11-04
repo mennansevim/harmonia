@@ -74,7 +74,7 @@ void main() {
     expect(find.byKey(const Key('route_breath')), findsNothing);
     expect(find.byKey(const Key('route_voice')), findsNothing);
     expect(find.text('Derse başla'), findsOneWidget);
-    expect(find.textContaining('~3 dakika'), findsOneWidget);
+    expect(find.text('~3 DK'), findsOneWidget);
   });
 
   testWidgets('a longer day is Nefes → lesson → Ses', (tester) async {
@@ -174,6 +174,11 @@ void main() {
     expect(find.text('/ 4 ilk deneme'), findsOneWidget);
     expect(find.text('ÖLÇÜLDÜ'), findsOneWidget);
     expect(find.text('1 soruda karıştı'), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('evidence_breath')),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
     expect(find.byKey(const Key('evidence_breath')), findsOneWidget);
     expect(find.text('ÖLÇÜLMEDİ'), findsOneWidget);
     // Free practice has no sing step to report.

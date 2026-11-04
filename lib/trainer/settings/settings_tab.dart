@@ -13,7 +13,9 @@ import '../home/home_shell.dart';
 import '../state/trainer_store.dart';
 import '../stats/stats_tab.dart';
 import '../ui/kit.dart';
+import '../prepare/mic_check_screen.dart';
 import 'membership_screen.dart';
+import '../../domain/audio/mic_check.dart';
 import '../../domain/lang.dart';
 
 String get appVersionLabel => tr('Sürüm 1.0 (beta)', 'Version 1.0 (beta)');
@@ -63,8 +65,17 @@ Future<String?> setReminder(BuildContext context, bool on) async {
 }
 
 /// The avatar at the top right of every tab; opens Settings (DESIGN-09).
+/// Shows the learner's initial once a name is set.
 class ProfileButton extends StatelessWidget {
   const ProfileButton({super.key});
+
+  static String? _initial(BuildContext context) {
+    final scope = context.dependOnInheritedWidgetOfExactType<TrainerScope>();
+    final name = scope?.store.username.trim() ?? '';
+    if (name.isEmpty) return null;
+    return trCaps(name.characters.first);
+  }
+
   @override
   Widget build(BuildContext context) => Semantics(
     button: true,
@@ -82,14 +93,45 @@ class ProfileButton extends StatelessWidget {
       child: SizedBox.square(
         dimension: 48,
         child: Center(
-          child: Container(
-            width: 40,
-            height: 40,
-            decoration: const BoxDecoration(
-              color: TC.ink,
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(Ic.userRound, color: Colors.white, size: 20),
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                alignment: Alignment.center,
+                decoration: const BoxDecoration(
+                  color: Color(0xFF342553),
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(color: TC.heroShadow, offset: Offset(0, 5)),
+                  ],
+                ),
+                child: _initial(context) != null
+                    ? Text(
+                        _initial(context)!,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      )
+                    : const Icon(Ic.userRound, color: Colors.white, size: 20),
+              ),
+              Positioned(
+                right: 0,
+                bottom: 1,
+                child: Container(
+                  width: 10,
+                  height: 10,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFB9E847),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: TC.canvas, width: 2),
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -177,6 +219,20 @@ class SettingsTab extends StatelessWidget {
                 ),
                 _Caption(tr('SES', 'VOICE')),
                 _Group([
+                  _Item(
+                    key: const Key('settings_mic_check'),
+                    icon: Ic.mic,
+                    title: tr('Mikrofon testi', 'Microphone check'),
+                    subtitle: tr(
+                      'Ses net mi, ortam gürültülü mü?',
+                      'Is your voice clear, is the room noisy?',
+                    ),
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute<MicCheckStatus?>(
+                        builder: (_) => const MicCheckScreen(),
+                      ),
+                    ),
+                  ),
                   _Item(
                     key: const Key('settings_part'),
                     icon: Ic.mic,

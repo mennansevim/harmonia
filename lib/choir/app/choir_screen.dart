@@ -289,7 +289,6 @@ class _LatestWork extends StatelessWidget {
             key: const Key('choir_open_work'),
             label: conductor ? text.seeSubmissions : text.openWork,
             icon: Ic.arrowUpRight,
-            color: Colors.white,
             onPressed: onTap,
           ),
         ],

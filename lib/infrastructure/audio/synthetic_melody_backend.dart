@@ -85,7 +85,11 @@ Pcm16Wav renderDiagnosticMelodyPractice(
 /// whose native queue serializes resource calls and rejects stale callbacks.
 /// Capture interruptions are forwarded; device focus/route QA is still open.
 class SyntheticMelodyBackend
-    implements MelodyReferenceBackend, AudioRecordingReader, AudioRouteProbe {
+    implements
+        MelodyReferenceBackend,
+        AudioRecordingReader,
+        AudioRouteProbe,
+        LiveSampleSource {
   SyntheticMelodyBackend({
     required this.reference,
     required AudioLabBackend capture,
@@ -103,7 +107,7 @@ class SyntheticMelodyBackend
   factory SyntheticMelodyBackend.mobile(DiagnosticMelodyReference reference) =>
       SyntheticMelodyBackend(
         reference: reference,
-        capture: PluginAudioLabBackend(),
+        capture: PluginAudioLabBackend(livePcm: true),
         player: JustAudioClipPlayer(),
       );
 
@@ -121,6 +125,18 @@ class SyntheticMelodyBackend
 
   @override
   Stream<AudioLabInterruption> get interruptions => _capture.interruptions;
+
+  /// Live capture samples when the capture backend streams them.
+  @override
+  Stream<List<double>> get liveSamples => switch (_capture) {
+    final LiveSampleSource live => live.liveSamples,
+    _ => const Stream.empty(),
+  };
+  @override
+  int get liveSampleRateHz => switch (_capture) {
+    final LiveSampleSource live => live.liveSampleRateHz,
+    _ => 48000,
+  };
   @override
   Future<bool> requestMicrophonePermission() async {
     _ensureOpen();

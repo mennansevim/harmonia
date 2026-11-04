@@ -457,7 +457,7 @@ class _QuizViewState extends State<QuizView> {
                       excludeSemantics: true,
                       child: BigButton(
                         label: tr('Hayır, değil', 'No, it isn\'t'),
-                        color: TC.coral,
+                        color: TC.coralDeep,
                         onPressed: _phase == _Phase.answering
                             ? () => _yesNo(false)
                             : null,
@@ -510,7 +510,6 @@ class _QuizViewState extends State<QuizView> {
               ? _review(target: _q.answer, heard: _reviewChoice)
               : BigButton(
                   label: tr('Bu ses', 'This sound'),
-                  color: _color,
                   onPressed:
                       _selectedSound != null && _phase == _Phase.answering
                       ? _submitFind

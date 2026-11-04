@@ -529,7 +529,7 @@ class _ItemRow extends StatelessWidget {
   );
 }
 
-/// Share of first-try answers; teal arc on a dark track.
+/// Share of first-try answers; lime arc on the hero's track.
 class _ScoreRing extends CustomPainter {
   _ScoreRing(this.value);
   final double value;
@@ -538,7 +538,7 @@ class _ScoreRing extends CustomPainter {
     const stroke = 10.0;
     final rect = (Offset.zero & size).deflate(stroke / 2);
     final track = Paint()
-      ..color = const Color(0xFF3A3D55)
+      ..color = TC.heroTrack
       ..style = PaintingStyle.stroke
       ..strokeWidth = stroke;
     canvas.drawArc(rect, 0, 6.2832, false, track);
@@ -549,7 +549,7 @@ class _ScoreRing extends CustomPainter {
       6.2832 * value.clamp(0.0, 1.0),
       false,
       track
-        ..color = TC.teal
+        ..color = TC.sun
         ..strokeCap = StrokeCap.round,
     );
   }
@@ -566,7 +566,7 @@ class _Stat extends StatelessWidget {
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
     decoration: BoxDecoration(
-      color: const Color(0xFF2E3149),
+      color: TC.heroTile,
       borderRadius: BorderRadius.circular(12),
     ),
     child: Row(

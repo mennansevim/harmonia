@@ -1,0 +1,1734 @@
+<title>Dinleme Efektleri</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap">
+<style>
+/* Layout: control strip, then a grid of five phone frames that all react to one shared voice signal. */
+:root {
+  --bg: #F3EFE8;
+  --fg: #292238;
+  --muted: #6F6877;
+  --panel: #FFFEFA;
+  --line: #E5DEE7;
+  --accent: #6849CC;
+  --accent-soft: #EEE7FF;
+  --lime: #D9F574;
+  --coral: #FF6259;
+  --font: "Manrope", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #17121F; --fg: #F1ECF6; --muted: #B3AABF; --panel: #221B2D;
+    --line: #382E46; --accent: #B9A5FF; --accent-soft: #2E2440; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #17121F; --fg: #F1ECF6; --muted: #B3AABF; --panel: #221B2D;
+  --line: #382E46; --accent: #B9A5FF; --accent-soft: #2E2440; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--font);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 28px 48px;
+}
+.wrap { max-width: 1180px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr); gap: 22px; }
+header { display: grid; gap: 8px; max-width: 68ch; }
+.eyebrow { font-size: 11px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--accent); }
+h1 { font-size: clamp(28px, 4vw, 40px); line-height: 1.05; margin: 0; font-weight: 800; letter-spacing: -.02em; text-wrap: balance; }
+header p { margin: 0; color: var(--muted); font-size: 14.5px; line-height: 1.55; }
+.legend { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { display: inline-flex; align-items: center; gap: 7px; font-size: 12.5px; font-weight: 600; padding: 5px 11px; border-radius: 99px; background: var(--panel); border: 1px solid var(--line); }
+.dot { width: 10px; height: 10px; border-radius: 50%; }
+
+.controls {
+  display: flex; flex-wrap: wrap; gap: 14px 22px; align-items: center;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 20px; padding: 14px 18px;
+}
+.seg { display: inline-flex; background: var(--accent-soft); border-radius: 99px; padding: 3px; }
+.seg button {
+  font: inherit; font-size: 13px; font-weight: 700; border: 0; background: transparent; color: var(--fg);
+  padding: 8px 14px; border-radius: 99px; cursor: pointer;
+}
+.seg button[aria-pressed="true"] { background: var(--accent); color: #fff; }
+:root[data-theme="dark"] .seg button[aria-pressed="true"] { color: #17121F; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .seg button[aria-pressed="true"] { color: #17121F; } }
+.ctl { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 600; flex: 1 1 220px; min-width: 0; }
+.ctl input { flex: 1; min-width: 0; accent-color: var(--accent); }
+.ctl output { font-variant-numeric: tabular-nums; min-width: 62px; text-align: right; color: var(--muted); }
+button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 330px), 1fr)); gap: 22px; }
+.concept { display: grid; gap: 12px; align-content: start; min-width: 0; }
+.concept h2 { margin: 0; font-size: 17px; font-weight: 800; display: flex; gap: 10px; align-items: baseline; }
+.concept h2 .id { font-size: 12px; font-weight: 800; color: var(--accent); letter-spacing: .1em; }
+.concept p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.5; }
+.concept .map { font-size: 12px; color: var(--muted); }
+.concept .map b { color: var(--fg); font-weight: 700; }
+
+/* The phone frame is the app itself, which is light only, so its colours are fixed. */
+.phone {
+  background: #F8F5EF; color: #292238; border: 1px solid #E5DEE7; border-radius: 34px;
+  padding: 18px 16px 20px; display: grid; justify-items: center; gap: 2px;
+  box-shadow: 0 6px 0 #ECE6E7;
+}
+.phone .tag { font-size: 10.5px; font-weight: 800; letter-spacing: .12em; color: #6849CC; background: #EEE7FF; padding: 4px 10px; border-radius: 99px; }
+.phone .note { font-size: 34px; font-weight: 800; letter-spacing: -.02em; margin-top: 6px; line-height: 1.1; }
+.phone .try { font-size: 12px; color: #6F6877; }
+.phone canvas { width: 100%; max-width: 100%; height: 300px; display: block; margin-top: 6px; }
+.phone .say { font-size: 17px; font-weight: 700; margin-top: 4px; }
+.phone .status { font-size: 12.5px; font-weight: 700; padding: 5px 12px; border-radius: 99px; background: #FFFEFA; border: 1px solid #E5DEE7; font-variant-numeric: tabular-nums; margin-top: 6px; min-width: 150px; text-align: center; }
+.concept-top { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; }
+.seg.small button { font-size: 12px; padding: 6px 11px; }
+.grid.finals { grid-template-columns: repeat(auto-fill, minmax(min(100%, 400px), 1fr)); gap: 28px; }
+.final .phone canvas { height: 380px; }
+.grid.star { grid-template-columns: minmax(0, 640px); }
+.grid.star .phone canvas { height: 420px; }
+.final .phone .note { font-size: 38px; }
+.tech { margin: 4px 0 0; padding-left: 18px; display: grid; gap: 4px; font-size: 13px; line-height: 1.5; color: var(--muted); max-width: 80ch; }
+.tech b { color: var(--fg); }
+.tech a { color: var(--accent); }
+.better { margin: 0; padding-left: 18px; display: grid; gap: 3px; font-size: 13px; line-height: 1.45; }
+.phone { transition: background-color .35s ease, color .35s ease; }
+.phone.dark { background: #432A72; color: #FFFFFF; border-color: #5A3E8E; box-shadow: 0 6px 0 #2E1C52; }
+.phone.dark .tag { background: rgba(255,255,255,.12); color: #D9F574; }
+.phone.dark .try { color: #CFC4E6; }
+.phone.dark .status { background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.16); color: #FFFFFF; }
+.series { display: grid; gap: 14px; min-width: 0; }
+.series-head { display: grid; gap: 4px; border-top: 1px solid var(--line); padding-top: 18px; }
+.series-head h2 { margin: 0; font-size: 20px; font-weight: 800; letter-spacing: -.01em; }
+.series-head p { margin: 0; color: var(--muted); font-size: 13.5px; max-width: 70ch; line-height: 1.5; }
+footer { color: var(--muted); font-size: 12.5px; line-height: 1.55; max-width: 72ch; }
+</style>
+
+<div class="wrap">
+  <header>
+    <span class="eyebrow">Ses aralığı · dinleme anı</span>
+    <h1>Söylerken notayla birlikte hareket eden on beş efekt</h1>
+    <p>Hepsi aynı sahte sesle çalışıyor: önce aşağıdan kayarak notaya giriş, notada tutma, biraz tize kayma, geri dönüş ve bırakma. Efekt perdeyi ve ses gücünü aynı anda izliyor. Elle denemek için sürgüleri kullan.</p>
+    <div class="legend" aria-label="Renk anlamı">
+      <span class="chip"><span class="dot" style="background:#7455DB"></span>Pes kaldı</span>
+      <span class="chip"><span class="dot" style="background:#D9F574;border:1px solid #A9CC3E"></span>Notanın üstünde</span>
+      <span class="chip"><span class="dot" style="background:#FF6259"></span>Tiz kaçtı</span>
+    </div>
+  </header>
+
+  <div class="controls">
+    <div class="seg" role="group" aria-label="Ses kaynağı">
+      <button id="m-auto" type="button" aria-pressed="true">Otomatik ses</button>
+      <button id="m-man" type="button" aria-pressed="false">Elle dene</button>
+    </div>
+    <label class="ctl" for="cents">Perde
+      <input id="cents" type="range" min="-300" max="300" step="1" value="0">
+      <output id="cents-out">0 sent</output>
+    </label>
+    <label class="ctl" for="amp">Ses gücü
+      <input id="amp" type="range" min="0" max="100" step="1" value="75">
+      <output id="amp-out">%75</output>
+    </label>
+  </div>
+
+  <section class="series">
+    <div class="series-head">
+      <h2>Seçilen tasarım · Ses dalgaları</h2>
+      <p>Uygulamaya girecek hâli. Aşağıdaki alternatifler karşılaştırma için duruyor.</p>
+    </div>
+    <div class="grid star" id="grid-star"></div>
+  </section>
+  <section class="series">
+    <div class="series-head">
+      <h2>Akışkan dalgalar · O1, O2, O3</h2>
+      <p>Ses dalgalarının üç profesyonel yorumu. Üçü de aynı akış motorunu kullanıyor:</p>
+      <ul class="tech">
+        <li><b>1€ filtresi</b>: perde sabitken titremeyi siler, hızlı geçişte gecikme bırakmaz (<a href="https://cristal.univ-lille.fr/~casiez/1euro" target="_blank" rel="noopener">Casiez ve ark.</a>).</li>
+        <li><b>Sabit hızda örnekleme</b>: perde saniyede 120 kez kaydedilir, dalga kare hızından bağımsız eşit akar.</li>
+        <li><b>Eğri yumuşatma</b>: noktalar orta nokta eğrileriyle bağlanır, köşe kalmaz (<a href="https://qroph.github.io/2018/07/30/smooth-paths-using-catmull-rom-splines.html" target="_blank" rel="noopener">spline yaklaşımı</a>).</li>
+        <li><b>Siri sönümleme eğrisi</b>: dalga "şimdi" noktasında doruğa çıkar, kenarlara yumuşakça söner (<a href="https://github.com/kopiro/siriwave" target="_blank" rel="noopener">SiriWave</a>).</li>
+        <li><b>Yumuşak sınır ve bulanık parlama</b>: uzak notalar kenara sert çarpmaz, ışık bulanık bir katmanla verilir.</li>
+      </ul>
+    </div>
+    <div class="grid finals" id="grid-pro"></div>
+  </section>
+  <section class="series">
+    <div class="series-head">
+      <h2>Finalistler · J+ ve O+</h2>
+      <p>J ve O'nun baştan elden geçmiş hâlleri. Her birini uygulamanın krem zemininde ya da mor sahne zemininde deneyebilirsin.</p>
+    </div>
+    <div class="grid finals" id="grid-final"></div>
+  </section>
+  <section class="series">
+    <div class="series-head">
+      <h2>Yeni seri · F–O</h2>
+      <p>On yeni yön: akort aletinden, ses fiziğinden (vuru, duran dalga) ve oktav sarmalından gelen fikirler, artı daha sakin ve daha sade iki seçenek.</p>
+    </div>
+    <div class="grid" id="grid-new"></div>
+  </section>
+  <section class="series">
+    <div class="series-head">
+      <h2>İlk seri · A–E</h2>
+    </div>
+    <div class="grid" id="grid-old"></div>
+  </section>
+
+  <footer>Taslak görseller. Ses simüle edilir, mikrofon kullanılmaz. Renk eşikleri (±25 sent içinde "üstünde") yalnız gösterim içindir; testin gerçek değerlendirmesi ve toleransları değişmez. Seçilen tasarım Flutter'da <code>CustomPainter</code> ile aynı sinyale (canlı perde + seviye) bağlanacak.</footer>
+</div>
+
+<script>
+(() => {
+  const TARGET = 45; // A2
+  const NAMES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+  const noteName = m => NAMES[((m % 12) + 12) % 12] + (Math.floor(m / 12) - 1);
+  const C = {
+    lav: '#7455DB', deep: '#5C3FB4', soft: '#EEE7FF', lime: '#D9F574', limeD: '#A9CC3E',
+    coral: '#FF6259', ink: '#292238', cream: '#F8F5EF', card: '#FFFEFA', line: '#E5DEE7', muted: '#6F6877'
+  };
+  const hex = h => { const n = parseInt(h.slice(1), 16); return [n >> 16 & 255, n >> 8 & 255, n & 255]; };
+  const mixA = (A, B, t) => A.map((v, i) => Math.round(v + (B[i] - v) * t));
+  const rgba = (a, al) => `rgba(${a[0]},${a[1]},${a[2]},${Math.max(0, Math.min(1, al))})`;
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const smooth = (e0, e1, x) => { const t = clamp((x - e0) / (e1 - e0), 0, 1); return t * t * (3 - 2 * t); };
+  const lockOf = c => 1 - smooth(15, 45, Math.abs(c));
+  // Flat leans lavender, sharp leans coral, on the note turns lime.
+  // Blending through hue keeps the in-between colours clean (lavender to
+  // lime passes teal, coral to lime passes amber) instead of muddy grey.
+  function toHsl([r, g, b]) {
+    r /= 255; g /= 255; b /= 255;
+    const mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 2;
+    if (mx === mn) return [0, 0, l];
+    const d = mx - mn, s = l > 0.5 ? d / (2 - mx - mn) : d / (mx + mn);
+    const hh = mx === r ? (g - b) / d + (g < b ? 6 : 0) : mx === g ? (b - r) / d + 2 : (r - g) / d + 4;
+    return [hh * 60, s, l];
+  }
+  function fromHsl([hh, s, l]) {
+    const k = n => (n + hh / 30) % 12, q = s * Math.min(l, 1 - l);
+    const f = n => l - q * Math.max(-1, Math.min(k(n) - 3, 9 - k(n), 1));
+    return [Math.round(f(0) * 255), Math.round(f(8) * 255), Math.round(f(4) * 255)];
+  }
+  function mixH(A, B, t) {
+    const a = toHsl(A), b = toHsl(B);
+    let dh = b[0] - a[0]; if (dh > 180) dh -= 360; if (dh < -180) dh += 360;
+    return fromHsl([(a[0] + dh * t + 360) % 360, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t]);
+  }
+  function stateCol(c, fill) {
+    const off = hex(c < 0 ? C.lav : C.coral);
+    const near = mixH(hex(C.lav), off, smooth(0, 60, Math.abs(c)));
+    return mixH(near, hex(fill ? C.lime : C.limeD), lockOf(c));
+  }
+
+  // ---------- shared voice signal ----------
+  const raw = { cents: 0, amp: 0 };
+  const sm = { cents: -200, amp: 0 };
+  let mode = matchMedia('(prefers-reduced-motion: reduce)').matches ? 'man' : 'auto';
+  const lerp = (a, b, t) => a + (b - a) * t;
+  const ease = t => 1 - Math.pow(1 - t, 3);
+  function autoVoice(t) {
+    const u = t % 7.2;
+    const vib = (hz, c) => Math.sin(t * Math.PI * 2 * hz) * c;
+    const jit = (Math.sin(t * 37.1) + Math.sin(t * 23.7)) * 1.6;
+    if (u < 0.7) return { cents: -200, amp: 0 };
+    if (u < 1.2) { const k = ease((u - 0.7) / 0.5); return { cents: lerp(-230, -45, k) + jit, amp: 0.8 * k }; }
+    if (u < 2.4) { const k = (u - 1.2) / 1.2; return { cents: lerp(-45, -14, k) + vib(5.4, 10) + jit, amp: 0.8 }; }
+    if (u < 4.1) return { cents: vib(5.6, 8) + jit, amp: 0.86 + 0.08 * Math.sin(u * 2.4) };
+    if (u < 5.0) { const k = ease((u - 4.1) / 0.9); return { cents: lerp(0, 58, k) + vib(5.5, 9) + jit, amp: 0.9 }; }
+    if (u < 5.9) { const k = ease((u - 5.0) / 0.9); return { cents: lerp(58, 4, k) + vib(5.5, 8) + jit, amp: 0.82 }; }
+    if (u < 6.4) { const k = (u - 5.9) / 0.5; return { cents: 4 - 30 * k * k + jit, amp: 0.82 * (1 - k) }; }
+    return { cents: -200, amp: 0 };
+  }
+  function stepSignal(t, dt) {
+    if (mode === 'auto') Object.assign(raw, autoVoice(t));
+    const tauA = raw.amp > sm.amp ? 0.06 : 0.25;
+    sm.amp += (raw.amp - sm.amp) * (1 - Math.exp(-dt / tauA));
+    // Pitch only moves while there is voice; silence keeps the last pitch.
+    if (raw.amp > 0.04) sm.cents += (raw.cents - sm.cents) * (1 - Math.exp(-dt / 0.07));
+  }
+  const voiced = () => sm.amp > 0.05;
+
+  // ---------- concepts ----------
+  const concepts = [];
+
+  // A — strobe halo: the voice ring sits inside the note ring when flat,
+  // outside when sharp; ticks spin like a strobe tuner and freeze on the note.
+  concepts.push({
+    id: 'A', name: 'Kilit halkası',
+    text: 'Kesikli halka notadır. Senin sesin ikinci bir halka: pes kalınca içeride, tiz kaçınca dışarıda. Etrafındaki çentikler strob akort aleti gibi döner, notaya oturunca durur ve halkalar kilitlenir.',
+    map: '<b>Perde</b> → halka çapı ve çentik dönüşü · <b>Güç</b> → kalınlık ve yayılan dalgalar',
+    init() { this.rot = 0; this.emit = 0; this.breath = 0; },
+    draw(g, w, h, t, dt) {
+      const cx = w / 2, cy = h / 2, R0 = Math.min(w, h) * 0.3, a = sm.amp, c = sm.cents;
+      const v = voiced(), lock = v ? lockOf(c) : 0, col = stateCol(c), fill = stateCol(c, true);
+      this.breath += dt;
+      this.emit += dt * (0.25 + 1.1 * a);
+      if (v) this.rot += dt * clamp(c / 35, -3.5, 3.5) * (1 - lock);
+      const gl = g.createRadialGradient(cx, cy, 0, cx, cy, R0 * 1.9);
+      gl.addColorStop(0, rgba(v ? fill : hex(C.lav), 0.10 + 0.32 * a));
+      gl.addColorStop(1, rgba(v ? fill : hex(C.lav), 0));
+      g.fillStyle = gl; g.fillRect(0, 0, w, h);
+      for (let i = 0; i < 5; i++) {
+        const p = (this.emit + i / 5) % 1;
+        const r = R0 + p * (Math.min(w, h) / 2 - R0 + 4);
+        g.beginPath(); g.arc(cx, cy, r, 0, Math.PI * 2);
+        g.strokeStyle = rgba(v ? col : hex(C.lav), Math.pow(1 - p, 2) * (0.08 + 0.4 * a) * (0.35 + 0.65 * lock + (v ? 0 : 0.4)));
+        g.lineWidth = 1 + 2.5 * (1 - p); g.stroke();
+      }
+      g.setLineDash([3, 6]); g.beginPath(); g.arc(cx, cy, R0, 0, Math.PI * 2);
+      g.strokeStyle = rgba(hex(C.ink), 0.28); g.lineWidth = 1.5; g.stroke(); g.setLineDash([]);
+      for (let i = 0; i < 36; i++) {
+        const ang = this.rot + i * Math.PI * 2 / 36;
+        const r1 = R0 + 12, r2 = R0 + (i % 3 === 0 ? 22 : 17);
+        g.beginPath();
+        g.moveTo(cx + Math.cos(ang) * r1, cy + Math.sin(ang) * r1);
+        g.lineTo(cx + Math.cos(ang) * r2, cy + Math.sin(ang) * r2);
+        g.strokeStyle = rgba(lock > 0.5 ? hex(C.limeD) : hex(C.ink), v ? 0.25 + 0.4 * a : 0.12);
+        g.lineWidth = 2; g.lineCap = 'round'; g.stroke();
+      }
+      if (v) {
+        const rv = R0 + clamp(c * 0.3, -R0 * 0.55, 46);
+        g.save(); g.shadowColor = rgba(col, 0.8); g.shadowBlur = 8 + 18 * a;
+        g.beginPath(); g.arc(cx, cy, rv, 0, Math.PI * 2);
+        g.strokeStyle = rgba(col, 0.55 + 0.45 * a); g.lineWidth = 2.5 + 7 * a; g.stroke(); g.restore();
+      }
+      const cr = R0 * 0.52 * (1 + 0.03 * Math.sin(this.breath * 2.4) + 0.08 * a);
+      const cg = g.createRadialGradient(cx - cr * 0.35, cy - cr * 0.45, 2, cx, cy, cr);
+      const top = v ? mixA(fill, [255, 255, 255], 0.35) : hex('#9C84F0');
+      cg.addColorStop(0, rgba(top, 1)); cg.addColorStop(1, rgba(v ? mixA(fill, hex(C.ink), lock ? 0.05 : 0.15) : hex(C.deep), 1));
+      g.beginPath(); g.arc(cx, cy, cr, 0, Math.PI * 2); g.fillStyle = cg; g.fill();
+      g.fillStyle = lock > 0.5 ? C.ink : '#fff';
+      g.font = `800 ${Math.round(cr * 0.62)}px Manrope, system-ui, sans-serif`;
+      g.textAlign = 'center'; g.textBaseline = 'middle';
+      g.fillText(noteName(TARGET), cx, cy + 1);
+    }
+  });
+
+  // B — light column: a beam rises from the exact spot on the keyboard you
+  // are singing, sliding between keys; it lights the target key when it lands.
+  concepts.push({
+    id: 'B', name: 'Işık sütunu',
+    text: 'Klavyenin üstünden, tam söylediğin perdeden bir ışık yükselir ve tuşlar arasında kayar. Hedef tuşa oturunca tuş limona döner, ışıktan kıvılcımlar çıkar.',
+    map: '<b>Perde</b> → ışığın klavyedeki yeri · <b>Güç</b> → ışığın boyu ve kıvılcım',
+    init() { this.parts = []; this.acc = 0; },
+    draw(g, w, h, t, dt) {
+      const lo = 38, hi = 53, a = sm.amp, c = sm.cents, v = voiced(), lock = v ? lockOf(c) : 0;
+      const isBlack = m => [1, 3, 6, 8, 10].includes(((m % 12) + 12) % 12);
+      const whites = []; for (let m = lo; m <= hi; m++) if (!isBlack(m)) whites.push(m);
+      const ww = (w - 8) / whites.length, kx = 4, ky = h - 96, kh = 88, bh = 54;
+      const center = m => {
+        if (!isBlack(m)) return kx + whites.indexOf(m) * ww + ww / 2;
+        return kx + whites.indexOf(m - 1) * ww + ww;
+      };
+      const xOf = f => { const a0 = Math.floor(f), t0 = f - a0; return lerp(center(clamp(a0, lo, hi)), center(clamp(a0 + 1, lo, hi)), t0); };
+      const sung = TARGET + c / 100, col = stateCol(c), fill = stateCol(c, true);
+      const bx = xOf(clamp(sung, lo, hi));
+      // staff ticks above the keys
+      g.font = '600 10px Manrope, system-ui, sans-serif'; g.textAlign = 'center'; g.fillStyle = C.muted;
+      for (const m of whites) if (((m % 12) + 12) % 12 === 0) g.fillText(noteName(m), center(m), ky + kh + 0);
+      // beam
+      if (v) {
+        const top = ky - (36 + a * (ky - 26));
+        const bw = 16 + 16 * a;
+        const bg = g.createLinearGradient(0, ky, 0, top);
+        bg.addColorStop(0, rgba(fill, 0.95)); bg.addColorStop(0.6, rgba(col, 0.35)); bg.addColorStop(1, rgba(col, 0));
+        g.save(); g.shadowColor = rgba(col, 0.6); g.shadowBlur = 24;
+        g.fillStyle = bg; g.beginPath();
+        g.moveTo(bx - bw / 2, ky); g.lineTo(bx - bw * 0.18, top); g.lineTo(bx + bw * 0.18, top); g.lineTo(bx + bw / 2, ky); g.closePath(); g.fill();
+        g.restore();
+        g.fillStyle = rgba([255, 255, 255], 0.7); g.fillRect(bx - 1, top + 10, 2, ky - top - 10);
+        this.acc += dt * (8 + 40 * a) * (0.4 + lock);
+        while (this.acc > 1) {
+          this.acc -= 1;
+          this.parts.push({ x: bx + (Math.random() - 0.5) * bw * 0.6, y: top + 20 + Math.random() * 30, vx: (Math.random() - 0.5) * 24, vy: -40 - Math.random() * 60, life: 1, col: lock > 0.5 ? hex(C.limeD) : col, r: 1.5 + Math.random() * 2.2 });
+        }
+      }
+      this.parts = this.parts.filter(p => (p.life -= dt * 0.9) > 0);
+      for (const p of this.parts) {
+        p.x += p.vx * dt; p.y += p.vy * dt;
+        g.beginPath(); g.arc(p.x, p.y, p.r * p.life, 0, Math.PI * 2); g.fillStyle = rgba(p.col, p.life); g.fill();
+      }
+      // keys
+      for (let i = 0; i < whites.length; i++) {
+        const m = whites[i], x = kx + i * ww;
+        g.fillStyle = m === TARGET ? rgba(mixA(hex(C.card), hex(C.lime), lock), 1) : C.card;
+        g.strokeStyle = C.line; g.lineWidth = 1;
+        g.beginPath(); g.roundRect(x + 0.5, ky, ww - 1, kh, [0, 0, 6, 6]); g.fill(); g.stroke();
+        if (v && Math.abs(center(m) - bx) < ww * 0.5) {
+          g.fillStyle = rgba(fill, 0.35 * a * (1 - Math.abs(center(m) - bx) / (ww * 0.5)));
+          g.fill();
+        }
+      }
+      for (let m = lo; m <= hi; m++) if (isBlack(m)) {
+        const x = center(m) - ww * 0.3;
+        g.fillStyle = C.ink; g.beginPath(); g.roundRect(x, ky, ww * 0.6, bh, [0, 0, 4, 4]); g.fill();
+      }
+      const tx = center(TARGET);
+      g.strokeStyle = lock > 0.5 ? C.limeD : C.lav; g.lineWidth = 2.5;
+      g.beginPath(); g.roundRect(tx - ww / 2 + 2, ky + 2, ww - 4, kh - 4, 6); g.stroke();
+      if (v) {
+        g.fillStyle = C.ink; g.font = '800 12px Manrope, system-ui, sans-serif';
+        const dev = Math.round((sung - Math.round(sung)) * 100);
+        const lab = `${noteName(Math.round(sung))} ${dev > 0 ? '+' : ''}${dev}`;
+        g.fillText(lab, clamp(bx, 30, w - 30), 18);
+      }
+    }
+  });
+
+  // C — ribbon: a glowing ribbon flows right to left across the note lane,
+  // its height the pitch and its thickness the loudness.
+  concepts.push({
+    id: 'C', name: 'Ses şeridi',
+    text: 'Sesin, nota çizgileri üzerinde akan parlak bir şerit. Yüksekliği perden, kalınlığı ses gücün. Şerit notanın bandına girince bant limona döner, baştaki ışık nabız gibi atar.',
+    map: '<b>Perde</b> → şeridin yüksekliği ve rengi · <b>Güç</b> → kalınlık ve baş ışığı',
+    init() { this.hist = []; this.emit = 0; },
+    draw(g, w, h, t, dt) {
+      const sem = 40, laneY = h / 2, a = sm.amp, c = sm.cents, v = voiced(), lock = v ? lockOf(c) : 0;
+      const y = cc => clamp(laneY - cc / 100 * sem, 10, h - 10);
+      g.font = '700 11px Manrope, system-ui, sans-serif'; g.textAlign = 'left'; g.textBaseline = 'middle';
+      for (let d = -3; d <= 3; d++) {
+        const yy = laneY - d * sem;
+        if (d === 0) {
+          g.fillStyle = rgba(mixA(hex(C.soft), hex(C.lime), lock), 1);
+          g.beginPath(); g.roundRect(34, yy - 12, w - 40, 24, 12); g.fill();
+          g.strokeStyle = lock > 0.5 ? C.limeD : '#CFC2F5'; g.lineWidth = 1.5; g.stroke();
+        } else {
+          g.strokeStyle = C.line; g.lineWidth = 1; g.beginPath(); g.moveTo(34, yy); g.lineTo(w - 6, yy); g.stroke();
+        }
+        g.fillStyle = d === 0 ? C.ink : C.muted; g.fillText(noteName(TARGET + d), 4, yy);
+      }
+      this.hist.push({ t, c, a: sm.amp });
+      const speed = 72, hx = w * 0.72;
+      while (this.hist.length && (t - this.hist[0].t) * speed > hx) this.hist.shift();
+      g.lineCap = 'round';
+      for (let pass = 0; pass < 2; pass++) {
+        for (let i = 1; i < this.hist.length; i++) {
+          const p0 = this.hist[i - 1], p1 = this.hist[i];
+          if (p0.a < 0.05 || p1.a < 0.05) continue;
+          const x0 = hx - (t - p0.t) * speed, x1 = hx - (t - p1.t) * speed;
+          const col = stateCol(p1.c);
+          g.beginPath(); g.moveTo(x0, y(p0.c)); g.lineTo(x1, y(p1.c));
+          if (pass === 0) { g.strokeStyle = rgba(col, 0.16 * p1.a); g.lineWidth = 8 + 22 * p1.a; }
+          else { g.strokeStyle = rgba(col, 0.5 + 0.5 * p1.a); g.lineWidth = 2 + 6 * p1.a; }
+          g.stroke();
+        }
+      }
+      if (v) {
+        const col = stateCol(c), fill = stateCol(c, true), yy = y(c);
+        this.emit += dt * (0.6 + 1.4 * a);
+        for (let i = 0; i < 3; i++) {
+          const p = (this.emit + i / 3) % 1;
+          g.beginPath(); g.arc(hx, yy, 8 + p * 30, 0, Math.PI * 2);
+          g.strokeStyle = rgba(col, (1 - p) * (1 - p) * 0.6 * a); g.lineWidth = 2; g.stroke();
+        }
+        g.save(); g.shadowColor = rgba(fill, 0.9); g.shadowBlur = 16;
+        g.beginPath(); g.arc(hx, yy, 7 + 4 * a, 0, Math.PI * 2); g.fillStyle = rgba(fill, 1); g.fill(); g.restore();
+        g.strokeStyle = C.ink; g.lineWidth = 2; g.stroke();
+        const cr = Math.round(c);
+        g.fillStyle = C.ink; g.font = '800 12px Manrope, system-ui, sans-serif'; g.textAlign = 'left';
+        g.fillText(`${cr > 0 ? '+' : ''}${cr}`, hx + 16, yy - 14);
+      }
+    }
+  });
+
+  // D — resonance: concentric contours that ripple like a vibrating plate;
+  // the further off the note, the more lobes and wobble. On the note they
+  // settle into perfect calm circles.
+  concepts.push({
+    id: 'D', name: 'Rezonans',
+    text: 'Titreşen bir plaka gibi iç içe halkalar. Notadan uzaklaştıkça halkalar dalgalanır ve kırışır; pes ile tiz ters yönde döner. Notaya oturunca hepsi pürüzsüz, sakin dairelere dönüşür.',
+    map: '<b>Perde</b> → dalgalanma, dönüş yönü, renk · <b>Güç</b> → boyut ve parlaklık',
+    init() { this.ph = 0; this.breath = 0; },
+    draw(g, w, h, t, dt) {
+      const cx = w / 2, cy = h / 2, a = sm.amp, c = sm.cents, v = voiced(), lock = v ? lockOf(c) : 0;
+      const err = v ? Math.min(Math.abs(c), 200) / 200 : 0.15;
+      const col = v ? stateCol(c) : hex(C.lav), fill = v ? stateCol(c, true) : hex('#9C84F0');
+      this.breath += dt;
+      this.ph += dt * (c >= 0 ? 1 : -1) * (0.5 + 2.5 * err) * (v ? 1 : 0.3);
+      const R = Math.min(w, h) * (0.3 + 0.1 * a) * (1 + 0.02 * Math.sin(this.breath * 2.4));
+      const A = (3 + 26 * err) * (v ? 0.35 + 0.65 * a : 0.4) * (1 - 0.92 * lock);
+      const gl = g.createRadialGradient(cx, cy, 0, cx, cy, R * 1.6);
+      gl.addColorStop(0, rgba(fill, 0.22 + 0.3 * a)); gl.addColorStop(1, rgba(fill, 0));
+      g.fillStyle = gl; g.fillRect(0, 0, w, h);
+      for (let k = 5; k >= 0; k--) {
+        const Rk = R * (1 - k * 0.15);
+        g.beginPath();
+        for (let i = 0; i <= 160; i++) {
+          const th = i / 160 * Math.PI * 2;
+          const r = Rk + A * (1 - k * 0.12) * (0.75 * Math.sin(6 * th + this.ph * (1 + k * 0.35)) + 0.25 * err * 2 * Math.sin(11 * th - this.ph * 1.8));
+          const x = cx + Math.cos(th) * r, y = cy + Math.sin(th) * r;
+          i ? g.lineTo(x, y) : g.moveTo(x, y);
+        }
+        g.closePath();
+        if (k === 0) {
+          const fg = g.createRadialGradient(cx - R * 0.3, cy - R * 0.35, 4, cx, cy, R * 1.05);
+          fg.addColorStop(0, rgba(mixA(fill, [255, 255, 255], 0.5), 0.55)); fg.addColorStop(1, rgba(fill, 0.18));
+          g.fillStyle = fg; g.fill();
+        }
+        g.strokeStyle = rgba(col, (0.85 - k * 0.12) * (v ? 0.5 + 0.5 * a : 0.5));
+        g.lineWidth = k === 0 ? 2.5 + 2 * a : 1.4;
+        g.stroke();
+      }
+      g.fillStyle = C.ink; g.font = '800 26px Manrope, system-ui, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+      g.fillText(noteName(TARGET), cx, cy);
+    }
+  });
+
+  // E — elevator orb: a Shazam-like orb glides up and down a staff with
+  // your pitch and docks onto the note line, sending rings out as you sing.
+  concepts.push({
+    id: 'E', name: 'Yüzen küre',
+    text: 'Shazam küresi, nota çizgileri üzerinde sesinle birlikte yukarı aşağı süzülür ve arkasında iz bırakır. Notanın çizgisine yanaşınca kenetlenir, dalgalar büyür. Kalan mesafe sent olarak yazar.',
+    map: '<b>Perde</b> → kürenin yüksekliği · <b>Güç</b> → küre boyu ve yayılan halkalar',
+    init() { this.emit = 0; this.trail = []; this.breath = 0; },
+    draw(g, w, h, t, dt) {
+      const sem = 30, cy = h / 2, a = sm.amp, c = sm.cents, v = voiced(), lock = v ? lockOf(c) : 0;
+      const ox = w * 0.58;
+      this.breath += dt;
+      g.font = '700 11px Manrope, system-ui, sans-serif'; g.textAlign = 'left'; g.textBaseline = 'middle';
+      for (let d = -4; d <= 4; d++) {
+        const yy = cy - d * sem;
+        if (d === 0) {
+          const bg = g.createLinearGradient(30, 0, w, 0);
+          const tone = mixA(hex(C.soft), hex(C.lime), lock);
+          bg.addColorStop(0, rgba(tone, 1)); bg.addColorStop(1, rgba(tone, 0.4));
+          g.fillStyle = bg; g.fillRect(30, yy - 9, w - 30, 18);
+          g.strokeStyle = lock > 0.5 ? C.limeD : C.lav; g.lineWidth = 1.5;
+          g.beginPath(); g.moveTo(30, yy); g.lineTo(w, yy); g.stroke();
+        } else {
+          g.strokeStyle = C.line; g.lineWidth = 1; g.beginPath(); g.moveTo(30, yy); g.lineTo(w, yy); g.stroke();
+        }
+        g.fillStyle = d === 0 ? C.ink : C.muted; g.fillText(noteName(TARGET + d), 2, yy);
+      }
+      const oy = v ? clamp(cy - c / 100 * sem, 18, h - 18) : cy;
+      const col = v ? stateCol(c) : hex(C.lav), fill = v ? stateCol(c, true) : hex('#9C84F0');
+      this.trail.push({ t, y: oy, v });
+      while (this.trail.length && t - this.trail[0].t > 0.9) this.trail.shift();
+      for (const p of this.trail) {
+        if (!p.v) continue;
+        const age = (t - p.t) / 0.9;
+        g.beginPath(); g.arc(ox - age * 70, p.y, (6 + 6 * a) * (1 - age), 0, Math.PI * 2);
+        g.fillStyle = rgba(col, 0.25 * (1 - age)); g.fill();
+      }
+      this.emit += dt * (v ? 0.5 + 1.3 * a : 0.25);
+      const r0 = (v ? 20 + 9 * a : 18) * (1 + 0.04 * Math.sin(this.breath * 2.4));
+      for (let i = 0; i < 4; i++) {
+        const p = (this.emit + i / 4) % 1;
+        g.beginPath(); g.arc(ox, oy, r0 + p * (50 + 30 * a + 20 * lock), 0, Math.PI * 2);
+        g.strokeStyle = rgba(col, (1 - p) * (1 - p) * (v ? 0.15 + 0.5 * a : 0.15));
+        g.lineWidth = 1.2 + 2.4 * (1 - p); g.stroke();
+      }
+      if (v && lock < 0.95) {
+        g.setLineDash([2, 4]); g.strokeStyle = rgba(hex(C.ink), 0.35); g.lineWidth = 1.2;
+        g.beginPath(); g.moveTo(ox + r0 + 10, oy); g.lineTo(ox + r0 + 10, cy); g.stroke(); g.setLineDash([]);
+        const cr = Math.round(c);
+        g.fillStyle = C.ink; g.font = '800 12px Manrope, system-ui, sans-serif'; g.textAlign = 'left';
+        g.fillText(`${cr > 0 ? '+' : ''}${cr} sent`, ox + r0 + 16, (oy + cy) / 2);
+      }
+      g.save(); g.shadowColor = rgba(fill, 0.8); g.shadowBlur = 10 + 18 * a;
+      const og = g.createRadialGradient(ox - r0 * 0.35, oy - r0 * 0.45, 2, ox, oy, r0);
+      og.addColorStop(0, rgba(mixA(fill, [255, 255, 255], 0.4), 1)); og.addColorStop(1, rgba(mixA(fill, hex(C.ink), 0.12), 1));
+      g.beginPath(); g.arc(ox, oy, r0, 0, Math.PI * 2); g.fillStyle = og; g.fill(); g.restore();
+      // microphone glyph
+      g.strokeStyle = lock > 0.5 ? C.ink : '#fff'; g.lineWidth = 2; g.lineCap = 'round';
+      const s = r0 * 0.42;
+      g.beginPath(); g.roundRect(ox - s * 0.32, oy - s * 0.85, s * 0.64, s * 1.15, s * 0.32); g.stroke();
+      g.beginPath(); g.arc(ox, oy - s * 0.05, s * 0.62, 0.15 * Math.PI, 0.85 * Math.PI); g.stroke();
+      g.beginPath(); g.moveTo(ox, oy + s * 0.57); g.lineTo(ox, oy + s * 0.85); g.stroke();
+    }
+  });
+
+  // ================= second series: F–O =================
+
+  // F — tuner arc: a concert tuner's needle with a light trail.
+  concepts.push({
+    id: 'F', group: 'new', name: 'Akort yayı',
+    text: 'Konser akort aletinin yayı. İbre perdeni anında gösterir ve arkasında ışıklı bir iz bırakır. Ortadaki lime bölgeye girince ibre ve merkez parlar, merkezden dalgalar yayılır.',
+    map: '<b>Perde</b> → ibrenin açısı · <b>Güç</b> → iz, parlaklık, dalgalar',
+    init() { this.trail = []; this.emit = 0; this.an = -1.32; },
+    draw(g, w, h, t, dt) {
+      const a = sm.amp, c = sm.cents, v = voiced(), lock = v ? lockOf(c) : 0;
+      const col = v ? stateCol(c) : hex(C.lav), fill = v ? stateCol(c, true) : hex('#9C84F0');
+      const cx = w / 2, cy = h * 0.68, R = Math.min(w * 0.44, h * 0.6);
+      const ang = x => Math.tanh(x / 70) * 1.32;
+      const P = (an, r) => [cx + Math.sin(an) * r, cy - Math.cos(an) * r];
+      this.an += ((v ? ang(c) : -1.32) - this.an) * (1 - Math.exp(-dt / (v ? 0.07 : 0.45)));
+      g.lineCap = 'butt';
+      g.beginPath(); g.arc(cx, cy, R - 14, -Math.PI / 2 - 1.4, -Math.PI / 2 + 1.4);
+      g.strokeStyle = C.line; g.lineWidth = 14; g.stroke();
+      g.beginPath(); g.arc(cx, cy, R - 14, -Math.PI / 2 + ang(-25), -Math.PI / 2 + ang(25));
+      g.strokeStyle = rgba(mixA(hex(C.lime), hex(C.limeD), lock * 0.7), 1); g.stroke();
+      g.font = '700 10px Manrope, system-ui, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+      for (let k = -100; k <= 100; k += 10) {
+        const an = ang(k), long = k % 50 === 0;
+        const [x1, y1] = P(an, R - 25), [x2, y2] = P(an, R - (long ? 40 : 32));
+        g.beginPath(); g.moveTo(x1, y1); g.lineTo(x2, y2);
+        g.strokeStyle = rgba(hex(C.ink), long ? 0.6 : 0.3); g.lineWidth = long ? 2 : 1.2; g.stroke();
+        if (long) { const [lx, ly] = P(an, R - 54); g.fillStyle = C.muted; g.fillText(k > 0 ? `+${k}` : `${k}`, lx, ly); }
+      }
+      if (v) this.trail.push({ t, an: this.an });
+      while (this.trail.length && t - this.trail[0].t > 0.4) this.trail.shift();
+      g.lineCap = 'round';
+      for (const p of this.trail) {
+        const k = 1 - (t - p.t) / 0.4, [x, y] = P(p.an, R - 22);
+        g.beginPath(); g.moveTo(cx, cy); g.lineTo(x, y);
+        g.strokeStyle = rgba(col, 0.07 * k * a); g.lineWidth = 7; g.stroke();
+      }
+      const [nx, ny] = P(this.an, R - 20);
+      g.save(); g.shadowColor = rgba(col, 0.8); g.shadowBlur = v ? 6 + 14 * a : 0;
+      g.beginPath(); g.moveTo(cx, cy); g.lineTo(nx, ny);
+      g.strokeStyle = v ? rgba(mixA(col, hex(C.ink), 0.15), 1) : rgba(hex(C.ink), 0.3); g.lineWidth = 3; g.stroke(); g.restore();
+      this.emit += dt * (0.3 + 1.2 * a);
+      for (let i = 0; i < 3; i++) {
+        const p = (this.emit + i / 3) % 1;
+        g.beginPath(); g.arc(cx, cy, 16 + p * 64, 0, Math.PI * 2);
+        g.strokeStyle = rgba(col, (1 - p) * (1 - p) * (v ? 0.1 + 0.45 * a * (0.4 + 0.6 * lock) : 0.08)); g.lineWidth = 2; g.stroke();
+      }
+      const pr = 13 + 4 * a;
+      const pg = g.createRadialGradient(cx - pr * 0.3, cy - pr * 0.4, 1, cx, cy, pr);
+      pg.addColorStop(0, rgba(mixA(fill, [255, 255, 255], 0.45), 1)); pg.addColorStop(1, rgba(fill, 1));
+      g.beginPath(); g.arc(cx, cy, pr, 0, Math.PI * 2); g.fillStyle = pg; g.fill();
+      g.strokeStyle = C.ink; g.lineWidth = 1.5; g.stroke();
+      const cr = Math.round(c);
+      g.fillStyle = v ? C.ink : C.muted; g.font = '800 24px Manrope, system-ui, sans-serif';
+      g.fillText(v ? `${cr > 0 ? '+' : ''}${cr}` : '—', cx, cy + 46);
+      g.font = '600 11px Manrope, system-ui, sans-serif'; g.fillStyle = C.muted; g.fillText('sent', cx, cy + 66);
+    }
+  });
+
+  // G — standing wave: twelve lobes travel around the ring while you are
+  // off the note; on the note the wave stands still and its nodes sit on
+  // the fixed dots.
+  concepts.push({
+    id: 'G', group: 'new', name: 'Duran dalga',
+    text: 'Çekirdeğin etrafında on iki tepeli bir dalga. Notadan uzaksan dalga halkada döner: pes kalınca bir yöne, tiz kaçınca öbür yöne. Notaya oturunca dalga yerinde durur ve düğümleri sabit noktalarla çakışır.',
+    map: '<b>Perde</b> → dalganın dönüş hızı ve yönü · <b>Güç</b> → dalga yüksekliği',
+    init() { this.ph = 0; this.emit = 0; },
+    draw(g, w, h, t, dt) {
+      const a = sm.amp, c = sm.cents, v = voiced(), lock = v ? lockOf(c) : 0;
+      const col = v ? stateCol(c) : hex(C.lav), fill = v ? stateCol(c, true) : hex('#9C84F0');
+      const cx = w / 2, cy = h / 2, R = Math.min(w, h) * 0.32, n = 12;
+      const err = v ? Math.min(Math.abs(c), 200) / 200 : 0;
+      if (v) this.ph += dt * clamp(c / 100, -2.5, 2.5) * 5 * (1 - lock);
+      const wob = Math.cos(t * Math.PI * 2 * 2.1);
+      const A = v ? 4 + 15 * a : 2.5;
+      const gl = g.createRadialGradient(cx, cy, 0, cx, cy, R * 1.7);
+      gl.addColorStop(0, rgba(fill, 0.12 + 0.3 * a)); gl.addColorStop(1, rgba(fill, 0));
+      g.fillStyle = gl; g.fillRect(0, 0, w, h);
+      this.emit += dt * (0.25 + 0.9 * a);
+      for (let i = 0; i < 3; i++) {
+        const p = (this.emit + i / 3) % 1;
+        g.beginPath(); g.arc(cx, cy, R + 12 + p * (Math.min(w, h) / 2 - R - 12), 0, Math.PI * 2);
+        g.strokeStyle = rgba(col, (1 - p) * (1 - p) * 0.25 * (v ? a : 0.4)); g.lineWidth = 1.5; g.stroke();
+      }
+      for (let j = 2; j >= 0; j--) {
+        const Rj = R * (1 - j * 0.13);
+        g.beginPath();
+        for (let i = 0; i <= 240; i++) {
+          const th = i / 240 * Math.PI * 2;
+          const r = Rj + A * (1 - j * 0.28) * (Math.sin(n * th + this.ph) * wob + 0.35 * err * Math.sin(2 * n * th - this.ph * 1.6));
+          const x = cx + Math.cos(th) * r, y = cy + Math.sin(th) * r;
+          i ? g.lineTo(x, y) : g.moveTo(x, y);
+        }
+        g.closePath();
+        if (j === 0) { g.save(); g.shadowColor = rgba(col, 0.7); g.shadowBlur = 6 + 14 * a; }
+        g.strokeStyle = rgba(col, j === 0 ? 0.9 : 0.35); g.lineWidth = j === 0 ? 3 : 1.5; g.stroke();
+        if (j === 0) g.restore();
+      }
+      for (let k = 0; k < 2 * n; k++) {
+        const th = k * Math.PI / n;
+        g.beginPath(); g.arc(cx + Math.cos(th) * R, cy + Math.sin(th) * R, 2.6, 0, Math.PI * 2);
+        g.fillStyle = lock > 0.5 ? C.ink : rgba(hex(C.ink), 0.3); g.fill();
+      }
+      const cr = R * 0.55;
+      const cg = g.createRadialGradient(cx - cr * 0.35, cy - cr * 0.4, 2, cx, cy, cr);
+      cg.addColorStop(0, rgba(mixA(fill, [255, 255, 255], 0.45), 1)); cg.addColorStop(1, rgba(mixA(fill, hex(C.ink), 0.12), 1));
+      g.beginPath(); g.arc(cx, cy, cr, 0, Math.PI * 2); g.fillStyle = cg; g.fill();
+      g.fillStyle = lock > 0.5 ? C.ink : '#fff'; g.font = `800 ${Math.round(cr * 0.6)}px Manrope, system-ui, sans-serif`;
+      g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(noteName(TARGET), cx, cy + 1);
+    }
+  });
+
+  // H — beats: the real acoustics of tuning. Two close tones throb; the
+  // throb slows to nothing as your pitch meets the note.
+  concepts.push({
+    id: 'H', group: 'new', name: 'Vuru',
+    text: 'Akortun gerçek fiziği. Üstte notanın dalgası ve senin dalgan. Altta ikisinin toplamı: perdeler farklıysa ses "vuvvuv" diye zonklar (vuru). Yaklaştıkça zonklama yavaşlar, notada tek, dümdüz ve güçlü bir dalga kalır.',
+    map: '<b>Perde</b> → dalga sıklığı ve saniyedeki vuru · <b>Güç</b> → senin dalganın boyu',
+    init() {},
+    draw(g, w, h, t) {
+      const a = sm.amp, c = sm.cents, v = voiced(), lock = v ? lockOf(c) : 0;
+      const col = v ? stateCol(c) : hex(C.lav), fill = v ? stateCol(c, true) : hex('#9C84F0');
+      const k0 = 2 * Math.PI / 54, ratio = Math.pow(2, clamp(c, -300, 300) * 5 / 1200), k = k0 * ratio;
+      const w0 = k0 * 55, w1 = k * 55;
+      const y1 = h * 0.27, y2 = h * 0.7, A1 = 20, A2 = v ? clamp(22 * a / 0.85, 0, 24) : 0;
+      g.font = '800 10px Manrope, system-ui, sans-serif'; g.textAlign = 'left'; g.textBaseline = 'middle'; g.fillStyle = C.muted;
+      g.fillText(`NOTA · ${noteName(TARGET)}  /  SEN`, 4, 14);
+      g.fillText('İKİSİ BİRLİKTE', 4, y2 - 56);
+      g.setLineDash([4, 4]); g.beginPath();
+      for (let x = 0; x <= w; x += 2) { const y = y1 + A1 * Math.sin(k0 * x - w0 * t); x ? g.lineTo(x, y) : g.moveTo(x, y); }
+      g.strokeStyle = rgba(hex(C.ink), 0.45); g.lineWidth = 1.5; g.stroke(); g.setLineDash([]);
+      if (v) {
+        g.beginPath();
+        for (let x = 0; x <= w; x += 2) { const y = y1 + A2 * Math.sin(k * x - w1 * t); x ? g.lineTo(x, y) : g.moveTo(x, y); }
+        g.save(); g.shadowColor = rgba(col, 0.6); g.shadowBlur = 8;
+        g.strokeStyle = rgba(col, 1); g.lineWidth = 2.6; g.stroke(); g.restore();
+      }
+      const S = 0.95, top = [], bot = [];
+      for (let x = 0; x <= w; x += 2) {
+        const E = Math.sqrt(Math.max(0, A1 * A1 + A2 * A2 + 2 * A1 * A2 * Math.cos((k - k0) * x - (w1 - w0) * t))) * S;
+        top.push([x, y2 - E]); bot.push([x, y2 + E]);
+      }
+      g.beginPath(); top.forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y));
+      for (let i = bot.length - 1; i >= 0; i--) g.lineTo(bot[i][0], bot[i][1]);
+      g.closePath();
+      const eg = g.createLinearGradient(0, y2 - 45, 0, y2 + 45);
+      eg.addColorStop(0, rgba(fill, 0.1)); eg.addColorStop(0.5, rgba(fill, 0.45 + 0.3 * lock)); eg.addColorStop(1, rgba(fill, 0.1));
+      g.fillStyle = eg; g.fill();
+      g.strokeStyle = rgba(col, 0.6); g.lineWidth = 1.2; g.stroke();
+      g.beginPath();
+      for (let x = 0; x <= w; x += 1.5) {
+        const s = (A1 * Math.sin(k0 * x - w0 * t) + A2 * Math.sin(k * x - w1 * t)) * S;
+        x ? g.lineTo(x, y2 + s) : g.moveTo(x, y2 + s);
+      }
+      g.strokeStyle = rgba(hex(C.ink), 0.75); g.lineWidth = 1.4; g.stroke();
+      const beats = Math.abs(110 * (Math.pow(2, c / 1200) - 1));
+      g.font = '800 13px Manrope, system-ui, sans-serif'; g.textAlign = 'center'; g.fillStyle = C.ink;
+      g.fillText(!v ? 'Yalnız nota çalıyor' : lock > 0.6 ? 'Vuru yok · sesler örtüşüyor' : `Saniyede ${beats.toFixed(1)} vuru`, w / 2, h - 12);
+    }
+  });
+
+  // I — liquid tube: the voice fills a glass tube up to the pitch it sings;
+  // the surface ripples with loudness and bubbles rise.
+  concepts.push({
+    id: 'I', group: 'new', name: 'Sıvı tüp',
+    text: 'Sesin cam bir tüpü dolduruyor. Sıvının yüksekliği perden, yüzeyin dalgalanması ve kabarcıklar ses gücün. Sıvı nota çizgisine gelince çizgi limonla parlar. Susunca sıvı yumuşakça çekilir.',
+    map: '<b>Perde</b> → sıvının seviyesi · <b>Güç</b> → yüzey dalgası ve kabarcıklar',
+    init() { this.lvl = null; this.bub = []; this.acc = 0; },
+    draw(g, w, h, t, dt) {
+      const a = sm.amp, c = sm.cents, v = voiced(), lock = v ? lockOf(c) : 0;
+      const col = v ? stateCol(c) : hex(C.lav), fill = v ? stateCol(c, true) : hex('#9C84F0');
+      const cx = w / 2 - 14, tw = 74, top = 14, bot = h - 14, sem = 27, ty = h / 2;
+      const want = v ? clamp(ty - c / 100 * sem, top + 14, bot - 10) : bot - 12;
+      if (this.lvl === null) this.lvl = bot - 12;
+      this.lvl += (want - this.lvl) * (1 - Math.exp(-dt / (v ? 0.09 : 0.7)));
+      g.font = '700 11px Manrope, system-ui, sans-serif'; g.textAlign = 'left'; g.textBaseline = 'middle';
+      for (let d = -4; d <= 4; d++) {
+        const y = ty - d * sem, x0 = cx + tw / 2 + 8;
+        g.beginPath(); g.moveTo(x0, y); g.lineTo(x0 + (d === 0 ? 16 : 9), y);
+        g.strokeStyle = rgba(hex(C.ink), d === 0 ? 0.8 : 0.3); g.lineWidth = d === 0 ? 2 : 1; g.stroke();
+        if (d === 0) {
+          g.fillStyle = rgba(mixA(hex(C.soft), hex(C.lime), lock), 1);
+          g.beginPath(); g.roundRect(x0 + 20, y - 11, 40, 22, 11); g.fill();
+          g.fillStyle = C.ink; g.font = '800 12px Manrope, system-ui, sans-serif'; g.fillText(noteName(TARGET), x0 + 28, y);
+          g.font = '700 11px Manrope, system-ui, sans-serif';
+        } else { g.fillStyle = C.muted; g.fillText(noteName(TARGET + d), x0 + 14, y); }
+      }
+      const tube = () => { g.beginPath(); g.roundRect(cx - tw / 2, top, tw, bot - top, tw / 2); };
+      tube(); g.fillStyle = 'rgba(255,255,255,0.75)'; g.fill();
+      g.save(); tube(); g.clip();
+      const surf = x => this.lvl + Math.sin(x * 0.16 + t * 5) * (0.8 + 5 * a) + Math.sin(x * 0.29 - t * 3.3) * (0.4 + 3 * a);
+      g.beginPath(); g.moveTo(cx - tw / 2, bot);
+      for (let x = cx - tw / 2; x <= cx + tw / 2; x += 2) g.lineTo(x, surf(x));
+      g.lineTo(cx + tw / 2, bot); g.closePath();
+      const lg = g.createLinearGradient(0, this.lvl, 0, bot);
+      lg.addColorStop(0, rgba(mixA(fill, [255, 255, 255], 0.25), 0.95)); lg.addColorStop(1, rgba(mixA(col, hex(C.ink), 0.2), 0.95));
+      g.fillStyle = lg; g.fill();
+      g.beginPath();
+      for (let x = cx - tw / 2; x <= cx + tw / 2; x += 2) { const y = surf(x); x > cx - tw / 2 ? g.lineTo(x, y) : g.moveTo(x, y); }
+      g.strokeStyle = 'rgba(255,255,255,0.8)'; g.lineWidth = 2; g.stroke();
+      if (v) {
+        this.acc += dt * (4 + 26 * a);
+        while (this.acc > 1) { this.acc -= 1; this.bub.push({ x: cx + (Math.random() - 0.5) * (tw - 16), y: bot - 6, r: 1.5 + Math.random() * 3, s: 30 + Math.random() * 50 }); }
+      }
+      this.bub = this.bub.filter(b => (b.y -= b.s * dt) > surf(b.x) + 3);
+      for (const b of this.bub) {
+        b.x += Math.sin(t * 6 + b.r * 3) * 0.3;
+        g.beginPath(); g.arc(b.x, b.y, b.r, 0, Math.PI * 2); g.strokeStyle = 'rgba(255,255,255,0.75)'; g.lineWidth = 1.2; g.stroke();
+      }
+      g.setLineDash([4, 4]); g.beginPath(); g.moveTo(cx - tw / 2, ty); g.lineTo(cx + tw / 2, ty);
+      g.strokeStyle = lock > 0.5 ? C.ink : rgba(hex(C.ink), 0.45); g.lineWidth = 1.5; g.stroke(); g.setLineDash([]);
+      g.fillStyle = 'rgba(255,255,255,0.35)'; g.fillRect(cx - tw / 2 + 10, top + 20, 7, bot - top - 40);
+      g.restore();
+      tube(); g.strokeStyle = lock > 0.5 ? C.limeD : '#D6CDE0'; g.lineWidth = 2; g.stroke();
+      if (lock > 0.5) { g.save(); g.shadowColor = rgba(hex(C.lime), 1); g.shadowBlur = 18 * lock; tube(); g.stroke(); g.restore(); }
+    }
+  });
+
+  // J — particle ring: a swarm orbits at a radius set by your pitch and
+  // pulls into one crisp ring when you hit the note.
+  concepts.push({
+    id: 'J', group: 'new', name: 'Toz halkası',
+    text: 'Yüzlerce ışık tanesi çekirdeğin etrafında döner. Perden halkanın çapını belirler: pes kalınca içeri, tiz kaçınca dışarı. Notadan uzaklaştıkça taneler dağılır, notaya oturunca tek, keskin ve parlak bir halkada toplanır.',
+    map: '<b>Perde</b> → halkanın çapı ve dağınıklığı · <b>Güç</b> → hız ve parlaklık',
+    init() {
+      this.p = Array.from({ length: 260 }, () => ({ th: Math.random() * Math.PI * 2, f: 0.6 + Math.random() * 1.8, ph: Math.random() * 6.28, s: (Math.random() * 2 - 1) * Math.random(), sz: 0.8 + Math.random() * 1.7 }));
+      this.rot = 0; this.rv = null;
+    },
+    draw(g, w, h, t, dt) {
+      const a = sm.amp, c = sm.cents, v = voiced(), lock = v ? lockOf(c) : 0;
+      const col = v ? stateCol(c) : hex(C.lav);
+      const cx = w / 2, cy = h / 2, R0 = Math.min(w, h) * 0.3;
+      const want = v ? R0 + clamp(c * 0.3, -R0 * 0.55, 46) : R0 * 0.8;
+      if (this.rv === null) this.rv = R0 * 0.8;
+      this.rv += (want - this.rv) * (1 - Math.exp(-dt / 0.08));
+      const err = v ? Math.min(Math.abs(c), 200) / 200 : 0.5;
+      const spread = 2 + err * 40 + (v ? (1 - a) * 8 : 16);
+      this.rot += dt * (0.15 + 0.9 * a) * (c < 0 ? -1 : 1);
+      g.setLineDash([3, 6]); g.beginPath(); g.arc(cx, cy, R0, 0, Math.PI * 2);
+      g.strokeStyle = rgba(hex(C.ink), 0.25); g.lineWidth = 1.5; g.stroke(); g.setLineDash([]);
+      if (lock > 0.05) {
+        g.save(); g.shadowColor = rgba(hex(C.lime), 1); g.shadowBlur = 20;
+        g.beginPath(); g.arc(cx, cy, this.rv, 0, Math.PI * 2);
+        g.strokeStyle = rgba(hex(C.lime), 0.7 * lock * a); g.lineWidth = 6; g.stroke(); g.restore();
+      }
+      for (const p of this.p) {
+        const th = p.th + this.rot * (0.7 + 0.3 * p.f);
+        const r = this.rv + p.s * spread + Math.sin(t * p.f + p.ph) * spread * 0.3;
+        g.beginPath(); g.arc(cx + Math.cos(th) * r, cy + Math.sin(th) * r, p.sz * (0.7 + 0.6 * a), 0, Math.PI * 2);
+        g.fillStyle = rgba(col, (v ? 0.3 + 0.6 * a : 0.3) * (1 - 0.5 * Math.abs(p.s))); g.fill();
+      }
+      g.fillStyle = C.ink; g.font = '800 30px Manrope, system-ui, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+      g.fillText(noteName(TARGET), cx, cy - 6);
+      const cr = Math.round(c);
+      g.font = '700 12px Manrope, system-ui, sans-serif'; g.fillStyle = C.muted;
+      g.fillText(v ? `${cr > 0 ? '+' : ''}${cr} sent` : 'bekliyor', cx, cy + 20);
+    }
+  });
+
+  // K — octave spiral: every turn is one octave, every note sits on the
+  // same spoke. Shows why the same note an octave away is not counted.
+  concepts.push({
+    id: 'K', group: 'new', name: 'Oktav sarmalı',
+    text: 'Her tur bir oktav, aynı isimli notalar aynı çizgide. Sesin sarmal boyunca kayan parlak bir nokta. Hedef A2 halkalı; aynı çizgideki A1 ve A3 soluk durur, çünkü yanlış oktav sayılmaz. Bu testin kuralını görünür yapar.',
+    map: '<b>Perde</b> → sarmaldaki yer (oktav dahil) · <b>Güç</b> → nokta boyu ve dalgalar',
+    init() { this.trail = []; this.emit = 0; },
+    draw(g, w, h, t, dt) {
+      const a = sm.amp, c = sm.cents, v = voiced(), lock = v ? lockOf(c) : 0;
+      const col = v ? stateCol(c) : hex(C.lav), fill = v ? stateCol(c, true) : hex('#9C84F0');
+      const cx = w / 2, cy = h / 2 + 6, mLo = 33, mHi = 69, r0 = 22, Rm = Math.min(w, h) * 0.4;
+      const kk = (Rm - r0) / (mHi - mLo);
+      const pos = m => { const th = (m - TARGET) / 12 * Math.PI * 2 - Math.PI / 2, r = r0 + (m - mLo) * kk; return [cx + Math.cos(th) * r, cy + Math.sin(th) * r]; };
+      g.font = '700 10px Manrope, system-ui, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+      for (let i = 0; i < 12; i++) {
+        const th = i / 12 * Math.PI * 2 - Math.PI / 2;
+        g.beginPath(); g.moveTo(cx, cy); g.lineTo(cx + Math.cos(th) * (Rm + 6), cy + Math.sin(th) * (Rm + 6));
+        g.strokeStyle = rgba(hex(C.ink), i === 0 ? 0.18 : 0.06); g.lineWidth = 1; g.stroke();
+        g.fillStyle = i === 0 ? C.ink : C.muted;
+        g.fillText(NAMES[(9 + i) % 12], cx + Math.cos(th) * (Rm + 16), cy + Math.sin(th) * (Rm + 16));
+      }
+      g.beginPath();
+      for (let m = mLo; m <= mHi; m += 0.1) { const [x, y] = pos(m); m === mLo ? g.moveTo(x, y) : g.lineTo(x, y); }
+      g.strokeStyle = rgba(hex(C.ink), 0.16); g.lineWidth = 1.5; g.stroke();
+      for (let m = mLo; m <= mHi; m++) { const [x, y] = pos(m); g.beginPath(); g.arc(x, y, 1.6, 0, Math.PI * 2); g.fillStyle = rgba(hex(C.ink), 0.3); g.fill(); }
+      for (const m of [33, 57]) {
+        const [x, y] = pos(m);
+        g.beginPath(); g.arc(x, y, 6, 0, Math.PI * 2); g.strokeStyle = rgba(hex(C.ink), 0.3); g.lineWidth = 1.2; g.stroke();
+        g.fillStyle = C.muted; g.fillText(noteName(m), x + 15, y + 1);
+      }
+      const [tx, ty] = pos(TARGET);
+      g.beginPath(); g.arc(tx, ty, 10, 0, Math.PI * 2);
+      g.fillStyle = rgba(hex(C.lime), lock); g.fill();
+      g.strokeStyle = lock > 0.5 ? C.ink : C.lav; g.lineWidth = 2.5; g.stroke();
+      g.fillStyle = C.ink; g.font = '800 11px Manrope, system-ui, sans-serif'; g.fillText(noteName(TARGET), tx + 22, ty);
+      const ms = clamp(TARGET + c / 100, mLo, mHi);
+      if (v) this.trail.push({ t, m: ms });
+      while (this.trail.length && t - this.trail[0].t > 0.7) this.trail.shift();
+      g.lineCap = 'round';
+      for (let i = 1; i < this.trail.length; i++) {
+        const k = 1 - (t - this.trail[i].t) / 0.7;
+        const [x0, y0] = pos(this.trail[i - 1].m), [x1, y1] = pos(this.trail[i].m);
+        g.beginPath(); g.moveTo(x0, y0); g.lineTo(x1, y1); g.strokeStyle = rgba(col, 0.6 * k * a); g.lineWidth = 2 + 4 * a * k; g.stroke();
+      }
+      if (v) {
+        const [x, y] = pos(ms);
+        this.emit += dt * (0.6 + 1.4 * a);
+        for (let i = 0; i < 3; i++) {
+          const p = (this.emit + i / 3) % 1;
+          g.beginPath(); g.arc(x, y, 7 + p * 26, 0, Math.PI * 2); g.strokeStyle = rgba(col, (1 - p) * (1 - p) * 0.55 * a); g.lineWidth = 1.6; g.stroke();
+        }
+        g.save(); g.shadowColor = rgba(fill, 1); g.shadowBlur = 14;
+        g.beginPath(); g.arc(x, y, 6 + 4 * a, 0, Math.PI * 2); g.fillStyle = rgba(fill, 1); g.fill(); g.restore();
+        g.strokeStyle = C.ink; g.lineWidth = 1.5; g.stroke();
+      }
+    }
+  });
+
+  // L — radial spectrum: a Shazam-style ring of bars whose peak swings
+  // round to the marker at the top as your pitch meets the note.
+  concepts.push({
+    id: 'L', group: 'new', name: 'Spektrum tacı',
+    text: 'Shazam\'ın çubuklu halkası, ama anlamı var: en yüksek çubuk senin perden. Bir yarım ses halkada 30 derece. Pes kalınca tepe sola, tiz kaçınca sağa kayar; notaya oturunca tepedeki işaretin altına gelir ve taç limona döner.',
+    map: '<b>Perde</b> → en yüksek çubuğun yeri · <b>Güç</b> → çubuk boyları',
+    init() { this.emit = 0; this.noise = Array.from({ length: 72 }, () => Math.random()); this.psi = -Math.PI / 3; },
+    draw(g, w, h, t, dt) {
+      const a = sm.amp, c = sm.cents, v = voiced(), lock = v ? lockOf(c) : 0;
+      const col = v ? stateCol(c) : hex(C.lav), fill = v ? stateCol(c, true) : hex('#9C84F0');
+      const cx = w / 2, cy = h / 2 + 6, R = Math.min(w, h) * 0.22, N = 72, L = Math.min(w, h) * 0.2;
+      if (v) this.psi += (clamp(c / 100, -5.5, 5.5) * Math.PI / 6 - this.psi) * (1 - Math.exp(-dt / 0.08));
+      const peak = -Math.PI / 2 + this.psi;
+      const wrap = d => Math.atan2(Math.sin(d), Math.cos(d));
+      const mk = R + L + 14;
+      g.beginPath(); g.moveTo(cx, cy - mk + 10); g.lineTo(cx - 7, cy - mk); g.lineTo(cx + 7, cy - mk); g.closePath();
+      g.fillStyle = lock > 0.5 ? C.ink : C.lav; g.fill();
+      g.fillStyle = C.ink; g.font = '800 11px Manrope, system-ui, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+      g.fillText(noteName(TARGET), cx, cy - mk - 10);
+      g.lineCap = 'round';
+      for (let i = 0; i < N; i++) {
+        const ph = i / N * Math.PI * 2 - Math.PI / 2;
+        const d = wrap(ph - peak), d2 = wrap(ph - peak - Math.PI);
+        const live = v ? a : 0.12;
+        const len = 3 + live * (L * Math.exp(-d * d / (2 * 0.15 * 0.15)) + L * 0.32 * Math.exp(-d2 * d2 / (2 * 0.2 * 0.2))) + 7 * this.noise[i] * (0.5 + 0.5 * Math.sin(t * 3.2 + i * 1.7)) * live;
+        const x0 = cx + Math.cos(ph) * (R + 5), y0 = cy + Math.sin(ph) * (R + 5);
+        g.beginPath(); g.moveTo(x0, y0); g.lineTo(cx + Math.cos(ph) * (R + 5 + len), cy + Math.sin(ph) * (R + 5 + len));
+        g.strokeStyle = rgba(col, 0.25 + 0.75 * Math.exp(-d * d / 0.12)); g.lineWidth = 3.2; g.stroke();
+      }
+      this.emit += dt * (0.3 + 1.1 * a);
+      for (let i = 0; i < 2; i++) {
+        const p = (this.emit + i / 2) % 1;
+        g.beginPath(); g.arc(cx, cy, R * (0.6 + p * 0.4), 0, Math.PI * 2);
+        g.strokeStyle = rgba(col, (1 - p) * 0.3 * (v ? a : 0.3)); g.lineWidth = 1.5; g.stroke();
+      }
+      const cr = R * 0.78;
+      const cg = g.createRadialGradient(cx - cr * 0.35, cy - cr * 0.4, 2, cx, cy, cr);
+      cg.addColorStop(0, rgba(mixA(fill, [255, 255, 255], 0.45), 1)); cg.addColorStop(1, rgba(mixA(fill, hex(C.ink), 0.12), 1));
+      g.beginPath(); g.arc(cx, cy, cr * (1 + 0.06 * a), 0, Math.PI * 2); g.fillStyle = cg; g.fill();
+      g.strokeStyle = lock > 0.5 ? C.ink : '#fff'; g.lineWidth = 2; g.lineCap = 'round';
+      const s = cr * 0.42;
+      g.beginPath(); g.roundRect(cx - s * 0.32, cy - s * 0.85, s * 0.64, s * 1.15, s * 0.32); g.stroke();
+      g.beginPath(); g.arc(cx, cy - s * 0.05, s * 0.62, 0.15 * Math.PI, 0.85 * Math.PI); g.stroke();
+      g.beginPath(); g.moveTo(cx, cy + s * 0.57); g.lineTo(cx, cy + s * 0.85); g.stroke();
+    }
+  });
+
+  // M — horizon: the voice is a sun; the note is the horizon line. Too low
+  // and it sinks into the water, too high and it floats off.
+  concepts.push({
+    id: 'M', group: 'new', name: 'Ufuk güneşi',
+    text: 'Nota ufuk çizgisi, sesin bir güneş. Pes kalınca güneş suya gömülür, tiz kaçınca havada kalır. Tam ufka oturduğunda gökyüzü aydınlanır, suda yansıması uzar. Sakin ve çocuklar için bile anlaşılır.',
+    map: '<b>Perde</b> → güneşin yüksekliği · <b>Güç</b> → ışınlar ve yansıma',
+    init() { this.sy = null; },
+    draw(g, w, h, t, dt) {
+      const a = sm.amp, c = sm.cents, v = voiced(), lock = v ? lockOf(c) : 0;
+      const col = v ? stateCol(c) : hex(C.lav), fill = v ? stateCol(c, true) : hex('#9C84F0');
+      const hy = h * 0.58, sem = 34, cx = w / 2;
+      const want = v ? clamp(hy - c / 100 * sem, 34, h - 10) : hy + 46;
+      if (this.sy === null) this.sy = hy + 46;
+      this.sy += (want - this.sy) * (1 - Math.exp(-dt / (v ? 0.09 : 0.6)));
+      g.save(); g.beginPath(); g.roundRect(0, 0, w, h, 24); g.clip();
+      const sky = g.createLinearGradient(0, 0, 0, hy);
+      sky.addColorStop(0, rgba(mixA(col, [255, 255, 255], 0.62), 1));
+      sky.addColorStop(1, rgba(mixA(fill, hex(C.cream), 0.45 - 0.2 * lock), 1));
+      g.fillStyle = sky; g.fillRect(0, 0, w, hy);
+      const sr = 26 + 6 * a;
+      g.save(); g.translate(cx, this.sy); g.rotate(t * 0.15);
+      for (let i = 0; i < 16; i++) {
+        g.rotate(Math.PI * 2 / 16);
+        g.beginPath(); g.moveTo(sr + 6, 0); g.lineTo(sr + 10 + (v ? 30 * a : 6) * (i % 2 ? 0.6 : 1), 0);
+        g.strokeStyle = rgba(fill, v ? 0.35 + 0.4 * a : 0.2); g.lineWidth = 3; g.lineCap = 'round'; g.stroke();
+      }
+      g.restore();
+      g.save(); g.shadowColor = rgba(fill, 1); g.shadowBlur = 20 + 20 * a;
+      const sg = g.createRadialGradient(cx - 6, this.sy - 8, 2, cx, this.sy, sr);
+      sg.addColorStop(0, '#fff'); sg.addColorStop(1, rgba(fill, 1));
+      g.beginPath(); g.arc(cx, this.sy, sr, 0, Math.PI * 2); g.fillStyle = sg; g.fill(); g.restore();
+      const wg = g.createLinearGradient(0, hy, 0, h);
+      wg.addColorStop(0, rgba(mixA(col, hex(C.ink), 0.25), 0.9)); wg.addColorStop(1, rgba(mixA(col, hex(C.ink), 0.55), 1));
+      g.fillStyle = wg; g.fillRect(0, hy, w, h - hy);
+      const show = clamp((hy - this.sy + 30) / 60, 0, 1);
+      for (let j = 0; j < 11; j++) {
+        const y = hy + 7 + j * 9, ww = (36 + 26 * a) * (1 - j / 12) * (0.65 + 0.35 * Math.sin(t * 3 + j));
+        const ox = Math.sin(t * 2 + j) * 4 * a;
+        g.beginPath(); g.moveTo(cx - ww / 2 + ox, y); g.lineTo(cx + ww / 2 + ox, y);
+        g.strokeStyle = rgba(mixA(fill, [255, 255, 255], 0.3), 0.75 * (1 - j / 11) * show); g.lineWidth = 3; g.lineCap = 'round'; g.stroke();
+      }
+      g.save(); if (lock > 0.3) { g.shadowColor = rgba(hex(C.lime), 1); g.shadowBlur = 14 * lock; }
+      g.beginPath(); g.moveTo(0, hy); g.lineTo(w, hy); g.strokeStyle = lock > 0.5 ? C.lime : 'rgba(255,255,255,0.85)'; g.lineWidth = 2; g.stroke(); g.restore();
+      g.fillStyle = 'rgba(255,255,255,0.9)'; g.beginPath(); g.roundRect(10, hy - 26, 38, 20, 10); g.fill();
+      g.fillStyle = C.ink; g.font = '800 11px Manrope, system-ui, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+      g.fillText(noteName(TARGET), 29, hy - 16);
+      g.restore();
+    }
+  });
+
+  // N — precision ruler: a calm, exact readout for singers who want the
+  // number. A glowing bead slides along a cents ruler.
+  concepts.push({
+    id: 'N', group: 'new', name: 'Hassas cetvel',
+    text: 'Sayı isteyen şarkıcı için sade ve kesin bir gösterge. Büyük rakam kaç sent uzakta olduğunu söyler, parlak boncuk sent cetvelinde kayar. Ortadaki lime bant notanın kendisi. Arkadaki ince dalga sesinle titrer.',
+    map: '<b>Perde</b> → boncuğun yeri ve büyük rakam · <b>Güç</b> → arka dalga ve parlama',
+    init() { this.x = null; this.trail = []; },
+    draw(g, w, h, t, dt) {
+      const a = sm.amp, c = sm.cents, v = voiced(), lock = v ? lockOf(c) : 0;
+      const col = v ? stateCol(c) : hex(C.lav), fill = v ? stateCol(c, true) : hex('#9C84F0');
+      const pad = 22, y0 = h * 0.58, X = cc => w / 2 + clamp(cc, -100, 100) / 100 * (w / 2 - pad);
+      const cr = Math.round(c);
+      g.textAlign = 'center'; g.textBaseline = 'middle';
+      g.font = '800 56px Manrope, system-ui, sans-serif';
+      g.fillStyle = v ? (lock > 0.5 ? C.ink : rgba(mixA(col, hex(C.ink), 0.25), 1)) : rgba(hex(C.ink), 0.2);
+      g.fillText(v ? `${cr > 0 ? '+' : ''}${cr}` : '0', w / 2, h * 0.2);
+      g.font = '700 12px Manrope, system-ui, sans-serif'; g.fillStyle = C.muted;
+      g.fillText(v ? (lock > 0.5 ? 'sent · notanın üstünde' : cr < 0 ? 'sent · pes' : 'sent · tiz') : 'sent · bekliyor', w / 2, h * 0.2 + 38);
+      g.beginPath();
+      for (let x = 0; x <= w; x += 2) { const y = y0 + Math.sin(x * 0.09 * (1 + c / 1200) + t * 14) * (v ? 9 * a : 1) * Math.sin(x / w * Math.PI); x ? g.lineTo(x, y) : g.moveTo(x, y); }
+      g.strokeStyle = rgba(col, 0.3); g.lineWidth = 1.2; g.stroke();
+      g.fillStyle = rgba(mixA(hex(C.limeSoft || '#E9F8C8'), hex(C.lime), lock), 1);
+      g.beginPath(); g.roundRect(X(-25), y0 - 16, X(25) - X(-25), 32, 10); g.fill();
+      g.font = '700 10px Manrope, system-ui, sans-serif'; g.fillStyle = C.muted;
+      for (let k = -100; k <= 100; k += 5) {
+        const big = k % 50 === 0, mid = k % 25 === 0, x = X(k);
+        g.beginPath(); g.moveTo(x, y0 + 20); g.lineTo(x, y0 + 20 + (big ? 14 : mid ? 10 : 5));
+        g.strokeStyle = rgba(hex(C.ink), big ? 0.55 : 0.28); g.lineWidth = big ? 1.6 : 1; g.stroke();
+        if (big) g.fillText(k > 0 ? `+${k}` : `${k}`, x, y0 + 46);
+      }
+      g.textAlign = 'left'; g.fillText('← pes', pad - 6, y0 + 66); g.textAlign = 'right'; g.fillText('tiz →', w - pad + 6, y0 + 66);
+      const wantX = v ? X(c) : w / 2;
+      if (this.x === null) this.x = wantX;
+      this.x += (wantX - this.x) * (1 - Math.exp(-dt / 0.06));
+      if (v) this.trail.push({ t, x: this.x });
+      while (this.trail.length && t - this.trail[0].t > 0.25) this.trail.shift();
+      for (const p of this.trail) {
+        const k = 1 - (t - p.t) / 0.25;
+        g.fillStyle = rgba(col, 0.12 * k); g.beginPath(); g.roundRect(p.x - 6, y0 - 18, 12, 36, 6); g.fill();
+      }
+      g.save(); g.shadowColor = rgba(fill, 1); g.shadowBlur = v ? 10 + 18 * a : 0;
+      g.fillStyle = v ? rgba(fill, 1) : rgba(hex(C.line), 1); g.beginPath(); g.roundRect(this.x - 6, y0 - 18, 12, 36, 6); g.fill(); g.restore();
+      g.strokeStyle = C.ink; g.lineWidth = 1.5; g.beginPath(); g.roundRect(this.x - 6, y0 - 18, 12, 36, 6); g.stroke();
+    }
+  });
+
+  // O — voice waves: layered Siri-like waves that ride at your pitch and
+  // fold into one bright line on the note.
+  concepts.push({
+    id: 'O', group: 'new', name: 'Ses dalgaları',
+    text: 'Üst üste binen renkli ses dalgaları, perdene göre yukarı aşağı süzülür. Notadan uzaklaştıkça dalgalar birbirinden ayrılır ve renkleri karışır; notaya oturunca tek, parlak ve lime bir dalgada birleşir.',
+    map: '<b>Perde</b> → dalgaların yüksekliği ve ayrışması · <b>Güç</b> → dalga boyu',
+    init() { this.by = null; },
+    draw(g, w, h, t, dt) {
+      const a = sm.amp, c = sm.cents, v = voiced(), lock = v ? lockOf(c) : 0;
+      const fill = v ? stateCol(c, true) : hex('#9C84F0');
+      const cy = h / 2, sem = 40;
+      const want = v ? clamp(cy - c / 100 * sem, 44, h - 44) : cy;
+      if (this.by === null) this.by = cy;
+      this.by += (want - this.by) * (1 - Math.exp(-dt / 0.08));
+      const err = v ? Math.min(Math.abs(c), 200) / 200 : 0;
+      g.setLineDash([4, 5]); g.beginPath(); g.moveTo(40, cy); g.lineTo(w, cy);
+      g.strokeStyle = rgba(hex(C.ink), 0.3); g.lineWidth = 1.2; g.stroke(); g.setLineDash([]);
+      g.fillStyle = C.ink; g.font = '800 11px Manrope, system-ui, sans-serif'; g.textAlign = 'left'; g.textBaseline = 'middle';
+      g.fillText(noteName(TARGET), 6, cy);
+      const pal = [hex(C.lav), hex(C.coral), hex(C.limeD), hex('#9C84F0'), hex('#FF8A6B')];
+      g.globalCompositeOperation = 'multiply';
+      for (let i = 0; i < 5; i++) {
+        const wc = mixA(pal[i], fill, lock * 0.9);
+        const off = (i - 2) * err * 16, amp = (v ? a : 0.07) * (36 - i * 4);
+        const kx = 0.016 * (1 + i * 0.22), ph = t * (2.2 + i * 0.7) * (i % 2 ? 1 : -1) + i;
+        const base = this.by + off;
+        g.beginPath(); g.moveTo(0, base);
+        for (let x = 0; x <= w; x += 3) {
+          const e = Math.pow(1 - Math.pow((x - w / 2) / (w / 2), 2), 2);
+          g.lineTo(x, base + amp * e * Math.sin(kx * x + ph));
+        }
+        g.lineTo(w, base); g.closePath();
+        g.fillStyle = rgba(wc, 0.32); g.fill();
+        g.strokeStyle = rgba(wc, 0.75); g.lineWidth = 1.4; g.stroke();
+      }
+      g.globalCompositeOperation = 'source-over';
+      if (lock > 0.2 && v) {
+        g.save(); g.shadowColor = rgba(hex(C.lime), 1); g.shadowBlur = 16 * lock;
+        g.beginPath(); g.moveTo(w * 0.15, this.by); g.lineTo(w * 0.85, this.by);
+        g.strokeStyle = rgba(hex(C.lime), 0.9 * lock); g.lineWidth = 2.5; g.stroke(); g.restore();
+      }
+    }
+  });
+
+  // ================= finalists: J+ and O+ =================
+
+  // Colours for the aubergine stage: brighter so they glow on dark.
+  function stateColT(c, fill, dark) {
+    if (!dark) return stateCol(c, fill);
+    const off = hex(c < 0 ? '#B9A5FF' : '#FF8A80');
+    const near = mixH(hex('#B9A5FF'), off, smooth(0, 60, Math.abs(c)));
+    return mixH(near, hex(C.lime), lockOf(c));
+  }
+  // Damped spring, sub-stepped so it stays stable at any frame rate.
+  function spring(st, target, k, d, dt) {
+    if (st.x === null) { st.x = target; st.v = 0; }
+    const n = Math.max(1, Math.ceil(dt / 0.008)), hs = dt / n;
+    for (let i = 0; i < n; i++) { st.v += (k * (target - st.x) - d * st.v) * hs; st.x += st.v * hs; }
+  }
+
+  concepts.push({
+    id: 'J+', group: 'final', name: 'Toz halkası+',
+    text: 'Halka artık yaylı: perden değişince esneyip yerine oturuyor. Taneler üç derinlikte ve kısa ışık izleriyle akıyor. Notaya oturduğun an bir şok dalgası ve kıvılcım patlıyor. Notada kaldıkça dışta lime bir yay doluyor.',
+    better: [
+      'Yaylı çap ve dağılım, sert geçiş yok',
+      '420 tane, üç derinlik, hız izleri',
+      'Ses başlangıcında kıvılcım; notaya oturunca şok dalgası',
+      'Notayla halka arası bant: ne kadar uzakta olduğun görünür',
+      'Tutma yayı: notada kaldığın süre (yalnız gösterge)'
+    ],
+    map: '<b>Perde</b> → halkanın çapı ve dağınıklığı · <b>Güç</b> → hız, iz boyu, parlaklık',
+    init() {
+      this.p = Array.from({ length: 420 }, () => ({
+        th: Math.random() * Math.PI * 2, f: 0.5 + Math.random() * 1.6, ph: Math.random() * 6.28,
+        s: (Math.random() + Math.random() + Math.random() - 1.5) / 1.5, z: Math.random()
+      }));
+      this.rot = 0; this.r = { x: null, v: 0 }; this.sp = { x: null, v: 0 };
+      this.hold = 0; this.was = false; this.shock = []; this.sparks = []; this.prevA = 0; this.breath = 0;
+    },
+    draw(g, w, h, t, dt, dark) {
+      const a = sm.amp, c = sm.cents, v = voiced(), lock = v ? lockOf(c) : 0;
+      const idle = hex(dark ? '#B9A5FF' : C.lav);
+      const col = v ? stateColT(c, false, dark) : idle, fill = v ? stateColT(c, true, dark) : idle;
+      const ink = dark ? [255, 255, 255] : hex(C.ink), limeT = hex(dark ? C.lime : C.limeD);
+      const cx = w / 2, cy = h / 2, R0 = Math.min(w, h) * 0.3;
+      const err = v ? Math.min(Math.abs(c), 200) / 200 : 0.6;
+      spring(this.r, v ? R0 + clamp(c * 0.3, -R0 * 0.55, 48) : R0 * 0.82, 160, 17, dt);
+      spring(this.sp, v ? 1.5 + err * 44 + (1 - a) * 6 : 20, 120, 16, dt);
+      const R = this.r.x, spread = Math.max(0.5, this.sp.x);
+      const lockNow = v && lock > 0.7;
+      if (lockNow && !this.was) {
+        this.shock.push(t);
+        for (let i = 0; i < 46; i++) {
+          const an = Math.random() * Math.PI * 2, s = 60 + Math.random() * 130;
+          this.sparks.push({ x: cx + Math.cos(an) * R, y: cy + Math.sin(an) * R, vx: Math.cos(an) * s, vy: Math.sin(an) * s, life: 1, r: 1 + Math.random() * 2, c: limeT });
+        }
+      }
+      this.was = lockNow;
+      if (v && (a - this.prevA) / Math.max(dt, 1e-3) > 4) {
+        for (let i = 0; i < 14; i++) {
+          const an = Math.random() * Math.PI * 2, s = 40 + Math.random() * 70;
+          this.sparks.push({ x: cx + Math.cos(an) * R, y: cy + Math.sin(an) * R, vx: Math.cos(an) * s, vy: Math.sin(an) * s, life: 0.8, r: 0.8 + Math.random() * 1.6, c: fill });
+        }
+      }
+      this.prevA = a;
+      this.hold = lockNow ? Math.min(1, this.hold + dt / 1.5) : Math.max(0, this.hold - dt * 1.2);
+      const dir = c < 0 ? -1 : 1;
+      this.rot += dt * (0.1 + 0.75 * a) * (v ? dir : 1) * (1 - 0.6 * lock);
+      this.breath += dt;
+
+      const hg = g.createRadialGradient(cx, cy, R * 0.55, cx, cy, R * 1.45);
+      hg.addColorStop(0, rgba(fill, 0)); hg.addColorStop(0.5, rgba(fill, (dark ? 0.2 : 0.12) + 0.25 * a)); hg.addColorStop(1, rgba(fill, 0));
+      g.fillStyle = hg; g.fillRect(0, 0, w, h);
+      if (v && lock < 0.9) {
+        g.beginPath(); g.arc(cx, cy, Math.max(R, R0), 0, Math.PI * 2); g.arc(cx, cy, Math.min(R, R0), 0, Math.PI * 2, true);
+        g.fillStyle = rgba(col, (dark ? 0.16 : 0.1) * (1 - lock) * (0.4 + a)); g.fill();
+      }
+      g.setLineDash([2, 6]); g.beginPath(); g.arc(cx, cy, R0, 0, Math.PI * 2);
+      g.strokeStyle = rgba(ink, 0.3); g.lineWidth = 1.5; g.stroke(); g.setLineDash([]);
+
+      g.lineCap = 'round'; g.strokeStyle = rgba(col, 1);
+      if (dark) g.globalCompositeOperation = 'lighter';
+      for (const p of this.p) {
+        const th = p.th + this.rot * (0.65 + 0.35 * p.f);
+        const rr = R + p.s * spread * (0.55 + 0.45 * p.z) + Math.sin(t * p.f + p.ph) * spread * 0.22 + Math.sin(this.breath * 2.2) * 1.2;
+        const len = (0.015 + 0.07 * a * (v ? 1 : 0.3)) * (0.6 + 0.4 * p.f);
+        g.globalAlpha = (v ? 0.22 + 0.7 * a : 0.28) * (0.35 + 0.65 * p.z) * (1 - 0.45 * Math.abs(p.s)) * (dark ? 0.8 : 1);
+        g.lineWidth = (0.7 + 1.7 * p.z) * (0.85 + 0.5 * a);
+        g.beginPath();
+        if (dir > 0) g.arc(cx, cy, Math.max(1, rr), th - len, th); else g.arc(cx, cy, Math.max(1, rr), th, th + len);
+        g.stroke();
+      }
+      g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
+
+      if (lock > 0.05 && v) {
+        g.save(); g.shadowColor = rgba(hex(C.lime), 1); g.shadowBlur = 18;
+        g.beginPath(); g.arc(cx, cy, R, 0, Math.PI * 2);
+        g.strokeStyle = rgba(limeT, 0.85 * lock * (0.5 + 0.5 * a)); g.lineWidth = 2.5; g.stroke(); g.restore();
+      }
+      if (this.hold > 0.001) {
+        g.beginPath(); g.arc(cx, cy, R0 + 26, 0, Math.PI * 2); g.strokeStyle = rgba(ink, 0.08); g.lineWidth = 3; g.stroke();
+        g.beginPath(); g.arc(cx, cy, R0 + 26, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * this.hold);
+        g.strokeStyle = rgba(limeT, 0.95); g.lineWidth = 3; g.lineCap = 'round'; g.stroke();
+      }
+      this.shock = this.shock.filter(s => t - s < 0.9);
+      for (const s of this.shock) {
+        const k = (t - s) / 0.9;
+        g.beginPath(); g.arc(cx, cy, R + ease(k) * 95, 0, Math.PI * 2);
+        g.strokeStyle = rgba(limeT, (1 - k) * 0.7); g.lineWidth = 3 * (1 - k) + 0.5; g.stroke();
+      }
+      this.sparks = this.sparks.filter(s => (s.life -= dt * 1.4) > 0);
+      for (const s of this.sparks) {
+        s.vx *= Math.pow(0.05, dt); s.vy *= Math.pow(0.05, dt);
+        s.x += s.vx * dt; s.y += s.vy * dt;
+        g.beginPath(); g.arc(s.x, s.y, s.r * s.life + 0.3, 0, Math.PI * 2); g.fillStyle = rgba(s.c, s.life); g.fill();
+      }
+      g.fillStyle = rgba(ink, 1); g.font = '800 34px Manrope, system-ui, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+      g.fillText(noteName(TARGET), cx, cy - 6);
+      const cr = Math.round(c);
+      g.font = '700 12px Manrope, system-ui, sans-serif'; g.fillStyle = rgba(ink, 0.6);
+      g.fillText(v ? (lock > 0.6 ? 'notada' : `${cr > 0 ? '+' : ''}${cr} sent`) : 'bekliyor', cx, cy + 22);
+    }
+  });
+
+  concepts.push({
+    id: 'O+', group: 'final', name: 'Ses dalgaları+',
+    text: 'Dalgalar artık söylediğin melodiyi çiziyor: sağdaki çizgi "şimdi", solu az önce söylediklerin. Geçmiş kısım o anki perdene göre renkli kalıyor, nerede kaydığını sonradan da görürsün. Notaya oturunca dalgalar birleşip lime oluyor ve üzerinden bir ışık geçiyor.',
+    better: [
+      'Dalgalar zaman çizgisi: geçmiş solda, şimdi sağda',
+      'Renk zamana göre: pes, tiz ve notada anları ayrı',
+      'Notanın bandı ve komşu nota çizgileri',
+      'Notada ışık süpürmesi ve yumuşak parlama',
+      '"Şimdi" noktası sent değeriyle'
+    ],
+    map: '<b>Perde</b> → dalga yüksekliği, ayrışma ve renk · <b>Güç</b> → dalga boyu',
+    init() { this.hist = []; this.by = null; this.shine = 0; this.emit = 0; },
+    draw(g, w, h, t, dt, dark) {
+      const a = sm.amp, c = sm.cents, v = voiced(), lock = v ? lockOf(c) : 0;
+      const ink = dark ? [255, 255, 255] : hex(C.ink), limeT = hex(dark ? C.lime : C.limeD);
+      const idle = hex(dark ? '#B9A5FF' : C.lav);
+      const cy = h / 2, sem = 44, lx = 34, nx = w * 0.76, speed = 58;
+      if (this.by === null) this.by = cy;
+      const want = v ? clamp(cy - c / 100 * sem, 26, h - 26) : this.by;
+      this.by += (want - this.by) * (1 - Math.exp(-dt / 0.07));
+      const err = v ? Math.min(Math.abs(c), 200) / 200 : 0;
+      this.hist.push({ t, y: this.by, a: sm.amp, c, err, v });
+      while (this.hist.length && (t - this.hist[0].t) * speed > nx - lx + 10) this.hist.shift();
+
+      g.font = '700 11px Manrope, system-ui, sans-serif'; g.textAlign = 'left'; g.textBaseline = 'middle';
+      for (let d = -2; d <= 2; d++) {
+        const y = cy - d * sem;
+        if (d === 0) {
+          g.fillStyle = dark ? rgba(mixA([110, 80, 170], hex(C.lime), lock), 0.45 + 0.4 * lock) : rgba(mixA(hex(C.soft), hex(C.lime), lock), 1);
+          g.beginPath(); g.roundRect(lx, y - 13, w - lx - 6, 26, 13); g.fill();
+        } else {
+          g.strokeStyle = rgba(ink, 0.1); g.lineWidth = 1; g.beginPath(); g.moveTo(lx, y); g.lineTo(w - 6, y); g.stroke();
+        }
+        g.fillStyle = rgba(ink, d === 0 ? 1 : 0.5); g.fillText(noteName(TARGET + d), 4, y);
+      }
+
+      const pts = [];
+      for (const s of this.hist) { const x = nx - (t - s.t) * speed; if (x >= lx - 2) pts.push({ ...s, x }); }
+      for (let x = nx + 4; x <= w + 4; x += 4) pts.push({ x, y: this.by, a: sm.amp, c, err, v });
+      if (pts.length < 2) return;
+      const env = x => {
+        const core = 0.4 + 0.6 * Math.exp(-Math.pow((x - nx) / (w * 0.3), 2));
+        return core * smooth(0, 50, x - lx) * (x > nx ? 1 - smooth(nx, w, x) : 1);
+      };
+      const at = x => { let lo = 0, hi = pts.length - 1; while (lo < hi) { const m = (lo + hi) >> 1; if (pts[m].x < x) lo = m + 1; else hi = m; } return pts[lo]; };
+      const pal = [hex(C.lav), hex(C.coral), hex(C.limeD), hex('#9C84F0'), hex('#FF8A6B')];
+      const grad = (alpha, i) => {
+        const gr = g.createLinearGradient(lx, 0, w, 0);
+        for (let s = 0; s <= 12; s++) {
+          const p = at(lx + (w - lx) * s / 12);
+          const base = p.v && p.a > 0.05 ? stateColT(p.c, i % 2 === 1, dark) : idle;
+          gr.addColorStop(s / 12, rgba(mixA(base, pal[i], 0.22 * (1 - (p.v ? lockOf(p.c) : 0))), alpha));
+        }
+        return gr;
+      };
+      // Silence breaks the waves into separate phrases, so a new note does
+      // not draw a jump from where the last one ended.
+      const runs = [];
+      let run = [];
+      for (const p of pts) {
+        if (p.v && p.a > 0.05) run.push(p);
+        else if (run.length) { runs.push(run); run = []; }
+      }
+      if (run.length) runs.push(run);
+      g.globalCompositeOperation = dark ? 'screen' : 'multiply';
+      for (let i = 0; i < 5; i++) {
+        const off = (i - 2) * 16, kx = 0.017 * (1 + i * 0.2), ph = t * (2 + i * 0.6) * (i % 2 ? 1 : -1) + i * 1.3, am = 30 - i * 3.5;
+        const fillG = grad(dark ? 0.26 : 0.28, i), lineG = grad(dark ? 0.9 : 0.75, i);
+        for (const rp of runs) {
+          if (rp.length < 2) continue;
+          // Phrase edges taper so a wave starts and ends softly.
+          const x0 = rp[0].x, x1 = rp[rp.length - 1].x;
+          const yOf = p => p.y + off * p.err + am * p.a * env(p.x) * smooth(0, 24, p.x - x0) * (p.x > nx ? 1 : smooth(0, 24, x1 - p.x)) * Math.sin(kx * p.x + ph);
+          g.beginPath();
+          rp.forEach((p, j) => j ? g.lineTo(p.x, yOf(p)) : g.moveTo(p.x, yOf(p)));
+          for (let j = rp.length - 1; j >= 0; j--) g.lineTo(rp[j].x, rp[j].y + off * rp[j].err);
+          g.closePath(); g.fillStyle = fillG; g.fill();
+          g.beginPath();
+          rp.forEach((p, j) => j ? g.lineTo(p.x, yOf(p)) : g.moveTo(p.x, yOf(p)));
+          g.strokeStyle = lineG; g.lineWidth = 1.5; g.stroke();
+        }
+      }
+      g.globalCompositeOperation = 'source-over';
+
+      if (lock > 0.2 && v) {
+        this.shine = (this.shine + dt * 0.8) % 1;
+        const sx = lx + (nx - lx) * this.shine;
+        const gr = g.createLinearGradient(sx - 70, 0, sx + 70, 0);
+        gr.addColorStop(0, rgba(limeT, 0)); gr.addColorStop(0.5, rgba(limeT, 0.95 * lock)); gr.addColorStop(1, rgba(limeT, 0));
+        g.save(); g.shadowColor = rgba(hex(C.lime), 1); g.shadowBlur = 12;
+        g.beginPath(); pts.filter(p => p.x <= nx).forEach((p, j) => j ? g.lineTo(p.x, p.y) : g.moveTo(p.x, p.y));
+        g.strokeStyle = gr; g.lineWidth = 2.5; g.stroke(); g.restore();
+      }
+      g.setLineDash([2, 5]); g.beginPath(); g.moveTo(nx, 10); g.lineTo(nx, h - 10);
+      g.strokeStyle = rgba(ink, 0.15); g.lineWidth = 1; g.stroke(); g.setLineDash([]);
+      if (v) {
+        const fill = stateColT(c, true, dark), col = stateColT(c, false, dark);
+        this.emit += dt * (0.6 + 1.3 * a);
+        for (let i = 0; i < 2; i++) {
+          const p = (this.emit + i / 2) % 1;
+          g.beginPath(); g.arc(nx, this.by, 6 + p * 22, 0, Math.PI * 2);
+          g.strokeStyle = rgba(col, (1 - p) * (1 - p) * 0.6 * a); g.lineWidth = 1.5; g.stroke();
+        }
+        g.save(); g.shadowColor = rgba(fill, 1); g.shadowBlur = 14;
+        g.beginPath(); g.arc(nx, this.by, 5 + 3 * a, 0, Math.PI * 2); g.fillStyle = rgba(fill, 1); g.fill(); g.restore();
+        g.strokeStyle = rgba(ink, 0.9); g.lineWidth = 1.5; g.stroke();
+        const cr = Math.round(c);
+        g.fillStyle = rgba(ink, 1); g.font = '800 12px Manrope, system-ui, sans-serif'; g.textAlign = 'left';
+        g.fillText(lock > 0.6 ? 'notada' : `${cr > 0 ? '+' : ''}${cr}`, nx + 12, this.by - 16);
+      }
+    }
+  });
+
+  // ================= fluid trio: O1–O3 (shared flow engine) =================
+
+  // 1€ filter (Casiez et al., CHI 2012): strong smoothing while the pitch
+  // is steady, little lag while it moves.
+  class OneEuro {
+    constructor(minCut = 1.2, beta = 0.012, dCut = 1) { this.minCut = minCut; this.beta = beta; this.dCut = dCut; this.reset(); }
+    reset() { this.x = null; this.dx = 0; }
+    static alpha(cut, dt) { const tau = 1 / (2 * Math.PI * cut); return 1 / (1 + tau / dt); }
+    filter(x, dt) {
+      if (this.x === null) { this.x = x; return x; }
+      const dx = (x - this.x) / dt;
+      this.dx += OneEuro.alpha(this.dCut, dt) * (dx - this.dx);
+      const cut = this.minCut + this.beta * Math.abs(this.dx);
+      this.x += OneEuro.alpha(cut, dt) * (x - this.x);
+      return this.x;
+    }
+  }
+  const FLOW = { speed: 62, dx: 4, rate: 120 };
+  const canBlur = 'filter' in CanvasRenderingContext2D.prototype;
+  function makeTrack() { return { f: new OneEuro(), hist: [], acc: 0, prev: null, silent: 0, cur: { c: 0, a: 0, v: false } }; }
+  // Samples at a fixed 120 Hz, interpolated between frames, so the wave
+  // scrolls evenly whatever the frame rate.
+  function stepTrack(tr, t, dt) {
+    const sounding = raw.amp > 0.04;
+    if (!sounding) { tr.silent += dt; if (tr.silent > 0.15) tr.f.reset(); } else tr.silent = 0;
+    const c = sounding ? tr.f.filter(raw.cents, Math.max(dt, 1e-3)) : (tr.f.x ?? tr.cur.c);
+    tr.cur = { c, a: sm.amp, v: sm.amp > 0.05 };
+    const prev = tr.prev || { ...tr.cur };
+    tr.acc += dt;
+    const step = 1 / FLOW.rate;
+    while (tr.acc >= step) {
+      tr.acc -= step;
+      const k = dt > 0 ? clamp(1 - tr.acc / dt, 0, 1) : 1;
+      tr.hist.push({ t: t - tr.acc, c: lerp(prev.c, tr.cur.c, k), a: lerp(prev.a, tr.cur.a, k), v: tr.cur.v });
+    }
+    tr.prev = { ...tr.cur };
+    while (tr.hist.length && t - tr.hist[0].t > 7) tr.hist.shift();
+  }
+  function sampleAt(tr, tq) {
+    const H = tr.hist;
+    if (!H.length || tq < H[0].t) return null;
+    if (tq >= H[H.length - 1].t) return H[H.length - 1];
+    let lo = 0, hi = H.length - 1;
+    while (hi - lo > 1) { const m = (lo + hi) >> 1; if (H[m].t <= tq) lo = m; else hi = m; }
+    const A = H[lo], B = H[hi], k = (tq - A.t) / (B.t - A.t || 1);
+    return { c: lerp(A.c, B.c, k), a: lerp(A.a, B.a, k), v: A.v && B.v };
+  }
+  // Soft limit instead of a hard clamp: far-off notes ease towards the edge.
+  const softY = (cy, c, sem, m) => cy - m * Math.tanh((c / 100 * sem) / m);
+  // Siri-style attenuation (K / (K + u⁴))^K around the "now" line.
+  const att = (x, nx, w) => { const u = (x - nx) / (w * 0.3); return Math.pow(2 / (2 + u * u * u * u), 2); };
+  function buildRuns(tr, t, w, h, cy, sem, lx, nx) {
+    const runs = []; let run = [];
+    for (let x = lx; x <= w + FLOW.dx; x += FLOW.dx) {
+      const s = x <= nx ? sampleAt(tr, t - (nx - x) / FLOW.speed) : (tr.cur.v ? tr.cur : null);
+      if (s && s.v && s.a > 0.04) {
+        run.push({ x, y: softY(cy, s.c, sem, h * 0.42), a: s.a, c: s.c, err: Math.min(Math.abs(s.c), 200) / 200 });
+      } else if (run.length) { runs.push(run); run = []; }
+    }
+    if (run.length) runs.push(run);
+    for (const r of runs) { r.x0 = r[0].x; r.x1 = r[r.length - 1].x; }
+    return runs;
+  }
+  const taper = (p, run, nx, w) => smooth(0, 26, p.x - run.x0) * (p.x > nx ? 1 - smooth(nx, w, p.x) : run.x1 > nx ? 1 : smooth(0, 26, run.x1 - p.x));
+  // Midpoint quadratic curves: a smooth line through dense samples.
+  function smoothPath(g, P, move = true) {
+    if (!P.length) return;
+    move ? g.moveTo(P[0][0], P[0][1]) : g.lineTo(P[0][0], P[0][1]);
+    for (let i = 1; i < P.length - 1; i++) g.quadraticCurveTo(P[i][0], P[i][1], (P[i][0] + P[i + 1][0]) / 2, (P[i][1] + P[i + 1][1]) / 2);
+    if (P.length > 1) g.lineTo(P[P.length - 1][0], P[P.length - 1][1]);
+  }
+  function colorGrad(g, tr, t, lx, w, nx, alpha, fill, dark, shift) {
+    const gr = g.createLinearGradient(lx, 0, w, 0), idle = hex(dark ? '#B9A5FF' : C.lav);
+    for (let s = 0; s <= 14; s++) {
+      const x = lx + (w - lx) * s / 14;
+      const p = x <= nx ? sampleAt(tr, t - (nx - x) / FLOW.speed) : tr.cur;
+      let col = p && p.v ? stateColT(p.c, fill, dark) : idle;
+      if (shift) col = mixH(col, shift, 0.2);
+      gr.addColorStop(s / 14, rgba(col, alpha));
+    }
+    return gr;
+  }
+  function glow(g, pathFn, style, width, blur, alpha) {
+    g.save();
+    if (canBlur) g.filter = `blur(${blur}px)`; else { g.shadowColor = 'rgba(217,245,116,0.9)'; g.shadowBlur = blur * 2; }
+    g.globalAlpha = alpha; pathFn(); g.strokeStyle = style; g.lineWidth = width; g.lineCap = 'round'; g.stroke();
+    g.restore();
+  }
+  function flowLanes(g, w, cy, sem, lx, lock, dark) {
+    const ink = dark ? [255, 255, 255] : hex(C.ink);
+    g.font = '700 11px Manrope, system-ui, sans-serif'; g.textAlign = 'left'; g.textBaseline = 'middle';
+    for (let d = -2; d <= 2; d++) {
+      const y = cy - d * sem;
+      if (d === 0) {
+        // Kept soft so the wave, not the lane, carries the colour.
+        g.fillStyle = dark ? rgba(mixA([110, 80, 170], hex(C.lime), lock * 0.45), 0.35 + 0.15 * lock) : rgba(mixH(hex(C.soft), hex('#EEF8D6'), lock), 1);
+        g.beginPath(); g.roundRect(lx, y - 13, w - lx - 6, 26, 13); g.fill();
+      } else {
+        g.strokeStyle = rgba(ink, 0.1); g.lineWidth = 1; g.beginPath(); g.moveTo(lx, y); g.lineTo(w - 6, y); g.stroke();
+      }
+      g.fillStyle = rgba(ink, d === 0 ? 1 : 0.5); g.fillText(noteName(TARGET + d), 4, y);
+    }
+  }
+  function nowMarker(g, self, tr, nx, y, h, dark, t, dt) {
+    const ink = dark ? [255, 255, 255] : hex(C.ink);
+    g.setLineDash([2, 5]); g.beginPath(); g.moveTo(nx, 10); g.lineTo(nx, h - 10);
+    g.strokeStyle = rgba(ink, 0.14); g.lineWidth = 1; g.stroke(); g.setLineDash([]);
+    if (!tr.cur.v) return;
+    const c = tr.cur.c, a = tr.cur.a, fill = stateColT(c, true, dark), col = stateColT(c, false, dark);
+    self.emit = (self.emit || 0) + dt * (0.5 + 1.2 * a);
+    for (let i = 0; i < 2; i++) {
+      const p = (self.emit + i / 2) % 1;
+      g.beginPath(); g.arc(nx, y, 6 + ease(p) * 22, 0, Math.PI * 2);
+      g.strokeStyle = rgba(col, (1 - p) * (1 - p) * 0.55 * a); g.lineWidth = 1.5; g.stroke();
+    }
+    g.save(); g.shadowColor = rgba(fill, 1); g.shadowBlur = 14;
+    g.beginPath(); g.arc(nx, y, 5 + 3 * a, 0, Math.PI * 2); g.fillStyle = rgba(fill, 1); g.fill(); g.restore();
+    g.strokeStyle = rgba(ink, 0.9); g.lineWidth = 1.5; g.stroke();
+    const cr = Math.round(c);
+    g.fillStyle = rgba(ink, 1); g.font = '800 12px Manrope, system-ui, sans-serif'; g.textAlign = 'left'; g.textBaseline = 'middle';
+    g.fillText(lockOf(c) > 0.6 ? 'notada' : `${cr > 0 ? '+' : ''}${cr}`, nx + 12, y - 16);
+  }
+  const FLOW_MAP = '<b>Perde</b> → yükseklik ve renk · <b>Güç</b> → kalınlık ve dalga boyu';
+
+  concepts.push({
+    id: 'O1', group: 'pro', name: 'İpek şerit',
+    text: 'On altı ince ipliğin oluşturduğu, kendi etrafında burkularak akan bir ipek şerit. Ses güçlendikçe şerit genişler, notadan uzaklaştıkça iplikler açılır. Notada şerit toplanır ve ortasındaki ışık parlar. En zarif ve en "premium" seçenek.',
+    better: ['Burulan şerit: 3B derinlik hissi', 'İplikler perde hatasıyla açılıp kapanır', 'Bulanıklaştırılmış ışık çekirdeği'],
+    map: FLOW_MAP,
+    init() { this.tr = makeTrack(); },
+    draw(g, w, h, t, dt, dark) {
+      const tr = this.tr; stepTrack(tr, t, dt);
+      const cy = h / 2, sem = 44, lx = 34, nx = w * 0.76;
+      const lock = tr.cur.v ? lockOf(tr.cur.c) : 0;
+      flowLanes(g, w, cy, sem, lx, lock, dark);
+      const runs = buildRuns(tr, t, w, h, cy, sem, lx, nx);
+      const lineG = colorGrad(g, tr, t, lx, w, nx, 0.95, false, dark);
+      const coreG = colorGrad(g, tr, t, lx, w, nx, 1, true, dark);
+      for (const run of runs) if (run.length > 2) glow(g, () => { g.beginPath(); smoothPath(g, run.map(p => [p.x, p.y])); }, coreG, 7 + 6 * lock, 7, dark ? 0.55 : 0.35);
+      g.globalCompositeOperation = dark ? 'screen' : 'multiply';
+      const n = 16;
+      for (const run of runs) {
+        if (run.length < 3) continue;
+        for (let j = 0; j < n; j++) {
+          const s = j / (n - 1) - 0.5;
+          const P = run.map(p => {
+            const env = (0.3 + 0.7 * att(p.x, nx, w)) * taper(p, run, nx, w);
+            const W = 3 + (46 * p.a + 26 * p.err) * env;
+            const tw = p.x * 0.022 - t * 2.0;
+            return [p.x, p.y + s * W * Math.cos(tw + s * 1.1) + p.a * env * 6 * Math.sin(p.x * 0.031 + t * 2.6 + s * 2.2)];
+          });
+          g.beginPath(); smoothPath(g, P);
+          g.globalAlpha = 0.14 + 0.5 * (1 - Math.abs(2 * s)); g.strokeStyle = lineG; g.lineWidth = 1.15; g.stroke();
+        }
+        g.globalAlpha = 1;
+      }
+      g.globalCompositeOperation = 'source-over';
+      const last = runs.length ? runs[runs.length - 1] : null;
+      const ny = tr.cur.v && last ? softY(cy, tr.cur.c, sem, h * 0.42) : cy;
+      nowMarker(g, this, tr, nx, ny, h, dark, t, dt);
+    }
+  });
+
+  concepts.push({
+    id: 'O2', group: 'pro', name: 'Aurora',
+    text: 'iOS Siri dalgasının tekniği: "şimdi" noktasında, perdenle birlikte süzülen üç renkli ışık bulutu. Renk karışımı durumu anlatır: pes kalınca lavanta, tiz kaçınca mercan, notada lime baskın. Arkada söylediğin melodi ince, parlak bir iz olarak kalır.',
+    better: ['Siri iOS9 sönümleme eğrileri, doğup kaybolan alt dalgalar', 'Renk ağırlıkları perde durumuna göre akar', 'Melodi izi ve bulanık parlama'],
+    map: FLOW_MAP,
+    init() {
+      this.tr = makeTrack(); this.curves = []; this.wt = [0.3, 0.3, 0.1];
+      for (let ci = 0; ci < 3; ci++) for (let k = 0; k < 3; k++) this.curves.push(this.spawn(ci, -Math.random() * 3));
+    },
+    spawn(ci, t) {
+      return { ci, amp: 0.4 + Math.random() * 0.6, off: Math.random() * 2 - 1, width: 0.7 + Math.random() * 1.3,
+        speed: (0.6 + Math.random()) * (Math.random() < 0.5 ? -1 : 1), ph: Math.random() * 6.28,
+        freq: 0.012 + Math.random() * 0.014, born: t, life: 2.4 + Math.random() * 2.6 };
+    },
+    draw(g, w, h, t, dt, dark) {
+      const tr = this.tr; stepTrack(tr, t, dt);
+      const cy = h / 2, sem = 44, lx = 34, nx = w * 0.72;
+      const cur = tr.cur, lock = cur.v ? lockOf(cur.c) : 0;
+      flowLanes(g, w, cy, sem, lx, lock, dark);
+      const want = [(cur.c < 0 ? 1 : 0.18) * (1 - lock) + 0.08, (cur.c > 0 ? 1 : 0.18) * (1 - lock) + 0.08, 0.08 + 1.1 * lock];
+      const kw = 1 - Math.exp(-dt / 0.15);
+      this.wt = this.wt.map((v, i) => v + (want[i] - v) * kw);
+      this.curves = this.curves.map(cv => t - cv.born > cv.life ? this.spawn(cv.ci, t) : cv);
+      const runs = buildRuns(tr, t, w, h, cy, sem, lx, nx);
+      const cols = (dark ? ['#B9A5FF', '#FF8A80', '#D9F574'] : [C.lav, C.coral, C.limeD]).map(hex);
+      const trailG = colorGrad(g, tr, t, lx, w, nx, 0.95, false, dark);
+      for (const run of runs) if (run.length > 2) {
+        glow(g, () => { g.beginPath(); smoothPath(g, run.map(p => [p.x, p.y])); }, colorGrad(g, tr, t, lx, w, nx, 1, true, dark), 6, 6, dark ? 0.6 : 0.4);
+        g.beginPath(); smoothPath(g, run.map(p => [p.x, p.y]));
+        g.strokeStyle = trailG; g.lineWidth = 1.8; g.lineCap = 'round'; g.stroke();
+      }
+      // Multiply deepens overlaps on cream; on the dark stage plain alpha
+      // keeps each colour instead of adding up to white.
+      g.globalCompositeOperation = dark ? 'source-over' : 'multiply';
+      for (const cv of this.curves) {
+        const le = Math.sin(Math.PI * clamp((t - cv.born) / cv.life, 0, 1));
+        const weight = this.wt[cv.ci];
+        if (le * weight < 0.01) continue;
+        const fg = g.createLinearGradient(nx - w * 0.42, 0, nx + w * 0.22, 0);
+        fg.addColorStop(0, rgba(cols[cv.ci], 0)); fg.addColorStop(0.62, rgba(cols[cv.ci], dark ? 0.42 : 0.5)); fg.addColorStop(1, rgba(cols[cv.ci], 0));
+        for (const run of runs) {
+          if (run.length < 3) continue;
+          const top = [], bot = [];
+          for (const p of run) {
+            const u = (p.x - nx - cv.off * w * 0.1) / (w * 0.2 * cv.width);
+            const at = Math.pow(2 / (2 + u * u * u * u), 2);
+            const A = 56 * p.a * weight * cv.amp * le * at * taper(p, run, nx, w) * Math.abs(Math.sin(p.x * cv.freq + t * cv.speed * 2.4 + cv.ph));
+            top.push([p.x, p.y - A]); bot.push([p.x, p.y + A]);
+          }
+          g.beginPath(); smoothPath(g, top); smoothPath(g, bot.reverse(), false); g.closePath();
+          g.fillStyle = fg; g.fill();
+        }
+      }
+      g.globalCompositeOperation = 'source-over';
+      nowMarker(g, this, tr, nx, cur.v ? softY(cy, cur.c, sem, h * 0.42) : cy, h, dark, t, dt);
+    }
+  });
+
+  concepts.push({
+    id: 'O3', group: 'pro', name: 'Sıvı mürekkep',
+    text: 'Melodin, yumuşak gölgeli, parlak ve kalın bir sıvı akıntısı. Kalınlığı ses gücün, kenarları akarken hafifçe dalgalanır. Önde yüzey gerilimiyle titreyen bir damla var. Notadayken akıntının üzerinden lime bir ışık süzülür.',
+    better: ['Yumuşak düşen gölge ve parlak üst kenar', 'Ses girişinde yaylı titreşen damla', 'Notada akan parlama'],
+    map: FLOW_MAP,
+    init() { this.tr = makeTrack(); this.wob = { x: null, v: 0 }; this.shine = 0; },
+    draw(g, w, h, t, dt, dark) {
+      const tr = this.tr; stepTrack(tr, t, dt);
+      const cy = h / 2, sem = 44, lx = 34, nx = w * 0.76;
+      const cur = tr.cur, lock = cur.v ? lockOf(cur.c) : 0;
+      flowLanes(g, w, cy, sem, lx, lock, dark);
+      spring(this.wob, cur.a, 260, 7, dt);
+      const runs = buildRuns(tr, t, w, h, cy, sem, lx, nx);
+      const bodyG = colorGrad(g, tr, t, lx, w, nx, 0.96, true, dark);
+      const rimG = colorGrad(g, tr, t, lx, w, nx, 0.55, false, dark);
+      const nz = (x, o) => 1.4 * Math.sin(x * 0.09 - t * 3.1 + o) + 0.9 * Math.sin(x * 0.17 + t * 2.3 + o * 1.7);
+      const T = (p, run) => 3 + 22 * p.a * (0.4 + 0.6 * att(p.x, nx, w)) * taper(p, run, nx, w);
+      for (const run of runs) {
+        if (run.length < 3) continue;
+        const top = run.map(p => [p.x, p.y - T(p, run) / 2 + nz(p.x, 0) * p.a]);
+        const bot = run.map(p => [p.x, p.y + T(p, run) / 2 + nz(p.x, 2) * p.a]);
+        const shape = () => { g.beginPath(); smoothPath(g, top); smoothPath(g, bot.slice().reverse(), false); g.closePath(); };
+        g.save(); g.translate(0, 7);
+        if (canBlur) g.filter = 'blur(7px)';
+        shape(); g.fillStyle = dark ? 'rgba(10,4,24,0.45)' : 'rgba(41,34,56,0.16)'; g.fill(); g.restore();
+        if (lock > 0.2) glow(g, () => { g.beginPath(); smoothPath(g, run.map(p => [p.x, p.y])); }, rgba(hex(C.lime), 1), 18, 10, 0.55 * lock);
+        shape(); g.fillStyle = bodyG; g.fill();
+        g.beginPath(); smoothPath(g, bot); g.strokeStyle = rimG; g.lineWidth = 1.6; g.stroke();
+        const hl = run.map(p => [p.x, p.y - T(p, run) * 0.24 + nz(p.x, 0) * p.a * 0.6]);
+        g.beginPath(); smoothPath(g, hl);
+        g.strokeStyle = 'rgba(255,255,255,0.55)'; g.lineWidth = 2.2; g.lineCap = 'round'; g.stroke();
+        if (lock > 0.2) {
+          this.shine = (this.shine + dt * 0.35) % 1;
+          const sx = run.x0 + (Math.min(run.x1, nx) - run.x0) * this.shine;
+          const sg = g.createLinearGradient(sx - 50, 0, sx + 50, 0);
+          sg.addColorStop(0, 'rgba(255,255,255,0)'); sg.addColorStop(0.5, `rgba(255,255,255,${0.9 * lock})`); sg.addColorStop(1, 'rgba(255,255,255,0)');
+          g.beginPath(); smoothPath(g, hl); g.strokeStyle = sg; g.lineWidth = 3.5; g.stroke();
+        }
+      }
+      if (cur.v) {
+        const y = softY(cy, cur.c, sem, h * 0.42), fill = stateColT(cur.c, true, dark);
+        const r = (4 + 13 * cur.a) * (1 + clamp(this.wob.v * 0.05, -0.25, 0.25));
+        const rg = g.createRadialGradient(nx - r * 0.35, y - r * 0.4, 1, nx, y, r);
+        rg.addColorStop(0, rgba(mixH(fill, [255, 255, 255], 0.55), 1)); rg.addColorStop(1, rgba(fill, 1));
+        g.save(); g.shadowColor = rgba(fill, 0.9); g.shadowBlur = 16;
+        g.beginPath(); g.ellipse(nx, y, r * (1 + clamp(this.wob.v * 0.03, -0.15, 0.15)), r, 0, 0, Math.PI * 2); g.fillStyle = rg; g.fill(); g.restore();
+        g.beginPath(); g.ellipse(nx - r * 0.3, y - r * 0.38, r * 0.32, r * 0.18, -0.4, 0, Math.PI * 2); g.fillStyle = 'rgba(255,255,255,0.7)'; g.fill();
+        const ink = dark ? [255, 255, 255] : hex(C.ink), crr = Math.round(cur.c);
+        g.fillStyle = rgba(ink, 1); g.font = '800 12px Manrope, system-ui, sans-serif'; g.textAlign = 'left'; g.textBaseline = 'middle';
+        g.fillText(lock > 0.6 ? 'notada' : `${crr > 0 ? '+' : ''}${crr}`, nx + r + 8, y - r - 6);
+      }
+    }
+  });
+
+  // ================= final: voice waves, fluid =================
+  concepts.push({
+    id: 'O★', group: 'star', name: 'Ses dalgaları · son hâl',
+    text: 'Seçtiğin ses dalgaları, akış motoruyla yeniden. Altı katman farklı hız ve derinlikte akar, fazları sürekli kayarak canlı kalır. "Şimdi" noktasında sesinle büyüyen bir ışık var. Sese başlayınca dalga kabarır, notaya oturunca katmanlar birleşir, ışık yayılır ve üzerinden lime bir parıltı geçer.',
+    better: [
+      '1€ filtresi, saniyede 120 örnek ve eğri yumuşatma',
+      'Altı katman: ön ve arka farklı hızda akar, derinlik hissi',
+      'Organik hareket: faz ve genlik yavaşça kayar, tekrar etmez',
+      '"Şimdi" noktasında sesle büyüyen yaylı parlama',
+      'Ses girişinde dalga kabarması, notaya oturunca parıltı'
+    ],
+    map: FLOW_MAP,
+    init() {
+      this.tr = makeTrack(); this.shine = 0; this.bloom = { x: null, v: 0 };
+      this.wasLock = false; this.pulse = 0; this.prevV = false; this.onset = 0;
+    },
+    draw(g, w, h, t, dt, dark) {
+      const tr = this.tr; stepTrack(tr, t, dt);
+      const cy = h / 2, sem = 46, lx = 34, nx = w * 0.74;
+      const cur = tr.cur, lock = cur.v ? lockOf(cur.c) : 0;
+      flowLanes(g, w, cy, sem, lx, lock, dark);
+      if (cur.v && !this.prevV) this.onset = 1;
+      this.prevV = cur.v; this.onset = Math.max(0, this.onset - dt * 1.4);
+      const lockNow = cur.v && lock > 0.7;
+      if (lockNow && !this.wasLock) this.pulse = 1;
+      this.wasLock = lockNow; this.pulse = Math.max(0, this.pulse - dt * 1.1);
+      spring(this.bloom, cur.v ? cur.a * (0.6 + 0.4 * lock) : 0, 90, 12, dt);
+      const runs = buildRuns(tr, t, w, h, cy, sem, lx, nx);
+      const ny = cur.v ? softY(cy, cur.c, sem, h * 0.42) : cy;
+
+      const bl = Math.max(0, this.bloom.x);
+      const br = 36 + 70 * bl + 50 * this.pulse;
+      const bc = cur.v ? stateColT(cur.c, true, dark) : hex(dark ? '#B9A5FF' : C.lav);
+      const bg = g.createRadialGradient(nx, ny, 0, nx, ny, br);
+      bg.addColorStop(0, rgba(bc, (dark ? 0.5 : 0.34) * bl + 0.35 * this.pulse));
+      bg.addColorStop(1, rgba(bc, 0));
+      g.fillStyle = bg; g.fillRect(nx - br, ny - br, br * 2, br * 2);
+
+      const coreG = colorGrad(g, tr, t, lx, w, nx, 1, true, dark);
+      for (const run of runs) if (run.length > 2) glow(g, () => { g.beginPath(); smoothPath(g, run.map(p => [p.x, p.y])); }, coreG, 10 + 10 * lock, 9, dark ? 0.55 : 0.3);
+
+      const pal = [hex(C.lav), hex(C.coral), hex(C.limeD), hex('#9C84F0'), hex('#FF8A6B'), hex(C.deep)];
+      g.globalCompositeOperation = dark ? 'screen' : 'multiply';
+      for (let i = 0; i < 6; i++) {
+        const off = (i - 2.5) * 14, kx = 0.014 * (1 + i * 0.17);
+        const speed = (1.6 + i * 0.55) * (i % 2 ? 1 : -1), am = 64 - i * 6.5;
+        const drift = 1.2 * Math.sin(t * 0.37 + i * 1.3);
+        const fillG = colorGrad(g, tr, t, lx, w, nx, dark ? 0.24 : 0.3, i % 2 === 1, dark, pal[i]);
+        const lineG = colorGrad(g, tr, t, lx, w, nx, dark ? 0.85 : 0.7, i % 2 === 1, dark, pal[i]);
+        for (const run of runs) {
+          if (run.length < 3) continue;
+          const yOf = p => {
+            const env = (0.34 + 0.66 * att(p.x, nx, w)) * taper(p, run, nx, w);
+            const swell = 1 + 0.5 * this.onset * Math.exp(-Math.pow((p.x - nx) / 46, 2)) + 0.3 * this.pulse;
+            const breathe = 0.75 + 0.25 * Math.sin(p.x * 0.006 + t * 0.5 + i * 1.7);
+            return p.y + off * p.err + am * p.a * env * swell * breathe * Math.sin(kx * p.x + t * speed + drift + i);
+          };
+          const top = run.map(p => [p.x, yOf(p)]);
+          g.beginPath(); smoothPath(g, top);
+          for (let j = run.length - 1; j >= 0; j--) g.lineTo(run[j].x, run[j].y + off * run[j].err);
+          g.closePath(); g.fillStyle = fillG; g.fill();
+          g.beginPath(); smoothPath(g, top); g.strokeStyle = lineG; g.lineWidth = 1.3 + (i / 5) * 0.6; g.stroke();
+        }
+      }
+      g.globalCompositeOperation = 'source-over';
+
+      for (const run of runs) {
+        if (run.length < 3) continue;
+        g.beginPath(); smoothPath(g, run.map(p => [p.x, p.y]));
+        g.strokeStyle = colorGrad(g, tr, t, lx, w, nx, 0.9, false, dark); g.lineWidth = 1.6; g.lineCap = 'round'; g.stroke();
+      }
+      if (lock > 0.2 && cur.v) {
+        this.shine = (this.shine + dt * 0.7) % 1;
+        const limeT = hex(dark ? C.lime : C.limeD), sx = lx + (nx - lx) * this.shine;
+        const sg = g.createLinearGradient(sx - 80, 0, sx + 80, 0);
+        sg.addColorStop(0, rgba(limeT, 0)); sg.addColorStop(0.5, rgba(limeT, lock)); sg.addColorStop(1, rgba(limeT, 0));
+        for (const run of runs) glow(g, () => { g.beginPath(); smoothPath(g, run.filter(p => p.x <= nx).map(p => [p.x, p.y])); }, sg, 4, 3, 1);
+      }
+      nowMarker(g, this, tr, nx, ny, h, dark, t, dt);
+    }
+  });
+
+  // ---------- page wiring ----------
+  const grids = { star: document.getElementById('grid-star'), pro: document.getElementById('grid-pro'), final: document.getElementById('grid-final'), new: document.getElementById('grid-new'), old: document.getElementById('grid-old') };
+  const groupOf = cn => ['star', 'pro', 'final', 'new'].includes(cn.group) ? cn.group : 'old';
+  const order = ['star', 'pro', 'final', 'new', 'old'].flatMap(gr => concepts.filter(cn => groupOf(cn) === gr));
+  const views = order.map(cn => {
+    const grid = grids[groupOf(cn)];
+    const final = ['final', 'pro', 'star'].includes(groupOf(cn));
+    const el = document.createElement('article');
+    el.className = final ? 'concept final' : 'concept';
+    const bid = cn.id.replace('+', 'p').replace('★', 's');
+    el.innerHTML = `
+      <div class="concept-top">
+        <h2><span class="id">${cn.id}</span>${cn.name}</h2>
+        ${final ? `<div class="seg small" role="group" aria-label="${cn.name} zemini">
+          <button type="button" id="bg-${bid}-light" data-th="light" aria-pressed="true">Krem zemin</button>
+          <button type="button" id="bg-${bid}-dark" data-th="dark" aria-pressed="false">Mor sahne</button>
+        </div>` : ''}
+      </div>
+      <div class="phone" aria-label="${cn.name} önizlemesi">
+        <span class="tag">TİZE DOĞRU · 0 NOTA</span>
+        <span class="note">${noteName(TARGET)}</span>
+        <span class="try">1. deneme</span>
+        <canvas role="img" aria-label="${cn.name}: söylenen perdeye göre hareket eden efekt"></canvas>
+        <span class="say">Şimdi sen söyle</span>
+        <span class="status">Dinliyorum…</span>
+      </div>
+      <p>${cn.text}</p>
+      ${cn.better ? `<ul class="better">${cn.better.map(b => `<li>${b}</li>`).join('')}</ul>` : ''}
+      <div class="map">${cn.map}</div>`;
+    grid.appendChild(el);
+    cn.init();
+    const view = { cn, canvas: el.querySelector('canvas'), status: el.querySelector('.status'), w: 0, h: 0, dark: false };
+    const phone = el.querySelector('.phone');
+    for (const b of el.querySelectorAll('[data-th]')) {
+      b.addEventListener('click', () => {
+        view.dark = b.dataset.th === 'dark';
+        phone.classList.toggle('dark', view.dark);
+        for (const o of el.querySelectorAll('[data-th]')) o.setAttribute('aria-pressed', String(o === b));
+      });
+    }
+    return view;
+  });
+
+  function size() {
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    for (const v of views) {
+      const w = v.canvas.clientWidth, h = v.canvas.clientHeight;
+      if (w === v.w && h === v.h) continue;
+      v.w = w; v.h = h; v.canvas.width = Math.round(w * dpr); v.canvas.height = Math.round(h * dpr);
+      v.ctx = v.canvas.getContext('2d'); v.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+  }
+  const ro = new ResizeObserver(size);
+  ro.observe(grids.star); ro.observe(grids.pro); ro.observe(grids.final); ro.observe(grids.new); ro.observe(grids.old);
+  size();
+
+  const cIn = document.getElementById('cents'), aIn = document.getElementById('amp');
+  const cOut = document.getElementById('cents-out'), aOut = document.getElementById('amp-out');
+  const bAuto = document.getElementById('m-auto'), bMan = document.getElementById('m-man');
+  function setMode(m) {
+    mode = m;
+    bAuto.setAttribute('aria-pressed', String(m === 'auto'));
+    bMan.setAttribute('aria-pressed', String(m === 'man'));
+    if (m === 'man') readSliders();
+  }
+  function readSliders() { raw.cents = +cIn.value; raw.amp = +aIn.value / 100; }
+  bAuto.addEventListener('click', () => setMode('auto'));
+  bMan.addEventListener('click', () => setMode('man'));
+  for (const el of [cIn, aIn]) el.addEventListener('input', () => { if (mode !== 'man') setMode('man'); readSliders(); });
+  setMode(mode);
+
+  function statusText() {
+    if (!voiced()) return 'Dinliyorum…';
+    const c = Math.round(sm.cents);
+    if (Math.abs(c) <= 25) return `Notanın üstünde · ${c > 0 ? '+' : ''}${c} sent`;
+    return c < 0 ? `Biraz pes · ${c} sent` : `Biraz tiz · +${c} sent`;
+  }
+
+  let last = performance.now(), clock = 0, uiTick = 0;
+  function frame(now) {
+    const dt = Math.min(0.05, (now - last) / 1000); last = now; clock += dt;
+    stepSignal(clock, dt);
+    for (const v of views) {
+      if (!v.ctx) continue;
+      v.ctx.clearRect(0, 0, v.w, v.h);
+      v.ctx.save(); v.cn.draw(v.ctx, v.w, v.h, clock, dt, v.dark); v.ctx.restore();
+    }
+    uiTick += dt;
+    if (uiTick > 0.08) {
+      uiTick = 0;
+      const s = statusText();
+      for (const v of views) if (v.status.textContent !== s) v.status.textContent = s;
+      if (mode === 'auto') {
+        const c = voiced() ? Math.round(sm.cents) : 0;
+        cIn.value = c; aIn.value = Math.round(sm.amp * 100);
+      }
+      cOut.textContent = `${Math.round(+cIn.value) > 0 ? '+' : ''}${Math.round(+cIn.value)} sent`;
+      aOut.textContent = `%${aIn.value}`;
+    }
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+</script>

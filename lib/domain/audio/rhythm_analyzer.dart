@@ -1,14 +1,20 @@
 import '../models/exercise_result.dart';
 import '../models/score_metric.dart';
 
+/// Default matching windows; one source for the analyzer and any display.
+abstract final class RhythmAnalysisDefaults {
+  static const toleranceMs = 120;
+  static const onTimeToleranceMs = 10;
+}
+
 /// A rhythm exercise's reference beats and the user's captured taps/claps,
 /// both expressed as millisecond offsets from the exercise start.
 class RhythmAnalysisRequest {
   const RhythmAnalysisRequest({
     required this.expectedOnsetsMs,
     required this.userOnsetsMs,
-    this.toleranceMs = 120,
-    this.onTimeToleranceMs = 10,
+    this.toleranceMs = RhythmAnalysisDefaults.toleranceMs,
+    this.onTimeToleranceMs = RhythmAnalysisDefaults.onTimeToleranceMs,
     this.latencyCompensationMs = 0,
   });
 

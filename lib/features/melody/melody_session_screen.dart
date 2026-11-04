@@ -12,6 +12,7 @@ import '../../infrastructure/audio/isolate_recording_pitch_worker.dart';
 import '../../infrastructure/audio/synthetic_melody_backend.dart';
 import '../common/ui/resonia_ui.dart';
 import '../common/ui/microphone_permission_recovery_card.dart';
+import 'ghost_ribbon.dart';
 import 'melody_candidate_comparison_card.dart';
 import 'melody_practice_screen.dart';
 import '../../domain/lang.dart';
@@ -278,6 +279,19 @@ class _MelodySessionScreenState extends State<MelodySessionScreen>
                 ),
               ),
             ],
+            if ((outcome.recording, outcome.segments, outcome.alignment) case (
+              final recording?,
+              final segments?,
+              final alignment?,
+            ))
+              if (GhostRibbonData.fromEvidence(
+                    referenceHz: outcome.reference.frequenciesHz,
+                    recording: recording,
+                    segments: segments,
+                    alignment: alignment,
+                  )
+                  case final ribbon?)
+                GhostRibbonView(data: ribbon),
             if (outcome.alignment case final alignment?)
               MelodyCandidateComparisonCard(evidence: alignment),
             if (outcome.alignment case final alignment?)

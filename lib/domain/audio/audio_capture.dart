@@ -73,6 +73,13 @@ abstract interface class ReferenceClipPlayer {
 
 /// Optional: live input level (dBFS, ≤ 0) while capturing. Display only:
 /// never scored, never a voice/pitch claim, not calibrated across devices.
+/// Raw mono samples (−1…1) while a capture runs, for display-only live
+/// views. Nothing here is measured or retained beyond the capture.
+abstract interface class LiveSampleSource {
+  Stream<List<double>> get liveSamples;
+  int get liveSampleRateHz;
+}
+
 abstract interface class InputLevelSource {
   Stream<double> get inputLevelDb;
 

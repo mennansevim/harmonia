@@ -35,6 +35,8 @@ class RhythmImitationOutcome {
     this.spanRatio,
     required this.referencePlays,
     this.guided = false,
+    this.referenceOnsetsMs = const [],
+    this.userOnsetsMs = const [],
   });
 
   static const version = 'rhythm-imitation-1/first-tap-anchor';
@@ -50,6 +52,15 @@ class RhythmImitationOutcome {
   final double? spanRatio;
   final int referencePlays;
   final bool guided;
+
+  /// The compared reference onsets and anchored taps (first tap = first
+  /// onset), for drawing the timeline only. Empty unless measured; the anchor
+  /// is a definition, so it is never a timing measurement.
+  final List<int> referenceOnsetsMs, userOnsetsMs;
+
+  /// The evaluator's unchanged windows, mirrored for display.
+  static const matchToleranceMs = RhythmAnalysisDefaults.toleranceMs;
+  static const onTimeToleranceMs = RhythmAnalysisDefaults.onTimeToleranceMs;
 
   bool get isMeasured => status == RhythmImitationStatus.measured;
 
@@ -323,6 +334,8 @@ class RhythmImitationEvaluator {
       spanRatio: userSpan / referenceSpan,
       referencePlays: referencePlays,
       guided: guided,
+      referenceOnsetsMs: List.unmodifiable(reference),
+      userOnsetsMs: List.unmodifiable(user),
     );
   }
 }

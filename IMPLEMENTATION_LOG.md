@@ -2785,6 +2785,19 @@ geçti**, 2 opt-in atlandı. Commit yok.
   saat dilimi değişimi ve Android tam zamanlı alarm davranışı denenmedi.
   Etki (bildirim → 2 saatte çalışma) ölçülmedi. Commit yok.
 
+## 2026-11-03 — REL-11 imzalı App Store IPA
+
+`flutter build ipa --release --dart-define=RESONIA_CHANNEL=beta
+--export-method app-store` (commit 8139a96 üzerinde) geçti:
+`build/ios/ipa/Vocalart.ipa` 33,4 MB; arşiv 198,3 MB. İmza "Apple
+Distribution: MENNAN SEVIM (L3Z9U2B39K)" (Xcode bulut yönetimli dağıtım
+sertifikası), App Store profili `com.mennansevim.vocalart`. Sürüm 1.0.0;
+Xcode `manageAppVersionAndBuildNumber` ile IPA build numarasını 2 yaptı
+(arşiv ve pubspec 1). IPA'da 31 piyano WAV + katalog var;
+`ITSAppUsesNonExemptEncryption=false`. Uyarı: açılış görseli Flutter
+varsayılanı. Yükleme yapılmadı (ayrı kullanıcı yetkisi). Gerçek cihazda
+çalıştırılmadı.
+
 ## 2026-11-04 — DESIGN-09 Figma Make teması
 
 Rakip incelemesi (`docs/research/2026-11-04-voice-coach-screen-template.md`)
@@ -2835,6 +2848,71 @@ yetki yüzünden okuyamadı, ekranlar tarayıcıda gezildi) → inceleme ve plan
   kontrol edildi).
 - Sınırlar: Egzersizler içeriği ve Bugün yerleşimi değişmedi. Simülatör ve
   gerçek cihazda bakılmadı. Commit yok.
+
+## 2026-11-04 — REL-11a iOS artifact doğrulama kapısı
+
+- `scripts/release/verify_ios_ipa.py`: IPA'yı çıkarmadan bounded ZIP olarak
+  denetler; traversal/symlink/toplam boyut, tek ana app, bundle adı/kimliği,
+  sürüm/build/minimum OS, `ITSAppUsesNonExemptEncryption=false`, executable,
+  CodeResources ve embedded profile zorunlu.
+- `security cms` ile profile decode edilir; application-identifier,
+  `get-task-allow=false`, cihaz/ad-hoc/enterprise işaretlerinin yokluğu ve
+  son kullanma tarihi fail-closed kontrol edilir.
+- `python3 -I scripts/release/test_verify_ios_ipa.py`: **3 test geçti**;
+  yanlış bundle/şifreleme beyanı, development ve süresi dolmuş profile
+  senaryoları reddedildi. `py_compile` temiz.
+- Gerçek `build/ios/ipa/Vocalart.ipa` exit 0: Vocalart,
+  `com.mennansevim.vocalart`, 1.0.0 build 2, minimum iOS 15.0, App Store
+  profile 2027-09-25'e kadar geçerli.
+- `dart tool/quality_check.dart` exit 0: **1235 test geçti**, 2 opt-in
+  atlandı; analyze/format temiz.
+- Sınırlar: upload/App Store sunucu kabulü, tüm codesign kriptografik zinciri,
+  kurulum ve fiziksel cihaz çalışması doğrulanmadı. Yükleme/push/deploy yok.
+
+## 2026-11-04 — REL-11b iOS sürüm tek kaynağı
+
+- Bulguda arşiv/pubspec `1.0.0+1`, export edilen imzalı IPA `1.0.0+2` idi;
+  Xcode export build numarasını sessiz artırmıştı.
+- `pubspec.yaml` imzalı artifact ile `1.0.0+2` olarak hizalandı.
+  `verify_ios_ipa.py` strict pubspec `semver+build` okur ve IPA marketing/build
+  değerlerini exact-match ister; eski veya otomatik değiştirilmiş artifact
+  fail-closed reddedilir.
+- `python3 -I scripts/release/test_verify_ios_ipa.py`: **5 test geçti**;
+  sürüm ayrışması ve bozuk pubspec de kapsandı. Gerçek IPA 1.0.0+2 ile geçti.
+- `dart tool/quality_check.dart` exit 0: **1235 test geçti**, 2 opt-in
+  atlandı; analyze/format temiz.
+- Upload, mağaza işlemi, push/deploy veya cihaz kurulumu yapılmadı.
+
+## 2026-11-04 — REL-11c iOS codesign kapısı
+
+- IPA archive duplicate path'leri artık fail-closed reddediliyor.
+- Önceki path/symlink/count/byte bütçelerinden geçen archive geçici klasöre
+  açılıyor; `/usr/bin/codesign --verify --deep --strict --verbose=2` ana app
+  ve nested imza zincirini doğrulamadan rapor başarı vermiyor.
+- `python3 -I scripts/release/test_verify_ios_ipa.py`: **7 test geçti**;
+  imza doğrulayıcı hatası ve duplicate archive path regresyonları eklendi.
+  `py_compile` temiz.
+- Gerçek `build/ios/ipa/Vocalart.ipa`: codesign exit 0 ve önceki kimlik,
+  sürüm, profile, şifreleme kapılarının tamamı geçti.
+- `dart tool/quality_check.dart` exit 0: **1236 test geçti**, 2 opt-in
+  atlandı; analyze/format temiz.
+- Apple sunucu kabulü, upload/TestFlight dağıtımı veya fiziksel cihaz kurulumu
+  değildir. Upload/push/deploy yapılmadı.
+
+## 2026-11-04 — REL-11d Apple sahiplik zinciri
+
+- Profile `application-identifier` artık suffix değil exact
+  `L3Z9U2B39K.com.mennansevim.vocalart`; profile `TeamIdentifier` listesi ve
+  `com.apple.developer.team-identifier` entitlement'ı da exact eşleşir.
+- `codesign -dv --verbose=4` çıktısında exact bundle ID, Team ID ve ilk
+  authority'nin `Apple Distribution:` olması zorunlu; farklı sahibin geçerli
+  imzası kabul edilmez.
+- Python paketi **9 test**; yanlış profile team ve yanlış signature team
+  regresyonları eklendi. Güncel gerçek 1.0.0 build 3 IPA; team
+  `L3Z9U2B39K`, Vocalart app id ve Apple Distribution authority ile geçti.
+- `dart tool/quality_check.dart` exit 0: **1259 test geçti**, 2 opt-in
+  atlandı; analyze/format temiz.
+- Upload, App Store sunucu kabulü, cihaz kurulumu, push/deploy yapılmadı.
 
 ## 2026-11-04 — DESIGN-10 Bugün yerleşimi
 
@@ -2922,3 +3000,456 @@ yetki yüzünden okuyamadı, ekranlar tarayıcıda gezildi) → inceleme ve plan
   ÖLÇÜM" ve %50 öneri.
 - `dart tool/quality_check.dart` exit 0: **1240 test geçti**, 2 opt-in
   atlandı. Ekranlar: `design-exports/gelisim-koro-2026-11-04/`. Commit yok.
+
+## 2026-11-04 — REL-12 tasarım IPA'sı (1.0.0+3)
+
+- Kaynak: commit 4e7591e (tasarım) + çalışma ağacındaki REL-11 değişiklikleri.
+- `pubspec.yaml` 1.0.0+2 → 1.0.0+3 (build 2 daha önce export edilmişti).
+- `flutter build ipa --release --dart-define=RESONIA_CHANNEL=beta
+  --export-options-plist=<önceki ExportOptions, manageAppVersionAndBuildNumber=false>`
+  exit 0; `build/ios/ipa/Vocalart.ipa` 33,2 MB. Uyarı: açılış görseli
+  Flutter varsayılanı.
+- `python3 -I scripts/release/test_verify_ios_ipa.py`: 7/7.
+  `verify_ios_ipa.py` gerçek IPA: passed — com.mennansevim.vocalart,
+  Vocalart, 1.0.0 (3), iOS 15.0, codesign doğrulandı, App Store profile
+  2027-09-25'e kadar.
+- Önceki 1.0.0 (2) IPA `build/ios/ipa-1.0.0+2/` altına taşındı.
+- Upload, TestFlight, cihaz kurulumu yapılmadı (ayrı kullanıcı yetkisi).
+
+## 2026-11-04 — MIC-01 mikrofon testi (tanışma + Ayarlar)
+
+- `lib/domain/audio/mic_check.dart`: `MicCheckStatus` (ready, noisyRoom,
+  tooQuiet, tooLoud, permissionDenied, notMeasured) + `MicCheckGap`.
+  `afterSilence` / `afterVoice` yalnız mevcut `NoiseFloorStatus` ve
+  `CaptureQualityStatus` değerlerini eşler; yeni eşik/tolerans yok.
+  lowSignalToNoise taban geçtikten sonra geldiği için "kısık" sayılır.
+  `scoringEnabled = false`.
+- `lib/application/mic_check_session.dart`: `MicCheckController` — izin →
+  sessizlik kaydı → hazırlan → ses kaydı → değerlendirme. Her klip bir kez
+  okunur ve silinir; ses yolu iki adım arasında tekrar okunur (değişirse
+  kalibrasyon geçersiz → "Ölçülemedi"). Kesinti/iptal geç sonuç yayınlamaz.
+  Giriş seviyesi yalnız gösterge. Kapanışta önce mikrofon bırakılır.
+- `lib/trainer/prepare/mic_check_screen.dart`: adımlar, faz kartı, seviye
+  çubuğu, sonuç kartı (öneriler + ham dBFS/ayrışma "cihaza göre
+  ayarlanmamış"), izin yoksa "Ayarları aç". Canlı ses yoksa nötr
+  "başlatılamadı". Ekran son durumu döndürür.
+- Tanışma: `Ob.mic` adımı (Atla/Devam), sayaç 5 → 6; kalıcı adım adları
+  uyumlu. Ayarlar: `settings_mic_check`. Mevcut onboarding testleri,
+  integration journey ve `.maestro/01_onboarding_fresh.yaml` yeni adım için
+  güncellendi (Maestro/integration bu oturumda çalıştırılmadı).
+- Testler: `test/application/mic_check_session_test.dart` (7),
+  `test/trainer/mic_check_screen_test.dart` (10, a11y/kontrast dahil),
+  `trainer_app_test.dart` +2 (tanışma adımı, Ayarlar girişi). Hepsi fake
+  backend + sentetik sinyal; cihaz/insan sesi kanıtı değildir.
+- `dart tool/quality_check.dart` exit 0: **1259 test geçti**, 2 opt-in
+  atlandı. Gerçek cihaz/mikrofon doğrulaması yapılmadı. Commit yok.
+- Not: ortak `TopBar`/`BackSquare` 44 pt; Android 48 dp tap hedefine uymuyor
+  (kit genelinde ayrı iş).
+
+## 2026-11-04 — DESIGN-14, yeni Figma Make şablonu
+
+**Kullanıcı isteği:** `https://outer-cane-45483491.figma.site/` şablonunu
+birebir uygulamak; kararsız noktalarda inisiyatif.
+
+### Uygulananlar
+
+- Kaynak: sitenin derlenmiş `App.tsx`/CSS paketi okundu (indirme yalnız
+  scratchpad'e, çalıştırılmadı). Son CSS katmanı esas alındı.
+- `lib/trainer/ui/kit.dart`: yeni `TC` paleti, `toneAt`/`ToneIcon` (lavanta,
+  mercan, lime döngüsü), `TT.section`, mercan eyebrow, 29 pt w800 başlık.
+  `BigButton` varsayılanı lime + koyu "ledge" gölge (basınca iner);
+  `AppCard` sert alt gölge, 20 radius; `HeroCard` aubergine, lavanta gölge,
+  `HeroOrbs.plan/level` halkaları; `BackSquare` 48 dp hedefli yuvarlak kart.
+- `home_shell.dart`: Bugün başlığı, seri çipi, `_WeekChip`, orb'lu plan kartı
+  ve etiketli `_PlanBar`, `_SectionHeading` + "Tümünü gör", hızlı/kaldığın
+  yerden kartları, koro satırı, alt menü (aktif `#432A72`, pill `#E8DDFF`).
+- `settings_tab.dart` `ProfileButton`: baş harf, lime nokta, gölge.
+- `koro_hub.dart`: arama (Türkçe I/İ katlamalı), boş durum, mercan aralık
+  kartı, tek "Tüm egzersizler" başlığı ve sayaç.
+- `stats_tab.dart`: "Sesinin haritası", seviye kartı halkası, lime ilerleme,
+  mor çubuklar, cümle düzeni başlıklar.
+- Ders, pratik, aralık testi, kaç ses ve koro hero düğmeleri lime; "Hayır"
+  düğmesi `coralDeep` (beyaz metin kontrastı).
+
+### Kararlar / sapmalar
+
+- Ölçülmeyen değer üretilmedi: kartlardaki "2 dk", seviye, "%80", "+40 XP"
+  gibi örnek veriler yerine gerçek ders/soru/gün sayıları.
+- Haftalık hedef store'da yok; çip 7 gün noktası ve gerçek aktif gün sayısı
+  gösterir.
+- Plan kartının altındaki rota adımları korundu (tekrar kartları ve ses adımı
+  başka yerden açılmıyor).
+- Kullanıcı onayıyla Manrope eklendi: resmî `googlefonts/manrope` deposundan
+  Regular/Medium/SemiBold/Bold/ExtraBold statik TTF ve Google Fonts
+  `OFL.txt` (`assets/fonts/OFL-Manrope.txt`). Tema ve ekran turu yükleyicisi
+  Manrope kullanıyor; Inter dosyaları pubspec'te duruyor ama trainer teması
+  artık kullanmıyor (kaldırma ayrı karar).
+- Gerçek font ile kontrast denetimi 12 pt muted metni 3.88, 11 pt menü
+  etiketini 3.09 ölçtü: `TT.small` w500, pasif menü etiketi `TC.body` w600
+  yapıldı; denetim yeniden geçti.
+
+### Doğrulama
+
+- `dart tool/quality_check.dart`: format → analyze → **1259 test + 2 skip**
+  geçti. Değişen testler: rota "~3 DK" metni, aralık kartı başlığı, sonuç
+  ekranında kanıt kartına kaydırma.
+- Ekran turu: `design-exports/figma-yeni-sablon-2026-11-04/`.
+- Simülatör, fiziksel cihaz ve gerçek kullanıcı görsel kabulü yapılmadı.
+
+## 2026-11-04 — RANGE-03, aralık testi algılama incelemesi ve çekim süresi
+
+**Kullanıcı isteği:** Ses algılama "verdiğim Python koduyla" düzgün mü;
+algılamada sorun var gibi. Sonra: çekimi 3 sn yap, baştaki sessizliği kırp.
+
+### Bulgular
+
+- Repoda/oturumlarda tek Python adayı `../voice-recognizer/main.py`
+  (1024 örnek FFT argmax). Uygulama onu kullanmıyor; aralık testi
+  `RecordingPitchAnalyzer` + `YinPitchFrameAnalyzer` (48 kHz, efektsiz kayıt)
+  ve Agora `matchToTarget` portu (±40 sent, yanlış oktav ulaşılmadı).
+- Geçici sentetik deney (silindi): YIN 14 senaryonun 12'sinde doğru; oktav
+  kayması doğru biçimde reddedildi; 1,4 sn geç başlayan doğru ses 2 sn
+  çekimde reddedildi. Python yöntemi E2→F2, C6→E11, zayıf temelde oktav
+  hatası ve spektrum aynasından "F11" üretti.
+
+### Uygulananlar
+
+- `range_test.dart`: `_takeLength` 3 sn; metinler "3 saniye", düğme
+  "Söyle (3 sn)". `evaluateRangeEvidence`: `minVoicedSeconds = 0.7`
+  (eski miktarla aynı), `minVoicedContinuity = 0.35` ilk–son periyodik
+  çerçeve aralığında; yeni nötr mesajlar ("Ses çok kısa duyuldu", "Ses sık
+  sık kesildi"). Dağılım ve oktav kuralları değişmedi.
+- Testler: geç başlama/sonda sessizlik kabul, 0,4 sn kısa ses, kesik ses ve
+  oktav sıçraması reddi.
+
+### Doğrulama ve sınırlar
+
+- `dart tool/quality_check.dart`: **1263 test + 2 skip**, analyze/format temiz.
+- Sentetik sinyal; mikrofon açılma gecikmesi, gerçek insan sesi ve cihaz
+  benchmark'ı ölçülmedi. 0,7 sn/0,35 taslak hipotez olarak kalır.
+
+## 2026-11-04 — REL-13 IPA 1.0.0+4
+
+- Kaynak: commit edilmemiş çalışma ağacı (DESIGN-14, Manrope, RANGE-03 ve
+  önceki MIC-01/REL-11 değişiklikleri).
+- `pubspec.yaml` 1.0.0+3 → 1.0.0+4; önceki IPA `build/ios/ipa-1.0.0+3/`.
+- `flutter build ipa --release --dart-define=RESONIA_CHANNEL=beta
+  --export-options-plist=<REL-12 ExportOptions, manageAppVersionAndBuildNumber=false>`
+  exit 0; `build/ios/ipa/Vocalart.ipa` 33,5 MB. Uyarı: açılış görseli
+  Flutter varsayılanı.
+- `python3 -I scripts/release/test_verify_ios_ipa.py`: 9/9.
+  `verify_ios_ipa.py --pubspec pubspec.yaml`: passed — 1.0.0 (4), iOS 15.0,
+  codesign doğrulandı, Apple Distribution L3Z9U2B39K, profile 2027-09-25.
+- Upload, TestFlight, cihaz kurulumu yapılmadı (ayrı kullanıcı yetkisi).
+
+## 2026-11-04 — REL-11e imzalı entitlement zinciri
+
+- `verify_codesign`, strict bundle/nested imza doğrulamasından sonra ana app'in
+  imzalı entitlement plist'ini `codesign -d --entitlements` ile okuyor; komut
+  hatası, bozuk plist veya sözlük dışı sonuç fail-closed.
+- IPA kapısı imzalı `application-identifier` değerini profile ile, imzalı team
+  kimliğini beklenen `L3Z9U2B39K` ile exact-match karşılaştırıyor ve
+  `get-task-allow=false` istiyor.
+- Test fake imzası gerçek kanıt biçimine taşındı; başka team/application
+  entitlement'ı reddi kapsandı. Paket 9/9 ve pycompile temiz; tam kalite
+  kapısı 1269 test + 2 opt-in skip, analyze/format temiz geçti.
+- Gerçek `build/ios/ipa/Vocalart.ipa` geçti: 1.0.0 (4), Apple Distribution,
+  profile 2027-09-25, imzalı production entitlement zinciri doğrulandı.
+- Upload, TestFlight/App Store sunucu kabulü veya fiziksel cihaz kurulumu
+  yapılmadı.
+
+## 2026-11-04 — FX-01 Hayalet Şerit ve Transient Hizalama
+
+**Kullanıcı isteği:** Rakip araştırması ve 5 animasyonlu konseptten
+(`design-exports/yanki-efektleri/index.html`) önerilen 1 ve 4'ü uygulamaya
+taşı.
+
+- `lib/features/melody/ghost_ribbon.dart`: `GhostRibbonData.build/fromEvidence`
+  yalnız `aligned` hizalama ve `candidatesObserved` bölümlemede veri üretir.
+  Bant zamanı bölümün pencere tahminidir (ölçülmüş onset değil). Kare tonu
+  ham `1200·log2(f/f_ref)`; `wrongOctave` adımı ayrı renk, başarı sayılmaz.
+  Çizim 1,2–3,2 sn; azaltılmış hareket ayarında anında tam.
+- `MelodySessionOutcome.recording`: şerit için analiz kareleri (PCM yok).
+- `lib/features/rhythm_imitation/transient_alignment.dart` ve `_Result`
+  kartı: zaman çizelgesi girdilerinden bağlar; anchor ilk dokunuş.
+- `RhythmImitationOutcome.referenceOnsetsMs/userOnsetsMs` (yalnız measured),
+  `matchToleranceMs/onTimeToleranceMs` = `RhythmAnalysisDefaults` (120/10,
+  değer değişmedi).
+- Testler: `test/features/ghost_ribbon_test.dart` (3),
+  `test/features/transient_alignment_test.dart` (3). 320 px/1.8× melodi
+  akışında lejant taşması bulundu ve düzeltildi.
+
+### Doğrulama ve sınırlar
+
+- `dart tool/quality_check.dart`: **1269 test + 2 skip**, analyze/format temiz.
+- Ekranlar simülatör/cihazda açılıp görülmedi; gerçek ses ve mikrofonla
+  denenmedi. Konsept sayfasındaki ±25 sent iç bant ve ±30/±70 ms örnek
+  eşikleri koda alınmadı; mevcut toleranslar kullanıldı.
+
+## 2026-11-04 — REL-14 IPA 1.0.0+5
+
+- Kaynak: commit edilmemiş çalışma ağacı (REL-13 içeriği + FX-01).
+- `pubspec.yaml` 1.0.0+4 → 1.0.0+5; önceki IPA `build/ios/ipa-1.0.0+4/`.
+- `flutter build ipa --release --dart-define=RESONIA_CHANNEL=beta
+  --export-options-plist=<REL-13 ExportOptions, destination=export,
+  manageAppVersionAndBuildNumber=false>` exit 0; `build/ios/ipa/Vocalart.ipa`
+  33,5 MB. Uyarı: açılış görseli Flutter varsayılanı.
+- `python3 -I scripts/release/test_verify_ios_ipa.py`: 9/9.
+  `verify_ios_ipa.py --pubspec pubspec.yaml`: passed — 1.0.0 (5), iOS 15.0,
+  codesign ve imzalı entitlement doğrulandı, Apple Distribution L3Z9U2B39K,
+  profile 2027-09-25.
+- Upload, TestFlight, cihaz kurulumu yapılmadı (ayrı kullanıcı yetkisi).
+
+
+## 2026-11-05 — RHY-UX-01 ritim tekrarı sadeleştirme
+
+**Kullanıcı geri bildirimi (TestFlight):** hedefli tekrar sonrası çok fazla
+buton/çip, sıradaki adım belirsiz; desenler kolaydan zora değil; vuruş alanı
+çok büyük, altı görünmüyor; bitişi anlamak için ~3 sn beklemek gerekiyor.
+
+- `lib/domain/content/rhythm_patterns.dart`: `RhythmPatternDifficulty` ve
+  `orderedEasyToHard` — yalnız desen verisinden: yazılı zorluk, senkop
+  (vuruşu boş ara giriş), ara vuruş sayısı, en kısa aralık (ms), vuruş
+  sayısı; eşitlikte katalog sırası. İçerik sıralama sezgisidir, ölçüm değil.
+  Ekran her kataloğu bu sırayla kullanır. Gönderilen `draftRhythmPatterns`
+  ve `draftAksakPatterns` zaten bu sıradaydı (testle sabitlendi).
+- `RhythmImitationController`: `followingPattern`/`advancePattern` (gezinme,
+  kayıt yok), `retry()` (bitmiş denemeden aynı desen/bölümde yeni dinleme
+  kotasıyla yeni deneme), `expectedTaps`, `finishWait`: tüm beklenen vuruşlar
+  alınınca sessizlik süresi = en uzun referans aralığı + ±120 ms (en az
+  600 ms, en çok `idleTimeout`). Eksik vuruşta 2,5 sn aynen.
+- Ekran: cevap sırasında dinle kartı (dalga 96 → 64 px) + 136 px vuruş alanı +
+  durum `n/N vuruş…` + `Bitirdim`. Sonuçta dinle kartı ve vuruş alanı gizlenir.
+  Puanlı sonuç: özet + hizalama grafiği, tek birincil eylem (sonraki adım
+  kartı ya da `Tekrar dene`), ikincil `Zor bölümü çalış`, metin bağlantıları
+  (sonraki desen, puls kavramı, ölçüm ayrıntısı); vuruş çipleri ayrıntıda
+  (grafik yoksa kartta kalır). Hedefli tekrar sonucu: kart içindeki yinelenen
+  “Hedefli tekrar — puanlanmadı” öneki, çipler, `Tam zamanında hâlini
+  göster` (`TransientAlignmentView.showSnapToggle`) ve ölçüm ayrıntısı kalktı;
+  `Devam: tam deseni çal` + `Bu bölümü tekrar et` + `Sonraki desene geç`.
+- Testler: `test/domain/content/rhythm_pattern_order_test.dart` (3),
+  denetleyici `finishWait`/`retry`/`advancePattern` (2), ekran hedefli tekrar
+  akışı (1); mevcut ekran testi yeni yerleşime uyarlandı.
+
+### Doğrulama ve sınırlar
+
+- `dart format --output=none --set-exit-if-changed lib test`: 376 dosya, değişiklik yok.
+- `flutter analyze --no-pub`: sorun yok. `flutter test --no-pub`: **1276 geçti, 2 skip**.
+- Rubrik, ±120 ms eşleşme/on-time pencereleri ve ustalık ölçütü değişmedi.
+  Yakalama penceresi değişti: tam cevaptan sonra en uzun aralık + 120 ms'den
+  geç gelen fazladan vuruş artık değerlendirmeye girmez (önceden “fazla”
+  sayılırdı). Simülatör/cihazda görülmedi, TestFlight build alınmadı.
+
+
+## 2026-11-05 — MEL-ECHO-01 ezgi tekrarı yeniden ve alkış çizimi
+
+**Kullanıcı isteği (TestFlight):** “Ezgi tekrarı kısmını baştan yarat: önce
+referans, sonra dinle, bitince desenleri karşılaştır ve kullanıcı görsün;
+başarılıysa daha zor ezgilere geçsin; ezgileri çeşitlendir.” Ayrıca alkışla
+ritim ekranındaki el görseli çok kötü bulundu.
+
+### Uygulananlar
+
+- `lib/trainer/koro/melody_echo_levels.dart`: 6 seviye × 5 ezgi (3–5 nota,
+  en fazla bir oktav), `placeMelody` (aralık içine ±2 yarım ses kaydırmalı
+  yerleşim, E2–C6), `echoRange` (ölçülen `koroRange` → koro partisi →
+  53–69), `pickEchoMelody` (aynı ezgi arka arkaya gelmez).
+- `lib/trainer/koro/melody_echo.dart`: `MelodySessionController` üstünde
+  trainer görünümlü akış. Ortam ölçümü gerekiyorsa otomatik, sonra referans
+  (600 ms ton + 200 ms boşluk zamanlamasıyla nota hapları yanar), 8 sn cevap,
+  karşılaştırma (nota başına durum + `GhostRibbonView`, fazladan ses notu).
+  Geçme = `wholeSequenceCorrect == true` ve yeniden deneme nedeni yok;
+  `melodyEchoLevel` bir artar ve kaydedilir.
+- `TrainerStore.melodyEchoLevel` (kayıt/okuma/sıfırlama). `koro_hub.dart`
+  yeni ekranı açar (`deviceOnly`; widget testlerinde mikrofon açılmaz).
+- `clap_rhythm.dart`: `_Hands` artık `_ClapPainter` — dört parmak +
+  başparmaklı tek siluet avuçlar, mor manşet, bilekten dönme, temasta
+  kıvılcım çizgileri.
+- Test: `test/trainer/melody_echo_test.dart` (seviye kuralları, tüm
+  partilerde aralık/80–1200 Hz, aralık önceliği, tekrar etmeyen seçim, sahte
+  mikrofonla dinle→söyle→karşılaştır→seviye açıldı akışı, kalıcılık).
+
+### Doğrulama ve sınırlar
+
+- `dart tool/quality_check.dart`: format/analyze temiz, **1281 test geçti,
+  2 skip**.
+- Ekran görüntüleri yalnız widget testi render'ı; cihazda/TestFlight'ta
+  denenmedi. Akış testi sentetik sinüsle geçti; insan sesiyle (vibrato,
+  kayma) `wholeSequenceCorrect` kapısının ne kadar sıkı olduğu ölçülmedi.
+- Referans sentetik ton; piyano kayıtları ve eğitimci içerik onayı açık.
+- Test fontunda ♭ glifi yok (yalnız test görüntüsünde kutu); cihazda sistem
+  fontu düşmesiyle görünmesi beklenir, doğrulanmadı.
+
+## 2026-11-05 — RANGE-VIS-01 aralık testi ışık izi ve klavye haritası
+
+**Kullanıcı isteği:** Animasyon araştırmasındaki B (ışık izi) + C (klavye
+haritası) seçeneklerini ses aralığı testine uygula.
+
+### Uygulananlar
+
+- `lib/domain/audio/live_pitch_tracker.dart`: halka tampon, 16 kHz'e ortalama
+  ile indirme, 1024 örneklik pencere, 320 örnek adım; yalnız gösterim.
+- `PluginAudioLabBackend(livePcm: true)`: `startStream` (pcm16, 48 kHz),
+  parçalara bölünmüş baytları taşır, RMS dBFS seviye, `liveSamples`; durdurunca
+  aynı sahipli `recording.wav` dosyasını yazar (bütçe `readLabWav` ile aynı).
+  Varsayılan (`false`) yol değişmedi.
+- `range_test.dart`: `LivePitchProbe` arayüzü, `MicRangeProbe` canlı perde
+  akışı; ekran izi tutar (deneme başına en fazla 150 nokta), eşleşmede 0,9 sn
+  parlama. `range_visuals.dart`: `PitchTrail`, `KeyboardMap`.
+  `_Staircase` kalktı.
+- Test: `test/domain/live_pitch_tracker_test.dart` (220 Hz ±10 sent, sessizlik,
+  sıfırlama).
+
+### Doğrulama ve sınırlar
+
+- `dart tool/quality_check.dart`: **1283 test geçti, 2 skip**; format/analyze
+  temiz. Görünüm yalnız widget testi render'ıyla kontrol edildi.
+- Cihazda/TestFlight'ta denenmedi; PCM akış kaydı ile eski dosya kaydının
+  aynı analiz sonucunu verdiği gerçek mikrofonla karşılaştırılmadı.
+
+## 2026-11-05 — ECHO-TRAIN-01 alkış eğitimi, canlı ezgi grafiği, dokunma sesi
+
+**Kullanıcı isteği (simülatör):** Ezgi söylerken ses ve olması gereken
+grafik aynı anda çizilsin; alkış sesi düzgün olsun, alkıştan sonra "sıra
+sende" denip kullanıcı tekrar etsin; alkış ve ritim tekrarı eğitim modülü
+olsun; ritim tekrarında dokundukça "tak" sesi çıksın; sıra kullanıcıya
+geçince açık bir işaret verilsin.
+
+### Uygulananlar
+
+- `LiveSampleSource` (audio_capture), `PluginAudioLabBackend` ve
+  `SyntheticMelodyBackend` uygular; ezgi kaydı `livePcm: true`.
+- `melody_echo.dart`: `_EchoGraph` (referans bantları + canlı iz, örnek
+  sayımıyla 20 ms zaman), oktav uyarlama (`_octaveAway`, ±350 sent içinde
+  tam oktav), "çok pes/tiz" etiketi, `GhostRibbonView` kaldırıldı.
+- `clap_onset_detector.dart`, `clap_rhythm.dart` (yeni sentez, sayım,
+  `ClapListener`/`MicClapListener`, `clapRhythmsEasyToHard`, karşılaştırma
+  çizimi, seviye), `your_turn.dart` (`YourTurnCue`, `renderGoCue`),
+  `tap_sound.dart` (+ `RhythmImitationScreen.tapSound`).
+- Testler: dedektör (sentetik alkış ±10 ms, ısınma, sessizlik/uğultu),
+  alkış akışı (dinle→sayım→sıra sende→alkış→seviye), zorluk sırası.
+
+### Doğrulama ve sınırlar
+
+- `dart tool/quality_check.dart`: **1287 test geçti, 2 skip**.
+- Simülatörde alkış ekranı, sayım ve "Sıra sende" bandı görüldü; ilk
+  denemede mikrofon açılışı 1 sahte alkış saydı → 150 ms ısınma eklendi
+  (cihazda doğrulanmadı). Gerçek el alkışı, hoparlör sızıntısı, kulaklık ve
+  farklı odalarda dedektör eşikleri ölçülmedi; ritim tekrarı dokunma sesinin
+  gecikmesi ölçülmedi.
+
+
+## 2026-11-05 — FX-02 alkış kutlaması (etkileşim 1/3)
+
+**Kullanıcı isteği:** Ses/aralık uygulamalarında top 5 tasarım incelemesi ve
+göz dolduran animasyon seçenekleri; ardından alkış kutlaması, seviye
+görselleştirici ve gerçek alkış algılamanın birer birer yapılması. İstenen
+"Flutter Animations" skill'i makinede kurulu değildi; yerleşik Flutter
+API'leri kullanıldı.
+
+### Uygulananlar
+
+- `docs/design/motion_lab.html`: Yousician, Simply Sing, Smule, Singing
+  Carrots, Vanido incelemesi; 6 canlı prototip (kuyruklu yıldız şeridi,
+  kilitlenen halka, ışık sütunlu klavye, nefes alan dinleme, kroma çarkı,
+  aralık sonucu), katman/araç tablosu ve hareket token'ları. Ses simüle.
+- `lib/trainer/ui/applause_burst.dart`: `ApplauseBurst(shot:, child:)`;
+  `shot` artınca bir kez çalar, aynı değerle yeniden çizimde tekrar etmez.
+  Yay rozeti, 3 dalga halka + konfeti (`ApplausePiece`, sabit tohum),
+  dokunsal, azaltılmış hareket yolu, `RepaintBoundary` + `IgnorePointer`,
+  semantik dışı (ekranın canlı bölge metni duyurulur).
+- `lib/trainer/koro/clap_rhythm.dart`: `_cheers` sayacı yalnız
+  `_passed(result)` doğruyken artar; `_Hands` `ApplauseBurst` içine alındı.
+- `test/trainer/applause_burst_test.dart`: gizli başlangıç, tek oynatma ve
+  temizlenme, yay aşımı, dokunsal sırası, iki dokunsal kapısı, azaltılmış
+  hareket, konfeti tekrarlanabilirliği/yerçekimi.
+
+### Değerlendirme
+
+- Lottie: tasarımcı dosyası ve paket gerekir, veri bağlama yok. Rive: data
+  binding güçlü ama `.riv` varlığı ve paket gerekir. Yerel `CustomPainter`
+  + `SpringSimulation` en basit, test edilebilir ve bağımlılıksız.
+
+### Doğrulama ve sınırlar
+
+- `dart tool/quality_check.dart`: **1299 test + 2 skip temiz (format, analyze, test)**.
+- Fiziksel iPhone'da görülmedi; dokunsal his, 120 Hz kare süresi ve gerçek
+  alkışla tetiklenme kanıtsız. Alkış algılama hâlâ enerji onseti
+  (`ClapOnsetDetector`); bu genlik eşiği alkış sınıflandırması değildir.
+
+## 2026-11-05 — FX-03 Shazam tarzı dinleme küresi (aralık testi)
+
+**Kullanıcı isteği:** Ses aralığı testinin dinleme kısmında Shazam benzeri,
+yumuşak ve gerçekçi, mikrofon genliğine tepki veren dinleme animasyonu.
+ShazamKit/müzik tanıma yok. Commit yapılmadı.
+
+### Uygulananlar
+
+- `lib/trainer/ui/audio_reactive_orb.dart`: `AudioReactiveOrb`
+  (`phase`, `levelDb`, `size`, `rings` 4–6, `icon`, `onTap`,
+  `semanticLabel`, `detectDb`), `OrbPhase`, saf `orbAmplitude` (dBFS → 0–1)
+  ve `emaStep` (dt tabanlı, asimetrik zaman sabiti). Halkalar faz
+  entegrasyonuyla akar, hız genlikle değişse de sıçramaz; renkler ~0,25 sn'de
+  fazlar arası geçer. Durum `ChangeNotifier` modelinde; çizim
+  `CustomPainter(repaint:)`, glif `AnimatedBuilder` ile ölçeklenir.
+- `lib/trainer/koro/range_test.dart`: rahat ses sayfası ve dinleme sayfası
+  küreyi gösterir (aynı konumda, geçiş yumuşak); merdivende 22 px ikon
+  yerine 136 px küre (çalarken idle + hoparlör, dinlerken listening, tutunca
+  completed, dönüşte ok). Seviye mevcut `RangeProbe.levelDb` akışı.
+- `test/trainer/audio_reactive_orb_test.dart`: genlik eşlemesi, kare
+  hızından bağımsız EMA, hızlı yükseliş/yavaş bırakış, animasyon + temiz
+  dispose, azaltılmış harekette saat durması, etiketli düğme.
+- `test/trainer/range_ladder_test.dart`: rahat ses sayfasında
+  `pumpAndSettle` yerine sabit pump (idle küre sürekli nefes alır).
+
+### Doğrulama ve sınırlar
+
+- `flutter analyze --no-pub`: sorun yok. `flutter test --no-pub`:
+  **1298 geçti, 2 skip, 1 hata** — hata eşzamanlı FX-02 oturumunun
+  `applause_burst_test.dart` testi; `dart tool/quality_check.dart` formatı
+  da yalnız o oturumun `applause_burst.dart` dosyasında durdu.
+- Test içinde PNG'ye çizilip dört durum gözle kontrol edildi.
+- Fiziksel iPhone'da görülmedi: kare süresi, gerçek sesle tepki ve
+  `detectDb` (−38 dBFS) eşiği kanıtsız; seviye cihazlar arası kalibre değil.
+
+- Fiziksel iPhone (kablosuz, iOS 27.2) için yerel release build kuruldu
+  (1.0.0 build 5). İlk deneme Xcode build veritabanı disk I/O hatasıyla
+  düştü; `flutter install` bu sırada eski uygulamayı kaldırdı, yerel veri
+  kaybolmuş olabilir. Proje DerivedData önbelleği temizlenip yeniden
+  build edildi. Kurulum cihaz kabulü değildir; his/dokunsal kullanıcı
+  denemesini bekliyor.
+
+## 2026-11-05 — FX-04 ses dalgaları, aralık testi dinleme anı
+
+**Kullanıcı isteği:** Dinleme anında efekt notayla paralel hareket etsin;
+"ucube" küre yerine profesyonel tasarım. 15 canlı taslak üretildi, kullanıcı
+"ses dalgaları"nı seçti ve daha akışkan/etkili olmasını istedi. Commit yok.
+
+### Uygulananlar
+
+- `docs/design/range_listening_lab.html`: A–O, J+/O+, O1–O3 ve seçilen
+  "son hâl" taslakları; ortak simüle ses, elle perde/güç sürgüleri, krem ve
+  mor sahne zemini. Taslak sayfası olarak yayınlandı (özel bağlantı).
+- `lib/trainer/koro/voice_waves.dart`: `OneEuroFilter`, `WaveSample`,
+  `WaveTrack` (120 Hz sabit örnek, kare arası enterpolasyon, 6 sn pencere),
+  `waveLock`/`waveColor` (ton üzerinden renk karışımı), `VoiceWaves`
+  (`AnimationController` saati, `CustomPainter(repaint:)`,
+  `RepaintBoundary`, azaltılmış harekette faz sabit).
+- `lib/trainer/koro/range_test.dart`: merdivende küre kaldırıldı, ikon +
+  başlık satırı geri geldi; `PitchTrail` yerine `VoiceWaves` (çalarken
+  `reference`, dinlerken canlı perde + seviye, eşleşmede `flash`).
+- `lib/trainer/koro/range_visuals.dart`: kullanılmayan `PitchTrail`
+  silindi; `KeyboardMap` ve `rangeTracePoints` duruyor.
+- `test/trainer/voice_waves_test.dart`: titreme bastırma, kayma takibi,
+  reset, kare hızından bağımsız örnek sayısı, enterpolasyon/pencere,
+  "notada" eşiğinin gerçek `judgeRangeTake` ile uyumu, widget yaşam döngüsü.
+
+### Doğrulama ve sınırlar
+
+- `flutter analyze --no-pub` temiz; `dart format` temiz; tam test
+  **1306 geçti, 2 skip**.
+- 1€ parametreleri sentetik ±6 sent titremeyle ayarlandı (gerçek perde
+  izleyicisinin gürültüsüyle değil).
+- Simülatörde piyano dalgası görüldü; ses dalgası test içi PNG ile kontrol
+  edildi. Gerçek iPhone, gerçek ses ve 120 Hz his doğrulanmadı.
+

@@ -1,0 +1,451 @@
+<title>Vocalart Hareket Laboratuvarı</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: tek sütun okuma akışı; üstte pazar incelemesi, ortada canlı sahne ızgarası (her sahne koyu "hero" mor), altta Flutter yolu. */
+:root{
+  --canvas:#F8F5EF; --card:#FFFEFA; --ink:#292238; --body:#5F5867; --muted:#6F6877; --line:#E5DEE7;
+  --primary:#6849CC; --primary-soft:#EEE7FF; --lime:#D9F574; --lime-deep:#477719; --coral-deep:#B63E38;
+  --stage:#432A72; --stage-edge:#2E1C52; --shadow:#ECE6E7;
+  --f-display:"Manrope",ui-sans-serif,system-ui,sans-serif; --f-mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --canvas:#16121F; --card:#211B2E; --ink:#F3EEF8; --body:#CFC7DA; --muted:#A9A0B6; --line:#3A3149;
+  --primary:#B7A2FF; --primary-soft:#2E2545; --lime:#D9F574; --lime-deep:#C4E86A; --coral-deep:#FF8A80;
+  --stage:#2A1A4A; --stage-edge:#120A22; --shadow:#0C0912; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --canvas:#16121F; --card:#211B2E; --ink:#F3EEF8; --body:#CFC7DA; --muted:#A9A0B6; --line:#3A3149;
+  --primary:#B7A2FF; --primary-soft:#2E2545; --lime:#D9F574; --lime-deep:#C4E86A; --coral-deep:#FF8A80;
+  --stage:#2A1A4A; --stage-edge:#120A22; --shadow:#0C0912; color-scheme:dark}
+body{background:var(--canvas);color:var(--body);font-family:var(--f-display);font-size:15px;line-height:1.6}
+.wrap{max-width:1120px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:40px 64px;display:grid;gap:56px}
+h1,h2,h3{color:var(--ink);text-wrap:balance;line-height:1.15;margin:0}
+h1{font-size:clamp(30px,5vw,48px);font-weight:800;letter-spacing:-.02em}
+h2{font-size:clamp(22px,3vw,28px);font-weight:800;letter-spacing:-.01em}
+h3{font-size:18px;font-weight:800}
+p{margin:0;max-width:68ch}
+.eyebrow{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--primary)}
+header{display:grid;gap:14px}
+.lede{font-size:17px}
+.bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:6px}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;padding:4px 10px;border-radius:999px;background:var(--primary-soft);color:var(--primary)}
+.chip.sim{background:var(--lime);color:#292238}
+button{font:700 14px var(--f-display);border:0;border-radius:14px;padding:10px 16px;background:var(--ink);color:var(--canvas);cursor:pointer;box-shadow:0 4px 0 var(--shadow)}
+button:focus-visible{outline:3px solid var(--primary);outline-offset:3px}
+section{display:grid;gap:20px}
+.sechead{display:grid;gap:8px}
+/* teardown */
+.apps{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px}
+.app{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;display:grid;gap:10px;align-content:start;min-width:0}
+.app h3{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.app h3 small{font-size:12px;color:var(--muted);font-weight:600}
+.kv{display:grid;gap:6px;font-size:14px}
+.kv b{color:var(--ink);font-weight:700}
+.take{color:var(--lime-deep)} .skip{color:var(--coral-deep)}
+/* demos */
+.demos{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,460px),1fr));gap:22px}
+.demo{background:var(--card);border:1px solid var(--line);border-radius:22px;overflow:hidden;display:grid;min-width:0}
+.stage{position:relative;background:radial-gradient(120% 90% at 30% 0%,#54397F 0%,var(--stage) 45%,var(--stage-edge) 100%);aspect-ratio:16/10;max-width:100%}
+.stage canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.stage .tag{position:absolute;left:12px;top:10px;font:600 11px var(--f-mono);color:#C9BFDA;letter-spacing:.04em}
+.info{padding:18px 20px 20px;display:grid;gap:10px}
+.info .where{font-size:13px;font-weight:700;color:var(--primary)}
+.meta{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:13.5px}
+.meta dt{font-weight:700;color:var(--ink)} .meta dd{margin:0}
+.rule{font-size:13px;border-top:1px dashed var(--line);padding-top:10px;color:var(--muted)}
+/* tables */
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:16px;background:var(--card)}
+table{border-collapse:collapse;width:100%;min-width:640px;font-size:14px}
+th,td{text-align:left;padding:12px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--ink);font-size:12px;letter-spacing:.06em;text-transform:uppercase}
+tr:last-child td{border-bottom:0}
+td code,p code,li code{font:500 12.5px var(--f-mono);background:var(--primary-soft);color:var(--primary);padding:1px 6px;border-radius:6px}
+td.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--ink)}
+ol.plan{margin:0;padding-left:22px;display:grid;gap:10px;max-width:72ch}
+ol.plan b{color:var(--ink)}
+.src{font-size:13px;color:var(--muted);display:grid;gap:4px}
+.src a{color:var(--primary)}
+</style>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow">Vocalart · Hareket araştırması · Kasım 2026</div>
+  <h1>Sesi görünür kılan hareket</h1>
+  <p class="lede">Ses dinleme, perde tespiti ve ses aralığı testinde pazarın beş referans uygulamasını inceledik; çıkan dersleri Vocalart'ın renkleriyle altı canlı hareket önerisine dönüştürdük. Her sahne gerçek zamanlı çiziliyor; Flutter'a <code>CustomPainter</code>, shader ve Rive ile birebir taşınacak şekilde tasarlandı.</p>
+  <div class="bar">
+    <span class="chip sim">Simüle ses: mikrofon kullanılmıyor</span>
+    <span class="chip">Hareket yalnız gösterim; puan tüm kayıttan</span>
+    <button id="toggle" type="button">Hareketi durdur</button>
+  </div>
+</header>
+
+<section>
+  <div class="sechead">
+    <div class="eyebrow">01 · Pazar</div>
+    <h2>Beş referans, ne alıyoruz, neyi geçiyoruz</h2>
+    <p>Gözlemler mağaza ekranları, ekran kaydı dökümleri ve üretici açıklamalarından. Ortak desen: perde ya kayan bir piyano rulosunda çizgi olarak ya da klavyede yanan tuş olarak gösteriliyor. Hiçbiri sesin "kilitlendiği" anı fiziksel bir olay gibi hissettirmiyor; bizim fırsatımız orada.</p>
+  </div>
+  <div class="apps">
+    <article class="app"><h3>Yousician <small>Singing</small></h3>
+      <div class="kv"><div><b>Çekirdek görünüm:</b> sağdan sola akan nota çubukları, "şimdi" çizgisi, anlık perde çizgisi.</div>
+      <div class="take"><b>Al:</b> gelecek notaları önceden göstermek; hazırlık süresi verir.</div>
+      <div class="skip"><b>Geçeceğimiz yer:</b> isabet geri bildirimi düz renk değişimi; ağırlık ve fizik yok.</div></div></article>
+    <article class="app"><h3>Simply Sing <small>JoyTunes</small></h3>
+      <div class="kv"><div><b>Çekirdek görünüm:</b> koyu mor zemin, karaoke sözleri, gerçek zamanlı perde çubukları; aralık testi dikey ölçek + siluet.</div>
+      <div class="take"><b>Al:</b> aralık testini kısa, adım adım komutlarla ("en pes notanı mırıldan") kurgulamak.</div>
+      <div class="skip"><b>Geçeceğimiz yer:</b> sonuç statik bir ölçek; keşfin kendisi canlanmıyor.</div></div></article>
+    <article class="app"><h3>Smule <small>Sing!</small></h3>
+      <div class="kv"><div><b>Çekirdek görünüm:</b> perde çizgisi ve oynatma başında işaretçi; kullanıcı işaretçiyi çizgide tutmaya çalışır.</div>
+      <div class="take"><b>Al:</b> tek parlak "baş" noktası; göz nereye bakacağını bilir.</div>
+      <div class="skip"><b>Geçeceğimiz yer:</b> sosyal/karaoke odaklı; eğitim geri bildirimi zayıf.</div></div></article>
+    <article class="app"><h3>Singing Carrots <small>Range test</small></h3>
+      <div class="kv"><div><b>Çekirdek görünüm:</b> klavye; söylenen tuş yeşil, bulunan en pes/en tiz sarı; maskot havuç yönlendirir.</div>
+      <div class="take"><b>Al:</b> aralığı klavye üzerinde göstermek; herkesin anladığı bir dil.</div>
+      <div class="skip"><b>Geçeceğimiz yer:</b> yeni uç nota bulununca kutlama yok; tuşlar yalnız renk değiştiriyor.</div></div></article>
+    <article class="app"><h3>Vanido <small>Kişisel koç</small></h3>
+      <div class="kv"><div><b>Çekirdek görünüm:</b> sade, pastel; hedef notalar yatay çizgi, ses akan bir top olarak izlenir.</div>
+      <div class="take"><b>Al:</b> az öğe, büyük nefes alanı; acemiyi korkutmayan sadelik.</div>
+      <div class="skip"><b>Geçeceğimiz yer:</b> sadelik derinlik kaybına dönüşüyor; oktav bilgisi görünmüyor.</div></div></article>
+  </div>
+</section>
+
+<section>
+  <div class="sechead">
+    <div class="eyebrow">02 · Öneriler</div>
+    <h2>Altı canlı hareket önerisi</h2>
+    <p>Her sahne bir ekrana karşılık gelir. Renkler Vocalart token'larından: sahne <code>hero</code> moru, isabet <code>sun</code> lime, uyarı <code>coral</code>. Boşluklar gerçek: ses duyulmayan anda çizgi kopar, uydurulmaz.</p>
+  </div>
+  <div class="demos">
+    <article class="demo"><div class="stage"><canvas id="d-comet"></canvas><span class="tag">A · KUYRUKLU YILDIZ ŞERİDİ</span></div>
+      <div class="info"><div class="where">Melodi eko · Dinle-tekrar et</div><h3>Kuyruklu yıldız şeridi</h3>
+        <p>Hedef notalar hap biçiminde soldan akar; sesin parlak bir kuyruklu yıldız gibi iz bırakır. Notanın içindeyken hap içeriden lime ile dolar ve kıvılcım saçar; dışındayken başın üstünde yön oku belirir.</p>
+        <dl class="meta"><dt>İlham</dt><dd>Yousician akışı + Smule tek parlak baş</dd><dt>Flutter</dt><dd><code>CustomPainter</code> + <code>Ticker</code>, kıvılcımlar için havuzlanmış parçacıklar</dd></dl>
+        <div class="rule">Kural: kuyruk renk tonu canlı tahmini gösterir; doğru/yanlış kararı kaydın tamamından verilir (mevcut <code>PitchTrail</code> sözleşmesi).</div></div></article>
+
+    <article class="demo"><div class="stage"><canvas id="d-lock"></canvas><span class="tag">B · KİLİTLENEN HALKA</span></div>
+      <div class="info"><div class="where">Tek nota tutma · Isınma</div><h3>Kilitlenen halka</h3>
+        <p>Sesin sıvı bir küre; hedef halkaya cent farkı kadar uzak durur, yaklaştıkça içine oturur. ±15 cent içinde kalındıkça halka dolar, dolduğunda şok dalgası ve hafif titreşim gelir.</p>
+        <dl class="meta"><dt>İlham</dt><dd>Akort uygulamaları + Vanido sadeliği</dd><dt>Flutter</dt><dd>Küre <code>FragmentShader</code>, halka <code>CustomPainter</code>, <code>HapticFeedback.lightImpact</code></dd></dl>
+        <div class="rule">Kural: tolerans benchmark/kullanıcı kararı olmadan rubrikten ayrı tutulur; halka bir gösterim eşiğidir, puan değil.</div></div></article>
+
+    <article class="demo"><div class="stage"><canvas id="d-keys"></canvas><span class="tag">C · IŞIK SÜTUNLU KLAVYE</span></div>
+      <div class="info"><div class="where">Aralık testi · RangeTestScreen</div><h3>Işık sütunlu klavye</h3>
+        <p>Ulaşılan her tuşun üstünde bir ışık sütunu yükselir. Yeni bir en pes ya da en tiz nota bulununca tuş yaylanır, etiket fırlar ve alt köşebent genişler. Keşif, sonuç ekranından önce hissedilir.</p>
+        <dl class="meta"><dt>İlham</dt><dd>Singing Carrots klavyesi, kutlamayla</dd><dt>Flutter</dt><dd>Mevcut <code>KeyboardMap</code> genişletilir; yay için <code>SpringSimulation</code></dd></dl>
+        <div class="rule">Kural: yanlış oktav ulaşılmış sayılmaz; yalnız <code>range_ladder</code> onaylı basamaklar sütun açar.</div></div></article>
+
+    <article class="demo"><div class="stage"><canvas id="d-listen"></canvas><span class="tag">D · NEFES ALAN DİNLEME</span></div>
+      <div class="info"><div class="where">Mikrofon açık · Sıra sende</div><h3>Nefes alan dinleme</h3>
+        <p>Sessizken mikrofon rozeti yavaşça nefes alır; ses gelince üç renkli yumuşak halka seviyeye göre dalgalanır ve tepelerde dışa halkalar salar. "Mikrofon açık mı?" sorusu hiç sorulmaz.</p>
+        <dl class="meta"><dt>İlham</dt><dd>Sesli asistan küreleri, Simply Sing kalibrasyonu</dd><dt>Flutter</dt><dd>Rive (data binding: <code>level</code>, <code>listening</code>) veya shader</dd></dl>
+        <div class="rule">Kural: seviye yalnız enerji; insan sesi olasılığı ya da başarı olarak sunulmaz.</div></div></article>
+
+    <article class="demo"><div class="stage"><canvas id="d-wheel"></canvas><span class="tag">E · KROMA ÇARKI</span></div>
+      <div class="info"><div class="where">Serbest perde izleme · Kulak eğitimi</div><h3>Kroma çarkı</h3>
+        <p>12 nota bir çarkta, oktavlar iç içe halkalarda. Sesin çarkta dolaşan bir kuyruklu yıldız. Doğru nota yanlış oktavda aynı dilime ama başka halkaya düşer; fark ilk bakışta görünür.</p>
+        <dl class="meta"><dt>İlham</dt><dd>Hiçbir rakipte yok: farklılaştırıcı</dd><dt>Flutter</dt><dd><code>CustomPainter</code>, kutupsal koordinat, iz için halka tampon</dd></dl>
+        <div class="rule">Kural: oktav ayrı halka olarak görünür kalır; yanlış oktav başarı sayılmaz.</div></div></article>
+
+    <article class="demo"><div class="stage"><canvas id="d-reveal"></canvas><span class="tag">F · ARALIK SONUCU</span></div>
+      <div class="info"><div class="where">Aralık testi sonucu</div><h3>Aralık sonucu açılışı</h3>
+        <p>Her notada geçen süre çubuk olarak sırayla yükselir, uç bayraklar yaylanarak düşer, ardından çalışma register'ı bandı süpürülerek yerleşir. Tek, orkestre edilmiş bir an.</p>
+        <dl class="meta"><dt>İlham</dt><dd>Simply Sing sonucu, hareketle</dd><dt>Flutter</dt><dd><code>AnimationController</code> + <code>Interval</code> kademeleri</dd></dl>
+        <div class="rule">Kural: ses grubu etiketi yok (ADR-040); yalnız ölçülen notalar çizilir, örnek veri burada simüle.</div></div></article>
+  </div>
+</section>
+
+<section>
+  <div class="sechead">
+    <div class="eyebrow">03 · Yapım</div>
+    <h2>Flutter'da hangi katman neyi çizer</h2>
+    <p>Kural basit: ölçümden gelen her piksel deterministik Dart kodunda çizilir; atmosfer shader'da, karakter ve kutlama Rive'da. Böylece görsel testler (golden) ve ölçüm sözleşmeleri korunur.</p>
+  </div>
+  <div class="tbl"><table>
+    <thead><tr><th>Katman</th><th>Araç</th><th>Ne için</th><th>Neden</th></tr></thead>
+    <tbody>
+      <tr><td>Veri izi</td><td><code>CustomPainter</code> + <code>Ticker</code></td><td>Perde kuyruğu, haplar, klavye, çark</td><td>Kare başına <code>setState</code> yok; <code>repaint: Listenable</code> ile yalnız boya. Golden test edilebilir.</td></tr>
+      <tr><td>Parlama, aura</td><td><code>FragmentProgram</code> (.frag)</td><td>Sıvı küre, sahne aurası, ışık sütunu yumuşaklığı</td><td>Impeller'da GPU'da; <code>MaskFilter.blur</code> ve <code>saveLayer</code> maliyetinden kaçınır.</td></tr>
+      <tr><td>Karakter, kutlama</td><td>Rive (data binding)</td><td>Mikrofon rozeti, seri kutlaması, maskot</td><td>Tasarımcı Dart'a dokunmadan hareketi değiştirir; <code>number</code>/<code>boolean</code> özellik bağlanır.</td></tr>
+      <tr><td>Fizik</td><td><code>SpringSimulation</code></td><td>Tuş yaylanması, bayrak düşüşü, kilit</td><td>Süre değil yay: kesintiye uğrasa da doğal biter.</td></tr>
+      <tr><td>Dokunsal</td><td><code>HapticFeedback</code></td><td>Kilit, yeni uç nota</td><td>Göze bakmadan şarkı söyleyen için ikinci kanal.</td></tr>
+      <tr><td>Yumuşatma</td><td>One-Euro filtresi (yalnız görüntü)</td><td>Baş noktasının titremesi</td><td>Ölçüm ham kalır; filtre sadece çizime uygulanır.</td></tr>
+    </tbody></table></div>
+</section>
+
+<section>
+  <div class="sechead">
+    <div class="eyebrow">04 · Token</div>
+    <h2>Hareket token'ları</h2>
+    <p>Sahnelerdeki değerler; Flutter'da <code>lib/trainer/ui/motion.dart</code> içinde <code>TC</code> gibi sabitlenmesi önerilir.</p>
+  </div>
+  <div class="tbl"><table>
+    <thead><tr><th>Token</th><th>Değer</th><th>Kullanım</th></tr></thead>
+    <tbody>
+      <tr><td><code>trailWindow</code></td><td class="num">2.0 s geri · 3.2 s ileri</td><td>Şerit A'da görünen zaman penceresi</td></tr>
+      <tr><td><code>lockHold</code></td><td class="num">600 ms</td><td>Halka B'nin dolma süresi</td></tr>
+      <tr><td><code>springKey</code></td><td class="num">stiffness 420 · damping 14</td><td>Tuş ve bayrak yaylanması</td></tr>
+      <tr><td><code>bloom</code></td><td class="num">520 ms · easeOutCubic</td><td>Şok dalgası, yayılan halka</td></tr>
+      <tr><td><code>stagger</code></td><td class="num">35 ms / çubuk</td><td>Sonuç histogramı kademesi</td></tr>
+      <tr><td><code>breath</code></td><td class="num">3.6 s döngü</td><td>Sessiz dinleme nefesi</td></tr>
+      <tr><td><code>reduceMotion</code></td><td class="num">MediaQuery.disableAnimations</td><td>Parçacık yok, yay yerine anlık geçiş, kuyruk sabit</td></tr>
+    </tbody></table></div>
+</section>
+
+<section>
+  <div class="sechead">
+    <div class="eyebrow">05 · Sıra</div>
+    <h2>Önerilen uygulama sırası</h2>
+  </div>
+  <ol class="plan">
+    <li><b>C, Işık sütunlu klavye:</b> mevcut <code>KeyboardMap</code> ve <code>RangeTestScreen</code> üstüne kurulur; aralık testi ilk izlenimdir.</li>
+    <li><b>F, Aralık sonucu:</b> C'nin hemen ardından gelen ödül anı; aynı veriyi kullanır.</li>
+    <li><b>D, Nefes alan dinleme:</b> <code>YourTurnCue</code> yerine; tüm egzersizlerde görünür, etkisi en geniş olan.</li>
+    <li><b>A, Kuyruklu yıldız şeridi:</b> <code>PitchTrail</code> ve <code>GhostRibbon</code> evrimi; melodi eko akışı.</li>
+    <li><b>B ve E:</b> yeni egzersiz tipleriyle birlikte; E pazarda olmayan farklılaştırıcı.</li>
+  </ol>
+  <p>Her adımda 120 Hz cihazda kare süresi ölçümü ve azaltılmış hareket golden testi kabul kapısı olsun. Simülatör kaydı gerçek cihaz kabulü yerine geçmez.</p>
+</section>
+
+<section class="src">
+  <div class="eyebrow">Kaynaklar</div>
+  <a href="https://singingcarrots.com/vocal-range-test/">Singing Carrots, Vocal Range Test</a>
+  <a href="https://screensdesign.com/apps/simply-sing-my-singing-app/">ScreensDesign, Simply Sing ekran dökümü</a>
+  <a href="https://speech.di.uoa.gr/ICMC-SMC-2014/images/VOL_2/1693.pdf">ICMC|SMC 2014, Smule perde çizgisi etkileşimi</a>
+  <a href="https://yousician.com/voice">Yousician Voice</a>
+  <a href="https://rive.app/docs/runtimes/flutter/inputs">Rive Flutter runtime, data binding'e geçiş</a>
+  <a href="https://pub.dev/packages/shader_fun">shader_fun ve flutter_orb, Flutter'da sese tepkili shader örnekleri</a>
+</section>
+</div>
+
+<script>
+(()=>{
+const LIME='#D9F574',CORAL='#FF6259',PEACH='#FF8A6B',VIOLET='#9B82F0',LAV='#C9BFDA',WHITE='#FFFEFA';
+const NOTES=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+const nm=m=>NOTES[((Math.round(m)%12)+12)%12]+(Math.floor(Math.round(m)/12)-1);
+const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+const easeOut=x=>1-Math.pow(1-clamp(x,0,1),3);
+const spring=x=>x<=0?0:1-Math.exp(-6*x)*Math.cos(11*x);
+const FONT='Manrope, system-ui, sans-serif';
+
+/* Melodi: hedef notalar ve simüle şarkıcı (kayış, vibrato, bir notada pes kalma, aralarda sessizlik). */
+const SEQ=[[60,.9],[64,.9],[67,1.2],[null,.45],[65,.75],[64,.75],[62,.75],[60,1.4],[null,.6],[67,.8],[72,1.1],[71,.6],[67,1.2],[null,.5]];
+const BIAS=[0,.05,-.08,0,.12,-.55,0,.04,0,-.1,.08,0,-.04,0];
+const STARTS=[];let TOTAL=0;SEQ.forEach(([,d])=>{STARTS.push(TOTAL);TOTAL+=d});
+function seg(t){const tt=((t%TOTAL)+TOTAL)%TOTAL;let i=SEQ.length-1;for(let k=0;k<SEQ.length;k++){if(tt<STARTS[k]+SEQ[k][1]){i=k;break}}return{i,lt:tt-STARTS[i],base:t-tt}}
+function voice(t){
+  const {i,lt}=seg(t);const [m,d]=SEQ[i];
+  if(m==null)return{midi:null,amp:0,target:null};
+  let prev=null;for(let k=1;k<SEQ.length;k++){const p=SEQ[(i-k+SEQ.length)%SEQ.length][0];if(p!=null){prev=p;break}}
+  const from=(SEQ[(i-1+SEQ.length)%SEQ.length][0]==null)?m-.9:prev;
+  const vib=lt>.3?.26*Math.sin(2*Math.PI*5.6*lt)*clamp((lt-.3)/.3,0,1):0;
+  const midi=m+(from-m)*Math.exp(-lt/.08)+BIAS[i]+vib+.04*Math.sin(t*23.7);
+  const amp=clamp(lt/.07,0,1)*clamp((d-lt)/.08,0,1);
+  if(amp<.15)return{midi:null,amp,target:m};
+  return{midi,amp,target:m};
+}
+
+const demos=[];let playing=!matchMedia('(prefers-reduced-motion: reduce)').matches;
+function demo(id,draw,still=3.2){
+  const cv=document.getElementById(id),ctx=cv.getContext('2d');
+  const d={cv,ctx,draw,t:still,s:{},vis:true,w:0,h:0};
+  new IntersectionObserver(e=>{d.vis=e[0].isIntersecting}).observe(cv);
+  demos.push(d);return d;
+}
+function size(d){const r=d.cv.getBoundingClientRect(),dpr=Math.min(2,devicePixelRatio||1);
+  if(r.width!==d.w||r.height!==d.h){d.w=r.width;d.h=r.height;d.cv.width=Math.round(r.width*dpr);d.cv.height=Math.round(r.height*dpr)}
+  d.ctx.setTransform(dpr,0,0,dpr,0,0);}
+let last=performance.now();
+function frame(now){const dt=Math.min(.05,(now-last)/1000);last=now;
+  for(const d of demos){if(!d.vis&&d.drawn)continue;size(d);if(playing)d.t+=dt;d.ctx.clearRect(0,0,d.w,d.h);d.draw(d.ctx,d.w,d.h,d.t,playing?dt:0,d.s);d.drawn=true}
+  requestAnimationFrame(frame)}
+const btn=document.getElementById('toggle');
+const label=()=>btn.textContent=playing?'Hareketi durdur':'Hareketi oynat';label();
+btn.addEventListener('click',()=>{playing=!playing;label()});
+
+function glowDot(ctx,x,y,r,color,a=1){const g=ctx.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,color);g.addColorStop(1,'rgba(0,0,0,0)');ctx.globalAlpha=a;ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.fill();ctx.globalAlpha=1}
+function pill(ctx,x,y,w,h){const r=Math.min(h/2,w/2);ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath()}
+function particles(ctx,s,dt){s.p=s.p||[];ctx.globalCompositeOperation='lighter';
+  for(const p of s.p){p.l-=dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=p.g*dt;const a=clamp(p.l/p.L,0,1);glowDot(ctx,p.x,p.y,p.r*(.6+a*.6),p.c,a)}
+  s.p=s.p.filter(p=>p.l>0);ctx.globalCompositeOperation='source-over'}
+
+/* A · Kuyruklu yıldız şeridi */
+demo('d-comet',(ctx,w,h,t,dt,s)=>{
+  const lo=57,hi=75,pad=h*.12,px=w*.3,pps=(w-px)/3.2;
+  const y=m=>h-pad-(m-lo)/(hi-lo)*(h-2*pad), X=tt=>px+(tt-t)*pps;
+  ctx.font=`600 10px ${FONT}`;ctx.textBaseline='middle';
+  for(let m=lo+1;m<hi;m++){if([0,2,4,5,7,9,11].includes(m%12)){ctx.strokeStyle='rgba(201,191,218,.09)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(34,y(m));ctx.lineTo(w,y(m));ctx.stroke();ctx.fillStyle='rgba(201,191,218,.55)';ctx.fillText(nm(m),8,y(m))}}
+  const cur=voice(t);const ph=pad*.0;
+  // haplar
+  const base=t-((t%TOTAL)+TOTAL)%TOTAL;
+  for(const b of [base-TOTAL,base,base+TOTAL])SEQ.forEach(([m,d],i)=>{if(m==null)return;const t0=b+STARTS[i],t1=t0+d;const x0=X(t0),x1=X(t1);if(x1<0||x0>w)return;
+    const hh=Math.max(10,(h-2*pad)/(hi-lo)*.85),yy=y(m)-hh/2;const active=t>=t0&&t<t1;
+    pill(ctx,x0+2,yy,x1-x0-4,hh);ctx.fillStyle=active?'rgba(217,245,116,.16)':'rgba(255,254,250,.08)';ctx.fill();
+    ctx.strokeStyle=active?'rgba(217,245,116,.7)':'rgba(201,191,218,.28)';ctx.lineWidth=1.2;ctx.stroke();
+    if(t>t0){ctx.save();pill(ctx,x0+2,yy,x1-x0-4,hh);ctx.clip();const step=1/60;
+      for(let tt=t0;tt<Math.min(t,t1);tt+=step){const v=voice(tt);if(v.midi==null)continue;const ok=Math.abs(v.midi-m)<.5;
+        ctx.fillStyle=ok?'rgba(217,245,116,.85)':'rgba(255,98,89,.28)';ctx.fillRect(X(tt),yy,pps*step+1,hh)}ctx.restore()}
+  });
+  // kuyruk
+  ctx.globalCompositeOperation='lighter';ctx.lineCap='round';ctx.lineJoin='round';
+  for(const [lw,al] of [[12,.10],[6,.25],[2.4,.95]]){let open=false;ctx.beginPath();
+    for(let tt=t-2;tt<=t;tt+=1/90){const v=voice(tt);if(v.midi==null){open=false;continue}const xx=X(tt),yy=y(v.midi);if(!open){ctx.moveTo(xx,yy);open=true}else ctx.lineTo(xx,yy)}
+    const g=ctx.createLinearGradient(X(t-2),0,px,0);g.addColorStop(0,'rgba(155,130,240,0)');g.addColorStop(.6,`rgba(201,191,218,${al})`);g.addColorStop(1,`rgba(255,254,250,${al})`);
+    ctx.strokeStyle=g;ctx.lineWidth=lw;ctx.stroke()}
+  ctx.globalCompositeOperation='source-over';
+  // oynatma çizgisi
+  ctx.strokeStyle='rgba(255,254,250,.18)';ctx.setLineDash([3,5]);ctx.beginPath();ctx.moveTo(px,pad*.5);ctx.lineTo(px,h-pad*.5);ctx.stroke();ctx.setLineDash([]);
+  if(cur.midi!=null){const hy=y(cur.midi),ok=cur.target!=null&&Math.abs(cur.midi-cur.target)<.5;
+    if(ok&&dt>0)for(let k=0;k<2;k++){const a=Math.random()*Math.PI*2;s.p=s.p||[];s.p.push({x:px,y:hy,vx:-60-Math.random()*90,vy:Math.sin(a)*70-30,g:120,l:.6,L:.6,r:5+Math.random()*4,c:Math.random()<.7?LIME:WHITE})}
+    particles(ctx,s,dt);
+    ctx.globalCompositeOperation='lighter';glowDot(ctx,px,hy,26+cur.amp*8+Math.sin(t*9)*2,ok?'rgba(217,245,116,.55)':'rgba(255,138,107,.45)');ctx.globalCompositeOperation='source-over';
+    ctx.fillStyle=WHITE;ctx.beginPath();ctx.arc(px,hy,5.5,0,7);ctx.fill();
+    if(!ok&&cur.target!=null){const dir=cur.target>cur.midi?-1:1,ay=hy+dir*22+Math.sin(t*8)*2;ctx.strokeStyle=PEACH;ctx.lineWidth=2.4;ctx.beginPath();ctx.moveTo(px-6,ay-dir*5);ctx.lineTo(px,ay);ctx.lineTo(px+6,ay-dir*5);ctx.stroke()}
+  }else particles(ctx,s,dt);
+},2.1);
+
+/* B · Kilitlenen halka */
+demo('d-lock',(ctx,w,h,t,dt,s)=>{
+  const cx=w/2,cy=h/2,R=Math.min(w,h)*.27,v=voice(t);
+  const cents=v.midi!=null&&v.target!=null?clamp((v.midi-v.target)*100,-100,100):null;
+  if(s.tg!==v.target){s.tg=v.target;s.hold=0;s.done=false}
+  if(cents!=null&&Math.abs(cents)<15)s.hold=(s.hold||0)+dt/.6;else s.hold=Math.max(0,(s.hold||0)-dt*1.5);
+  s.r=s.r||[];if(s.hold>=1&&!s.done){s.done=true;s.r.push({t0:t})}
+  // cent cetveli
+  ctx.font=`600 10px ${FONT}`;ctx.textAlign='right';ctx.textBaseline='middle';
+  for(let c=-50;c<=50;c+=10){const yy=cy-c/100*R*2;ctx.strokeStyle=c===0?'rgba(217,245,116,.6)':'rgba(201,191,218,.25)';ctx.lineWidth=c%50===0?2:1;ctx.beginPath();ctx.moveTo(cx-R*1.75,yy);ctx.lineTo(cx-R*1.75+(c%50===0?14:8),yy);ctx.stroke();if(c%50===0){ctx.fillStyle='rgba(201,191,218,.7)';ctx.fillText((c>0?'+':'')+c+'¢',cx-R*1.8,yy)}}
+  // şok dalgaları
+  s.r=s.r.filter(r=>t-r.t0<.9);for(const r of s.r){const k=easeOut((t-r.t0)/.52),a=1-clamp((t-r.t0)/.9,0,1);ctx.strokeStyle=`rgba(217,245,116,${a*.8})`;ctx.lineWidth=3*(1-k)+1;ctx.beginPath();ctx.arc(cx,cy,R*(1+k*.9),0,7);ctx.stroke()}
+  // hedef halka + dolum
+  ctx.strokeStyle='rgba(201,191,218,.35)';ctx.lineWidth=2;ctx.beginPath();ctx.arc(cx,cy,R,0,7);ctx.stroke();
+  const f=clamp(s.hold,0,1);if(f>0){ctx.strokeStyle=LIME;ctx.lineWidth=5;ctx.lineCap='round';ctx.beginPath();ctx.arc(cx,cy,R,-Math.PI/2,-Math.PI/2+f*Math.PI*2);ctx.stroke()}
+  // küre
+  const ty=cents==null?cy:cy-cents/100*R*2;s.oy=s.oy==null?ty:s.oy+(ty-s.oy)*clamp(dt*14,0,1);
+  const amp=v.amp,rr=R*.42*(.85+.25*amp);const locked=cents!=null&&Math.abs(cents)<15;
+  if(cents!=null){ctx.globalCompositeOperation='lighter';glowDot(ctx,cx,s.oy,rr*2.2,locked?'rgba(217,245,116,.35)':'rgba(155,130,240,.35)');ctx.globalCompositeOperation='source-over';
+    ctx.beginPath();for(let a=0;a<=Math.PI*2+.01;a+=Math.PI/48){const k=1+.07*Math.sin(3*a+t*3.1)*amp+.05*Math.sin(5*a-t*2.3)+.03*Math.sin(7*a+t*5);const x=cx+Math.cos(a)*rr*k,yy=s.oy+Math.sin(a)*rr*k;a===0?ctx.moveTo(x,yy):ctx.lineTo(x,yy)}
+    const g=ctx.createRadialGradient(cx-rr*.3,s.oy-rr*.35,rr*.1,cx,s.oy,rr*1.1);g.addColorStop(0,WHITE);g.addColorStop(.45,locked?LIME:VIOLET);g.addColorStop(1,locked?'rgba(169,204,62,.9)':'rgba(104,73,204,.9)');ctx.fillStyle=g;ctx.fill()}
+  else{const b=.5+.5*Math.sin(t*1.8);ctx.strokeStyle=`rgba(201,191,218,${.25+b*.25})`;ctx.setLineDash([4,6]);ctx.beginPath();ctx.arc(cx,cy,R*.42,0,7);ctx.stroke();ctx.setLineDash([])}
+  // yazı
+  ctx.textAlign='center';ctx.fillStyle=WHITE;ctx.font=`800 ${Math.round(R*.34)}px ${FONT}`;
+  if(v.target!=null)ctx.fillText(nm(v.target),cx+R*1.7,cy-R*.18);
+  ctx.font=`600 12px ${FONT}`;ctx.fillStyle=LAV;ctx.fillText(cents==null?'dinliyor':(cents>0?'+':'−')+Math.abs(Math.round(cents))+' ¢',cx+R*1.7,cy+R*.22);
+},1.1);
+
+/* C · Işık sütunlu klavye */
+demo('d-keys',(ctx,w,h,t,dt,s)=>{
+  const P=13,lt=t%P,lo0=40,hi0=84;
+  if(s.loop!==Math.floor(t/P)){s.loop=Math.floor(t/P);s.reach={};s.low=null;s.high=null;s.pop=[]}
+  // sirene benzer tarama, erişim giderek genişler
+  const per=2.6,sv=Math.sin(2*Math.PI*lt/per),Au=Math.min(17,3+lt*1.7),Ad=Math.min(14,2+lt*1.4);
+  const silent=(lt%per)<.18||lt>P-1.6;const midi=silent?null:57+(sv>0?sv*Au:sv*Ad);
+  const key=midi==null?null:Math.round(midi);
+  if(key!=null&&dt>0){s.reach[key]=Math.min(1,(s.reach[key]||0)+dt*1.6);
+    if(s.low==null||key<s.low){s.low=key;s.pop.push({k:key,t0:t,side:'low'})}
+    if(s.high==null||key>s.high){s.high=key;s.pop.push({k:key,t0:t,side:'high'})}}
+  const fade=lt>P-1.2?clamp((P-lt)/1.2,0,1):1;ctx.globalAlpha=fade;
+  const whites=[];for(let m=lo0;m<=hi0;m++)if([0,2,4,5,7,9,11].includes(m%12))whites.push(m);
+  const kw=(w-24)/whites.length,kx0=12,ky=h*.62,kh=h*.26;
+  const xOf=m=>{const wi=whites.indexOf(m);if(wi>=0)return kx0+wi*kw+kw/2;return kx0+whites.indexOf(m-1)*kw+kw};
+  const isB=m=>![0,2,4,5,7,9,11].includes(m%12);
+  const popOf=m=>{let v=0;for(const p of s.pop)if(p.k===m)v=Math.max(v,1-clamp((t-p.t0)/.7,0,1));return v};
+  const bounce=m=>{for(const p of s.pop)if(p.k===m){const x=(t-p.t0)/.7;if(x<1)return(1-spring(x))*-7}return 0};
+  // ışık sütunları
+  ctx.globalCompositeOperation='lighter';
+  for(const k in s.reach){const m=+k,r=s.reach[m],x=xOf(m),ch=(ky-h*.12)*(.25+.75*easeOut(r));const cw=isB(m)?kw*.5:kw*.8;
+    const g=ctx.createLinearGradient(0,ky,0,ky-ch);g.addColorStop(0,'rgba(217,245,116,.55)');g.addColorStop(1,'rgba(217,245,116,0)');ctx.fillStyle=g;ctx.fillRect(x-cw/2,ky-ch,cw,ch)}
+  if(key!=null){const x=xOf(key);const g=ctx.createLinearGradient(0,ky,0,h*.08);g.addColorStop(0,'rgba(255,254,250,.7)');g.addColorStop(1,'rgba(255,254,250,0)');ctx.fillStyle=g;ctx.fillRect(x-2,h*.08,4,ky-h*.08);glowDot(ctx,x,ky-6,22,'rgba(217,245,116,.6)')}
+  ctx.globalCompositeOperation='source-over';
+  // beyaz tuşlar
+  whites.forEach((m,i)=>{const x=kx0+i*kw,b=bounce(m),lit=s.reach[m];pill(ctx,x+1,ky+b,kw-2,kh);
+    ctx.fillStyle=key===m?LIME:lit?`rgba(233,248,200,${.55+.45*lit})`:'rgba(255,254,250,.92)';ctx.fill();
+    if(m%12===0){ctx.fillStyle='rgba(41,34,56,.6)';ctx.font=`700 ${Math.max(7,Math.min(10,kw*.6))}px ${FONT}`;ctx.textAlign='center';ctx.textBaseline='alphabetic';ctx.fillText(nm(m),x+kw/2,ky+kh-5)}});
+  for(let m=lo0;m<=hi0;m++)if(isB(m)){const x=xOf(m),b=bounce(m),bw=kw*.62;pill(ctx,x-bw/2,ky+b,bw,kh*.6);ctx.fillStyle=key===m?LIME:s.reach[m]?'#6E8F2C':'#292238';ctx.fill()}
+  // köşebent
+  if(s.low!=null&&s.high!=null&&s.high>s.low){const x0=xOf(s.low),x1=xOf(s.high),yb=ky+kh+10;ctx.strokeStyle=LIME;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x0,yb-5);ctx.lineTo(x0,yb);ctx.lineTo(x1,yb);ctx.lineTo(x1,yb-5);ctx.stroke()}
+  // uç etiketleri
+  for(const side of ['low','high']){const k=s[side];if(k==null)continue;const p=[...s.pop].reverse().find(q=>q.side===side);const sc=p?.6+.4*spring((t-p.t0)/.6):1;
+    const x=clamp(xOf(k),40,w-40),yy=h*.17;ctx.save();ctx.translate(x,yy);ctx.scale(sc,sc);
+    const txt=(side==='low'?'En pes ':'En tiz ')+nm(k);ctx.font=`800 12px ${FONT}`;const tw=ctx.measureText(txt).width+18;
+    pill(ctx,-tw/2,-12,tw,24);ctx.fillStyle=side==='low'?'rgba(155,130,240,.95)':'rgba(255,98,89,.95)';ctx.fill();ctx.fillStyle=WHITE;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(txt,0,1);ctx.restore()}
+  ctx.globalAlpha=1;
+},7.5);
+
+/* D · Nefes alan dinleme */
+demo('d-listen',(ctx,w,h,t,dt,s)=>{
+  const cx=w/2,cy=h*.47,R=Math.min(w,h)*.2,P=7,lt=t%P;
+  const speaking=lt>2.2&&lt<6.2;let amp=0;
+  if(speaking){const sy=Math.max(0,Math.sin(2*Math.PI*3.1*lt));amp=sy*sy*(.55+.45*Math.sin(2*Math.PI*.55*lt));}
+  s.a=(s.a||0)+(amp-(s.a||0))*clamp(dt*12,0,1);const a=s.a;
+  s.rings=s.rings||[];if(a>.55&&(!s.lr||t-s.lr>.32)){s.rings.push(t);s.lr=t}
+  s.rings=s.rings.filter(r=>t-r<1.4);
+  for(const r of s.rings){const k=(t-r)/1.4;ctx.strokeStyle=`rgba(217,245,116,${(1-k)*.5})`;ctx.lineWidth=2;ctx.beginPath();ctx.arc(cx,cy,R*(1.15+k*1.5),0,7);ctx.stroke()}
+  const breath=.5+.5*Math.sin(2*Math.PI*t/3.6);
+  ctx.globalCompositeOperation='lighter';
+  [[LIME,1.0,2.1,3],[CORAL,1.3,-1.6,4],[VIOLET,.8,1.2,5]].forEach(([c,sp,ph,n],i)=>{ctx.beginPath();
+    for(let q=0;q<=Math.PI*2+.01;q+=Math.PI/60){const k=1+.04*breath+a*.22*Math.sin(n*q+t*sp*3+ph)+a*.08*Math.sin((n+2)*q-t*2);const x=cx+Math.cos(q)*R*1.12*k,y=cy+Math.sin(q)*R*1.12*k;q===0?ctx.moveTo(x,y):ctx.lineTo(x,y)}
+    ctx.closePath();ctx.globalAlpha=.32;ctx.fillStyle=c;ctx.fill();ctx.globalAlpha=1});
+  ctx.globalCompositeOperation='source-over';
+  ctx.beginPath();ctx.arc(cx,cy,R*(.9+.03*breath),0,7);ctx.fillStyle=LIME;ctx.fill();
+  // mikrofon simgesi
+  const u=R*.1;ctx.strokeStyle='#292238';ctx.fillStyle='#292238';ctx.lineWidth=u*.9;ctx.lineCap='round';
+  pill(ctx,cx-u*1.6,cy-u*4.2,u*3.2,u*5.4);ctx.fill();
+  ctx.beginPath();ctx.arc(cx,cy-u*.6,u*3,0,Math.PI);ctx.stroke();ctx.beginPath();ctx.moveTo(cx,cy+u*2.4);ctx.lineTo(cx,cy+u*3.6);ctx.stroke();
+  // seviye çubukları
+  const n=24;for(let i=0;i<n;i++){const ang=-Math.PI/2+i/n*Math.PI*2,lv=a*(.4+.6*Math.abs(Math.sin(i*1.7+t*6)));const r0=R*2.05,r1=r0+4+lv*R*.5;
+    ctx.strokeStyle=`rgba(201,191,218,${.25+lv*.6})`;ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(cx+Math.cos(ang)*r0,cy+Math.sin(ang)*r0);ctx.lineTo(cx+Math.cos(ang)*r1,cy+Math.sin(ang)*r1);ctx.stroke()}
+  ctx.font=`700 14px ${FONT}`;ctx.textAlign='center';ctx.fillStyle=WHITE;const dots='.'.repeat(1+Math.floor(t*2.5)%3);
+  ctx.fillText(speaking?'Duyuyorum':'Dinliyorum'+dots,cx,h*.93);
+},3.4);
+
+/* E · Kroma çarkı */
+const WSEQ=[[60,.8],[62,.8],[64,.8],[65,.8],[67,1.1],[null,.4],[55,1],[67,1],[null,.4],[72,1.2],[60,1.2],[null,.5]];
+let WT=0;const WS=WSEQ.map(([,d])=>{const s=WT;WT+=d;return s});
+function wvoice(t){const tt=((t%WT)+WT)%WT;let i=0;for(let k=0;k<WSEQ.length;k++)if(tt>=WS[k])i=k;const [m]=WSEQ[i],lt=tt-WS[i];
+  if(m==null||lt<.06)return null;let from=m;for(let k=1;k<WSEQ.length;k++){const p=WSEQ[(i-k+WSEQ.length)%WSEQ.length][0];if(p!=null){from=p;break}}
+  return m+(from-m)*Math.exp(-lt/.09)+(lt>.3?.2*Math.sin(2*Math.PI*5.5*lt):0)}
+demo('d-wheel',(ctx,w,h,t,dt,s)=>{
+  const cx=w/2,cy=h/2,Rm=Math.min(w,h)*.44,octs=[3,4,5],r0=Rm*.38,ring=(Rm-r0)/octs.length;
+  const rad=o=>r0+(o-3+.5)*ring, ang=pc=>-Math.PI/2+pc/12*Math.PI*2;
+  for(let i=0;i<octs.length;i++){ctx.strokeStyle='rgba(201,191,218,.14)';ctx.lineWidth=ring*.9;ctx.beginPath();ctx.arc(cx,cy,rad(octs[i]),0,7);ctx.stroke();
+    ctx.fillStyle='rgba(201,191,218,.5)';ctx.font=`600 9px ${FONT}`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(octs[i],cx+4,cy-rad(octs[i]))}
+  const m=wvoice(t);
+  for(let pc=0;pc<12;pc++){const a=ang(pc)-Math.PI/12;ctx.strokeStyle='rgba(201,191,218,.12)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(cx+Math.cos(a)*r0*.92,cy+Math.sin(a)*r0*.92);ctx.lineTo(cx+Math.cos(a)*Rm,cy+Math.sin(a)*Rm);ctx.stroke();
+    const on=m!=null&&((Math.round(m)%12)+12)%12===pc;const la=ang(pc),lr=Rm+12;
+    ctx.fillStyle=on?LIME:LAV;ctx.font=`${on?800:600} ${on?13:11}px ${FONT}`;ctx.fillText(NOTES[pc],cx+Math.cos(la)*Math.min(lr,Math.min(w,h)/2-8),cy+Math.sin(la)*Math.min(lr,Math.min(w,h)/2-8))}
+  if(m!=null){const pc=((Math.round(m)%12)+12)%12,o=Math.floor(Math.round(m)/12)-1;if(o>=3&&o<=5){const a0=ang(pc)-Math.PI/12,a1=a0+Math.PI/6;
+    ctx.fillStyle='rgba(217,245,116,.18)';ctx.beginPath();ctx.arc(cx,cy,rad(o)+ring*.45,a0,a1);ctx.arc(cx,cy,rad(o)-ring*.45,a1,a0,true);ctx.closePath();ctx.fill()}}
+  // iz
+  ctx.globalCompositeOperation='lighter';
+  for(let k=40;k>=0;k--){const tt=t-k*.02,v=wvoice(tt);if(v==null)continue;const pcf=((v%12)+12)%12,o=Math.floor(v/12)-1+(((v%12)+12)%12)/12;
+    const a=ang(pcf),r=r0+(o-3)*ring+ring*.0;const x=cx+Math.cos(a)*r,y=cy+Math.sin(a)*r;const f=1-k/40;
+    glowDot(ctx,x,y,k===0?20:6+f*6,k===0?'rgba(255,254,250,.9)':`rgba(217,245,116,${f*.5})`)}
+  ctx.globalCompositeOperation='source-over';
+  ctx.fillStyle=WHITE;ctx.font=`800 ${Math.round(r0*.5)}px ${FONT}`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(m==null?'·':nm(m),cx,cy);
+},2.4);
+
+/* F · Aralık sonucu */
+const HIST=[[43,.15],[44,.25],[45,.4],[46,.35],[47,.55],[48,.7],[49,.6],[50,.8],[51,.75],[52,.9],[53,.95],[54,.85],[55,1],[56,.9],[57,.95],[58,.85],[59,.8],[60,.85],[61,.7],[62,.75],[63,.6],[64,.55],[65,.45],[66,.35],[67,.3],[68,.2],[69,.15],[70,.08]];
+demo('d-reveal',(ctx,w,h,t,dt,s)=>{
+  const P=9,lt=t%P,fade=lt>P-.8?clamp((P-lt)/.8,0,1):clamp(lt/.4,0,1);ctx.globalAlpha=fade;
+  const x0=24,x1=w-24,base=h*.74,top=h*.22,n=HIST.length,bw=(x1-x0)/n;
+  ctx.strokeStyle='rgba(201,191,218,.35)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x0,base+.5);ctx.lineTo(x0+(x1-x0)*easeOut(lt/1),base+.5);ctx.stroke();
+  ctx.font=`600 10px ${FONT}`;ctx.textAlign='center';ctx.textBaseline='top';ctx.fillStyle='rgba(201,191,218,.7)';
+  HIST.forEach(([m],i)=>{if(m%12===0||m%12===7)ctx.fillText(nm(m),x0+i*bw+bw/2,base+8)});
+  // çalışma register'ı bandı
+  const wi0=HIST.findIndex(q=>q[0]===45),wi1=HIST.findIndex(q=>q[0]===57);const bk=easeOut((lt-4.6)/.9);
+  if(bk>0){const bx=x0+wi0*bw,bwid=((wi1-wi0+1)*bw)*bk;pill(ctx,bx,top-14,bwid,base-top+18);ctx.fillStyle='rgba(217,245,116,.10)';ctx.fill();ctx.strokeStyle='rgba(217,245,116,.55)';ctx.setLineDash([4,4]);ctx.stroke();ctx.setLineDash([]);
+    if(bk>.9){ctx.globalAlpha=fade*clamp((lt-5.5)/.4,0,1);ctx.fillStyle=LIME;ctx.font=`800 12px ${FONT}`;ctx.textAlign='left';ctx.textBaseline='bottom';ctx.fillText('Çalışma register\'ı: A2–A3',bx+6,top-18);ctx.globalAlpha=fade}}
+  HIST.forEach(([m,v],i)=>{const k=spring((lt-1-i*.035)/.8);if(k<=0)return;const bh=(base-top)*v*k;const x=x0+i*bw+bw*.15;
+    const g=ctx.createLinearGradient(0,base,0,base-bh);g.addColorStop(0,'rgba(155,130,240,.9)');g.addColorStop(1,'rgba(217,245,116,.95)');pill(ctx,x,base-Math.max(bh,2),bw*.7,Math.max(bh,2));ctx.fillStyle=g;ctx.fill()});
+  // bayraklar
+  [[0,'En pes',VIOLET,3.4],[n-1,'En tiz',CORAL,3.7]].forEach(([i,lab,c,t0])=>{const k=spring((lt-t0)/.7);if(k<=0)return;const x=x0+i*bw+bw/2,yy=top-30+(1-k)*-40;
+    ctx.strokeStyle=c;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x,yy+12);ctx.lineTo(x,base);ctx.stroke();
+    const txt=lab+' '+nm(HIST[i][0]);ctx.font=`800 11px ${FONT}`;const tw=ctx.measureText(txt).width+14;const bx=clamp(x-tw/2,4,w-tw-4);
+    pill(ctx,bx,yy-10,tw,22);ctx.fillStyle=c;ctx.fill();ctx.fillStyle=WHITE;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(txt,bx+tw/2,yy+1)});
+  ctx.globalAlpha=1;
+},6.4);
+
+requestAnimationFrame(frame);
+})();
+</script>

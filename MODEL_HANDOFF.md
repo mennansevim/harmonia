@@ -1,5 +1,42 @@
 # Resonia — Model devir ve genel işleyiş notu
 
+**2026-11-04 REL-11e:** IPA doğrulayıcı ana app'in imzalı entitlement plist'ini
+`codesign` ile okur; application identifier profile ile, Team ID beklenen
+`L3Z9U2B39K` ile eşleşmeli ve `get-task-allow=false` olmalı. Python 9/9;
+güncel 1.0.0+4 IPA geçti. Upload/App Store/cihaz kanıtı yok.
+
+**2026-11-04 DESIGN-14:** Güncel görsel dil yeni Figma Make şablonu: krem
+zemin, sert gölgeli kartlar, `#432A72` hero, lime `BigButton` varsayılanı,
+`ToneIcon` renk döngüsü. Yeni renkleri `TC` tokenlarından al; metinde
+`primary/coralDeep/green/muted` (4.5:1) kullan, `coral/primaryFill/teal`
+yalnız dolgu. Ölçülmeyen süre/seviye gösterme. Yazı tipi Manrope; 12 pt
+altı muted metni w500 altına indirme (kontrast denetimi gerçek fontla ölçer).
+
+**2026-11-04 REL-11d:** IPA profile ve codesign sahipliği exact
+`L3Z9U2B39K` + `com.mennansevim.vocalart` + `Apple Distribution:` zincirine
+bağlı. Suffix/farklı team reddedilir. Python 9/9; güncel kaynak ve IPA
+1.0.0+3 doğrulandı (güncel artifact REL-13 ile 1.0.0+4). Tam kalite 1259 + 2
+skip temiz. Upload yok.
+
+**2026-11-04 REL-11c:** IPA yerel kapısı artık duplicate path'i reddeder ve
+bounded/symlinksiz archive'ı temp'e açıp `codesign --verify --deep --strict`
+çalıştırır. Python 7/7 ve gerçek Vocalart.ipa codesign exit0. Bu Apple server,
+upload veya fiziksel cihaz kanıtı değildir. Tam kalite 1236 + 2 skip temiz.
+
+**2026-11-04 REL-11b:** Yayın sürümünün tek kaynağı strict
+`pubspec.yaml` `semver+build`; güncel REL-13 değeri 1.0.0+4. IPA doğrulayıcı marketing
+ve build sürümünü exact-match ister. Xcode export'un build'i sessiz artırdığı
+1.0.0+1 kaynak / 1.0.0+2 artifact ayrışması kapatıldı. Python testleri 5/5,
+gerçek IPA ve tam 1235 + 2 skip kalite kapısı geçti; upload yok.
+
+**2026-11-04 REL-11a:** `scripts/release/verify_ios_ipa.py` imzalı IPA'yı
+salt-okunur ve bounded doğrular; app kimliği/adı/sürümü, şifreleme beyanı,
+imza kaynakları ve App Store profile entitlement/süresini fail-closed kontrol
+eder. Test: `python3 -I scripts/release/test_verify_ios_ipa.py` (3/3). Gerçek
+`build/ios/ipa/Vocalart.ipa` geçti: 1.0.0 (2), iOS 15, profile 2027-09-25.
+Tam kalite kapısı 1235 + 2 skip, analyze/format temiz. Bu
+upload/codesign zinciri/fiziksel cihaz kanıtı değildir; yükleme yok.
+
 **2026-11-03 ADR-040:** Koro modülü ayrı satılır. Ses grubu sorulmaz; aralık
 `range_ladder.dart` (Agora portu, yanlış oktav ≠ başarı) ile
 `RangeTestScreen`'de dinle-tekrar et ölçülür ve yalnız çalışma register'ını

@@ -112,6 +112,8 @@ void main() {
         await audit('rol');
         await tap('opt_singer');
         await tap('ob_continue');
+        await audit('mikrofon');
+        await tap('ob_continue');
         await audit('aralik');
         await tap('ob_continue');
         await audit('odak');

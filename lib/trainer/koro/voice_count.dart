@@ -112,7 +112,6 @@ class _VoiceCountScreenState extends State<VoiceCountScreen> {
                 ),
                 BigButton(
                   label: tr('Bitti', 'Done'),
-                  color: TC.koro,
                   onPressed: () => Navigator.pop(context),
                 ),
               ],

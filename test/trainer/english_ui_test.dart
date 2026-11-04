@@ -93,6 +93,8 @@ void main() {
     expectEnglish(visibleWording(tester), 'role');
     await tapKey(tester, 'opt_singer');
     await tapKey(tester, 'ob_continue');
+    expectEnglish(visibleWording(tester), 'mic');
+    await tapKey(tester, 'ob_continue');
     expectEnglish(visibleWording(tester), 'range');
     await tapKey(tester, 'ob_continue');
     expectEnglish(visibleWording(tester), 'focus');

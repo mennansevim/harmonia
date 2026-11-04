@@ -38,6 +38,57 @@ void main() {
     player.end = Completer();
   }
 
+  test('a complete answer ends after the longest gap, not the timeout', () {
+    final slow = RhythmImitationController(
+      player: FakeClipPlayer(),
+      renderReference: (ms) => List.filled(ms.length, 1),
+      initialPattern: draftRhythmPatterns.first,
+      catalog: draftRhythmPatterns,
+    );
+    addTearDown(slow.dispose);
+    expect(slow.expectedTaps, 4);
+    expect(slow.finishWait, slow.idleTimeout);
+    expect(slow.followingPattern, draftRhythmPatterns[1]);
+    slow.advancePattern();
+    expect(slow.pattern, draftRhythmPatterns[1]);
+    slow.advancePattern();
+    slow.advancePattern();
+    expect(slow.pattern, draftRhythmPatterns.last);
+    expect(slow.followingPattern, isNull);
+  });
+
+  test('finish wait shortens only once every beat has a tap', () async {
+    final slow = RhythmImitationController(
+      player: player,
+      renderReference: (ms) => List.filled(ms.length, 1),
+      initialPattern: draftRhythmPatterns.first,
+    );
+    addTearDown(slow.dispose);
+    final run = slow.listen();
+    await _flush();
+    player.end.complete();
+    await run;
+    for (final ms in [0, 750, 1500]) {
+      slow.registerTap(Duration(milliseconds: ms));
+    }
+    expect(slow.finishWait, slow.idleTimeout);
+    slow.registerTap(const Duration(milliseconds: 2250));
+    // Quarters at 80 bpm: 750 ms gap + unchanged 120 ms match window.
+    expect(slow.finishWait, const Duration(milliseconds: 870));
+    await slow.finish();
+    expect(slow.phase, RhythmImitationPhase.finished);
+    player.end = Completer();
+    final again = slow.retry();
+    await _flush();
+    expect(slow.phase, RhythmImitationPhase.listening);
+    expect(slow.referencePlays, 1);
+    expect(slow.outcome, isNull);
+    player.end.complete();
+    await again;
+    expect(slow.phase, RhythmImitationPhase.awaitingTaps);
+    player.end = Completer();
+  });
+
   test('taps before listening or during reference are not evaluated', () async {
     c.registerTap(const Duration(milliseconds: 1));
     expect(c.tapCount, 0);

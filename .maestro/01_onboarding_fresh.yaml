@@ -19,6 +19,9 @@ tags: [smoke, critical]
 - tapOn: "Bir koroda söylüyorum"
 - takeScreenshot: onboarding_03_role_selected
 - tapOn: "Devam"
+- assertVisible: "Mikrofonunu deneyelim"
+- takeScreenshot: onboarding_04a_mic
+- tapOn: "Atla"
 - assertVisible: "Ses aralığını ölçelim"
 - takeScreenshot: onboarding_04_range
 - tapOn: "Atla"

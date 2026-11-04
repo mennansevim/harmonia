@@ -26,7 +26,7 @@ class StatsTab extends StatelessWidget {
         padding: EdgeInsets.zero,
         children: [
           _Header(
-            tr('Yolculuğun', 'Your journey'),
+            tr('Sesinin haritası', 'Map of your voice'),
             tr('Gelişim', 'Progress'),
             tr(
               'Yalnız bu cihazdaki kendi kanıtın',
@@ -35,7 +35,7 @@ class StatsTab extends StatelessWidget {
             const ProfileButton(),
           ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
+            padding: const EdgeInsets.fromLTRB(20, 14, 20, 24),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -43,12 +43,15 @@ class StatsTab extends StatelessWidget {
                 const SizedBox(height: 14),
                 _Unlocked(store: store),
                 const SizedBox(height: 20),
-                Text(tr('SES ARALIĞI', 'VOCAL RANGE'), style: TT.caps),
+                Text(tr('Ses aralığı', 'Vocal range'), style: TT.section),
                 const SizedBox(height: 10),
                 _RangeCard(store: store),
                 if (_suggestion(store) case final k?) ...[
                   const SizedBox(height: 20),
-                  Text(tr('ÖNERİ', 'SUGGESTION'), style: TT.caps),
+                  Text(
+                    tr('Sana önerilen', 'Suggested for you'),
+                    style: TT.section,
+                  ),
                   const SizedBox(height: 10),
                   _SuggestionCard(store: store, kind: k),
                 ],
@@ -90,6 +93,7 @@ class _LevelCard extends StatelessWidget {
         : (xp - level.$1) / (next.$1 - level.$1);
     return HeroCard(
       key: const Key('level_card'),
+      orbs: HeroOrbs.level,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -116,13 +120,13 @@ class _LevelCard extends StatelessWidget {
               ),
               ExcludeSemantics(
                 child: Container(
-                  width: 56,
-                  height: 64,
+                  width: 52,
+                  height: 52,
                   decoration: BoxDecoration(
                     color: TC.sun,
-                    borderRadius: BorderRadius.circular(30),
+                    borderRadius: BorderRadius.circular(16),
                   ),
-                  child: Icon(level.$3, color: TC.onSun, size: 28),
+                  child: Icon(level.$3, color: TC.hero, size: 26),
                 ),
               ),
             ],
@@ -130,9 +134,9 @@ class _LevelCard extends StatelessWidget {
           const SizedBox(height: 16),
           ProgressBar(
             value: progress,
-            color: TC.teal,
-            height: 8,
-            track: const Color(0xFF3A3D55),
+            color: TC.sun,
+            height: 6,
+            track: TC.heroTrack,
           ),
           const SizedBox(height: 10),
           Text(
@@ -187,8 +191,8 @@ class _HeroFigure extends StatelessWidget {
     child: Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
       decoration: BoxDecoration(
-        color: const Color(0xFF2E3149),
-        borderRadius: BorderRadius.circular(12),
+        color: TC.heroTile,
+        borderRadius: BorderRadius.circular(14),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -292,7 +296,8 @@ class _RangeCard extends StatelessWidget {
                       bottom: 0,
                       child: Container(
                         decoration: BoxDecoration(
-                          color: TC.teal,
+                          color: TC.limeSoft,
+                          border: Border.all(color: TC.teal),
                           borderRadius: BorderRadius.circular(7),
                         ),
                       ),
@@ -397,19 +402,21 @@ class _Header extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Container(
     width: double.infinity,
-    padding: const EdgeInsets.fromLTRB(24, 14, 24, 10),
+    padding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
     child: Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(trCaps(eyebrow), style: TT.crumb),
-              const SizedBox(height: 10),
+              const SizedBox(height: 6),
               Semantics(header: true, child: Text(title, style: TT.h1)),
-              const SizedBox(height: 2),
-              Text(subtitle, style: TT.small),
+              if (subtitle.isNotEmpty) ...[
+                const SizedBox(height: 4),
+                Text(subtitle, style: TT.small),
+              ],
             ],
           ),
         ),
@@ -453,8 +460,8 @@ class _Unlocked extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                tr('SON 7 GÜN · SORU', 'LAST 7 DAYS · QUESTIONS'),
-                style: TT.caps,
+                tr('Son 7 gün · soru', 'Last 7 days · questions'),
+                style: TT.section.copyWith(fontSize: 14),
               ),
               const SizedBox(height: 14),
               SizedBox(
@@ -479,7 +486,9 @@ class _Unlocked extends StatelessWidget {
                               margin: const EdgeInsets.symmetric(horizontal: 6),
                               height: math.max(4, 80 * counts[i] / peak),
                               decoration: BoxDecoration(
-                                color: i == 6 ? TC.teal : TC.primarySoft,
+                                color: i == 6
+                                    ? TC.primaryFill
+                                    : const Color(0xFFDCD1F4),
                                 borderRadius: BorderRadius.circular(6),
                               ),
                             ),
@@ -501,9 +510,14 @@ class _Unlocked extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 20),
-        Text(
-          tr('BECERİLER · İLK DENEME DOĞRULUĞU', 'SKILLS · FIRST-TRY ACCURACY'),
-          style: TT.caps,
+        Row(
+          children: [
+            Expanded(child: Text(tr('Beceriler', 'Skills'), style: TT.section)),
+            Text(
+              tr('İlk deneme doğruluğu', 'First-try accuracy'),
+              style: TT.small,
+            ),
+          ],
         ),
         const SizedBox(height: 10),
         _TrainerList(store: store),

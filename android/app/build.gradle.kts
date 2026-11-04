@@ -8,7 +8,7 @@ plugins {
 
 // Release signing (REL-09): android/key.properties is local-only (gitignored)
 // with storeFile, storePassword, keyAlias, keyPassword. Without it, release
-// builds are debug-signed and must never be uploaded to a store.
+// tasks fail closed unless the explicit local-only debug-signing override is set.
 val keystoreProperties = Properties().apply {
     val f = rootProject.file("key.properties")
     if (f.exists()) f.inputStream().use { load(it) }

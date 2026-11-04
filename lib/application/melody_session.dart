@@ -44,6 +44,7 @@ class MelodySessionOutcome {
     this.quality,
     this.segments,
     this.alignment,
+    this.recording,
   });
   static const scoringEnabled = false;
   final DiagnosticMelodyReference reference;
@@ -58,6 +59,10 @@ class MelodySessionOutcome {
   /// Experimental frequency/order comparison only. It is not a score, voice
   /// validation, memory result or learning evidence.
   final PitchSequenceEvidence? alignment;
+
+  /// The analysed frames behind [segments], kept only so the result can draw
+  /// a pitch trace. PCM is not retained.
+  final RecordingPitchEvidence? recording;
   bool get needsRetry => retryReason != null;
 }
 
@@ -134,6 +139,7 @@ class MelodySessionController extends ChangeNotifier {
         quality: raw.quality,
         segments: segments,
         alignment: alignment,
+        recording: evidence,
       );
     }
     notifyListeners();

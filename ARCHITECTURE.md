@@ -8,6 +8,40 @@ iç sınıf adları, `RESONIA_CHANNEL` ve `.resonia` veri uzantısı migration
 sınırıdır ve bu marka değişiminde yeniden adlandırılmaz. Bu test signing,
 provisioning, mağaza kaydı veya cihaz kabulü yerine geçmez.
 
+**REL-11a iOS artifact kapısı (2026-11-04):**
+`scripts/release/verify_ios_ipa.py` IPA'yı çıkarmadan bounded ZIP olarak okur;
+path traversal/symlink/bütçe kapıları, tek ana `.app`, bundle kimliği/adı,
+sürüm/build, minimum OS, şifreleme beyanı, executable, CodeResources ve
+embedded profile varlığını doğrular. Profile yalnız macOS `security cms` ile
+decode edilir; application-identifier, `get-task-allow=false`, cihaz/enterprise
+dağıtımı olmaması ve son kullanma tarihi fail-closed kontrol edilir. REL-11c
+aynı bounded archive'ı geçici klasöre açıp `codesign --verify --deep --strict`
+ile bundle ve nested imza zincirini doğrular; duplicate archive path de
+reddedilir. Bu kapı upload, Apple sunucu kabulü veya fiziksel cihaz çalışması
+değildir.
+
+**REL-11b sürüm tek kaynağı (2026-11-04):** Yayın sürümü
+`pubspec.yaml` içindeki strict `semver+build` değeridir. IPA doğrulayıcı bu
+değeri okuyup `CFBundleShortVersionString` ve `CFBundleVersion` ile exact-match
+karşılaştırır; Xcode export'un sessiz build artırması veya eski artifact artık
+kapıdan geçmez. REL-13 sonrasında güncel imzalı artifact ile kaynak
+`1.0.0+4` olarak hizalıdır.
+
+**REL-11d Apple sahiplik zinciri (2026-11-04):** Beklenen Team ID
+`L3Z9U2B39K` profile `TeamIdentifier`, profile entitlement team kimliği ve
+exact `application-identifier` içinde aynı anda aranır. Çıkarılan app'in
+codesign ayrıntıları da exact bundle ID/Team ID ve ilk authority olarak
+`Apple Distribution:` ister. Suffix eşleşmesi, başka team profili veya geçerli
+ama farklı sahibin imzası yayın kanıtı üretemez.
+
+**REL-11e imzalı entitlement zinciri (2026-11-04):** Codesign doğrulamasından
+geçen ana app'in imzalı entitlement plist'i ayrıca okunur. İmzalı
+`application-identifier` profile ile, `com.apple.developer.team-identifier`
+beklenen Team ID ile exact-match olmalı ve `get-task-allow` kesin olarak
+`false` olmalıdır. Böylece profile doğru olsa bile debug veya başka kimlikle
+imzalanmış app yerel artifact kapısından geçemez. Bu yine Apple sunucu veya
+cihaz çalışma kanıtı değildir.
+
 ## Mimari prensipler
 
 21:40 TRT heartbeat: CAL-03a `LatencyEstimator` pure Dart bounded trial

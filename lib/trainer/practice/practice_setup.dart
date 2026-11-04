@@ -323,7 +323,6 @@ class _PracticeSetupScreenState extends State<PracticeSetupScreen> {
                 key: const Key('practice_now'),
                 label: tr('Başlat', 'Start'),
                 icon: Ic.play,
-                color: color,
                 onPressed: _items.length >= 2 ? _start : null,
               ),
             ),

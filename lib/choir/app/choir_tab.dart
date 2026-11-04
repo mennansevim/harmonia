@@ -362,7 +362,6 @@ class _ChoirCard extends StatelessWidget {
                 key: Key('choir_${choir.id}'),
                 label: text.goToChoir,
                 icon: Ic.arrowUpRight,
-                color: Colors.white,
                 onPressed: () => Navigator.of(context).push(
                   MaterialPageRoute<void>(
                     builder: (_) => ChoirScreen(choirId: choir.id),

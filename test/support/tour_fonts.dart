@@ -16,6 +16,10 @@ Future<void> loadTourFonts() async {
     await loader.load();
   }
 
+  await load('Manrope', [
+    for (final w in ['Regular', 'Medium', 'SemiBold', 'Bold', 'ExtraBold'])
+      'assets/fonts/Manrope-$w.ttf',
+  ]);
   await load('Inter', [
     for (final w in ['Regular', 'Medium', 'SemiBold', 'Bold'])
       'assets/fonts/Inter-$w.ttf',

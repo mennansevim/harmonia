@@ -94,6 +94,8 @@ void main() {
     await tap(key('opt_singer'));
     await shot('ob_role');
     await tap(key('ob_continue'));
+    await shot('ob_mic');
+    await tap(key('ob_continue'));
     await shot('ob_part');
     await tap(key('ob_continue'));
     await tap(key('opt_voice'));

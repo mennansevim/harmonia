@@ -9,49 +9,98 @@ import '../domain/trainers.dart';
 /// The design's line icons, at the thin stroke its Figma frames use.
 typedef Ic = LucideIcons300;
 
-/// Vocalart visual system (Figma Make, DESIGN-09): cool grey canvas, white
-/// cards on a hairline, soft violet primary shared with the choir workshop,
-/// teal for progress and warm sun for streaks.
+/// Vocalart visual system (Figma Make, DESIGN-14): warm cream canvas,
+/// off-white cards that sit on a hard bottom shadow, deep aubergine heroes,
+/// lime calls to action, coral and lavender accents.
 abstract final class TC {
-  /// #705CE6 in the design, a shade deeper so it reads as text (4.5:1) on
-  /// [primarySoft] as well as on white.
-  static const primary = Color(0xFF6A56E0);
-  static const primaryDeep = Color(0xFF5844C9);
-  static const primarySoft = Color(0xFFF0EDFF);
+  /// #7455DB / #6849CC in the design: the deeper one is the text and icon
+  /// colour (4.5:1 on every light surface), the other the solid fill.
+  static const primary = Color(0xFF6849CC);
+  static const primaryFill = Color(0xFF7455DB);
+  static const primaryDeep = Color(0xFF5C3FB4);
+  static const primarySoft = Color(0xFFEEE7FF);
   static const koro = primary;
 
-  /// Warm sun: streaks and rewards. Always carries ink, never white.
-  static const sun = Color(0xFFF2B96D);
-  static const onSun = Color(0xFF222539);
-  static const peach = Color(0xFFFF8A6B);
-  static const warnSoft = Color(0xFFFFF0DE);
-  static const warn = Color(0xFFB4561F);
-  static const coral = Color(0xFFE5483A);
+  /// Lime: the primary call to action and the highlight on a hero. Always
+  /// carries ink, never white.
+  static const sun = Color(0xFFD9F574);
+  static const onSun = Color(0xFF292238);
+  static const limeShadow = Color(0xFFA9CC3E);
+  static const limeSoft = Color(0xFFE9F8C8);
+  static const limeDeep = Color(0xFF477719);
 
-  /// Progress fill (bars, rings). Too light for text; use [green] there.
-  static const teal = Color(0xFF45B4AC);
+  /// Coral: microphone, range and choir accents. The fill carries white
+  /// glyphs only; [coralDeep] is its text colour.
+  static const coral = Color(0xFFFF6259);
+  static const coralDeep = Color(0xFFB63E38);
+  static const coralSoft = Color(0xFFFFE3DF);
+  static const coralShadow = Color(0xFFD94E47);
+  static const peach = Color(0xFFFF8A6B);
+
+  /// Streak chip: warm butter with brown text.
+  static const streak = Color(0xFFFFE8B4);
+  static const onStreak = Color(0xFF714817);
+  static const warnSoft = Color(0xFFFFF1CD);
+  static const warn = Color(0xFF8E5A1F);
+
+  /// Success fill (rings, toggles, in tune). Too light for text; use
+  /// [green] there.
+  static const teal = Color(0xFF8DB93A);
   static const magenta = Color(0xFFC2307A);
   static const amber = Color(0xFFC98400);
   static const sky = Color(0xFF1E88E5);
 
-  /// Success text and ticks: the design's teal, deep enough for 4.5:1.
-  static const green = Color(0xFF2F7F7A);
+  /// Success text and ticks, deep enough for 4.5:1.
+  static const green = Color(0xFF4F741B);
   static const red = Color(0xFFD92D20);
 
-  /// Night navy: the dark hero surface and the darkest text.
-  static const ink = Color(0xFF222539);
-  static const hero = Color(0xFF222539);
-  static const body = Color(0xFF45485A);
-  static const muted = Color(0xFF6B6E80);
-  static const faint = Color(0xFFA9ACBA);
-  static const line = Color(0xFFE6E8EF);
+  /// Plum ink: the darkest text. The hero surface is the deep aubergine.
+  static const ink = Color(0xFF292238);
+  static const hero = Color(0xFF432A72);
+  static const heroTrack = Color(0x33FFFFFF);
+  static const heroTile = Color(0xFF54397F);
+  static const body = Color(0xFF5F5867);
+  static const muted = Color(0xFF6F6877);
+  static const faint = Color(0xFFA9A2B0);
+  static const line = Color(0xFFE5DEE7);
 
-  /// Near-white canvas; cards stand off it by their hairline.
-  static const canvas = Color(0xFFF7F8FA);
-  static const card = Colors.white;
-  static const heroMuted = Color(0xFFB9BBD0);
-  static const navBar = Colors.white;
-  static const navPill = Color(0xFFF0EDFF);
+  /// Cream canvas; cards stand off it by a hairline and a hard shadow.
+  static const canvas = Color(0xFFF8F5EF);
+  static const card = Color(0xFFFFFEFA);
+  static const cardShadow = Color(0xFFECE6E7);
+  static const heroShadow = Color(0xFFDED5EB);
+  static const heroMuted = Color(0xFFC9BFDA);
+  static const navBar = Color(0xFFFFFEFA);
+  static const navPill = Color(0xFFE8DDFF);
+}
+
+/// The design's three icon tints, cycled across a row of cards: lavender,
+/// coral, lime.
+(Color, Color) toneAt(int i) => switch (i % 3) {
+  0 => (TC.primarySoft, TC.primary),
+  1 => (TC.coralSoft, TC.coralDeep),
+  _ => (TC.limeSoft, TC.limeDeep),
+};
+
+/// Rounded icon square in one of the [toneAt] tints.
+class ToneIcon extends StatelessWidget {
+  const ToneIcon(this.icon, {super.key, this.tone = 0, this.size = 40});
+  final IconData icon;
+  final int tone;
+  final double size;
+  @override
+  Widget build(BuildContext context) {
+    final (bg, fg) = toneAt(tone);
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(size * 0.33),
+      ),
+      child: Icon(icon, color: fg, size: size * 0.55),
+    );
+  }
 }
 
 /// One accent for every skill, as on the choir screens; the icon tells
@@ -77,12 +126,12 @@ Color soft(Color c) =>
 ThemeData trainerTheme() {
   final base = ThemeData(
     useMaterial3: true,
-    fontFamily: 'Inter',
+    fontFamily: 'Manrope',
     colorScheme: ColorScheme.fromSeed(
       seedColor: TC.primary,
       primary: TC.primary,
       secondaryContainer: TC.navPill,
-      surface: Colors.white,
+      surface: TC.card,
     ),
     scaffoldBackgroundColor: TC.canvas,
     splashFactory: InkRipple.splashFactory,
@@ -90,25 +139,25 @@ ThemeData trainerTheme() {
   return base.copyWith(
     textTheme: base.textTheme.apply(bodyColor: TC.ink, displayColor: TC.ink),
     appBarTheme: const AppBarTheme(
-      backgroundColor: Colors.white,
+      backgroundColor: TC.canvas,
       surfaceTintColor: Colors.transparent,
       foregroundColor: TC.ink,
       elevation: 0,
       systemOverlayStyle: SystemUiOverlayStyle.dark,
     ),
     bottomSheetTheme: const BottomSheetThemeData(
-      backgroundColor: Colors.white,
+      backgroundColor: TC.card,
       surfaceTintColor: Colors.transparent,
     ),
     chipTheme: base.chipTheme.copyWith(
       shape: const StadiumBorder(side: BorderSide(color: Colors.transparent)),
       side: BorderSide.none,
-      backgroundColor: Colors.white,
-      selectedColor: TC.primary,
+      backgroundColor: TC.card,
+      selectedColor: TC.hero,
       labelStyle: const TextStyle(
         color: TC.ink,
         fontWeight: FontWeight.w600,
-        fontFamily: 'Inter',
+        fontFamily: 'Manrope',
       ),
     ),
     sliderTheme: base.sliderTheme.copyWith(
@@ -123,7 +172,7 @@ ThemeData trainerTheme() {
     switchTheme: SwitchThemeData(
       trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
       trackColor: WidgetStateProperty.resolveWith(
-        (s) => s.contains(WidgetState.selected) ? TC.primary : TC.line,
+        (s) => s.contains(WidgetState.selected) ? TC.teal : TC.line,
       ),
       thumbColor: WidgetStateProperty.all(Colors.white),
     ),
@@ -131,14 +180,14 @@ ThemeData trainerTheme() {
       style: OutlinedButton.styleFrom(
         minimumSize: const Size.fromHeight(52),
         foregroundColor: TC.ink,
-        backgroundColor: Colors.white,
+        backgroundColor: TC.card,
         iconSize: 18,
         side: const BorderSide(color: TC.line),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         textStyle: const TextStyle(
-          fontWeight: FontWeight.w600,
+          fontWeight: FontWeight.w700,
           fontSize: 14,
-          fontFamily: 'Inter',
+          fontFamily: 'Manrope',
         ),
       ),
     ),
@@ -192,11 +241,11 @@ abstract final class TT {
     letterSpacing: -0.4,
   );
   static const h1 = TextStyle(
-    fontSize: 28,
-    fontWeight: FontWeight.w700,
+    fontSize: 29,
+    fontWeight: FontWeight.w800,
     color: TC.ink,
-    height: 1.15,
-    letterSpacing: -0.8,
+    height: 1.1,
+    letterSpacing: -1.4,
   );
   static const h2 = TextStyle(
     fontSize: 22,
@@ -210,6 +259,14 @@ abstract final class TT {
     fontWeight: FontWeight.w700,
     color: TC.ink,
   );
+
+  /// Section heading in sentence case ("Hızlı egzersizler").
+  static const section = TextStyle(
+    fontSize: 16,
+    fontWeight: FontWeight.w800,
+    color: TC.ink,
+    letterSpacing: -0.3,
+  );
   static const title = TextStyle(
     fontSize: 14,
     fontWeight: FontWeight.w600,
@@ -217,18 +274,28 @@ abstract final class TT {
     height: 1.5,
   );
   static const body = TextStyle(fontSize: 13, color: TC.body, height: 1.5);
-  static const small = TextStyle(fontSize: 12, color: TC.muted, height: 1.4);
+
+  /// Medium weight: Manrope's regular strokes render too thin at 12 pt to
+  /// keep the muted colour at 4.5:1.
+  static const small = TextStyle(
+    fontSize: 12,
+    fontWeight: FontWeight.w500,
+    color: TC.muted,
+    height: 1.4,
+  );
   static const caps = TextStyle(
     fontSize: 10,
     fontWeight: FontWeight.w700,
     color: TC.muted,
     letterSpacing: 1.5,
   );
+
+  /// Eyebrow over a page title: coral capitals, widely tracked.
   static const crumb = TextStyle(
     fontSize: 10,
-    fontWeight: FontWeight.w700,
-    color: TC.primary,
-    letterSpacing: 1.5,
+    fontWeight: FontWeight.w800,
+    color: TC.coralDeep,
+    letterSpacing: 1.8,
   );
 
   /// The lime label at the top of a hero card.
@@ -271,7 +338,7 @@ class BigButton extends StatefulWidget {
     super.key,
     required this.label,
     required this.onPressed,
-    this.color = TC.primary,
+    this.color = TC.sun,
     this.icon,
     this.chevron = false,
     this.busy = false,
@@ -299,7 +366,19 @@ class _BigButtonState extends State<BigButton> {
   Widget build(BuildContext context) {
     final enabled = widget.onPressed != null && !widget.busy;
     final lit = enabled || widget.busy;
-    final fill = lit ? widget.color : const Color(0xFFE4E6ED);
+    final fill = lit ? widget.color : const Color(0xFFE8E3E8);
+    final plain = widget.color == Colors.white || widget.color == TC.card;
+    // The design's buttons stand on a hard ledge a shade darker than
+    // themselves; it sinks away while pressed.
+    final ledge = !lit
+        ? const Color(0xFFD8D2DA)
+        : widget.color == TC.sun
+        ? TC.limeShadow
+        : widget.color == TC.coral
+        ? TC.coralShadow
+        : plain
+        ? TC.cardShadow
+        : _shade(widget.color, -0.12);
     final light = widget.color.computeLuminance() > 0.35;
     final fg = !lit
         ? TC.muted
@@ -329,14 +408,17 @@ class _BigButtonState extends State<BigButton> {
         child: AnimatedScale(
           scale: enabled && _down ? 0.97 : 1,
           duration: const Duration(milliseconds: 90),
-          child: Container(
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 90),
             height: 52,
+            margin: EdgeInsets.only(top: _down ? 3 : 0, bottom: _down ? 1 : 4),
             decoration: BoxDecoration(
               color: fill,
-              borderRadius: BorderRadius.circular(14),
-              border: widget.color == Colors.white
-                  ? Border.all(color: TC.line)
-                  : null,
+              borderRadius: BorderRadius.circular(17),
+              border: plain ? Border.all(color: TC.line) : null,
+              boxShadow: [
+                BoxShadow(color: ledge, offset: Offset(0, _down ? 1 : 4)),
+              ],
             ),
             alignment: Alignment.center,
             child: widget.busy
@@ -358,8 +440,8 @@ class _BigButtonState extends State<BigButton> {
                               maxLines: 1,
                               style: TextStyle(
                                 color: fg,
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
+                                fontSize: 14.5,
+                                fontWeight: FontWeight.w800,
                               ),
                             ),
                           ),
@@ -450,43 +532,121 @@ class SoftButton extends StatelessWidget {
               onPressed!();
             },
       style: TextButton.styleFrom(
-        foregroundColor: TC.primary,
-        backgroundColor: TC.primarySoft,
+        foregroundColor: const Color(0xFF4C357B),
+        backgroundColor: const Color(0xFFE9DFFF),
         minimumSize: const Size.fromHeight(50),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
       ),
       child: Text(
         label,
         textAlign: TextAlign.center,
-        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+        style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
       ),
     ),
   );
 }
 
-/// Aubergine surface for the one thing a screen is about.
+/// Aubergine surface for the one thing a screen is about, on a lavender
+/// ledge.
 class HeroCard extends StatelessWidget {
   const HeroCard({
     super.key,
     required this.child,
     this.padding = const EdgeInsets.all(20),
     this.ring = true,
+    this.orbs = HeroOrbs.none,
   });
   final Widget child;
   final EdgeInsets padding;
 
-  /// Kept for callers that want no decoration; the card itself is plain now.
+  /// Kept for callers that want no decoration.
   final bool ring;
+
+  /// The design's ring shapes behind the content, right-hand side.
+  final HeroOrbs orbs;
   @override
   Widget build(BuildContext context) => Semantics(
     container: true,
     child: Container(
-      padding: padding,
+      margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
         color: TC.hero,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(26),
+        boxShadow: const [
+          BoxShadow(color: TC.heroShadow, offset: Offset(0, 10)),
+        ],
       ),
-      child: child,
+      clipBehavior: Clip.antiAlias,
+      child: Stack(
+        children: [
+          if (ring && orbs != HeroOrbs.none)
+            ...switch (orbs) {
+              HeroOrbs.plan => const [
+                _Orb(
+                  right: -36,
+                  bottom: -58,
+                  size: 168,
+                  width: 38,
+                  c: TC.coral,
+                ),
+                _Orb(
+                  right: -24,
+                  top: 54,
+                  size: 132,
+                  width: 24,
+                  c: Color(0xE6DAF774),
+                ),
+                _Orb(
+                  right: 1,
+                  top: 79,
+                  size: 82,
+                  width: 1,
+                  c: Color(0x73FFFFFF),
+                ),
+              ],
+              HeroOrbs.level => const [
+                _Orb(right: -55, top: -74, size: 170, width: 28, c: TC.coral),
+              ],
+              HeroOrbs.none => const <Widget>[],
+            },
+          Padding(padding: padding, child: child),
+        ],
+      ),
+    ),
+  );
+}
+
+enum HeroOrbs { none, plan, level }
+
+class _Orb extends StatelessWidget {
+  const _Orb({
+    this.right,
+    this.top,
+    this.bottom,
+    required this.size,
+    required this.width,
+    required this.c,
+  });
+  final double? right;
+  final double? top;
+  final double? bottom;
+  final double size;
+  final double width;
+  final Color c;
+  @override
+  Widget build(BuildContext context) => Positioned(
+    right: right,
+    top: top,
+    bottom: bottom,
+    child: IgnorePointer(
+      child: Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(color: c, width: width),
+        ),
+      ),
     ),
   );
 }
@@ -514,7 +674,8 @@ class HeroPill extends StatelessWidget {
   );
 }
 
-/// The back arrow every pushed screen starts with.
+/// The back arrow every pushed screen starts with: a round off-white
+/// button on its ledge.
 class BackSquare extends StatelessWidget {
   const BackSquare({
     super.key,
@@ -526,12 +687,30 @@ class BackSquare extends StatelessWidget {
   final IconData icon;
   final String? label;
   @override
-  Widget build(BuildContext context) => IconButton(
-    tooltip: label ?? tr('Geri', 'Back'),
-    constraints: const BoxConstraints.tightFor(width: 44, height: 44),
-    padding: EdgeInsets.zero,
-    onPressed: onTap ?? () => Navigator.of(context).maybePop(),
-    icon: Icon(icon, color: TC.ink, size: 20),
+  Widget build(BuildContext context) => SizedBox.square(
+    dimension: 48,
+    child: Stack(
+      alignment: Alignment.center,
+      children: [
+        Container(
+          width: 42,
+          height: 42,
+          decoration: const BoxDecoration(
+            color: TC.card,
+            shape: BoxShape.circle,
+            border: Border.fromBorderSide(BorderSide(color: TC.line)),
+            boxShadow: [BoxShadow(color: TC.cardShadow, offset: Offset(0, 4))],
+          ),
+        ),
+        IconButton(
+          tooltip: label ?? tr('Geri', 'Back'),
+          constraints: const BoxConstraints.tightFor(width: 48, height: 48),
+          padding: EdgeInsets.zero,
+          onPressed: onTap ?? () => Navigator.of(context).maybePop(),
+          icon: Icon(icon, color: const Color(0xFF443B4C), size: 20),
+        ),
+      ],
+    ),
   );
 }
 
@@ -696,9 +875,10 @@ class AppCard extends StatelessWidget {
     required this.child,
     this.padding = const EdgeInsets.all(16),
     this.onTap,
-    this.color = Colors.white,
+    this.color = TC.card,
     this.border,
-    this.radius = 18,
+    this.radius = 20,
+    this.ledge,
   });
   final Widget child;
   final EdgeInsets padding;
@@ -706,35 +886,53 @@ class AppCard extends StatelessWidget {
   final Color color;
   final Color? border;
   final double radius;
+
+  /// Colour of the hard shadow under the card; defaults to a shade under
+  /// the card's own fill.
+  final Color? ledge;
   @override
-  Widget build(BuildContext context) => Semantics(
-    container: true,
-    child: Container(
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(radius),
-        // The canvas is near-white, so plain cards keep a hairline.
-        border: border != null
-            ? Border.all(color: border!, width: 1.5)
-            : color == Colors.white
-            ? Border.all(color: TC.line)
-            : null,
-      ),
-      child: Material(
-        type: MaterialType.transparency,
-        child: InkWell(
+  Widget build(BuildContext context) {
+    final plain = color == Colors.white || color == TC.card;
+    final shadow =
+        ledge ??
+        switch (color) {
+          TC.primarySoft => const Color(0xFFD5C8ED),
+          TC.coralSoft => const Color(0xFFEDCBC8),
+          TC.limeSoft => const Color(0xFFD3E6A8),
+          TC.warnSoft => const Color(0xFFECDFBD),
+          _ => plain ? TC.cardShadow : _shade(color, -0.08),
+        };
+    return Semantics(
+      container: true,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 5),
+        decoration: BoxDecoration(
+          color: color,
           borderRadius: BorderRadius.circular(radius),
-          onTap: onTap == null
-              ? null
-              : () {
-                  tapHaptic();
-                  onTap!();
-                },
-          child: Padding(padding: padding, child: child),
+          // Plain cards keep a hairline; tinted ones stand on their ledge.
+          border: border != null
+              ? Border.all(color: border!, width: 1.5)
+              : plain
+              ? Border.all(color: TC.line)
+              : null,
+          boxShadow: [BoxShadow(color: shadow, offset: const Offset(0, 5))],
+        ),
+        child: Material(
+          type: MaterialType.transparency,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(radius),
+            onTap: onTap == null
+                ? null
+                : () {
+                    tapHaptic();
+                    onTap!();
+                  },
+            child: Padding(padding: padding, child: child),
+          ),
         ),
       ),
-    ),
-  );
+    );
+  }
 }
 
 /// Status pill; lime is the app's signature for "look at this".
@@ -776,8 +974,10 @@ class OptionChip extends StatelessWidget {
     label: label,
     excludeSemantics: true,
     child: Material(
-      color: selected ? TC.primary : Colors.white,
-      shape: const StadiumBorder(),
+      color: selected ? TC.hero : TC.card,
+      shape: StadiumBorder(
+        side: selected ? BorderSide.none : const BorderSide(color: TC.line),
+      ),
       child: InkWell(
         customBorder: const StadiumBorder(),
         onTap: () {
@@ -863,8 +1063,8 @@ class ChoiceTile extends StatelessWidget {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 160),
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
+          color: selected ? TC.primarySoft : TC.card,
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: selected ? color : TC.line,
             width: selected ? 2 : 1.5,
@@ -977,7 +1177,7 @@ class Segmented<T> extends StatelessWidget {
                   height: 40,
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
-                    color: v == selected ? color : Colors.white,
+                    color: v == selected ? color : TC.card,
                     borderRadius: BorderRadius.circular(joined ? 10 : 14),
                     border: joined
                         ? null
@@ -1009,7 +1209,7 @@ class Segmented<T> extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: TC.card,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: TC.line, width: 1.5),
       ),
@@ -1035,7 +1235,7 @@ Future<T?> showTrainerSheet<T>(
       margin: const EdgeInsets.fromLTRB(10, 0, 10, 10),
       padding: const EdgeInsets.fromLTRB(20, 10, 20, 20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: TC.card,
         borderRadius: BorderRadius.circular(30),
       ),
       child: Column(
@@ -1047,7 +1247,7 @@ Future<T?> showTrainerSheet<T>(
               width: 40,
               height: 5,
               decoration: BoxDecoration(
-                color: const Color(0xFFD3D2E6),
+                color: TC.line,
                 borderRadius: BorderRadius.circular(3),
               ),
             ),
