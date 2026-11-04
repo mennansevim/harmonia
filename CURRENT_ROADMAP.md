@@ -1,9 +1,72 @@
 # Resonia — Current Roadmap
 
-**Tarih:** 2026-11-03 (son güncelleme: REL-10 TestFlight hazırlık kontrolü)
+**Tarih:** 2026-11-04 (son güncelleme: DESIGN-13 Gelişim ve Koro)
 **Durum:** Faz 1 — güvenilirlik sözleşmeleri, yerel kayıt laboratuvarı, deneysel DSP/worker, kalibrasyon/kalite kapısı ve misafir uygulama kabuğu kod-test seviyesinde. Tek ses skor ekranı hâlâ simülasyon; fiziksel cihaz, insan sesi benchmark'ı, eğitimci içerik onayı ve öğretim pilotu kapıları açık. **Hiçbir modül cihazda/pilotta doğrulanmış veya yayında değil.**
 **Sahip:** Mennan Sevim  
 **Platform:** Flutter mobil uygulama; ileride web ve öğretmen paneli
+
+**2026-11-04 — DESIGN-13 Gelişim ve Koro:** Gelişim'de seviye kartı
+teal ilerleme ve sayılan değerlerle (toplam soru, aktif gün, seri; dakika
+yok — ölçülmüyor), son 7 gün çubukları (bugün teal), beceri doğrulukları,
+yeni "Ses aralığı" kartı (`stats_range`: ölçülmediyse "Ölçülmedi" boş
+durum, ölçüldüyse Do2–Do6 şeridinde aralık + "TASLAK ÖLÇÜM") ve "Öneri"
+(`stats_suggest`: en az 10 cevaplı beceriler içinde en düşük ilk deneme
+doğruluğu; kanıt yoksa gizli). Koro kartı ikon kutusu ve 26 pt başlıkla
+aynı sisteme geçti; üye sayısı/besteci gibi olmayan veri eklenmedi.
+**1240 test geçti.** Figma Make planının 6 adımı kodda; simülatör/cihaz ve
+gerçek kullanıcı kontrolü yapılmadı. Commit yok.
+
+**2026-11-04 — DESIGN-12 detay → canlı → sonuç:** Beceri sayfası
+kartına ikon ve ustalık çubuğu eklendi. Uygulamada gerçek zamanlı perde
+çizgisi yok (söyleme kaydedilip sonra analiz ediliyor); bu yüzden canlı
+çizgi uydurulmadı. Pitch dersindeki isteğe bağlı ses kontrolü canlı panele
+çevrildi: hedef nota, Dinle · Bekle · Söyle · Kontrol adımları, tiz üstte
+tanısal ölçek (aynı oktavda ±100 sent nötr işaret). Yanlış oktav metinle
+söylenir ve işaret konmaz; ses yok/geçersiz denemede renksiz "sayılmadı"
+kutusu (prototip hataları 1–3). Puan/başarı rengi yok; PUANSIZ korunur.
+Sonuç ekranı halka (ilk deneme oranı), %/XP çipleri. **1238 test geçti.**
+Gerçek mikrofon/cihazda bakılmadı. Commit yok.
+
+**2026-11-04 — DESIGN-11 Egzersizler kütüphanesi:** Egzersizler sekmesi
+kategori çipli kütüphane oldu (Tümü · Isınma · Kulak · Ses · Ritim · Çok
+sesli; `cat_*`, başlık altında sabit). Üstte geniş "Ses aralığı testi" kartı
+(`koro_range`, DENEYSEL, son ölçüm "taslak"), altında 2 sütun kartlar:
+Nefes (`lib_breath`), 5 kulak yolu (`skill_*`, tamamlanan/toplam ders +
+çubuk), Dinle ve söyle / Ezgi tekrarı (DENEYSEL), üç ritim (TASLAK),
+Kaç ses (DİNLEME), 2/3/4 sesli (YAKINDA, soluk). Süre/seviye uydurulmadı;
+yalnız ölçülen ders ilerlemesi gösterilir. Eski "Tek sesliden dört sesliye"
+kartı kaldırıldı. **1236 test geçti.** Simülatör/cihazda bakılmadı. Commit yok.
+
+**2026-11-04 — DESIGN-10 Bugün yerleşimi:** Bugün ekranı Figma Make
+prototipine göre yeniden dizildi: tarih + seri + profil, "Merhaba[, ad]",
+bu hafta çalışılan gün sayısı (`activeOn`, ölçülen soru günleri), koyu
+"Bugünün planı" kartı (rotadaki adım kadar parçalı çubuk, "x / y adım
+tamam", `today_begin` kartın içinde), adım listesi (`daily_plan`, `route_*`
+korunur), yatay "Hızlı egzersizler" (`quick_*`), "Kaldığın yerden"
+(`today_resume`, yalnız `lastTrainer` varsa; tamamlanan/toplam ders) ve koro
+satırı. Beceri ızgarası (`skill_*`) Egzersizler'e "Kulak eğitimi" bölümü
+olarak taşındı. Kontrast testi yatay kesilen metni de kesik sayıyor.
+**1235 test geçti.** Simülatör/cihazda bakılmadı. Commit yok.
+
+**2026-11-04 — NAV-02 dört sekme:** Alt menü Bugün · Egzersizler · (Koro,
+role göre) · Gelişim oldu; Ayarlar her sekmenin sağ üstündeki profil
+düğmesinden ayrı sayfa olarak açılıyor (`open_settings`), veri silinince
+sayfa kapanıp girişe dönülüyor. Egzersizler şimdilik Ses Atölyesi içeriği,
+beceri ızgarası hâlâ Bugün'de (kütüphane sonraki adım). "Ses/İlerleme
+sekmesi" geçen metinler yeni adlara çekildi. **1235 test geçti.** Simülatör
+ve cihazda bakılmadı. Commit yok.
+
+**2026-11-04 — DESIGN-09 tema (Figma Make):** Rakip incelemesi sonrası
+Simply Sing referans alındı; Figma Make prototipinin paleti `kit.dart`'a
+işlendi: zemin #F7F8FA, koyu kart/metin #222539, mor #6A56E0 (#705CE6'nın
+4,5:1 geçen tonu), ilerleme teal #45B4AC, başarı metni #2F7F7A, seri sarısı
+#F2B96D; başlıklar Inter (Lora kalktı), kart köşesi 18 + ince çizgi.
+Erişilebilirlik turunda kontrast kontrolü kaydırma alanının kestiği metni
+artık ölçmüyor (`VisibleTextContrastGuideline`; tam görünen metin aynı
+kurala tabi, kesik metin kaydırılınca ölçülür). **1235 test geçti.** Açık:
+gezinme/Bugün/Egzersizler/egzersiz akışı yerleşimleri (plan:
+[docs/design/figma-make-review-2026-11-04.md](./docs/design/figma-make-review-2026-11-04.md)),
+simülatör ve cihazda bakılmadı. Commit yok.
 
 **2026-11-03 — REM-02 akıllı hatırlatma:** Sabit 19:00 metni yerine
 uygulama arka plana geçince 7 günlük + 2 haftalık yerel plan; metin duruma

@@ -199,7 +199,7 @@ void main() {
     await store.load();
     await tester.pumpWidget(app(store));
     await settle(tester);
-    await tapKey(tester, 'tab_3');
+    await tapKey(tester, 'open_settings');
     await tapKey(tester, 'settings_membership');
     expect(find.text('Önce değeri gör'), findsOneWidget);
     expect(find.text('Fiyat henüz belirlenmedi'), findsOneWidget);

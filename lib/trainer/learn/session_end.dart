@@ -66,7 +66,7 @@ class SessionEnd extends StatelessWidget {
                 ))
         : node == null
         ? tr(
-            'Sonuçlar İlerleme sekmesine eklendi.',
+            'Sonuçlar Gelişim sekmesine eklendi.',
             'Results were added to the Progress tab.',
           )
         : (strong
@@ -114,85 +114,81 @@ class SessionEnd extends StatelessWidget {
                   const SizedBox(height: 18),
                   HeroCard(
                     ring: false,
-                    padding: const EdgeInsets.all(18),
-                    child: IntrinsicHeight(
-                      child: Row(
-                        children: [
-                          Semantics(
-                            label: tr(
-                              '${s.total} sorudan ${s.correct} ilk denemede doğru',
-                              '${s.correct} of ${s.total} right on the first try',
-                            ),
-                            excludeSemantics: true,
-                            child: SizedBox(
-                              width: 96,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    '${s.correct}',
-                                    key: const Key('session_score'),
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 43,
-                                      fontWeight: FontWeight.w800,
-                                      height: 1,
-                                      fontFeatures: [
-                                        FontFeature.tabularFigures(),
-                                      ],
-                                    ),
-                                  ),
-                                  const SizedBox(height: 3),
-                                  Text(
-                                    tr(
-                                      '/ ${s.total} ilk deneme',
-                                      '/ ${s.total} first tries',
-                                    ),
-                                    style: TextStyle(
-                                      color: Colors.white.withValues(
-                                        alpha: 0.78,
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      children: [
+                        Semantics(
+                          label: tr(
+                            '${s.total} sorudan ${s.correct} ilk denemede doğru',
+                            '${s.correct} of ${s.total} right on the first try',
+                          ),
+                          excludeSemantics: true,
+                          child: SizedBox(
+                            width: 128,
+                            height: 128,
+                            child: CustomPaint(
+                              painter: _ScoreRing(
+                                s.total == 0 ? 0 : s.correct / s.total,
+                              ),
+                              child: Center(
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      '${s.correct}',
+                                      key: const Key('session_score'),
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 40,
+                                        fontWeight: FontWeight.w800,
+                                        height: 1,
+                                        fontFeatures: [
+                                          FontFeature.tabularFigures(),
+                                        ],
                                       ),
-                                      fontSize: 13,
                                     ),
-                                  ),
-                                ],
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      tr(
+                                        '/ ${s.total} ilk deneme',
+                                        '/ ${s.total} first tries',
+                                      ),
+                                      style: const TextStyle(
+                                        color: TC.heroMuted,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                           ),
-                          VerticalDivider(
-                            width: 28,
-                            color: Colors.white.withValues(alpha: 0.28),
+                        ),
+                        const SizedBox(height: 14),
+                        Text(
+                          tr(
+                            '${kind.shortTitle} · dokunma yanıtlarından ölçüldü',
+                            '${kind.shortTitle} · measured from your taps',
                           ),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  kind.shortTitle,
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w800,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  tr(
-                                    'Dokunma yanıtlarından ölçüldü · ${percent(s.accuracy)}',
-                                    'Measured from your taps · ${percent(s.accuracy)}',
-                                  ),
-                                  style: TextStyle(
-                                    color: Colors.white.withValues(alpha: 0.78),
-                                    fontSize: 12.5,
-                                  ),
-                                ),
-                              ],
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            color: TC.heroMuted,
+                            fontSize: 12.5,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            _Stat(
+                              value: percent(s.accuracy),
+                              label: tr('ilk deneme', 'first try'),
                             ),
-                          ),
-                        ],
-                      ),
+                            const SizedBox(width: 10),
+                            _Stat(value: '+$xp', label: 'XP'),
+                          ],
+                        ),
+                      ],
                     ),
                   ),
                   if (store.practicedToday && store.streak > 0) ...[
@@ -528,6 +524,64 @@ class _ItemRow extends StatelessWidget {
           '$correct/$total',
           style: TT.small.copyWith(fontWeight: FontWeight.w800),
         ),
+      ],
+    ),
+  );
+}
+
+/// Share of first-try answers; teal arc on a dark track.
+class _ScoreRing extends CustomPainter {
+  _ScoreRing(this.value);
+  final double value;
+  @override
+  void paint(Canvas canvas, Size size) {
+    const stroke = 10.0;
+    final rect = (Offset.zero & size).deflate(stroke / 2);
+    final track = Paint()
+      ..color = const Color(0xFF3A3D55)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = stroke;
+    canvas.drawArc(rect, 0, 6.2832, false, track);
+    if (value <= 0) return;
+    canvas.drawArc(
+      rect,
+      -1.5708,
+      6.2832 * value.clamp(0.0, 1.0),
+      false,
+      track
+        ..color = TC.teal
+        ..strokeCap = StrokeCap.round,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_ScoreRing old) => old.value != value;
+}
+
+class _Stat extends StatelessWidget {
+  const _Stat({required this.value, required this.label});
+  final String value;
+  final String label;
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+    decoration: BoxDecoration(
+      color: const Color(0xFF2E3149),
+      borderRadius: BorderRadius.circular(12),
+    ),
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          value,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 14,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        const SizedBox(width: 6),
+        Text(label, style: const TextStyle(color: TC.heroMuted, fontSize: 12)),
       ],
     ),
   );

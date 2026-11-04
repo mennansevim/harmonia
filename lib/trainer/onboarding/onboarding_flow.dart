@@ -168,11 +168,11 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
         title: tr('Ses aralığını ölçelim', 'Let us measure your range'),
         subtitle: tr(
           'Piyano bir nota çalar, sen tekrar edersin; birkaç dakika sürer. '
-              'Dersler ölçülen aralıkta çalar. İstersen atla, Ses sekmesinden '
+              'Dersler ölçülen aralıkta çalar. İstersen atla, Egzersizler sekmesinden '
               'sonra ölçersin.',
           'The piano plays a note and you repeat it; it takes a few minutes. '
               'Lessons then play in the measured range. Skip it if you like '
-              'and measure later in the Voice tab.',
+              'and measure later in the Exercises tab.',
         ),
         child: _RangeStep(
           measured: _measuredRange(store),
@@ -596,8 +596,8 @@ class _Ready extends StatelessWidget {
         tr('Aralık', 'Range'),
         store.part?.title ??
             tr(
-              'Ölçülmedi · Ses sekmesinde ölç',
-              'Not measured · measure it in the Voice tab',
+              'Ölçülmedi · Egzersizler sekmesinde ölç',
+              'Not measured · measure it in the Exercises tab',
             ),
       ),
       (trainerIcon(trainer), tr('İlk ders', 'First lesson'), trainer.title),

@@ -9,45 +9,49 @@ import '../domain/trainers.dart';
 /// The design's line icons, at the thin stroke its Figma frames use.
 typedef Ic = LucideIcons300;
 
-/// Resonia visual system (A+C brand, see lib/app/theme): lavender canvas,
-/// indigo primary shared with the choir workshop, sun for streaks and one
-/// accent colour per skill.
+/// Vocalart visual system (Figma Make, DESIGN-09): cool grey canvas, white
+/// cards on a hairline, soft violet primary shared with the choir workshop,
+/// teal for progress and warm sun for streaks.
 abstract final class TC {
-  static const primary = Color(0xFF6536D8);
-  static const primaryDeep = Color(0xFF451FB0);
-  static const primarySoft = Color(0xFFE9E0FA);
+  /// #705CE6 in the design, a shade deeper so it reads as text (4.5:1) on
+  /// [primarySoft] as well as on white.
+  static const primary = Color(0xFF6A56E0);
+  static const primaryDeep = Color(0xFF5844C9);
+  static const primarySoft = Color(0xFFF0EDFF);
   static const koro = primary;
 
-  /// Lime: the one bright accent. Always carries ink, never white.
-  static const sun = Color(0xFFDDF780);
-  static const onSun = Color(0xFF261831);
+  /// Warm sun: streaks and rewards. Always carries ink, never white.
+  static const sun = Color(0xFFF2B96D);
+  static const onSun = Color(0xFF222539);
   static const peach = Color(0xFFFF8A6B);
   static const warnSoft = Color(0xFFFFF0DE);
   static const warn = Color(0xFFB4561F);
   static const coral = Color(0xFFE5483A);
-  static const teal = Color(0xFF0F9D8A);
+
+  /// Progress fill (bars, rings). Too light for text; use [green] there.
+  static const teal = Color(0xFF45B4AC);
   static const magenta = Color(0xFFC2307A);
   static const amber = Color(0xFFC98400);
   static const sky = Color(0xFF1E88E5);
-  static const green = Color(0xFF1AA874);
+
+  /// Success text and ticks: the design's teal, deep enough for 4.5:1.
+  static const green = Color(0xFF2F7F7A);
   static const red = Color(0xFFD92D20);
 
-  /// Aubergine: the dark hero surface and the darkest text.
-  static const ink = Color(0xFF261831);
+  /// Night navy: the dark hero surface and the darkest text.
+  static const ink = Color(0xFF222539);
+  static const hero = Color(0xFF222539);
+  static const body = Color(0xFF45485A);
+  static const muted = Color(0xFF6B6E80);
+  static const faint = Color(0xFFA9ACBA);
+  static const line = Color(0xFFE6E8EF);
 
-  /// Dark hero cards: a touch bluer than the text ink.
-  static const hero = Color(0xFF27153E);
-  static const body = Color(0xFF45404F);
-  static const muted = Color(0xFF5E5868);
-  static const faint = Color(0xFFADA6B6);
-  static const line = Color(0xFFE0D9E2);
-
-  /// Warm sand: dark enough that white cards stand off it (DESIGN-08).
-  static const canvas = Color(0xFFEDE6DA);
+  /// Near-white canvas; cards stand off it by their hairline.
+  static const canvas = Color(0xFFF7F8FA);
   static const card = Colors.white;
-  static const heroMuted = Color(0xFFC6B8D9);
+  static const heroMuted = Color(0xFFB9BBD0);
   static const navBar = Colors.white;
-  static const navPill = Color(0xFFE9E0FA);
+  static const navPill = Color(0xFFF0EDFF);
 }
 
 /// One accent for every skill, as on the choir screens; the icon tells
@@ -178,24 +182,25 @@ class _ThumbDot extends SliderComponentShape {
 }
 
 abstract final class TT {
-  /// Serif for the words a screen is about: a work, a choir, a promise.
+  /// Hero card titles: a work, a choir, a promise. Smaller than [h1], as the
+  /// page title leads and the card sits under it.
   static const display = TextStyle(
-    fontFamily: 'Lora',
-    fontSize: 31,
-    fontWeight: FontWeight.w400,
+    fontSize: 22,
+    fontWeight: FontWeight.w700,
     color: TC.ink,
-    height: 1.12,
+    height: 1.2,
+    letterSpacing: -0.4,
   );
   static const h1 = TextStyle(
-    fontSize: 32,
-    fontWeight: FontWeight.w400,
+    fontSize: 28,
+    fontWeight: FontWeight.w700,
     color: TC.ink,
     height: 1.15,
-    letterSpacing: -1.4,
+    letterSpacing: -0.8,
   );
   static const h2 = TextStyle(
-    fontSize: 23,
-    fontWeight: FontWeight.w500,
+    fontSize: 22,
+    fontWeight: FontWeight.w700,
     color: TC.ink,
     height: 1.15,
     letterSpacing: -0.8,
@@ -294,7 +299,7 @@ class _BigButtonState extends State<BigButton> {
   Widget build(BuildContext context) {
     final enabled = widget.onPressed != null && !widget.busy;
     final lit = enabled || widget.busy;
-    final fill = lit ? widget.color : const Color(0xFFE3DFE7);
+    final fill = lit ? widget.color : const Color(0xFFE4E6ED);
     final light = widget.color.computeLuminance() > 0.35;
     final fg = !lit
         ? TC.muted
@@ -328,7 +333,7 @@ class _BigButtonState extends State<BigButton> {
             height: 52,
             decoration: BoxDecoration(
               color: fill,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(14),
               border: widget.color == Colors.white
                   ? Border.all(color: TC.line)
                   : null,
@@ -693,7 +698,7 @@ class AppCard extends StatelessWidget {
     this.onTap,
     this.color = Colors.white,
     this.border,
-    this.radius = 12,
+    this.radius = 18,
   });
   final Widget child;
   final EdgeInsets padding;
@@ -708,7 +713,12 @@ class AppCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: color,
         borderRadius: BorderRadius.circular(radius),
-        border: border == null ? null : Border.all(color: border!, width: 1.5),
+        // The canvas is near-white, so plain cards keep a hairline.
+        border: border != null
+            ? Border.all(color: border!, width: 1.5)
+            : color == Colors.white
+            ? Border.all(color: TC.line)
+            : null,
       ),
       child: Material(
         type: MaterialType.transparency,

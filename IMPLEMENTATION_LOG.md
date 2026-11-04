@@ -2784,3 +2784,141 @@ geçti**, 2 opt-in atlandı. Commit yok.
 - Sınırlar: gerçek cihazda bildirim teslimi, iOS arka plan zamanlaması,
   saat dilimi değişimi ve Android tam zamanlı alarm davranışı denenmedi.
   Etki (bildirim → 2 saatte çalışma) ölçülmedi. Commit yok.
+
+## 2026-11-04 — DESIGN-09 Figma Make teması
+
+Rakip incelemesi (`docs/research/2026-11-04-voice-coach-screen-template.md`)
+→ Figma AI promptu (`docs/design/figma-ai-prompt-2026-11-04.md`) → yayınlanan
+Make prototipi (<https://outer-cane-45483491.figma.site/>; MCP dosyayı
+yetki yüzünden okuyamadı, ekranlar tarayıcıda gezildi) → inceleme ve plan
+(`docs/design/figma-make-review-2026-11-04.md`).
+
+- `lib/trainer/ui/kit.dart` `TC`: canvas F7F8FA, ink/hero 222539, body
+  45485A, muted 6B6E80, line E6E8EF, primary 6A56E0 (primarySoft üstünde
+  4,54:1), primaryDeep 5844C9, primarySoft/navPill F0EDFF, sun F2B96D,
+  teal 45B4AC (yalnız dolgu), green 2F7F7A (4,73:1 metin).
+- `TT.display` Lora → Inter 22/700 (kart başlığı, sayfa başlığından küçük);
+  h1 28/700, h2 22/700. `AppCard` köşe 18 ve beyaz kartta 1px `TC.line`;
+  `BigButton` köşe 14, pasif dolgu E4E6ED. `ChoirWave` rest 4A4D66.
+- `test/support/visible_text_contrast.dart`: `textContrastGuideline`
+  başarısızlıklarından yalnız boya kutusu semantik düğümünü aşan (yani
+  kaydırma alanınca kesilen) metinleri düşürür. `accessibility_audit_test`
+  bunu kullanıyor; `visible_text_contrast_test` tam görünen soluk metnin
+  hâlâ kaldığını ve kesik metnin atlandığını sınar. Sebep: yatay ve 2.0
+  ölçekte alt menünün kestiği satırlar zemin + menü çizgisiyle ölçülüp
+  1,15 bulunuyordu; renkler değil geometri.
+- Kontrol: `dart tool/quality_check.dart` → **1235 test geçti**, 2 opt-in
+  atlandı; analyze/format temiz. Bugün, Ses, Koro, İlerleme, Ayarlar test
+  görüntüleri `design-exports/tema-2026-11-04/` (gözle kontrol edildi).
+- Sınırlar: yerleşim değişmedi (sekme yapısı, Bugün, kütüphane sonraki
+  adımlar). Simülatör ve gerçek cihazda bakılmadı. Commit yok.
+
+## 2026-11-04 — NAV-02 dört sekmeli alt menü
+
+- `lib/trainer/home/home_shell.dart`: sekmeler `tab_0` Bugün (ev ikonu),
+  `tab_1` Egzersizler (ızgara; gövde hâlâ `KoroHub`), `tab_koro` Koro (rol
+  veya koro varsa), `tab_2` Gelişim. `tab_3` Ayarlar kalktı.
+- `lib/trainer/settings/settings_tab.dart`: `ProfileButton` (48px dokunma
+  alanı, 40px koyu daire, "Ayarlar" semantik etiketi, `open_settings`) ve
+  `SettingsScreen` (geri oklu `CrumbBar` + mevcut `SettingsTab`). Veri
+  silme başarılı olunca `popUntil(isFirst)` ile girişe dönülür; başarısız
+  olunca sayfa ve uyarı kalır.
+- Profil düğmesi: Bugün (seri çipinin yanında), Egzersizler ve Gelişim
+  (`tabHeader`/`_Header` yeni `trailing` yuvası), Koro (`ChoirTab.trailing`).
+  Egzersizler başlığı "Keşfet / Egzersizler", Gelişim "Yolculuğun / Gelişim".
+- Metinler: "Ses sekmesi" → "Egzersizler sekmesi", "İlerleme sekmesi" →
+  "Gelişim sekmesi" (onboarding, ayarlar, ses parçası seçici, oturum sonu).
+- Testler: `tab_3` dokunuşları `open_settings` oldu; İngilizce turu ve dil
+  testi ayarlar sayfası alt menüyü örttüğü için kontrolleri yeniden sıraladı.
+  `dart tool/quality_check.dart` → **1235 test geçti**, 2 opt-in atlandı;
+  analyze/format temiz. Görüntüler `design-exports/menu-2026-11-04/` (gözle
+  kontrol edildi).
+- Sınırlar: Egzersizler içeriği ve Bugün yerleşimi değişmedi. Simülatör ve
+  gerçek cihazda bakılmadı. Commit yok.
+
+## 2026-11-04 — DESIGN-10 Bugün yerleşimi
+
+- `PlayTab` (`lib/trainer/home/home_shell.dart`): başlıkta büyük harf tarih,
+  seri çipi, profil düğmesi; "Merhaba[, ad]" ve "Bu hafta N gün çalıştın"
+  (pazartesiden bugüne soru çözülen günler; tahmini dakika gösterilmez).
+- `_DailyRoute`: koyu plan kartı; `_PlanBar` parça sayısı o günkü rota
+  adımlarından gelir (sabit 4 değil), tamamlanan adımlar teal. `today_begin`
+  kartın içinde; ses aralığı bağlantısı (ADR-040) korunur. Adım kartları ve
+  gizlilik notu kart altında.
+- Yeni: `_QuickCard` (`quick_<beceri>`) yatay satır, `_ResumeCard`
+  (`today_resume`) yalnız son çalışılan beceri varsa, tamamlanan/toplam ders
+  ve ilerleme çubuğu.
+- Beceri ızgarası `KoroHub` başına "Kulak eğitimi" olarak taşındı
+  (`skill_<beceri>` anahtarları aynı).
+- `VisibleTextContrastGuideline`: boya kutusu düğümü herhangi bir kenardan
+  aşan metin kesik sayılır (yatay satırdaki ekran dışı kart).
+- Testler: Bugün'den beceri açan testler `quick_*` ya da önce `tab_1`
+  kullanıyor; Egzersizler testi aralık testine kaydırıyor.
+- `dart tool/quality_check.dart` exit 0: **1235 test geçti**, 2 opt-in
+  atlandı; format/analyze temiz.
+- Ekranlar: `design-exports/bugun-2026-11-04/`. Simülatör/cihazda
+  bakılmadı; commit yok.
+
+## 2026-11-04 — DESIGN-11 Egzersizler kütüphanesi
+
+- `KoroHub` (`lib/trainer/koro/koro_hub.dart`) StatefulWidget oldu;
+  `_Category` filtresi (Tümü, Isınma, Kulak, Ses, Ritim, Çok sesli) ve
+  `_Exercise` listesi. "Tümü" kategorileri başlıklı bölümler halinde,
+  tek kategori yalnız kendi ızgarasını gösterir.
+- `_CategoryChip`: 38 dp hap, 48 dp dokunma alanı, seçili `TC.ink`; çip
+  satırı liste dışında, kenardan kenara yatay kayar (`lib_categories`).
+- `_RangeCard` (`koro_range`) Tümü ve Ses'te; DENEYSEL etiketi, son ölçüm
+  "taslak" ibaresiyle.
+- `_ExerciseCard`: ikon, başlık, açıklama; altta yalnız kulak yollarında
+  ölçülen ders ilerlemesi, diğerlerinde durum etiketi. Süre/seviye/üye
+  gibi ölçülmeyen alanlar eklenmedi (prototip hata 4–7 ilkesi).
+- Yeni test: kategori filtresi (Ritim'de 3 TASLAK, Kulak'ta DENEYSEL yok,
+  ders sayısı metni, Ses'te aralık kartı). Egzersizler ve tur testleri
+  dikey listeyi açıkça seçiyor (yatay çip satırı ikinci Scrollable).
+- `dart tool/quality_check.dart` exit 0: **1236 test geçti**, 2 opt-in
+  atlandı; format/analyze temiz. Opt-in ekran turu (`TOUR_DIR`) da geçti.
+- Ekranlar: `design-exports/egzersizler-2026-11-04/`. Simülatör/cihazda
+  bakılmadı; commit yok.
+
+## 2026-11-04 — DESIGN-12 detay → canlı → sonuç
+
+- `skill_screen.dart` `_Summary`: güneş renkli beceri ikonu, başlık 26,
+  koyu iz üstünde teal ustalık çubuğu.
+- `lesson_flow.dart` isteğe bağlı ses kontrolü:
+  - `sing_target` hedef nota; `SingSteps` faz çubuğu (referencePlaying →
+    waiting → responding → assessing/analyzing), sözlü durum satırı aynı.
+  - `SingDeviationScale` (`sing_scale`): dikey ölçek, tiz yukarıda; yalnız
+    `octaveOffset == 0` iken ±100 sentle sınırlı nötr (ink) işaret.
+    Yanlış oktavda işaret yok, "Bir oktav tiz/pes söylendi".
+  - `_singOutcomeLabel` yanlış oktavda "oktav tiz/pes, hedef perde değil"
+    ekler. `SingNotCounted` (`sing_not_counted`): retry ya da kararlı aday
+    yoksa renksiz "Ses ölçülemedi · bu deneme sayılmadı".
+  - Gerçek zamanlı perde çizgisi eklenmedi: SESSION-01 kaydı sonradan
+    analiz eder; canlı akış yok. Skor kapalı (`scoringEnabled=false`).
+- `session_end.dart`: koyu kartta `_ScoreRing` (ilk deneme oranı), ölçüm
+  kaynağı satırı, `_Stat` çipleri (% ilk deneme, +XP). Kanıt kartları aynı.
+- Testler: aynı oktavda ölçek + "Hedef perde"; oktav tiz denemesinde metin,
+  "Hedef perde" yok; sessizlikte `sing_not_counted`, ölçek ve fark yok.
+  Fake backend/sentetik sinyal — cihaz/insan sesi kanıtı değildir.
+- `dart tool/quality_check.dart` exit 0: **1238 test geçti**, 2 opt-in
+  atlandı. Ekranlar: `design-exports/detay-canli-2026-11-04/`. Commit yok.
+
+## 2026-11-04 — DESIGN-13 Gelişim ve Koro
+
+- `stats_tab.dart`:
+  - `_LevelCard`: başlık 26, teal ilerleme; `_HeroFigure` üçlüsü
+    (`totalQuestions`, `activeDayCount`, `streak`). Çalışma süresi
+    ölçülmediği için dakika gösterilmez (prototip hata 4).
+  - Son 7 gün çubukları: bugün teal, diğerleri açık mor.
+  - `_RangeCard` (`stats_range`): `koroRange` yoksa "Ölçülmedi" + aralık
+    testine bağlantı; varsa Do2–Do6 şeridi, "TASLAK ÖLÇÜM" etiketi ve
+    "doğrulanmış ses aralığı değildir" notu (hata 5).
+  - `_suggestion` + `_SuggestionCard` (`stats_suggest`): ≥10 cevaplı
+    beceriler arasında en düşük ilk deneme doğruluğu; deterministik, yoksa
+    gizli.
+- `choir_tab.dart` `_ChoirCard`: güneş ikon kutusu, 26 pt koro adı. Üye
+  sayısı, besteci gibi veride olmayan alanlar eklenmedi (hata 7).
+- Testler: 9 cevapta öneri yok + "Ölçülmedi"; ölçülmüş aralıkta "TASLAK
+  ÖLÇÜM" ve %50 öneri.
+- `dart tool/quality_check.dart` exit 0: **1240 test geçti**, 2 opt-in
+  atlandı. Ekranlar: `design-exports/gelisim-koro-2026-11-04/`. Commit yok.

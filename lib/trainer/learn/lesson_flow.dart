@@ -4,6 +4,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../../application/single_tone_session.dart';
+import '../../domain/audio/pitch_deviation.dart';
 import '../../domain/models/measurement_provenance.dart';
 import '../app/scope.dart';
 import '../domain/curriculum.dart';
@@ -700,6 +701,16 @@ class _LessonFlowState extends State<LessonFlow> with WidgetsBindingObserver {
     }
     final cents = deviation.absoluteCents.round();
     final sign = cents > 0 ? '+' : '';
+    // A wrong octave is never shown as near the target.
+    if (deviation.octaveOffset != 0) {
+      final up = deviation.octaveOffset > 0;
+      return tr(
+        'Tanısal fark: $sign$cents sent · ${up ? 'oktav tiz' : 'oktav pes'}, '
+            'hedef perde değil · puan değil',
+        'Diagnostic difference: $sign$cents cents · ${up ? 'octave high' : 'octave low'}, '
+            'not the target pitch · not a score',
+      );
+    }
     return tr(
       'Tanısal fark: $sign$cents sent · puan değil',
       'Diagnostic difference: $sign$cents cents · not a score',
@@ -752,7 +763,23 @@ class _LessonFlowState extends State<LessonFlow> with WidgetsBindingObserver {
               Text(tr('PUANSIZ', 'UNSCORED'), style: TT.caps),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Text(tr('Hedef nota', 'Target note'), style: TT.small),
+              const SizedBox(width: 8),
+              Text(
+                _label(item, long: false),
+                key: const Key('sing_target'),
+                style: TT.h3,
+              ),
+            ],
+          ),
+          if (session != null) ...[
+            const SizedBox(height: 12),
+            SingSteps(phase: session.phase),
+          ],
+          const SizedBox(height: 10),
           Text(
             session == null
                 ? _singUnavailable
@@ -779,6 +806,12 @@ class _LessonFlowState extends State<LessonFlow> with WidgetsBindingObserver {
                         )
                 : _singPhaseLabel(session),
           ),
+          if (outcome != null && !active) ...[
+            const SizedBox(height: 12),
+            outcome.needsRetry || outcome.deviation == null
+                ? const SingNotCounted()
+                : SingDeviationScale(deviation: outcome.deviation!),
+          ],
           if (outcome?.evidence != null) ...[
             const SizedBox(height: 6),
             Text(
@@ -964,4 +997,190 @@ class ScaleLadder extends StatelessWidget {
       },
     ),
   );
+}
+
+/// Where the attempt is: Dinle → Bekle → Söyle → Kontrol. Mirrors the
+/// session phase; the status line below carries the spoken text.
+class SingSteps extends StatelessWidget {
+  const SingSteps({super.key, required this.phase});
+  final SingleToneSessionPhase phase;
+
+  int get _at => switch (phase) {
+    SingleToneSessionPhase.referencePlaying => 0,
+    SingleToneSessionPhase.waiting => 1,
+    SingleToneSessionPhase.responding => 2,
+    SingleToneSessionPhase.assessing || SingleToneSessionPhase.analyzing => 3,
+    SingleToneSessionPhase.finished => 4,
+    _ => -1,
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    final labels = [
+      tr('Dinle', 'Listen'),
+      tr('Bekle', 'Wait'),
+      tr('Söyle', 'Sing'),
+      tr('Kontrol', 'Check'),
+    ];
+    final at = _at;
+    return ExcludeSemantics(
+      child: Row(
+        children: [
+          for (var i = 0; i < labels.length; i++)
+            Expanded(
+              child: Padding(
+                padding: EdgeInsets.only(right: i < labels.length - 1 ? 6 : 0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: i < at
+                            ? TC.ink
+                            : i == at
+                            ? TC.primary
+                            : TC.line,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      labels[i],
+                      style: TT.small.copyWith(
+                        color: i == at ? TC.primary : TC.muted,
+                        fontWeight: i == at ? FontWeight.w700 : FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Neutral state for an attempt that produced no usable pitch: no colour,
+/// no marker, nothing that reads as a result.
+class SingNotCounted extends StatelessWidget {
+  const SingNotCounted({super.key});
+  @override
+  Widget build(BuildContext context) => Container(
+    key: const Key('sing_not_counted'),
+    padding: const EdgeInsets.all(12),
+    decoration: BoxDecoration(
+      color: TC.canvas,
+      borderRadius: BorderRadius.circular(12),
+    ),
+    child: Row(
+      children: [
+        const Icon(Ic.micOff, color: TC.muted, size: 20),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            tr(
+              'Ses ölçülemedi · bu deneme sayılmadı',
+              'No pitch measured · this attempt does not count',
+            ),
+            style: TT.small.copyWith(color: TC.body),
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+/// Diagnostic only: where the sung pitch sat against the target, higher
+/// notes up. Same octave within ±100 cents gets a neutral marker; a wrong
+/// octave gets none, so it can never look close to the target.
+class SingDeviationScale extends StatelessWidget {
+  const SingDeviationScale({super.key, required this.deviation});
+  final PitchDeviation deviation;
+
+  @override
+  Widget build(BuildContext context) {
+    final octave = deviation.octaveOffset;
+    final cents = deviation.absoluteCents.clamp(-100.0, 100.0);
+    return ExcludeSemantics(
+      child: Container(
+        key: const Key('sing_scale'),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: TC.canvas,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: [
+            SizedBox(
+              width: 44,
+              height: 96,
+              child: LayoutBuilder(
+                builder: (context, c) {
+                  final mid = c.maxHeight / 2;
+                  // Higher pitch → smaller y (up).
+                  final y = mid - cents / 100 * (mid - 6);
+                  return Stack(
+                    children: [
+                      Positioned(
+                        left: 20,
+                        top: 0,
+                        bottom: 0,
+                        child: Container(width: 4, color: TC.line),
+                      ),
+                      Positioned(
+                        left: 8,
+                        right: 8,
+                        top: mid - 1,
+                        child: Container(height: 2, color: TC.muted),
+                      ),
+                      if (octave == 0)
+                        Positioned(
+                          left: 14,
+                          top: y - 8,
+                          child: Container(
+                            width: 16,
+                            height: 16,
+                            decoration: const BoxDecoration(
+                              color: TC.ink,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                        ),
+                    ],
+                  );
+                },
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(tr('↑ Tiz', '↑ Higher'), style: TT.small),
+                  const SizedBox(height: 8),
+                  Text(
+                    octave == 0
+                        ? tr('— Hedef perde', '— Target pitch')
+                        : tr(
+                            octave > 0
+                                ? 'Bir oktav tiz söylendi'
+                                : 'Bir oktav pes söylendi',
+                            octave > 0
+                                ? 'Sung an octave higher'
+                                : 'Sung an octave lower',
+                          ),
+                    style: TT.title,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(tr('↓ Pes', '↓ Lower'), style: TT.small),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }

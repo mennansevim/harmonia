@@ -109,7 +109,7 @@ void main() {
     await tap(find.text('Ana sayfaya git'));
     await shot('home');
 
-    await tap(key('skill_interval'));
+    await tap(key('quick_interval'));
     await shot('skill_interval');
     await tap(key('skill_next'));
     await shot('intro_slide');
@@ -165,7 +165,7 @@ void main() {
     nav.popUntil((r) => r.isFirst);
     await tester.pump(const Duration(seconds: 1));
 
-    await tap(key('skill_pitch'));
+    await tap(key('quick_pitch'));
     await tap(key('skill_free'));
     await shot('practice_setup_pitch');
     await tap(key('practice_now'), ms: 400);
@@ -206,7 +206,7 @@ void main() {
     await shot('stats_chord');
     nav.popUntil((r) => r.isFirst);
     await tester.pump(const Duration(seconds: 1));
-    await tap(key('tab_3'));
+    await tap(key('open_settings'));
     await shot('settings');
     nav.push(MaterialPageRoute<void>(builder: (_) => const MembershipScreen()));
     await shot('membership');
@@ -221,7 +221,11 @@ void main() {
     await tester.scrollUntilVisible(
       key('koro_voices'),
       200,
-      scrollable: find.byType(Scrollable).last,
+      scrollable: find
+          .byWidgetPredicate(
+            (w) => w is Scrollable && w.axisDirection == AxisDirection.down,
+          )
+          .last,
     );
     await tap(key('koro_voices'));
     await shot('voice_count');

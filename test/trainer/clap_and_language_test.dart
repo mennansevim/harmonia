@@ -113,7 +113,7 @@ void main() {
     await store.load();
     await tester.pumpWidget(app(store));
     await settle(tester);
-    await tapKey(tester, 'tab_3');
+    await tapKey(tester, 'open_settings');
     await tester.scrollUntilVisible(
       find.byKey(const Key('settings_language')),
       200,
@@ -125,6 +125,11 @@ void main() {
     expect(store.language, 'en');
     expect(Lang.en, isTrue);
     expect(find.text('Language'), findsOneWidget);
+    tester
+        .state<ScrollableState>(find.byType(Scrollable).last)
+        .position
+        .jumpTo(0);
+    await tester.pump();
     expect(find.text('Settings'), findsWidgets);
     await tapKey(tester, 'settings_language');
     await tester.tap(find.text('Device language'));

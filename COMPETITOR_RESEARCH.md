@@ -1,5 +1,11 @@
 # Resonia — 10 rakip ve ürün çıkarımları
 
+**4 Kasım 2026 ekran şablonu incelemesi:** Simply Sing, Vocal Image,
+Vocalista ve diğerlerinin ortak onboarding → aralık testi → paywall →
+Bugün/egzersiz döngüsü ağacı ve ekran bağlantıları
+[docs/research/2026-11-04-voice-coach-screen-template.md](./docs/research/2026-11-04-voice-coach-screen-template.md).
+Masa başı; uygulamalar denenmedi, kod değişmedi.
+
 **20 Ekim 2026 ticari ek inceleme:** Simply/Simply Piano, Yousician ve
 Duolingo Music için finansal kanıt, özellik örüntüleri, mevcut kod farkları
 ve kabul kriterleri [ticari benchmark](./COMMERCIAL_BENCHMARK_2026-10.md)

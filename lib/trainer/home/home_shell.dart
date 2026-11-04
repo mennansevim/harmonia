@@ -52,16 +52,16 @@ class _HomeShellState extends State<HomeShell> {
         final items = <_Destination>[
           _Destination(
             'tab_0',
-            Ic.sun,
-            Ic.sun,
+            Ic.house,
+            Ic.house,
             tr('Bugün', 'Today'),
             PlayTab(),
           ),
           _Destination(
             'tab_1',
-            Ic.audioLines,
-            Ic.audioLines,
-            tr('Ses', 'Voice'),
+            Ic.layoutGrid,
+            Ic.layoutGrid,
+            tr('Egzersizler', 'Exercises'),
             KoroHub(asTab: true),
           ),
           if (_showsChoir(store))
@@ -70,21 +70,14 @@ class _HomeShellState extends State<HomeShell> {
               Ic.users,
               Ic.users,
               CT.of(context).tabLabel,
-              const ChoirTab(),
+              const ChoirTab(trailing: ProfileButton()),
             ),
           _Destination(
             'tab_2',
-            Ic.chartNoAxesCombined,
-            Ic.chartNoAxesCombined,
-            tr('İlerleme', 'Progress'),
+            Ic.chartNoAxesColumn,
+            Ic.chartNoAxesColumn,
+            tr('Gelişim', 'Progress'),
             StatsTab(),
-          ),
-          _Destination(
-            'tab_3',
-            Ic.settings2,
-            Ic.settings2,
-            tr('Ayarlar', 'Settings'),
-            SettingsTab(),
           ),
         ];
         final index = items.indexWhere((d) => d.key == _tab);
@@ -124,8 +117,9 @@ class _Destination {
   final Widget body;
 }
 
-/// Four destinations, five for choir members. The voice workshop is for
-/// everyone (ADR-035).
+/// Three destinations, four for choir members; Settings sits behind the
+/// profile button on each tab (DESIGN-09). Exercises are for everyone
+/// (ADR-035).
 class _NavBar extends StatelessWidget {
   const _NavBar({
     required this.items,
@@ -308,6 +302,10 @@ class _PlayTabState extends State<PlayTab> {
     final now = store.now;
     final focus = focusTrainer(store);
     final next = store.nextNode(focus);
+    final resume = TrainerKind.values
+        .where((k) => k.id == store.lastTrainer)
+        .firstOrNull;
+    final name = store.username.trim();
     return SafeArea(
       bottom: false,
       child: ListView(
@@ -317,22 +315,36 @@ class _PlayTabState extends State<PlayTab> {
             children: [
               Expanded(
                 child: Text(
-                  tr('KENDİ RİTMİNDE', 'AT YOUR OWN PACE'),
+                  trCaps(
+                    tr(
+                      '${_weekdays[now.weekday - 1]}, ${now.day} '
+                          '${_months[now.month - 1]}',
+                      '${_weekdays[now.weekday - 1]}, '
+                          '${_months[now.month - 1]} ${now.day}',
+                    ),
+                  ),
                   style: TT.crumb,
                 ),
               ),
               _StreakChip(days: store.streak),
+              const SizedBox(width: 8),
+              const ProfileButton(),
             ],
           ),
           const SizedBox(height: 10),
-          Text(tr('Bugün', 'Today'), style: TT.h1),
+          Text(
+            name.isEmpty
+                ? tr('Merhaba', 'Hello')
+                : tr('Merhaba, $name', 'Hello, $name'),
+            style: TT.h1,
+          ),
           const SizedBox(height: 2),
           Text(
             tr(
-              '${_weekdays[now.weekday - 1]}, ${now.day} '
-                  '${_months[now.month - 1]}',
-              '${_weekdays[now.weekday - 1]}, '
-                  '${_months[now.month - 1]} ${now.day}',
+              'Bu hafta ${_weekDays(store)} gün çalıştın.',
+              _weekDays(store) == 1
+                  ? 'You practised 1 day this week.'
+                  : 'You practised ${_weekDays(store)} days this week.',
             ),
             style: TT.small,
           ),
@@ -343,36 +355,121 @@ class _PlayTabState extends State<PlayTab> {
             next: next,
             onBegin: _beginToday,
           ),
-          const _ChoirDue(),
-          const SizedBox(height: 20),
-          Text(tr('BECERİLER', 'SKILLS'), style: TT.caps),
+          const SizedBox(height: 22),
+          Text(tr('HIZLI EGZERSİZLER', 'QUICK EXERCISES'), style: TT.caps),
           const SizedBox(height: 10),
-          for (var i = 0; i < TrainerKind.values.length; i += 2)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 10),
-              child: IntrinsicHeight(
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Expanded(
-                      child: _SkillCard(
-                        kind: TrainerKind.values[i],
-                        store: store,
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: i + 1 < TrainerKind.values.length
-                          ? _SkillCard(
-                              kind: TrainerKind.values[i + 1],
-                              store: store,
-                            )
-                          : const SizedBox.shrink(),
-                    ),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            clipBehavior: Clip.none,
+            child: IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  for (final k in TrainerKind.values) ...[
+                    if (k != TrainerKind.values.first)
+                      const SizedBox(width: 10),
+                    SizedBox(width: 132, child: _QuickCard(kind: k)),
                   ],
-                ),
+                ],
               ),
             ),
+          ),
+          if (resume != null) ...[
+            const SizedBox(height: 22),
+            Text(
+              tr('KALDIĞIN YERDEN', 'PICK UP WHERE YOU LEFT'),
+              style: TT.caps,
+            ),
+            const SizedBox(height: 10),
+            _ResumeCard(kind: resume, store: store),
+          ],
+          const _ChoirDue(),
+        ],
+      ),
+    );
+  }
+
+  /// Days with at least one answered question since Monday.
+  static int _weekDays(TrainerStore store) {
+    final now = store.now;
+    final monday = DateTime(now.year, now.month, now.day - (now.weekday - 1));
+    return [
+      for (var i = 0; i < now.weekday; i++)
+        store.activeOn(DateTime(monday.year, monday.month, monday.day + i)),
+    ].where((a) => a).length;
+  }
+}
+
+/// A one-tap shortcut into a skill (Hızlı egzersizler row).
+class _QuickCard extends StatelessWidget {
+  const _QuickCard({required this.kind});
+  final TrainerKind kind;
+  @override
+  Widget build(BuildContext context) => AppCard(
+    key: Key('quick_${kind.id}'),
+    padding: const EdgeInsets.all(14),
+    onTap: () => openSkill(context, kind),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: 36,
+          height: 36,
+          decoration: BoxDecoration(
+            color: TC.primarySoft,
+            borderRadius: BorderRadius.circular(11),
+          ),
+          child: Icon(trainerIcon(kind), color: TC.primary, size: 20),
+        ),
+        const SizedBox(height: 10),
+        Text(kind.shortTitle, style: TT.title),
+      ],
+    ),
+  );
+}
+
+/// The last skill worked on, with its measured path progress.
+class _ResumeCard extends StatelessWidget {
+  const _ResumeCard({required this.kind, required this.store});
+  final TrainerKind kind;
+  final TrainerStore store;
+  @override
+  Widget build(BuildContext context) {
+    final done = store.completedCount(kind);
+    final total = trainerPaths[kind]!.lessonCount;
+    return AppCard(
+      key: const Key('today_resume'),
+      padding: const EdgeInsets.all(14),
+      onTap: () => openSkill(context, kind),
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: TC.primarySoft,
+              borderRadius: BorderRadius.circular(13),
+            ),
+            child: Icon(trainerIcon(kind), color: TC.primary),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(kind.title, style: TT.title),
+                const SizedBox(height: 2),
+                Text(
+                  tr('$done / $total ders', '$done / $total lessons'),
+                  style: TT.small,
+                ),
+                const SizedBox(height: 8),
+                ProgressBar(value: store.mastery(kind), height: 4),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          const Icon(Ic.chevronRight, color: TC.muted),
         ],
       ),
     );
@@ -490,9 +587,9 @@ Future<void> showVoicePartSheet(BuildContext context) {
         Text(
           tr(
             'Tenor ve bas seçilince dersler bir oktav pesten çalar. '
-                'Emin değilsen Ses sekmesindeki ses aralığı testi taslak bir öneri verir.',
+                'Emin değilsen Egzersizler sekmesindeki ses aralığı testi taslak bir öneri verir.',
             'With tenor or bass, lessons play an octave lower. '
-                'If you are not sure, the range test in the Voice tab gives a draft suggestion.',
+                'If you are not sure, the range test in the Exercises tab gives a draft suggestion.',
           ),
           style: TT.small,
         ),
@@ -639,72 +736,78 @@ class _DailyRoute extends StatelessWidget {
       action = tr('Çalışmaya başla', 'Start practising');
     }
     final current = steps.indexWhere((s) => !s.done && s.onTap == null);
+    final doneCount = steps.where((s) => s.done).length;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         HeroCard(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      tr('GÜNLÜK RUTİN', 'DAILY ROUTINE'),
-                      style: TextStyle(
-                        color: TC.sun,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 1.3,
+              Text(tr('BUGÜNÜN PLANI', 'TODAY\'S PLAN'), style: TT.heroCaps),
+              const SizedBox(height: 8),
+              Text(
+                part == null
+                    ? tr('Sesine alan aç.', 'Make room for your voice.')
+                    : tr(
+                        '${part.title} için alan aç.',
+                        'Make room for your ${part.title.toLowerCase()}.',
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      part == null
-                          ? tr('Sesine alan aç.', 'Make room for your voice.')
-                          : tr(
-                              '${part.title} için alan aç.',
-                              'Make room for your ${part.title.toLowerCase()}.',
-                            ),
-                      style: TT.display.copyWith(color: Colors.white),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      tr(
-                        '~${store.dailyMinutes} dakika · $pitch',
-                        '~${store.dailyMinutes} minutes · $pitch',
-                      ),
-                      style: const TextStyle(
-                        color: TC.heroMuted,
-                        fontSize: 13.5,
-                        height: 1.4,
-                      ),
-                    ),
-                    // The route already offers the test when it has a voice step.
-                    if (part == null && !(route.voiceStep && !hasRange))
-                      // Measured, not asked (ADR-040).
-                      _PartLink(
-                        onTap: () => Navigator.of(context).push(
-                          MaterialPageRoute<void>(
-                            builder: (_) => const RangeTestScreen(),
-                          ),
-                        ),
-                      ),
-                  ],
+                style: TT.display.copyWith(color: Colors.white),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                tr(
+                  '~${store.dailyMinutes} dakika · $pitch',
+                  '~${store.dailyMinutes} minutes · $pitch',
+                ),
+                style: const TextStyle(
+                  color: TC.heroMuted,
+                  fontSize: 13.5,
+                  height: 1.4,
                 ),
               ),
-              const SizedBox(width: 12),
-              ExcludeSemantics(
-                child: Container(
-                  width: 72,
-                  height: 86,
-                  decoration: BoxDecoration(
-                    color: TC.sun,
-                    borderRadius: BorderRadius.circular(40),
-                  ),
-                  child: const Icon(Ic.music2, color: TC.ink, size: 38),
+              const SizedBox(height: 16),
+              _PlanBar(done: [for (final s in steps) s.done]),
+              const SizedBox(height: 8),
+              Text(
+                tr(
+                  '$doneCount / ${steps.length} adım tamam',
+                  '$doneCount / ${steps.length} steps done',
                 ),
+                style: const TextStyle(
+                  color: TC.heroMuted,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              // The route already offers the test when it has a voice step.
+              if (part == null && !(route.voiceStep && !hasRange))
+                // Measured, not asked (ADR-040).
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: _PartLink(
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => const RangeTestScreen(),
+                      ),
+                    ),
+                  ),
+                ),
+              const SizedBox(height: 12),
+              BigButton(
+                key: const Key('today_begin'),
+                label: action,
+                icon: Ic.sparkles,
+                onPressed: lessonDone
+                    ? null
+                    : lesson == null
+                    ? () => Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (_) => PracticeSetupScreen(trainer: trainer),
+                        ),
+                      )
+                    : onBegin,
               ),
             ],
           ),
@@ -717,22 +820,7 @@ class _DailyRoute extends StatelessWidget {
               _RouteStep(data: steps[i], current: i == current && !lessonDone),
           ],
         ),
-        const SizedBox(height: 4),
-        BigButton(
-          key: const Key('today_begin'),
-          label: action,
-          icon: Ic.sparkles,
-          onPressed: lessonDone
-              ? null
-              : lesson == null
-              ? () => Navigator.of(context).push(
-                  MaterialPageRoute<void>(
-                    builder: (_) => PracticeSetupScreen(trainer: trainer),
-                  ),
-                )
-              : onBegin,
-        ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 2),
         Text(
           tr(
             'Kayıtlar cihazdan çıkmaz; mikrofon adımları isteğe bağlıdır.',
@@ -744,6 +832,31 @@ class _DailyRoute extends StatelessWidget {
       ],
     );
   }
+}
+
+/// One segment per route step; as many segments as the route has today.
+class _PlanBar extends StatelessWidget {
+  const _PlanBar({required this.done});
+  final List<bool> done;
+  @override
+  Widget build(BuildContext context) => ExcludeSemantics(
+    child: Row(
+      children: [
+        for (var i = 0; i < done.length; i++) ...[
+          if (i > 0) const SizedBox(width: 6),
+          Expanded(
+            child: Container(
+              height: 6,
+              decoration: BoxDecoration(
+                color: done[i] ? TC.teal : const Color(0xFF3A3D55),
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ),
+          ),
+        ],
+      ],
+    ),
+  );
 }
 
 class _StepData {
@@ -846,38 +959,4 @@ class _RouteStep extends StatelessWidget {
       ),
     ),
   );
-}
-
-class _SkillCard extends StatelessWidget {
-  const _SkillCard({required this.kind, required this.store});
-  final TrainerKind kind;
-  final TrainerStore store;
-  @override
-  Widget build(BuildContext context) {
-    final color = trainerColor(kind);
-    final m = store.mastery(kind);
-    return AppCard(
-      key: Key('skill_${kind.id}'),
-      padding: const EdgeInsets.all(14),
-      onTap: () => openSkill(context, kind),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              color: TC.primarySoft,
-              borderRadius: BorderRadius.circular(11),
-            ),
-            child: Icon(trainerIcon(kind), color: TC.primary, size: 20),
-          ),
-          const SizedBox(height: 10),
-          Text(kind.shortTitle, style: TT.title),
-          const SizedBox(height: 6),
-          ProgressBar(value: m, color: color, height: 4),
-        ],
-      ),
-    );
-  }
 }

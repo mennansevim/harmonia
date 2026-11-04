@@ -151,6 +151,18 @@ class _Summary extends StatelessWidget {
       children: [
         Row(
           children: [
+            ExcludeSemantics(
+              child: Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: TC.sun,
+                  borderRadius: BorderRadius.circular(13),
+                ),
+                child: Icon(trainerIcon(kind), color: TC.onSun),
+              ),
+            ),
+            const SizedBox(width: 12),
             Expanded(
               child: Text(
                 next == null
@@ -167,11 +179,7 @@ class _Summary extends StatelessWidget {
         const SizedBox(height: 12),
         Text(
           next?.title ?? kind.tagline,
-          style: TT.display.copyWith(
-            color: Colors.white,
-            fontSize: 30,
-            height: 1.2,
-          ),
+          style: TT.display.copyWith(color: Colors.white, fontSize: 26),
         ),
         const SizedBox(height: 10),
         Text(
@@ -184,6 +192,13 @@ class _Summary extends StatelessWidget {
             fontSize: 12,
             height: 1.5,
           ),
+        ),
+        const SizedBox(height: 12),
+        ProgressBar(
+          value: mastery,
+          color: TC.teal,
+          track: const Color(0xFF3A3D55),
+          height: 6,
         ),
         const SizedBox(height: 16),
         BigButton(

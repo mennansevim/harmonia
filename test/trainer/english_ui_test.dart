@@ -115,11 +115,19 @@ void main() {
     store.notation = NoteNotation.solfege;
     expectEnglish(await wordingWithScroll(tester), 'Today');
     expect(find.text('Today'), findsWidgets);
-    for (final tab in ['tab_1', 'tab_koro', 'tab_2', 'tab_3']) {
+    for (final tab in ['tab_1', 'tab_koro', 'tab_2']) {
       await tapKey(tester, tab);
       expectEnglish(await wordingWithScroll(tester), tab);
     }
     expect(find.text('Choir'), findsWidgets);
+    // Settings sits behind the profile button at the top of the tab.
+    tester
+        .state<ScrollableState>(find.byType(Scrollable).last)
+        .position
+        .jumpTo(0);
+    await tester.pump();
+    await tapKey(tester, 'open_settings');
+    expectEnglish(await wordingWithScroll(tester), 'settings');
 
     final nav = tester.state<NavigatorState>(find.byType(Navigator).first);
     Future<void> visit(String where, Widget screen) async {

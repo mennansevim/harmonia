@@ -12,6 +12,7 @@ import 'package:resonia/trainer/audio/trainer_audio.dart';
 import 'package:resonia/trainer/state/trainer_store.dart';
 
 import '../support/tour_fonts.dart';
+import '../support/visible_text_contrast.dart';
 
 // Screen and system text sizes that stand in for different readers: a small
 // phone, and large text as used by many older users. This is a layout and
@@ -72,7 +73,7 @@ void main() {
           ('tap', androidTapTargetGuideline),
           ('iostap', iOSTapTargetGuideline),
           ('label', labeledTapTargetGuideline),
-          ('contrast', textContrastGuideline),
+          ('contrast', const VisibleTextContrastGuideline()),
         ]) {
           final e = await g.evaluate(tester);
           if (!e.passed) failed.add('$label: ${e.reason}');
@@ -131,7 +132,7 @@ void main() {
           ('tab_1', 'ses'),
           ('tab_koro', 'koro'),
           ('tab_2', 'ilerleme'),
-          ('tab_3', 'ayarlar'),
+          ('open_settings', 'ayarlar'),
         ]) {
           await tap(key);
           await audit(label);

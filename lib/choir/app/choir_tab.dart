@@ -179,8 +179,11 @@ class _CreateSheetState extends State<_CreateSheet> {
 
 /// The Koro tab: the person's choirs, or how to begin.
 class ChoirTab extends StatelessWidget {
-  const ChoirTab({super.key, this.asTab = true});
+  const ChoirTab({super.key, this.asTab = true, this.trailing});
   final bool asTab;
+
+  /// Top-right slot on the tab (the trainer's profile button).
+  final Widget? trailing;
 
   @override
   Widget build(BuildContext context) {
@@ -191,9 +194,22 @@ class ChoirTab extends StatelessWidget {
     final body = ListView(
       padding: const EdgeInsets.fromLTRB(24, 14, 24, 28),
       children: [
-        Text(text.caps(text.eyebrowChoir), style: TT.crumb),
-        const SizedBox(height: 10),
-        Text(text.tabLabel, style: TT.h1),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(text.caps(text.eyebrowChoir), style: TT.crumb),
+                  const SizedBox(height: 10),
+                  Text(text.tabLabel, style: TT.h1),
+                ],
+              ),
+            ),
+            ?trailing,
+          ],
+        ),
         if (store.loadError != null)
           Padding(
             padding: const EdgeInsets.only(top: 12),
@@ -309,18 +325,24 @@ class _ChoirCard extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Icon(Ic.users, color: TC.sun, size: 32),
+                  ExcludeSemantics(
+                    child: Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: TC.sun,
+                        borderRadius: BorderRadius.circular(13),
+                      ),
+                      child: const Icon(Ic.users, color: TC.onSun),
+                    ),
+                  ),
                   TiltTag(conductor ? text.conductorTag : text.memberTag),
                 ],
               ),
               const SizedBox(height: 12),
               Text(
                 choir.name,
-                style: TT.display.copyWith(
-                  color: Colors.white,
-                  fontSize: 34,
-                  height: 1.1,
-                ),
+                style: TT.display.copyWith(color: Colors.white, fontSize: 26),
               ),
               const SizedBox(height: 12),
               Text(

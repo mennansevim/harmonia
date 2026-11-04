@@ -62,17 +62,70 @@ Future<String?> setReminder(BuildContext context, bool on) async {
   return null;
 }
 
+/// The avatar at the top right of every tab; opens Settings (DESIGN-09).
+class ProfileButton extends StatelessWidget {
+  const ProfileButton({super.key});
+  @override
+  Widget build(BuildContext context) => Semantics(
+    button: true,
+    label: tr('Ayarlar', 'Settings'),
+    excludeSemantics: true,
+    child: InkWell(
+      key: const Key('open_settings'),
+      customBorder: const CircleBorder(),
+      onTap: () {
+        tapHaptic();
+        Navigator.of(
+          context,
+        ).push(MaterialPageRoute<void>(builder: (_) => const SettingsScreen()));
+      },
+      child: SizedBox.square(
+        dimension: 48,
+        child: Center(
+          child: Container(
+            width: 40,
+            height: 40,
+            decoration: const BoxDecoration(
+              color: TC.ink,
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(Ic.userRound, color: Colors.white, size: 20),
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
+/// Settings as a page of its own, reached from [ProfileButton].
+class SettingsScreen extends StatelessWidget {
+  const SettingsScreen({super.key});
+  @override
+  Widget build(BuildContext context) => const Scaffold(
+    backgroundColor: TC.canvas,
+    body: SettingsTab(pushed: true),
+  );
+}
+
 class SettingsTab extends StatelessWidget {
-  const SettingsTab({super.key});
+  const SettingsTab({super.key, this.pushed = false});
+
+  /// Opened as a page: a back arrow above the header.
+  final bool pushed;
 
   @override
   Widget build(BuildContext context) {
     final store = TrainerScope.of(context).store;
     return SafeArea(
-      bottom: false,
+      bottom: pushed,
       child: ListView(
         padding: EdgeInsets.zero,
         children: [
+          if (pushed)
+            CrumbBar(
+              crumb: trCaps(tr('Profil', 'Profile')),
+              onBack: () => Navigator.of(context).pop(),
+            ),
           tabHeader(
             tr('Senin düzenin', 'Your setup'),
             tr('Ayarlar', 'Settings'),
@@ -135,8 +188,8 @@ class SettingsTab extends StatelessWidget {
                     icon: Ic.audioLines,
                     title: tr('Ses aralığım', 'My vocal range'),
                     subtitle: tr(
-                      'Ses sekmesindeki testle ölçülür',
-                      'Measured by the test in the Voice tab',
+                      'Egzersizler sekmesindeki testle ölçülür',
+                      'Measured by the test in the Exercises tab',
                     ),
                     value:
                         _rangeLabel(store) ?? tr('Ölçülmedi', 'Not measured'),
@@ -405,11 +458,16 @@ class SettingsTab extends StatelessWidget {
     );
     if (!ok || !context.mounted) return;
     final messenger = ScaffoldMessenger.of(context);
+    final nav = Navigator.of(context);
     final deleted = await _wipe(
       TrainerScope.read(context),
       ChoirScope.maybeOf(context)?.store,
     );
-    if (deleted) return;
+    // The app is back at onboarding underneath; leave this page too.
+    if (deleted) {
+      nav.popUntil((r) => r.isFirst);
+      return;
+    }
     messenger.showSnackBar(
       SnackBar(
         content: Text(

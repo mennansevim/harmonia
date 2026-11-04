@@ -151,7 +151,7 @@ void main() {
     await tapKey(tester, 'ob_continue');
     await tapKey(tester, 'reminder_skip');
     expect(find.text('Planın kuruldu'), findsOneWidget);
-    expect(find.text('Ölçülmedi · Ses sekmesinde ölç'), findsOneWidget);
+    expect(find.text('Ölçülmedi · Egzersizler sekmesinde ölç'), findsOneWidget);
     // A 10-minute day ends with a voice step; choir members are told where
     // their assignments live.
     expect(find.text('Rotanın sonunda bir ses adımı'), findsOneWidget);
@@ -174,7 +174,7 @@ void main() {
     // choir tab (the old check passed only because tests ran in English).
     expect(find.text('Koro'), findsOneWidget);
     await tapKey(tester, 'tab_1');
-    expect(find.text('Ses Atölyesi'), findsOneWidget);
+    expect(find.text('Egzersizler'), findsWidgets);
   });
 
   testWidgets('a solo learner can skip the vocal range step', (tester) async {
@@ -239,6 +239,8 @@ void main() {
     await tester.pumpWidget(app(store));
     await settle(tester);
 
+    // The skill grid lives on the Exercises tab.
+    await tapKey(tester, 'tab_1');
     await tapKey(tester, 'skill_interval');
     expect(find.text('BASAMAK 1'), findsOneWidget);
     expect(find.text('Başlarken'), findsWidgets);
@@ -259,7 +261,7 @@ void main() {
     await tester.pumpWidget(app(store));
     await settle(tester);
 
-    await tapKey(tester, 'skill_pitch');
+    await tapKey(tester, 'quick_pitch');
     await tapKey(tester, 'skill_free');
     await tapKey(tester, 'practice_now');
     // Pool is Do + Sol by default; answer every question with "Do".
@@ -295,7 +297,7 @@ void main() {
     await store.load();
     await tester.pumpWidget(app(store));
     await settle(tester);
-    await tapKey(tester, 'skill_pitch');
+    await tapKey(tester, 'quick_pitch');
     await tapKey(tester, 'skill_free');
     await tapKey(tester, 'practice_now');
     await tester.tap(find.byTooltip('Geri').first);
@@ -345,15 +347,94 @@ void main() {
     await tester.pumpWidget(app(store));
     await settle(tester);
     await tapKey(tester, 'tab_1');
-    expect(find.text('Ses Atölyesi'), findsWidgets);
+    expect(find.text('Egzersizler'), findsWidgets);
+    expect(find.byKey(const Key('skill_pitch')), findsOneWidget);
+    // The library list, not the horizontal category row.
+    final list = find
+        .byWidgetPredicate(
+          (w) => w is Scrollable && w.axisDirection == AxisDirection.down,
+        )
+        .last;
     expect(find.text('Ses aralığı testi'), findsOneWidget);
-    await tester.scrollUntilVisible(find.text('YAKINDA'), 200);
+    await tester.scrollUntilVisible(
+      find.text('YAKINDA'),
+      200,
+      scrollable: list,
+    );
     expect(find.text('Aksak ritim'), findsOneWidget);
     expect(find.text('YAKINDA'), findsOneWidget);
     await tapKey(tester, 'koro_voices');
     expect(find.text('Kaç ses duyuyorsun?'), findsOneWidget);
     await tapKey(tester, 'voices_3', settleMs: 1500);
     expect(find.text('2 / 10'), findsOneWidget);
+  });
+
+  testWidgets('exercise categories filter the library', (tester) async {
+    final store = memoryStore({'onboardingDone': true, 'setupDone': true});
+    await store.load();
+    await tester.pumpWidget(app(store));
+    await settle(tester);
+    await tapKey(tester, 'tab_1');
+    await tapKey(tester, 'cat_rhythm');
+    expect(find.byKey(const Key('koro_clap')), findsOneWidget);
+    expect(find.byKey(const Key('skill_pitch')), findsNothing);
+    expect(find.byKey(const Key('koro_range')), findsNothing);
+    expect(find.text('TASLAK'), findsNWidgets(3));
+    await tapKey(tester, 'cat_ear');
+    expect(find.byKey(const Key('skill_pitch')), findsOneWidget);
+    expect(
+      find.text('0 / ${trainerPaths[TrainerKind.pitch]!.lessonCount} ders'),
+      findsOneWidget,
+    );
+    expect(find.text('DENEYSEL'), findsNothing);
+    await tapKey(tester, 'cat_voice');
+    expect(find.byKey(const Key('koro_range')), findsOneWidget);
+    await tapKey(tester, 'cat_all');
+    expect(find.byKey(const Key('lib_breath')), findsOneWidget);
+  });
+
+  testWidgets('progress shows the range only as a draft and suggests '
+      'a skill only with enough answers', (tester) async {
+    final store = memoryStore({'onboardingDone': true, 'setupDone': true});
+    await store.load();
+    for (var i = 0; i < 9; i++) {
+      store.recordAnswer(TrainerKind.chord, 'maj', i.isEven);
+    }
+    await tester.pumpWidget(app(store));
+    await settle(tester);
+    await tapKey(tester, 'tab_2');
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('stats_range')),
+      200,
+      scrollable: find.byType(Scrollable).last,
+    );
+    expect(find.text('Ölçülmedi'), findsOneWidget);
+    expect(find.text('TASLAK ÖLÇÜM'), findsNothing);
+    // Nine answers are not enough evidence for a suggestion.
+    expect(find.byKey(const Key('stats_suggest')), findsNothing);
+  });
+
+  testWidgets('a measured range is labelled as a draft', (tester) async {
+    final store = memoryStore({
+      'onboardingDone': true,
+      'setupDone': true,
+      'koroRange': '48-67',
+    });
+    await store.load();
+    for (var i = 0; i < 10; i++) {
+      store.recordAnswer(TrainerKind.chord, 'maj', i.isEven);
+    }
+    await tester.pumpWidget(app(store));
+    await settle(tester);
+    await tapKey(tester, 'tab_2');
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('stats_suggest')),
+      200,
+      scrollable: find.byType(Scrollable).last,
+    );
+    expect(find.text('TASLAK ÖLÇÜM'), findsOneWidget);
+    expect(find.text('Ölçülmedi'), findsNothing);
+    expect(find.textContaining('%50'), findsWidgets);
   });
 
   testWidgets('progress and settings speak to every learner, not only '
@@ -372,7 +453,7 @@ void main() {
     for (final day in ['Pt', 'Sa', 'Ça', 'Pe', 'Cu', 'Ct', 'Pz']) {
       expect(find.text(day), findsOneWidget);
     }
-    await tapKey(tester, 'tab_3');
+    await tapKey(tester, 'open_settings');
     expect(find.text('SES'), findsOneWidget);
     expect(find.text('KORO'), findsNothing);
     expect(find.text('Çalışma aralığı: Alto'), findsOneWidget);
@@ -386,7 +467,7 @@ void main() {
     await store.load();
     await tester.pumpWidget(app(store));
     await settle(tester);
-    await tapKey(tester, 'tab_3');
+    await tapKey(tester, 'open_settings');
     final before = store.hints;
     final title = find.text('Cevap ipuçları');
     await tester.ensureVisible(title);
@@ -401,7 +482,7 @@ void main() {
     await store.load();
     await tester.pumpWidget(app(store));
     await settle(tester);
-    await tapKey(tester, 'tab_3');
+    await tapKey(tester, 'open_settings');
     expect(find.byKey(const Key('settings_part')), findsOneWidget);
     await tapKey(tester, 'delete_data');
     await tester.tap(find.text('Sil'));
@@ -433,7 +514,7 @@ void main() {
       ),
     );
     await settle(tester);
-    await tapKey(tester, 'tab_3');
+    await tapKey(tester, 'open_settings');
     await tapKey(tester, 'delete_data');
     await tester.tap(find.text('Sil'));
     await settle(tester, 1200);
@@ -452,7 +533,7 @@ void main() {
     var report = const OrphanCleanupReport(failures: 1);
     await tester.pumpWidget(app(store, purgeTemp: () async => report));
     await settle(tester);
-    await tapKey(tester, 'tab_3');
+    await tapKey(tester, 'open_settings');
     await tapKey(tester, 'delete_data');
     await tester.tap(find.text('Sil'));
     await settle(tester, 1200);
@@ -475,7 +556,7 @@ void main() {
     final choir = _Choir()..fail = true;
     await tester.pumpWidget(app(store, history: history, choir: choir));
     await settle(tester);
-    await tapKey(tester, 'tab_3');
+    await tapKey(tester, 'open_settings');
     await tapKey(tester, 'delete_data');
     await tester.tap(find.text('Sil'));
     await settle(tester, 1200);

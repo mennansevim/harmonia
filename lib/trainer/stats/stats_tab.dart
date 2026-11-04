@@ -3,8 +3,12 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../app/scope.dart';
+import '../domain/music.dart';
 import '../domain/trainers.dart';
+import '../koro/range_test.dart';
+import '../learn/skill_screen.dart';
 import '../state/trainer_store.dart';
+import '../settings/settings_tab.dart';
 import '../ui/kit.dart';
 import '../../domain/lang.dart';
 
@@ -22,12 +26,13 @@ class StatsTab extends StatelessWidget {
         padding: EdgeInsets.zero,
         children: [
           _Header(
-            tr('Bu cihazda', 'On this device'),
-            tr('İlerleme', 'Progress'),
+            tr('Yolculuğun', 'Your journey'),
+            tr('Gelişim', 'Progress'),
             tr(
               'Yalnız bu cihazdaki kendi kanıtın',
               'Only your own evidence, on this device',
             ),
+            const ProfileButton(),
           ),
           Padding(
             padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
@@ -37,6 +42,16 @@ class StatsTab extends StatelessWidget {
                 _LevelCard(store: store),
                 const SizedBox(height: 14),
                 _Unlocked(store: store),
+                const SizedBox(height: 20),
+                Text(tr('SES ARALIĞI', 'VOCAL RANGE'), style: TT.caps),
+                const SizedBox(height: 10),
+                _RangeCard(store: store),
+                if (_suggestion(store) case final k?) ...[
+                  const SizedBox(height: 20),
+                  Text(tr('ÖNERİ', 'SUGGESTION'), style: TT.caps),
+                  const SizedBox(height: 10),
+                  _SuggestionCard(store: store, kind: k),
+                ],
               ],
             ),
           ),
@@ -93,8 +108,7 @@ class _LevelCard extends StatelessWidget {
                       level.$2,
                       style: TT.display.copyWith(
                         color: Colors.white,
-                        fontSize: 30,
-                        height: 1.2,
+                        fontSize: 26,
                       ),
                     ),
                   ],
@@ -116,9 +130,9 @@ class _LevelCard extends StatelessWidget {
           const SizedBox(height: 16),
           ProgressBar(
             value: progress,
-            color: TC.sun,
+            color: TC.teal,
             height: 8,
-            track: Colors.white24,
+            track: const Color(0xFF3A3D55),
           ),
           const SizedBox(height: 10),
           Text(
@@ -137,37 +151,282 @@ class _LevelCard extends StatelessWidget {
               height: 1.5,
             ),
           ),
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              _HeroFigure(
+                value: '${store.totalQuestions}',
+                label: tr('soru', 'questions'),
+              ),
+              const SizedBox(width: 10),
+              _HeroFigure(
+                value: '${store.activeDayCount}',
+                label: tr('aktif gün', 'active days'),
+              ),
+              const SizedBox(width: 10),
+              _HeroFigure(
+                value: '${store.streak}',
+                label: tr('gün seri', 'day streak'),
+              ),
+            ],
+          ),
         ],
       ),
     );
   }
 }
 
-class _Header extends StatelessWidget {
-  const _Header(this.eyebrow, this.title, this.subtitle);
-  final String eyebrow;
-  final String title;
-  final String subtitle;
+/// A counted figure on the dark level card (questions, days — no minutes:
+/// practice time is not measured).
+class _HeroFigure extends StatelessWidget {
+  const _HeroFigure({required this.value, required this.label});
+  final String value;
+  final String label;
   @override
-  Widget build(BuildContext context) => Container(
-    width: double.infinity,
-    padding: const EdgeInsets.fromLTRB(24, 14, 24, 10),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+  Widget build(BuildContext context) => Expanded(
+    child: Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+      decoration: BoxDecoration(
+        color: const Color(0xFF2E3149),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            value,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          Text(
+            label,
+            style: const TextStyle(color: TC.heroMuted, fontSize: 12),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+/// The last range-test result on a C2–C6 strip, always marked as a draft;
+/// an honest empty state when it was never measured.
+class _RangeCard extends StatelessWidget {
+  const _RangeCard({required this.store});
+  final TrainerStore store;
+  static const _low = 36;
+  static const _high = 84;
+
+  @override
+  Widget build(BuildContext context) {
+    final parts = store.koroRange?.split('-').map(int.tryParse).toList();
+    final range =
+        parts != null && parts.length == 2 && parts.every((m) => m != null)
+        ? (parts[0]!, parts[1]!)
+        : null;
+    void open() => Navigator.of(
+      context,
+    ).push(MaterialPageRoute<void>(builder: (_) => const RangeTestScreen()));
+    if (range == null) {
+      return AppCard(
+        key: const Key('stats_range'),
+        onTap: open,
+        child: Row(
+          children: [
+            const Icon(Ic.audioLines, color: TC.muted),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(tr('Ölçülmedi', 'Not measured'), style: TT.title),
+                  Text(
+                    tr(
+                      'Egzersizler sekmesindeki deneysel testle ölçebilirsin',
+                      'You can measure it with the experimental test in Exercises',
+                    ),
+                    style: TT.small,
+                  ),
+                ],
+              ),
+            ),
+            const Icon(Ic.chevronRight, color: TC.muted),
+          ],
+        ),
+      );
+    }
+    final (lo, hi) = range;
+    String name(int m) => PitchClass.midiName(m, store.notation);
+    double at(int m) => ((m - _low) / (_high - _low)).clamp(0.0, 1.0);
+    return AppCard(
+      key: const Key('stats_range'),
+      onTap: open,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(child: Text('${name(lo)} – ${name(hi)}', style: TT.h3)),
+              Tag(tr('TASLAK ÖLÇÜM', 'DRAFT MEASUREMENT'), color: TC.koro),
+            ],
+          ),
+          const SizedBox(height: 12),
+          ExcludeSemantics(
+            child: SizedBox(
+              height: 14,
+              child: LayoutBuilder(
+                builder: (context, c) => Stack(
+                  children: [
+                    Container(
+                      decoration: BoxDecoration(
+                        color: TC.line,
+                        borderRadius: BorderRadius.circular(7),
+                      ),
+                    ),
+                    Positioned(
+                      left: c.maxWidth * at(lo),
+                      width: math.max(14, c.maxWidth * (at(hi) - at(lo))),
+                      top: 0,
+                      bottom: 0,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: TC.teal,
+                          borderRadius: BorderRadius.circular(7),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 6),
+          Row(
+            children: [
+              Text(name(_low), style: TT.small),
+              const Spacer(),
+              Text(name(_high), style: TT.small),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            tr(
+              'Deneysel aralık testinin son sonucu; doğrulanmış ses aralığı değildir.',
+              'Last result of the experimental range test; not a validated range.',
+            ),
+            style: TT.small,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Skill with the lowest first-try accuracy among those with at least
+/// 10 answers; null until there is enough evidence.
+TrainerKind? _suggestion(TrainerStore store) {
+  TrainerKind? pick;
+  double? low;
+  for (final k in TrainerKind.values) {
+    final n = store.itemStats(k).values.fold(0, (s, i) => s + i.attempts);
+    final a = _accuracy(store, k);
+    if (n < 10 || a == null) continue;
+    if (low == null || a < low) {
+      low = a;
+      pick = k;
+    }
+  }
+  return pick;
+}
+
+class _SuggestionCard extends StatelessWidget {
+  const _SuggestionCard({required this.store, required this.kind});
+  final TrainerStore store;
+  final TrainerKind kind;
+  @override
+  Widget build(BuildContext context) => AppCard(
+    key: const Key('stats_suggest'),
+    color: TC.primarySoft,
+    onTap: () => openSkill(context, kind),
+    child: Row(
       children: [
-        Text(trCaps(eyebrow), style: TT.crumb),
-        const SizedBox(height: 10),
-        Semantics(header: true, child: Text(title, style: TT.h1)),
-        const SizedBox(height: 2),
-        Text(subtitle, style: TT.small),
+        Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            color: TC.primary,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Icon(trainerIcon(kind), color: Colors.white, size: 20),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                tr('${kind.shortTitle} çalış', 'Practise ${kind.shortTitle}'),
+                style: TT.title,
+              ),
+              Text(
+                tr(
+                  'İlk deneme doğruluğun en düşük burada · '
+                      '${percent(_accuracy(store, kind)!)}',
+                  'Your lowest first-try accuracy · '
+                      '${percent(_accuracy(store, kind)!)}',
+                ),
+                style: TT.small.copyWith(color: TC.body),
+              ),
+            ],
+          ),
+        ),
+        const Icon(Ic.chevronRight, color: TC.primary),
       ],
     ),
   );
 }
 
-/// Shared tab header: a violet eyebrow, the tab's title, one muted line.
-Widget tabHeader(String eyebrow, String title, String subtitle) =>
-    _Header(eyebrow, title, subtitle);
+class _Header extends StatelessWidget {
+  const _Header(this.eyebrow, this.title, this.subtitle, this.trailing);
+  final String eyebrow;
+  final String title;
+  final String subtitle;
+  final Widget? trailing;
+  @override
+  Widget build(BuildContext context) => Container(
+    width: double.infinity,
+    padding: const EdgeInsets.fromLTRB(24, 14, 24, 10),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(trCaps(eyebrow), style: TT.crumb),
+              const SizedBox(height: 10),
+              Semantics(header: true, child: Text(title, style: TT.h1)),
+              const SizedBox(height: 2),
+              Text(subtitle, style: TT.small),
+            ],
+          ),
+        ),
+        if (trailing != null) ...[const SizedBox(width: 12), trailing!],
+      ],
+    ),
+  );
+}
+
+/// Shared tab header: a violet eyebrow, the tab's title, one muted line and
+/// an optional widget top right (the profile button on tabs).
+Widget tabHeader(
+  String eyebrow,
+  String title,
+  String subtitle, {
+  Widget? trailing,
+}) => _Header(eyebrow, title, subtitle, trailing);
 
 class _Unlocked extends StatelessWidget {
   const _Unlocked({required this.store});
@@ -220,9 +479,7 @@ class _Unlocked extends StatelessWidget {
                               margin: const EdgeInsets.symmetric(horizontal: 6),
                               height: math.max(4, 80 * counts[i] / peak),
                               decoration: BoxDecoration(
-                                color: i == 6
-                                    ? TC.primary
-                                    : TC.primary.withValues(alpha: 0.4),
+                                color: i == 6 ? TC.teal : TC.primarySoft,
                                 borderRadius: BorderRadius.circular(6),
                               ),
                             ),

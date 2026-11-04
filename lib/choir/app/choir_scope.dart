@@ -248,7 +248,7 @@ class ChoirWave extends StatelessWidget {
     required this.peaks,
     this.progress = 0,
     this.played = TC.sun,
-    this.rest = const Color(0xFF594366),
+    this.rest = const Color(0xFF4A4D66),
     this.height = 84,
     this.onSeek,
     this.marks = const [],

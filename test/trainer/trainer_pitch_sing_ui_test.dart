@@ -129,6 +129,8 @@ void main() {
     await tester.pump(const Duration(milliseconds: 20));
     await tester.pumpAndSettle();
     expect(find.textContaining('Tanısal fark:'), findsOneWidget);
+    expect(find.byKey(const Key('sing_scale')), findsOneWidget);
+    expect(find.text('— Hedef perde'), findsOneWidget);
     expect(find.text('Kaynak: Test kaynağı'), findsOneWidget);
     expect(store.isComplete(node.id), isFalse);
     expect(store.trainerReps(TrainerKind.pitch), 0);
@@ -225,5 +227,66 @@ void main() {
     tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
     await tester.pumpAndSettle();
     expect(player.calls.where((call) => call == 'play'), hasLength(1));
+  });
+
+  /// Runs one calibrated attempt whose answer is [clip] for the target Hz.
+  Future<void> attempt(
+    WidgetTester tester,
+    List<double> Function(double targetHz) clip,
+  ) async {
+    final store = _store();
+    await store.load();
+    final node = trainerPaths[TrainerKind.pitch]!.nodes.firstWhere(
+      (candidate) =>
+          candidate.kind == NodeKind.lesson && candidate.newItems.length == 1,
+    );
+    final backend = FakeRoutedAudioLabBackend();
+    final player = _Player();
+    TrainerPitchSingTarget? target;
+    TrainerPitchSingSession factory(TrainerPitchSingTarget value) {
+      target = value;
+      return TrainerPitchSingSession(
+        target: value,
+        capture: backend,
+        referencePlayer: player,
+        worker: FakeRecordingPitchWorker(),
+        calibrationDuration: const Duration(milliseconds: 1),
+        responseDelay: const Duration(milliseconds: 1),
+        responseWindow: const Duration(milliseconds: 5),
+      );
+    }
+
+    await tester.pumpWidget(
+      _app(store: store, node: node, liveAudio: true, factory: factory),
+    );
+    await _toSing(tester);
+    expect(find.byKey(const Key('sing_target')), findsOneWidget);
+    backend.nextClip(_noise(2));
+    await tester.tap(find.byKey(const Key('sing_calibrate')));
+    await tester.pump(const Duration(milliseconds: 5));
+    await tester.pumpAndSettle();
+    backend.nextClip(clip(target!.frequencyHz));
+    await tester.tap(find.byKey(const Key('sing_start')));
+    await tester.pump(const Duration(milliseconds: 5));
+    player.completion.complete();
+    await tester.pump(const Duration(milliseconds: 20));
+    await tester.pumpAndSettle();
+    expect(store.trainerReps(TrainerKind.pitch), 0);
+  }
+
+  testWidgets('a wrong octave is named and never marked near the target', (
+    tester,
+  ) async {
+    await attempt(tester, (hz) => _answer(hz * 2));
+    expect(find.textContaining('oktav tiz, hedef perde değil'), findsOneWidget);
+    expect(find.text('Bir oktav tiz söylendi'), findsOneWidget);
+    expect(find.text('— Hedef perde'), findsNothing);
+  });
+
+  testWidgets('silence is not counted and shows no scale', (tester) async {
+    await attempt(tester, (_) => _noise(1.5));
+    expect(find.byKey(const Key('sing_not_counted')), findsOneWidget);
+    expect(find.byKey(const Key('sing_scale')), findsNothing);
+    expect(find.textContaining('Tanısal fark:'), findsNothing);
   });
 }
