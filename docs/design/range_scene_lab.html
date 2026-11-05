@@ -1,0 +1,536 @@
+<title>Sıra Sende Sahnesi</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap">
+<style>
+/* Layout: five full-height phones, each the range-test screen running the same three-note round with its own choreography. */
+:root {
+  --bg: #F3EFE8; --fg: #292238; --muted: #6F6877; --panel: #FFFEFA; --line: #E5DEE7;
+  --accent: #6849CC; --accent-soft: #EEE7FF;
+  --font: "Manrope", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --bg: #17121F; --fg: #F1ECF6; --muted: #B3AABF; --panel: #221B2D; --line: #382E46; --accent: #B9A5FF; --accent-soft: #2E2440; color-scheme: dark; }
+}
+:root[data-theme="dark"] { --bg: #17121F; --fg: #F1ECF6; --muted: #B3AABF; --panel: #221B2D; --line: #382E46; --accent: #B9A5FF; --accent-soft: #2E2440; color-scheme: dark; }
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--font);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 28px 48px;
+}
+.wrap { max-width: 1240px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr); gap: 22px; }
+header { display: grid; gap: 8px; max-width: 72ch; }
+.eyebrow { font-size: 11px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--accent); }
+h1 { font-size: clamp(28px, 4vw, 40px); line-height: 1.05; margin: 0; font-weight: 800; letter-spacing: -.02em; text-wrap: balance; }
+header p { margin: 0; color: var(--muted); font-size: 14.5px; line-height: 1.55; }
+.flow { display: flex; flex-wrap: wrap; gap: 8px; }
+.step { display: inline-flex; align-items: center; gap: 7px; font-size: 12.5px; font-weight: 700; padding: 5px 12px; border-radius: 99px; background: var(--panel); border: 1px solid var(--line); }
+.step i { font-style: normal; font-size: 11px; color: var(--accent); font-variant-numeric: tabular-nums; }
+.step[data-on="true"] { background: var(--accent); color: #fff; border-color: transparent; }
+.step[data-on="true"] i { color: #fff; }
+.controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.btn { font: inherit; font-size: 13px; font-weight: 700; border: 1px solid var(--line); background: var(--accent-soft); color: var(--fg); padding: 8px 14px; border-radius: 99px; cursor: pointer; }
+.btn[aria-pressed="true"] { background: var(--accent); color: #fff; border-color: transparent; }
+.btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 26px 22px; }
+.view { display: grid; gap: 10px; align-content: start; min-width: 0; justify-items: center; }
+.view h2 { margin: 0; font-size: 17px; font-weight: 800; display: flex; gap: 10px; align-items: baseline; justify-self: start; }
+.view h2 .id { font-size: 12px; font-weight: 800; color: var(--accent); letter-spacing: .1em; font-variant-numeric: tabular-nums; }
+.view p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.5; justify-self: start; }
+/* The device is the app itself, light only, so its frame colour is fixed. */
+.device { width: 100%; max-width: 320px; aspect-ratio: 320 / 660; border-radius: 40px; padding: 8px; background: #1E1828; box-shadow: 0 14px 30px rgba(30, 24, 40, .22); }
+.device canvas { width: 100%; height: 100%; display: block; border-radius: 32px; background: #F8F5EF; }
+footer { color: var(--muted); font-size: 12.5px; line-height: 1.55; max-width: 72ch; }
+</style>
+
+<div class="wrap">
+  <header>
+    <span class="eyebrow">Ses aralığı · sıra sende anı</span>
+    <h1>Söyleme sırası gelince ekran sana dönsün</h1>
+    <p>Beş farklı akış, aynı üç notalık tur: piyano notayı çalar, ekran sıranın geldiğini açıkça söyler, sen 3 saniye söylerken ses dalgası ekranı kaplar, bitince nabız dizisi sonucu gösterir. İkinci nota tutar, üçüncü tiz kaçar.</p>
+    <div class="flow" id="flow" aria-label="Aşamalar">
+      <span class="step" data-k="piano"><i>1</i>Piyano çalar</span>
+      <span class="step" data-k="cue"><i>2</i>Sıra sende</span>
+      <span class="step" data-k="listen"><i>3</i>Sen söylersin</span>
+      <span class="step" data-k="result"><i>4</i>Sonuç ve ilerleme</span>
+    </div>
+    <div class="controls">
+      <button class="btn" id="play" type="button" aria-pressed="true">Oynatılıyor</button>
+      <button class="btn" id="restart" type="button">Baştan</button>
+    </div>
+  </header>
+  <div class="grid" id="grid"></div>
+  <footer>Taslak. Ses simüle edilir, mikrofon kullanılmaz. Sonuç uygulamadaki gerçek değerlendirmeden gelir; bu sayfa yalnız ekranın nasıl davranacağını gösterir.</footer>
+</div>
+
+<script>
+(() => {
+  const C = { lav: '#7455DB', primary: '#6849CC', deep: '#5C3FB4', soft: '#EEE7FF', lime: '#D9F574', limeD: '#A9CC3E', limeDeep: '#477719', limeSoft: '#E9F8C8',
+    coral: '#FF6259', coralDeep: '#B63E38', coralSoft: '#FFE3DF', amber: '#C98400', ink: '#292238', cream: '#F8F5EF', card: '#FFFEFA', line: '#E5DEE7',
+    muted: '#6F6877', faint: '#A9A2B0', hero: '#432A72', piano: '#B8AECB', peach: '#FF8A6B' };
+  const NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+  const name = m => NAMES[((m % 12) + 12) % 12] + (Math.floor(m / 12) - 1);
+  const isBlack = m => [1, 3, 6, 8, 10].includes(((m % 12) + 12) % 12);
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const lerp = (a, b, t) => a + (b - a) * t;
+  const ease = t => { t = clamp(t, 0, 1); return 1 - Math.pow(1 - t, 3); };
+  const easeIO = t => { t = clamp(t, 0, 1); return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; };
+  const smooth = (e0, e1, x) => { const t = clamp((x - e0) / (e1 - e0), 0, 1); return t * t * (3 - 2 * t); };
+  const hex = h => { const n = parseInt(h.slice(1), 16); return [n >> 16 & 255, n >> 8 & 255, n & 255]; };
+  const rgba = (c, a) => { const [r, g, b] = Array.isArray(c) ? c : hex(c); return `rgba(${r},${g},${b},${clamp(a, 0, 1)})`; };
+  const mixA = (A, B, t) => { A = Array.isArray(A) ? A : hex(A); B = Array.isArray(B) ? B : hex(B); return A.map((v, i) => Math.round(v + (B[i] - v) * t)); };
+  function toHsl([r, g, b]) { r /= 255; g /= 255; b /= 255; const mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 2; if (mx === mn) return [0, 0, l]; const d = mx - mn, s = l > 0.5 ? d / (2 - mx - mn) : d / (mx + mn); const hh = mx === r ? (g - b) / d + (g < b ? 6 : 0) : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; return [hh * 60, s, l]; }
+  function fromHsl([hh, s, l]) { const k = n => (n + hh / 30) % 12, q = s * Math.min(l, 1 - l); const f = n => l - q * Math.max(-1, Math.min(k(n) - 3, 9 - k(n), 1)); return [Math.round(f(0) * 255), Math.round(f(8) * 255), Math.round(f(4) * 255)]; }
+  function mixH(A, B, t) { A = Array.isArray(A) ? A : hex(A); B = Array.isArray(B) ? B : hex(B); const a = toHsl(A), b = toHsl(B); let dh = b[0] - a[0]; if (dh > 180) dh -= 360; if (dh < -180) dh += 360; return fromHsl([(a[0] + dh * t + 360) % 360, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t]); }
+  const lockOf = c => 1 - smooth(30, 40, Math.abs(c));
+  function waveCol(c, fill) { const off = c < 0 ? C.lav : C.coral; const near = mixH(C.lav, off, smooth(0, 60, Math.abs(c))); return mixH(near, fill ? C.lime : C.limeD, lockOf(c)); }
+
+  // ---------- the round ----------
+  const START = 57;
+  const NOTES = [{ m: 57, r: 'm', c: 4 }, { m: 58, r: 'm', c: -9 }, { m: 59, r: 'x', c: 58 }];
+  const DUR = { piano: 2.0, cue: 1.4, listen: 3.0, result: 2.0 };
+  const PER = DUR.piano + DUR.cue + DUR.listen + DUR.result, TOTAL = PER * NOTES.length;
+  function stateAt(u, t) {
+    const i = Math.floor(u / PER), n = NOTES[i];
+    let r = u - i * PER, phase = 'piano';
+    for (const k of ['piano', 'cue', 'listen', 'result']) { if (r < DUR[k]) { phase = k; break; } r -= DUR[k]; }
+    const S = { i, note: n.m, res: n.r, phase, pt: r, pk: r / DUR[phase], marks: new Map(), attempts: i, start: START, cents: 0, amp: 0, voiced: false, piano: false, t };
+    for (let j = 0; j < i; j++) S.marks.set(NOTES[j].m, NOTES[j].r);
+    if (phase === 'result') { S.marks.set(n.m, n.r); S.attempts = i + 1; }
+    if (phase === 'piano' && r > 0.25 && r < DUR.piano - 0.2) { S.piano = true; S.voiced = true; S.amp = 0.55 + 0.05 * Math.sin(t * 2.2); }
+    if (phase === 'listen' && r > 0.3 && r < DUR.listen - 0.15) {
+      const k = (r - 0.3) / 0.5, tail = clamp((DUR.listen - 0.15 - r) / 0.35, 0, 1);
+      S.voiced = true; S.amp = 0.85 * ease(k * 1.6) * tail + 0.05 * Math.sin(t * 3);
+      S.cents = lerp(-170, n.c, ease(k)) + Math.sin(t * 34) * 7 + Math.sin(t * 5.2) * 3;
+    }
+    S.reached = [...S.marks].filter(([, v]) => v === 'm').map(([k]) => k);
+    return S;
+  }
+  // How far the screen has turned to the singer (0 piano … 1 singing).
+  const singMode = S => S.phase === 'cue' ? easeIO(S.pt / 0.55) : S.phase === 'listen' ? 1 : S.phase === 'result' ? 1 - easeIO(S.pt / 0.6) : 0;
+  // How visible the progress chain is: away while singing, back for the result.
+  const chainMode = S => S.phase === 'piano' ? 1 : S.phase === 'cue' ? 1 - easeIO(S.pt / 0.45) : S.phase === 'listen' ? 0 : easeIO((S.pt - 0.25) / 0.55);
+  const resultText = S => S.res === 'm' ? `Tuttu · %${S.note === 57 ? 96 : 91} yakın` : 'Tiz kaldı (58 sent). Bir kez daha.';
+
+  // ---------- wave engine (1€ filter, 120 Hz history, smooth curves) ----------
+  class OneEuro { constructor(mc = 0.8, b = 0.004) { this.mc = mc; this.b = b; this.reset(); } reset() { this.x = null; this.dx = 0; }
+    static a(c, dt) { const tau = 1 / (2 * Math.PI * c); return 1 / (1 + tau / dt); }
+    f(x, dt) { if (this.x === null) return this.x = x; this.dx += OneEuro.a(1, dt) * ((x - this.x) / dt - this.dx); return this.x += OneEuro.a(this.mc + this.b * Math.abs(this.dx), dt) * (x - this.x); } }
+  class Track {
+    constructor() { this.f = new OneEuro(); this.h = []; this.acc = 0; this.prev = null; this.cur = { c: 0, a: 0, v: false, p: false }; this.silent = 1; this.note = null; }
+    step(dt, S) {
+      if (this.note !== S.note) { this.note = S.note; this.h = []; this.acc = 0; this.prev = null; this.f.reset(); }
+      const sing = S.voiced && !S.piano;
+      if (!sing) { this.silent += dt; if (this.silent > 0.15) this.f.reset(); } else this.silent = 0;
+      const c = S.piano ? 0 : sing ? this.f.f(S.cents, Math.max(dt, 1e-3)) : (this.f.x ?? 0);
+      this.cur = { c, a: S.amp, v: S.voiced, p: S.piano };
+      const prev = this.prev || this.cur; this.acc += dt;
+      while (this.acc >= 1 / 120) { this.acc -= 1 / 120; const k = dt > 0 ? clamp(1 - this.acc / dt, 0, 1) : 1; this.h.push({ c: lerp(prev.c, this.cur.c, k), a: lerp(prev.a, this.cur.a, k), v: this.cur.v, p: this.cur.p }); }
+      this.prev = { ...this.cur }; if (this.h.length > 900) this.h.splice(0, this.h.length - 900);
+    }
+    at(age) { const pos = this.h.length - 1 - (age - this.acc) * 120; if (!this.h.length || pos < 0) return null; const i = Math.floor(pos); if (i >= this.h.length - 1) return this.h[this.h.length - 1]; const A = this.h[i], B = this.h[i + 1], k = pos - i; return { c: lerp(A.c, B.c, k), a: lerp(A.a, B.a, k), v: k < 0.5 ? A.v : B.v, p: k < 0.5 ? A.p : B.p }; }
+  }
+  function smoothPath(g, P, move = true) { if (!P.length) return; move ? g.moveTo(P[0][0], P[0][1]) : g.lineTo(P[0][0], P[0][1]); for (let i = 1; i < P.length - 1; i++) g.quadraticCurveTo(P[i][0], P[i][1], (P[i][0] + P[i + 1][0]) / 2, (P[i][1] + P[i + 1][1]) / 2); if (P.length > 1) g.lineTo(P[P.length - 1][0], P[P.length - 1][1]); }
+  const tanh = x => { const e = Math.exp(2 * clamp(x, -20, 20)); return (e - 1) / (e + 1); };
+  // Draws the voice waves in a rect. power 0–1 raises size and glow.
+  function drawWaves(g, X, Y, W, H, tr, t, S, o = {}) {
+    const dark = !!o.dark, power = o.power ?? 0, alpha = o.alpha ?? 1;
+    if (alpha <= 0.01) return;
+    g.save(); g.globalAlpha = alpha;
+    const lx = X + 34, nx = X + W * 0.74, cy = Y + H / 2, sem = H / 5.2, soft = H * 0.44, speed = 58;
+    const yOf = c => cy - soft * tanh(c / 100 * sem / soft);
+    const ink = dark ? [255, 255, 255] : hex(C.ink), cur = tr.cur, voice = cur.v && !cur.p, lock = voice ? lockOf(cur.c) : 0;
+    g.font = '700 10px Manrope, system-ui, sans-serif'; g.textBaseline = 'middle'; g.textAlign = 'left';
+    for (let d = -2; d <= 2; d++) {
+      const y = cy - d * sem;
+      if (d === 0) {
+        g.fillStyle = dark ? rgba(mixA([110, 80, 170], C.lime, lock * 0.45), 0.35 + 0.15 * lock) : rgba(mixH(C.soft, '#EEF8D6', lock), 1);
+        g.beginPath(); g.roundRect(lx, y - 12, X + W - lx - 2, 24, 12); g.fill();
+      } else { g.strokeStyle = rgba(ink, dark ? 0.12 : 0.1); g.lineWidth = 1; g.beginPath(); g.moveTo(lx, y); g.lineTo(X + W - 2, y); g.stroke(); }
+      g.fillStyle = rgba(ink, d === 0 ? 1 : 0.45); g.font = `${d === 0 ? 800 : 700} ${d === 0 ? 11.5 : 10}px Manrope, system-ui, sans-serif`;
+      g.fillText(name(S.note + d), X + 2, y);
+    }
+    const runs = []; let run = [];
+    for (let x = lx; x <= X + W + 4; x += 4) {
+      const s = x <= nx ? tr.at((nx - x) / speed) : (cur.v ? cur : null);
+      if (s && s.v && s.a > 0.04) { if (run.length && run[run.length - 1].p !== s.p) { runs.push(run); run = []; } run.push({ x, y: yOf(s.c), a: s.a, c: s.c, p: s.p, err: s.p ? 0 : Math.min(Math.abs(s.c), 200) / 200 }); }
+      else if (run.length) { runs.push(run); run = []; }
+    }
+    if (run.length) runs.push(run);
+    const tone = (s, fill) => s.p ? hex(C.piano) : waveCol(s.c, fill);
+    const grad = (a, fill, tint) => { const gr = g.createLinearGradient(lx, 0, X + W, 0); for (let i = 0; i <= 12; i++) { const x = lx + (X + W - lx) * i / 12, s = x <= nx ? tr.at((nx - x) / speed) : cur; let col = s && s.v ? tone(s, fill) : hex(C.lav); if (tint && !(s && s.p)) col = mixH(col, tint, 0.2); gr.addColorStop(i / 12, rgba(col, a)); } return gr; };
+    const att = x => { const u = (x - nx) / (W * 0.3); return Math.pow(2 / (2 + u * u * u * u), 2); };
+    const ny = voice ? yOf(cur.c) : cy;
+    if (voice) {
+      const br = (30 + 70 * cur.a) * (1 + 0.5 * power), bc = tone(cur, true);
+      const bg = g.createRadialGradient(nx, ny, 0, nx, ny, br); bg.addColorStop(0, rgba(bc, (dark ? 0.5 : 0.32) * cur.a)); bg.addColorStop(1, rgba(bc, 0));
+      g.fillStyle = bg; g.fillRect(nx - br, ny - br, br * 2, br * 2);
+    }
+    const pal = [C.lav, C.coral, C.limeD, '#9C84F0', C.peach, C.deep].map(hex);
+    g.globalCompositeOperation = dark ? 'screen' : 'multiply';
+    const scale = H / 420 * (1 + 0.25 * power);
+    for (let i = 0; i < 6; i++) {
+      const off = (i - 2.5) * 14 * scale, kx = 0.014 * (1 + i * 0.17) / clamp(H / 420, 0.5, 1), sp = (1.6 + i * 0.55) * (i % 2 ? 1 : -1), am = (64 - i * 6.5) * scale, drift = 1.2 * Math.sin(t * 0.37 + i * 1.3);
+      const fg = grad(dark ? 0.24 : 0.3, i % 2 === 1, pal[i]), lg = grad(dark ? 0.85 : 0.7, i % 2 === 1, pal[i]);
+      for (const r of runs) {
+        if (r.length < 3) continue;
+        const x0 = r[0].x, x1 = r[r.length - 1].x;
+        const top = r.map(p => [p.x, p.y + off * p.err + am * p.a * (0.34 + 0.66 * att(p.x)) * smooth(0, 26, p.x - x0) * (p.x > nx ? 1 - smooth(nx, X + W, p.x) : x1 > nx ? 1 : smooth(0, 26, x1 - p.x)) * (0.75 + 0.25 * Math.sin(p.x * 0.006 + t * 0.5 + i * 1.7)) * Math.sin(kx * p.x + t * sp + drift + i)]);
+        g.beginPath(); smoothPath(g, top); for (let j = r.length - 1; j >= 0; j--) g.lineTo(r[j].x, r[j].y + off * r[j].err); g.closePath(); g.fillStyle = fg; g.fill();
+        g.beginPath(); smoothPath(g, top); g.strokeStyle = lg; g.lineWidth = 1.3 + i / 5 * 0.6; g.stroke();
+      }
+    }
+    g.globalCompositeOperation = 'source-over';
+    const cg = grad(0.95, false, null);
+    for (const r of runs) { if (r.length < 3) continue; g.beginPath(); smoothPath(g, r.map(p => [p.x, p.y])); g.strokeStyle = cg; g.lineWidth = 1.6 + power; g.lineCap = 'round'; g.stroke(); }
+    g.setLineDash([2, 5]); g.beginPath(); g.moveTo(nx, Y + 4); g.lineTo(nx, Y + H - 4); g.strokeStyle = rgba(ink, 0.14); g.lineWidth = 1; g.stroke(); g.setLineDash([]);
+    if (voice) {
+      const f = tone(cur, true), r = 5 + 3 * cur.a + 2 * power;
+      g.save(); g.shadowColor = rgba(f, 1); g.shadowBlur = 14; g.beginPath(); g.arc(nx, ny, r, 0, Math.PI * 2); g.fillStyle = rgba(f, 1); g.fill(); g.restore();
+      g.strokeStyle = rgba(ink, 0.9); g.lineWidth = 1.5; g.stroke();
+      const cr = Math.round(cur.c);
+      g.fillStyle = rgba(ink, 1); g.font = '800 12px Manrope, system-ui, sans-serif'; g.textAlign = 'left';
+      g.fillText(lock > 0.6 ? '✓' : `${cr > 0 ? '+' : ''}${cr}`, Math.min(nx + 12, X + W - 26), ny - 16);
+    }
+    g.restore();
+  }
+
+  // ---------- pulse chain ----------
+  function makeFx() { const it = []; return {
+    ring(x, y, col, r1 = 36, life = 0.75) { it.push({ k: 'r', x, y, col, r1, life, t: 0 }); },
+    burst(x, y, col, n = 16) { for (let i = 0; i < n; i++) { const a = Math.random() * Math.PI * 2, s = 75 * (0.45 + Math.random()); it.push({ k: 'p', x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s, col, life: 0.6 + Math.random() * 0.45, t: 0, r: 1 + Math.random() * 1.8 }); } },
+    draw(g, dt) { for (let i = it.length - 1; i >= 0; i--) { it[i].t += dt; if (it[i].t > it[i].life) it.splice(i, 1); }
+      for (const f of it) { const k = f.t / f.life; if (f.k === 'r') { g.beginPath(); g.arc(f.x, f.y, lerp(4, f.r1, ease(k)), 0, Math.PI * 2); g.strokeStyle = rgba(f.col, (1 - k) * 0.85); g.lineWidth = 2.4 * (1 - k) + 0.4; g.stroke(); }
+        else { f.vx *= Math.pow(0.08, dt); f.vy = f.vy * Math.pow(0.08, dt) + 40 * dt; f.x += f.vx * dt; f.y += f.vy * dt; g.beginPath(); g.arc(f.x, f.y, f.r * (1 - 0.6 * k), 0, Math.PI * 2); g.fillStyle = rgba(f.col, 1 - k); g.fill(); } } } }; }
+  const markCol = r => r === 'm' ? C.limeD : r === 'o' ? C.amber : C.coral;
+  function drawChain(g, X, Y, W, S, self, o = {}) {
+    const alpha = o.alpha ?? 1, dark = !!o.dark;
+    if (!self.fx) self.fx = makeFx();
+    if (self.att === undefined || S.attempts < self.att) self.att = S.attempts;
+    const lo = S.start - 4, hi = S.start + 10, pad = 16, X0 = X + pad, W0 = W - 2 * pad;
+    const x = m => X0 + (m - lo) / (hi - lo) * W0;
+    if (S.attempts > self.att) { self.att = S.attempts; if (alpha > 0.05) { const r = S.marks.get(S.note); if (r === 'm') { self.fx.ring(x(S.note), Y, C.limeD); self.fx.ring(x(S.note), Y, C.lime, 22, 0.5); self.fx.burst(x(S.note), Y, C.limeD); } else self.fx.ring(x(S.note), Y, markCol(r), 22, 0.6); } }
+    if (alpha <= 0.01) { self.fx.draw(g, 1 / 60); return; }
+    g.save(); g.globalAlpha = alpha;
+    const ink = dark ? [255, 255, 255] : hex(C.ink), t = S.t;
+    g.beginPath(); g.moveTo(X0 - 6, Y); g.lineTo(X0 + W0 + 6, Y); g.strokeStyle = dark ? 'rgba(255,255,255,0.18)' : C.line; g.lineWidth = 2; g.stroke();
+    if (S.reached.length) { const a = x(Math.min(...S.reached)), b = x(Math.max(...S.reached)); const gr = g.createLinearGradient(a, 0, b, 0); gr.addColorStop(0, C.limeD); gr.addColorStop(1, C.lime); g.beginPath(); g.moveTo(a, Y); g.lineTo(b, Y); g.strokeStyle = gr; g.lineWidth = 6; g.lineCap = 'round'; g.stroke(); }
+    const pc = S.phase === 'piano' ? C.lav : S.phase === 'result' ? markCol(S.res) : C.coral;
+    if (S.phase !== 'result') for (let i = 0; i < 3; i++) { const k = (t * 0.7 + i / 3) % 1; g.beginPath(); g.arc(lerp(x(S.start), x(S.note), k), Y, 3, 0, Math.PI * 2); g.fillStyle = rgba(pc, Math.sin(k * Math.PI) * 0.9); g.fill(); }
+    for (let m = lo; m <= hi; m++) {
+      const cx = x(m), mk = S.marks.get(m);
+      if (mk === 'm') {
+        const k = ((t * 0.8 - (m - lo) * 0.08) % 1 + 1) % 1;
+        g.beginPath(); g.arc(cx, Y, 7 + 9 * ease(k), 0, Math.PI * 2); g.strokeStyle = rgba(C.limeD, (1 - k) * 0.5); g.lineWidth = 1.4; g.stroke();
+        g.save(); g.shadowColor = 'rgba(169,204,62,0.8)'; g.shadowBlur = 10; g.beginPath(); g.arc(cx, Y, 6.5, 0, Math.PI * 2); g.fillStyle = C.lime; g.fill(); g.restore();
+        g.strokeStyle = C.ink; g.lineWidth = 1.3; g.stroke();
+      } else { g.beginPath(); g.arc(cx, Y, isBlack(m) ? 2.6 : 3.6, 0, Math.PI * 2); g.fillStyle = dark ? C.hero : C.card; g.fill(); g.strokeStyle = rgba(ink, 0.3); g.lineWidth = 1.3; g.stroke(); }
+      if (mk && mk !== 'm') { g.beginPath(); g.arc(cx, Y + 15, 2.8, 0, Math.PI * 2); g.fillStyle = markCol(mk); g.fill(); }
+      if (m % 12 === 0 || m === S.start) { g.font = '700 9.5px Manrope, system-ui, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = rgba(ink, 0.45); g.fillText(name(m), cx, Y + 27); }
+    }
+    const tx = x(S.note);
+    g.beginPath(); g.arc(tx, Y, 10, 0, Math.PI * 2); g.fillStyle = dark ? C.hero : C.card; g.fill(); g.strokeStyle = pc; g.lineWidth = 2.5; g.stroke();
+    g.beginPath();
+    if (S.phase === 'piano') g.arc(tx, Y, 15, t * 5, t * 5 + Math.PI * 0.6);
+    else if (S.phase === 'listen') g.arc(tx, Y, 15, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * S.pk);
+    else g.arc(tx, Y, 15, 0, Math.PI * 2);
+    g.strokeStyle = pc; g.lineWidth = 2.5; g.lineCap = 'round'; g.stroke();
+    g.font = '800 12px Manrope, system-ui, sans-serif'; g.textAlign = 'center'; g.fillStyle = rgba(ink, 1); g.fillText(name(S.note), tx, Y - 28);
+    g.restore();
+    self.fx.draw(g, 1 / 60);
+  }
+
+  // ---------- screen primitives ----------
+  function T(g, s, x, y, { size = 12, weight = 700, color = C.ink, align = 'center', alpha = 1 } = {}) {
+    if (alpha <= 0.01) return; g.save(); g.globalAlpha *= alpha; g.font = `${weight} ${size}px Manrope, system-ui, sans-serif`; g.fillStyle = color; g.textAlign = align; g.textBaseline = 'middle'; g.fillText(s, x, y); g.restore();
+  }
+  function mic(g, x, y, s, col, lw = 2) {
+    g.save(); g.strokeStyle = col; g.lineWidth = lw; g.lineCap = 'round';
+    g.beginPath(); g.roundRect(x - s * 0.3, y - s * 0.8, s * 0.6, s * 1.05, s * 0.3); g.stroke();
+    g.beginPath(); g.arc(x, y - s * 0.1, s * 0.58, 0.12 * Math.PI, 0.88 * Math.PI); g.stroke();
+    g.beginPath(); g.moveTo(x, y + s * 0.48); g.lineTo(x, y + s * 0.78); g.stroke(); g.restore();
+  }
+  function speaker(g, x, y, s, col) {
+    g.save(); g.strokeStyle = col; g.lineWidth = 2; g.lineCap = 'round'; g.lineJoin = 'round';
+    g.beginPath(); g.moveTo(x - s * 0.7, y - s * 0.25); g.lineTo(x - s * 0.35, y - s * 0.25); g.lineTo(x + s * 0.05, y - s * 0.6); g.lineTo(x + s * 0.05, y + s * 0.6); g.lineTo(x - s * 0.35, y + s * 0.25); g.lineTo(x - s * 0.7, y + s * 0.25); g.closePath(); g.stroke();
+    g.beginPath(); g.arc(x + s * 0.15, y, s * 0.35, -0.9, 0.9); g.stroke(); g.beginPath(); g.arc(x + s * 0.15, y, s * 0.65, -0.9, 0.9); g.stroke(); g.restore();
+  }
+  function header(g, w, S, dark, frac) {
+    const ink = dark ? '#FFFFFF' : C.ink;
+    g.beginPath(); g.arc(30, 34, 15, 0, Math.PI * 2); g.fillStyle = dark ? 'rgba(255,255,255,0.1)' : C.card; g.fill(); g.strokeStyle = dark ? 'rgba(255,255,255,0.18)' : C.line; g.lineWidth = 1; g.stroke();
+    g.beginPath(); g.moveTo(35, 34); g.lineTo(25, 34); g.moveTo(29, 29.5); g.lineTo(24.5, 34); g.lineTo(29, 38.5); g.strokeStyle = ink; g.lineWidth = 1.8; g.lineCap = 'round'; g.stroke();
+    T(g, 'SES ARALIĞI', 54, 34, { size: 10, weight: 800, color: dark ? C.lime : C.coralDeep, align: 'left' });
+    g.fillStyle = dark ? 'rgba(255,255,255,0.15)' : C.line; g.beginPath(); g.roundRect(18, 60, w - 36, 5, 2.5); g.fill();
+    g.fillStyle = dark ? C.lime : C.primary; g.beginPath(); g.roundRect(18, 60, (w - 36) * frac, 5, 2.5); g.fill();
+  }
+  function tag(g, cx, y, S, dark) {
+    const s = `TİZE DOĞRU · ${S.reached.length} NOTA`;
+    g.font = '800 10px Manrope, system-ui, sans-serif'; const tw = g.measureText(s).width + 22;
+    g.fillStyle = dark ? 'rgba(255,255,255,0.12)' : C.soft; g.beginPath(); g.roundRect(cx - tw / 2, y - 11, tw, 22, 11); g.fill();
+    T(g, s, cx, y, { size: 10, weight: 800, color: dark ? C.lime : C.primary });
+  }
+  function skip(g, w, h, dark, alpha = 1) {
+    if (alpha <= 0.01) return; g.save(); g.globalAlpha *= alpha;
+    g.fillStyle = dark ? 'rgba(255,255,255,0.08)' : C.card; g.strokeStyle = dark ? 'rgba(255,255,255,0.18)' : C.line; g.lineWidth = 1;
+    g.beginPath(); g.roundRect(18, h - 64, w - 36, 44, 22); g.fill(); g.stroke();
+    T(g, 'Tizde sınırım bu, pese geç', w / 2 + 8, h - 42, { size: 12.5, weight: 700, color: dark ? '#FFFFFF' : C.ink });
+    g.restore();
+  }
+  // "Your turn" chip: a mic badge with rings driven by the voice.
+  function turnBadge(g, x, y, S, r, alpha, col = C.coral, ringCol = C.coral) {
+    if (alpha <= 0.01) return; g.save(); g.globalAlpha *= alpha;
+    const live = S.phase === 'listen' ? S.amp : 0.25 + 0.15 * Math.sin(S.t * 5);
+    for (let i = 0; i < 3; i++) { const p = (S.t * (0.6 + live) + i / 3) % 1; g.beginPath(); g.arc(x, y, r + p * r * 1.3, 0, Math.PI * 2); g.strokeStyle = rgba(ringCol, (1 - p) * (1 - p) * 0.55); g.lineWidth = 2; g.stroke(); }
+    const s = r * (1 + 0.08 * live);
+    const gr = g.createRadialGradient(x - s * 0.3, y - s * 0.4, 2, x, y, s); gr.addColorStop(0, rgba(mixA(col, [255, 255, 255], 0.35), 1)); gr.addColorStop(1, col);
+    g.save(); g.shadowColor = rgba(col, 0.6); g.shadowBlur = 16; g.beginPath(); g.arc(x, y, s, 0, Math.PI * 2); g.fillStyle = gr; g.fill(); g.restore();
+    mic(g, x, y + 1, s * 0.55, '#FFFFFF', 2.2);
+    g.restore();
+  }
+  const frac = S => (S.i + (S.phase === 'result' ? 1 : 0.5)) / 8;
+
+  // ---------- the five views ----------
+  const VIEWS = [];
+
+  VIEWS.push({
+    name: 'Sahne büyür',
+    text: 'Piyano bitince başlık "Sıra sende" çipine dönüşür, nota yukarı küçülür ve ses dalgası alanı ekranın büyük kısmını kaplar. Altında 3 saniyelik ilerleme çubuğu dolar. Bitince dalga küçülür, nabız dizisi aşağıdan kayarak gelir ve sonucu gösterir.',
+    init() { this.tr = new Track(); },
+    draw(g, w, h, t, dt, S) {
+      this.tr.step(dt, S);
+      const L = singMode(S), Cm = chainMode(S);
+      g.fillStyle = C.cream; g.fillRect(0, 0, w, h);
+      header(g, w, S, false, frac(S)); tag(g, w / 2, 92, S, false);
+      const ny = lerp(136, 124, L);
+      T(g, name(S.note), w / 2, ny, { size: lerp(40, 28, L), weight: 800 });
+      T(g, `${S.i + 1}. nota · 1. deneme`, w / 2, ny + lerp(28, 21, L), { size: 11, color: C.muted, alpha: 1 - L * 0.4 });
+      const ty = 196;
+      if (S.phase === 'piano') { speaker(g, w / 2 - 34, ty, 11, C.ink); T(g, 'Dinle', w / 2 + 10, ty, { size: 19, weight: 800 }); }
+      else if (S.phase === 'result') { T(g, resultText(S), w / 2, ty, { size: 15, weight: 800, color: S.res === 'm' ? C.limeDeep : C.coralDeep }); }
+      if (L > 0.01) {
+        g.save(); g.globalAlpha = L;
+        g.fillStyle = C.coralSoft; g.beginPath(); g.roundRect(w / 2 - 102, ty - 20, 204, 40, 20); g.fill();
+        mic(g, w / 2 - 78, ty + 1, 11, C.coralDeep);
+        T(g, 'Şimdi sen söyle', w / 2 + 10, ty, { size: 16, weight: 800, color: C.coralDeep });
+        g.restore();
+        T(g, `${name(S.note)} notasını "aa" ile 3 saniye tut`, w / 2, ty + 32, { size: 11.5, color: C.muted, alpha: L });
+      }
+      const wy = lerp(226, 246, L), wh = lerp(168, 268, L);
+      drawWaves(g, 14, wy, w - 28, wh, this.tr, t, S, { power: L });
+      if (S.phase === 'listen' || (S.phase === 'cue' && L > 0.5)) {
+        const k = S.phase === 'listen' ? S.pk : 0;
+        g.fillStyle = C.line; g.beginPath(); g.roundRect(48, wy + wh + 14, w - 96, 6, 3); g.fill();
+        g.fillStyle = C.coral; g.beginPath(); g.roundRect(48, wy + wh + 14, (w - 96) * k, 6, 3); g.fill();
+        T(g, S.phase === 'listen' ? `${(3 - 3 * k).toFixed(1)} sn` : 'hazır', w / 2, wy + wh + 32, { size: 11, weight: 800, color: C.coralDeep });
+      }
+      drawChain(g, 0, lerp(h - 140, h - 100, 1 - Cm) + 0, w, S, this, { alpha: Cm });
+      skip(g, w, h, false, 1 - L * 0.6);
+    }
+  });
+
+  VIEWS.push({
+    name: 'Geri sayım',
+    text: 'Sıra gelince dalga alanının ortasında büyük bir 3·2·1 sayılır, böylece ne zaman başlayacağın kesinleşir. Sonra dalga tam genişliğe yayılır, üstte kalan saniye büyük yazılır. İlerleme tamamen gizlenmez: üstte küçük bir nota sayacı kalır, bitince zincir açılır.',
+    init() { this.tr = new Track(); },
+    draw(g, w, h, t, dt, S) {
+      this.tr.step(dt, S);
+      const L = singMode(S), Cm = chainMode(S);
+      g.fillStyle = C.cream; g.fillRect(0, 0, w, h);
+      header(g, w, S, false, frac(S));
+      tag(g, w / 2, 92, S, false);
+      T(g, name(S.note), w / 2, lerp(136, 128, L), { size: lerp(40, 30, L), weight: 800 });
+      const ty = lerp(186, 172, L);
+      if (S.phase === 'piano') { speaker(g, w / 2 - 34, ty, 11, C.ink); T(g, 'Dinle', w / 2 + 10, ty, { size: 19, weight: 800 }); }
+      else if (S.phase === 'result') T(g, resultText(S), w / 2, ty, { size: 15, weight: 800, color: S.res === 'm' ? C.limeDeep : C.coralDeep });
+      else if (S.phase === 'cue') T(g, 'Hazır ol', w / 2, ty, { size: 18, weight: 800, color: C.coralDeep, alpha: L });
+      else {
+        mic(g, w / 2 - 84, ty, 11, C.coralDeep);
+        T(g, 'Şimdi sen söyle', w / 2 + 8, ty, { size: 18, weight: 800, color: C.coralDeep });
+        T(g, `${(3 - 3 * S.pk).toFixed(1)}`, w / 2, ty + 34, { size: 30, weight: 800, color: C.coral });
+        T(g, 'saniye', w / 2, ty + 56, { size: 10.5, weight: 700, color: C.muted });
+      }
+      const wy = lerp(214, 262, L), wh = lerp(180, 290, L);
+      drawWaves(g, lerp(14, 6, L), wy, w - lerp(28, 12, L), wh, this.tr, t, S, { power: L });
+      if (S.phase === 'listen') { g.fillStyle = C.coral; g.fillRect(lerp(14, 6, L), wy - 4, (w - 12) * S.pk, 3); }
+      if (S.phase === 'cue') {
+        const n = 3 - Math.min(2, Math.floor(S.pt / (DUR.cue / 3))), k = (S.pt % (DUR.cue / 3)) / (DUR.cue / 3);
+        const cx = w / 2, cy = wy + wh / 2;
+        g.beginPath(); g.arc(cx, cy, 44, 0, Math.PI * 2); g.fillStyle = 'rgba(255,254,250,0.92)'; g.fill();
+        g.beginPath(); g.arc(cx, cy, 44, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * (1 - k)); g.strokeStyle = C.coral; g.lineWidth = 4; g.lineCap = 'round'; g.stroke();
+        T(g, String(n), cx, cy + 2, { size: 40 * (1 + 0.15 * (1 - ease(k * 3))), weight: 800, color: C.ink });
+      }
+      // mini counter while singing
+      const mini = 1 - Cm;
+      if (mini > 0.01) {
+        g.save(); g.globalAlpha = mini;
+        g.fillStyle = C.card; g.strokeStyle = C.line; g.lineWidth = 1; g.beginPath(); g.roundRect(w - 96, 80, 80, 24, 12); g.fill(); g.stroke();
+        for (let i = 0; i < 3; i++) { const mk = S.marks.get(NOTES[i].m); g.beginPath(); g.arc(w - 82 + i * 12, 92, 4, 0, Math.PI * 2); g.fillStyle = mk === 'm' ? C.lime : mk ? C.coral : C.line; g.fill(); }
+        T(g, `${S.reached.length} nota`, w - 34, 92, { size: 9.5, weight: 800, color: C.ink });
+        g.restore();
+      }
+      drawChain(g, 0, lerp(h - 140, h - 96, 1 - Cm), w, S, this, { alpha: Cm });
+      skip(g, w, h, false, 1 - L * 0.6);
+    }
+  });
+
+  VIEWS.push({
+    name: 'Mor sahne',
+    text: 'Sıra sana gelince bütün ekran uygulamanın mor sahne rengine geçer: ışıklar kararır, dalgalar kendinden parlar, "SIRA SENDE" lime yazılır. Tek odak senin sesin. Bitince ekran krem rengine geri döner ve ilerleme orada görünür.',
+    init() { this.tr = new Track(); },
+    draw(g, w, h, t, dt, S) {
+      this.tr.step(dt, S);
+      const L = singMode(S), Cm = chainMode(S), dark = L > 0.5;
+      g.fillStyle = rgba(mixA(C.cream, C.hero, L), 1); g.fillRect(0, 0, w, h);
+      if (L > 0.01) { const sg = g.createRadialGradient(w / 2, h * 0.55, 10, w / 2, h * 0.55, h * 0.6); sg.addColorStop(0, `rgba(116,85,219,${0.45 * L})`); sg.addColorStop(1, 'rgba(116,85,219,0)'); g.fillStyle = sg; g.fillRect(0, 0, w, h); }
+      header(g, w, S, dark, frac(S)); tag(g, w / 2, 92, S, dark);
+      const ink = rgba(mixA(C.ink, [255, 255, 255], L), 1);
+      T(g, name(S.note), w / 2, lerp(136, 132, L), { size: lerp(40, 46, L), weight: 800, color: ink });
+      const ty = 192;
+      if (S.phase === 'piano') { speaker(g, w / 2 - 34, ty, 11, C.ink); T(g, 'Dinle', w / 2 + 10, ty, { size: 19, weight: 800 }); }
+      else if (S.phase === 'result') T(g, resultText(S), w / 2, ty, { size: 15, weight: 800, color: S.res === 'm' ? C.limeDeep : C.coralDeep, alpha: 1 - L });
+      if (L > 0.01) {
+        T(g, 'SIRA SENDE', w / 2, ty - 8, { size: 12, weight: 800, color: C.lime, alpha: L });
+        T(g, 'Şimdi sen söyle', w / 2, ty + 16, { size: 20, weight: 800, color: '#FFFFFF', alpha: L });
+        T(g, `"aa" ile 3 saniye · ${name(S.note)}`, w / 2, ty + 40, { size: 11.5, color: '#CFC4E6', alpha: L });
+      }
+      const wy = lerp(226, 254, L), wh = lerp(168, 262, L);
+      drawWaves(g, 14, wy, w - 28, wh, this.tr, t, S, { power: L, dark: L > 0.5 });
+      if (S.phase === 'listen') {
+        const cx = w / 2, cy = wy + wh + 24;
+        g.beginPath(); g.arc(cx, cy, 16, 0, Math.PI * 2); g.strokeStyle = 'rgba(255,255,255,0.15)'; g.lineWidth = 3; g.stroke();
+        g.beginPath(); g.arc(cx, cy, 16, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * S.pk); g.strokeStyle = C.lime; g.lineWidth = 3; g.lineCap = 'round'; g.stroke();
+        mic(g, cx, cy + 1, 8, '#FFFFFF');
+      }
+      drawChain(g, 0, lerp(h - 140, h - 100, 1 - Cm), w, S, this, { alpha: Cm });
+      skip(g, w, h, dark, 1 - L * 0.85);
+    }
+  });
+
+  VIEWS.push({
+    name: 'Kart çevrilir',
+    text: 'Ortada tek bir kart var ve her aşamada döner. Önce mor "Önce dinle" kartı, sonra mercan çerçeveli "Sıra sende" kartı: büyük dalga ve geri sayım. En son sonuç kartı: tuttu ya da kaçtı yazısı ve ilerleme zinciri. Her an ne yapacağın tek bir kartta.',
+    init() { this.tr = new Track(); },
+    draw(g, w, h, t, dt, S) {
+      this.tr.step(dt, S);
+      g.fillStyle = C.cream; g.fillRect(0, 0, w, h);
+      header(g, w, S, false, frac(S)); tag(g, w / 2, 92, S, false);
+      // Which face shows, and how far the flip into it has gone.
+      const face = S.phase === 'piano' ? 'piano' : S.phase === 'result' ? 'result' : 'mic';
+      const fk = S.phase === 'cue' ? S.pt / 0.5 : S.phase === 'piano' || S.phase === 'result' ? S.pt / 0.5 : 1;
+      const shown = fk < 0.5 && S.phase !== 'listen' ? (face === 'mic' ? 'piano' : face === 'result' ? 'mic' : (S.i === 0 && S.pt < 0.5 ? 'piano' : 'result')) : face;
+      const sx = Math.max(0.02, Math.abs(Math.cos(clamp(fk, 0, 1) * Math.PI)));
+      const cx = w / 2, top = 118, cw = w - 28, ch = h - 210;
+      g.save(); g.translate(cx, 0); g.scale(sx, 1); g.translate(-cx, 0);
+      const fill = shown === 'piano' ? C.soft : shown === 'mic' ? C.card : (S.res === 'm' ? C.limeSoft : C.coralSoft);
+      const stroke = shown === 'mic' ? C.coral : shown === 'piano' ? '#D9CEF7' : (S.res === 'm' ? C.limeD : '#F4B4AE');
+      g.save(); g.shadowColor = 'rgba(41,34,56,0.12)'; g.shadowBlur = 18; g.shadowOffsetY = 6;
+      g.fillStyle = fill; g.beginPath(); g.roundRect(14, top, cw, ch, 28); g.fill(); g.restore();
+      g.strokeStyle = stroke; g.lineWidth = shown === 'mic' ? 2.5 : 1.5; g.beginPath(); g.roundRect(14, top, cw, ch, 28); g.stroke();
+      if (shown === 'piano') {
+        T(g, 'ÖNCE DİNLE', cx, top + 30, { size: 10.5, weight: 800, color: C.primary });
+        T(g, name(S.note), cx, top + 68, { size: 44, weight: 800 });
+        speaker(g, cx, top + 114, 14, C.primary);
+        drawWaves(g, 22, top + 140, cw - 16, 170, this.tr, t, S, { power: 0 });
+        T(g, 'Piyano notayı çalıyor', cx, top + ch - 30, { size: 12, color: C.muted });
+      } else if (shown === 'mic') {
+        T(g, 'SIRA SENDE', cx, top + 28, { size: 10.5, weight: 800, color: C.coralDeep });
+        T(g, `Şimdi sen söyle · ${name(S.note)}`, cx, top + 54, { size: 17, weight: 800 });
+        T(g, '"aa" ile 3 saniye tut', cx, top + 76, { size: 11.5, color: C.muted });
+        drawWaves(g, 22, top + 92, cw - 16, ch - 160, this.tr, t, S, { power: 1 });
+        const k = S.phase === 'listen' ? S.pk : 0, by = top + ch - 44;
+        g.fillStyle = C.line; g.beginPath(); g.roundRect(46, by, cw - 64, 6, 3); g.fill();
+        g.fillStyle = C.coral; g.beginPath(); g.roundRect(46, by, (cw - 64) * k, 6, 3); g.fill();
+        T(g, S.phase === 'listen' ? `${(3 - 3 * k).toFixed(1)} sn` : 'başla', cx, by + 20, { size: 11, weight: 800, color: C.coralDeep });
+      } else {
+        T(g, S.res === 'm' ? 'TUTTU' : 'TEKRAR DENE', cx, top + 30, { size: 10.5, weight: 800, color: S.res === 'm' ? C.limeDeep : C.coralDeep });
+        T(g, name(S.note), cx, top + 70, { size: 44, weight: 800 });
+        T(g, resultText(S), cx, top + 112, { size: 14, weight: 800, color: S.res === 'm' ? C.limeDeep : C.coralDeep });
+        drawChain(g, 14, top + 196, cw, S, this, { alpha: 1 });
+        T(g, `${S.reached.length} nota tutturuldu`, cx, top + ch - 34, { size: 12, color: C.muted });
+      }
+      g.restore();
+      if (shown !== 'result') drawChain(g, 0, h - 1000, w, S, this, { alpha: 0 });
+      skip(g, w, h, false, 1);
+    }
+  });
+
+  VIEWS.push({
+    name: 'Spot ışığı',
+    text: 'Sıra sana gelince ekranın geri kalanı yavaşça kararır, ışık yalnız ses dalgasına düşer. Dalganın üstünde sesinle nefes alan büyük bir mikrofon rozeti ve "Şimdi sen söyle" yazar. Bitince ışıklar açılır, nabız dizisi sonuçla birlikte görünür.',
+    init() { this.tr = new Track(); },
+    draw(g, w, h, t, dt, S) {
+      this.tr.step(dt, S);
+      const L = singMode(S), Cm = chainMode(S);
+      g.fillStyle = C.cream; g.fillRect(0, 0, w, h);
+      header(g, w, S, false, frac(S)); tag(g, w / 2, 92, S, false);
+      T(g, name(S.note), w / 2, 136, { size: 40, weight: 800 });
+      const ty = 192;
+      if (S.phase === 'piano') { speaker(g, w / 2 - 34, ty, 11, C.ink); T(g, 'Dinle', w / 2 + 10, ty, { size: 19, weight: 800 }); }
+      else if (S.phase === 'result') T(g, resultText(S), w / 2, ty, { size: 15, weight: 800, color: S.res === 'm' ? C.limeDeep : C.coralDeep });
+      const wy = lerp(226, 272, L), wh = lerp(168, 236, L);
+      drawChain(g, 0, lerp(h - 140, h - 100, 1 - Cm), w, S, this, { alpha: Cm });
+      skip(g, w, h, false, 1);
+      if (L > 0.01) {
+        g.save(); g.beginPath(); g.rect(0, 0, w, h); g.roundRect(8, wy - 8, w - 16, wh + 16, 26);
+        g.fillStyle = `rgba(30,22,48,${0.72 * L})`; g.fill('evenodd'); g.restore();
+        const sg = g.createRadialGradient(w / 2, wy + wh / 2, 10, w / 2, wy + wh / 2, w * 0.7); sg.addColorStop(0, `rgba(255,254,250,${0.25 * L})`); sg.addColorStop(1, 'rgba(255,254,250,0)');
+        g.fillStyle = sg; g.fillRect(0, wy, w, wh);
+        turnBadge(g, w / 2, wy - 66, S, 30, L);
+        T(g, 'Şimdi sen söyle', w / 2, wy - 18, { size: 18, weight: 800, color: '#FFFFFF', alpha: L });
+        T(g, `${name(S.note)} · "aa" ile 3 saniye`, w / 2, wy + wh + 26, { size: 12, weight: 700, color: '#E9E3F3', alpha: L });
+        if (S.phase === 'listen') { g.fillStyle = 'rgba(255,255,255,0.18)'; g.beginPath(); g.roundRect(60, wy + wh + 44, w - 120, 5, 2.5); g.fill(); g.fillStyle = C.lime; g.beginPath(); g.roundRect(60, wy + wh + 44, (w - 120) * S.pk, 5, 2.5); g.fill(); }
+      }
+      g.save(); g.beginPath(); g.roundRect(8, wy - 8, w - 16, wh + 16, 26); g.clip();
+      if (L > 0.01) { g.fillStyle = rgba(C.card, L); g.fillRect(8, wy - 8, w - 16, wh + 16); }
+      drawWaves(g, 14, wy, w - 28, wh, this.tr, t, S, { power: L });
+      g.restore();
+      if (L > 0.01) { g.save(); g.globalAlpha = L; g.strokeStyle = rgba(C.coral, 0.6 + 0.3 * Math.sin(t * 4)); g.lineWidth = 2; g.beginPath(); g.roundRect(8, wy - 8, w - 16, wh + 16, 26); g.stroke(); g.restore(); }
+    }
+  });
+
+  // ---------- page wiring ----------
+  const grid = document.getElementById('grid');
+  const views = VIEWS.map((v, i) => {
+    const el = document.createElement('article'); el.className = 'view';
+    el.innerHTML = `<h2><span class="id">${String(i + 1).padStart(2, '0')}</span>${v.name}</h2>
+      <div class="device"><canvas role="img" aria-label="${v.name}: ses aralığı ekranı, sıra sende akışı"></canvas></div>
+      <p>${v.text}</p>`;
+    grid.appendChild(el); v.init();
+    return { v, canvas: el.querySelector('canvas'), w: 0, h: 0 };
+  });
+  function size() {
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    for (const o of views) {
+      const w = o.canvas.clientWidth, h = o.canvas.clientHeight; if (w === o.w && h === o.h) continue;
+      o.w = w; o.h = h; o.canvas.width = Math.round(w * dpr); o.canvas.height = Math.round(h * dpr);
+      o.ctx = o.canvas.getContext('2d'); o.scale = w / 304; o.ctx.setTransform(dpr * o.scale, 0, 0, dpr * o.scale, 0, 0);
+    }
+  }
+  new ResizeObserver(size).observe(grid); size();
+  const playB = document.getElementById('play'), steps = [...document.querySelectorAll('.step')];
+  let playing = !matchMedia('(prefers-reduced-motion: reduce)').matches, clock = playing ? 0 : PER + DUR.piano + DUR.cue + 1.5, last = performance.now(), prevU = 0, ui = 0;
+  const setPlay = p => { playing = p; playB.setAttribute('aria-pressed', String(p)); playB.textContent = p ? 'Oynatılıyor' : 'Duraklatıldı'; };
+  setPlay(playing);
+  playB.addEventListener('click', () => setPlay(!playing));
+  document.getElementById('restart').addEventListener('click', () => { clock = 0; views.forEach(o => { o.v.init(); o.v.att = undefined; o.v.fx = undefined; }); setPlay(true); });
+  function frame(now) {
+    // The first frame's timestamp can precede the start time; never step back.
+    const dt = clamp((now - last) / 1000, 0, 0.05); last = now; if (playing) clock += dt;
+    const u = clock % TOTAL;
+    if (u < prevU) views.forEach(o => { o.v.init(); o.v.att = undefined; o.v.fx = undefined; });
+    prevU = u;
+    const S = stateAt(u, clock), sdt = playing ? dt : 0;
+    for (const o of views) {
+      if (!o.ctx) continue;
+      const w = o.w / o.scale, h = o.h / o.scale;
+      o.ctx.clearRect(0, 0, w, h); o.ctx.save(); o.v.draw(o.ctx, w, h, clock, sdt, S); o.ctx.restore();
+    }
+    ui += dt; if (ui > 0.1) { ui = 0; for (const s of steps) s.dataset.on = String(s.dataset.k === S.phase); }
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+</script>

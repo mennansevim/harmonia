@@ -5,6 +5,19 @@
 **Sahip:** Mennan Sevim  
 **Platform:** Flutter mobil uygulama; ileride web ve öğretmen paneli
 
+**2026-11-06 — FX-06 "sıra sende" sahnesi (aralık testi):** Kullanıcı
+"Şimdi sen söyle" anının anlaşılmadığını söyledi; 5 canlı akış taslağı
+(`docs/design/range_scene_lab.html`, yayınlı) arasından "Sahne büyür"
+seçildi. Dinleme başlayınca 0,55 sn'lik geçişle nota adı geri çekilir,
+başlık mercan "Şimdi sen söyle" çipine ve "A3 notasını "aa" ile 3 saniye
+tut" açıklamasına dönüşür, ses dalgası alanı 230'dan 340'a büyür, nabız
+dizisinin yerini 3 sn'lik geri sayım çubuğu alır; sonuçta dizi geri gelir.
+Ayrı bir bekleme adımı eklenmedi: kayıt süresi ve akışı değişmedi, geri
+sayım yalnız gösterge. Dalgalarda ~0,1 sn'den kısa ses parçaları (gürültü)
+artık çizilmiyor. 1 yeni widget testi; tam test **1309 geçti, 2 skip**;
+analyze ve format temiz. Simülatörde piyano → sıra sende → sayım görüldü;
+**gerçek ses ve cihazla görülmedi.**
+
 **2026-11-05 — FX-05 nabız dizisi (aralık testi nota haritası):** Kullanıcı
 20 taslak arasından (`docs/design/range_map_lab.html`, yayınlı taslak
 sayfası) "Nabız dizisi"ni seçti. Merdivendeki klavye (`KeyboardMap`)

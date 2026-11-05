@@ -304,4 +304,63 @@ void main() {
     expect(find.byKey(const Key('range_result')), findsOneWidget);
     expect(find.text('Sol3 – La3'), findsOneWidget);
   });
+
+  testWidgets('the singer gets a clear cue, a timer and the chain after', (
+    tester,
+  ) async {
+    await _pumpHome(tester);
+    final singer = _HeldSinger();
+    Navigator.of(tester.element(find.byType(HomeShell))).push(
+      MaterialPageRoute<void>(
+        builder: (_) => RangeTestScreen(
+          probe: singer,
+          playNote: (_) async {},
+          pause: const Duration(milliseconds: 800),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Başla'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.tap(find.text('La3 notasından başla'));
+    for (var i = 0; i < 40; i++) {
+      await tester.pump(const Duration(milliseconds: 20));
+    }
+    // Singing: the cue says what to do, the timer runs, the chain steps away.
+    expect(find.text('Şimdi sen söyle'), findsOneWidget);
+    expect(find.text('La3 notasını "aa" ile 3 saniye tut'), findsOneWidget);
+    expect(find.byKey(const Key('pulse_chain')), findsNothing);
+    singer.release();
+    for (var i = 0; i < 40; i++) {
+      await tester.pump(const Duration(milliseconds: 20));
+    }
+    // The take is judged: the progress chain is back.
+    expect(find.byKey(const Key('pulse_chain')), findsOneWidget);
+    await tester.pump(const Duration(seconds: 1));
+    await tester.pumpWidget(const SizedBox());
+  });
+}
+
+/// Holds every take open until [release], so a test can look at the
+/// singing step.
+class _HeldSinger implements RangeProbe {
+  Completer<void> _hold = Completer<void>();
+  void release() {
+    _hold.complete();
+    _hold = Completer<void>();
+  }
+
+  @override
+  Future<bool> requestPermission() async => true;
+  @override
+  Stream<double> get levelDb => const Stream.empty();
+  @override
+  Future<RangeTake> record(Duration duration) async {
+    await _hold.future;
+    return RangeTake.pitch(midiToHz(57));
+  }
+
+  @override
+  Future<void> close() async {}
 }

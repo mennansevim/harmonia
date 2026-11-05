@@ -3478,3 +3478,28 @@ Commit yok.
 - Simülatörde piyano aşaması, dönüş ve kaçırma işareti görüldü; simülatör
   mikrofonu sessiz olduğundan tutturma görünümü test içi PNG ile kontrol
   edildi. Gerçek cihaz ve sesle doğrulanmadı.
+
+## 2026-11-06 — FX-06 "sıra sende" sahnesi, aralık testi
+
+**Kullanıcı isteği:** "Şimdi sen söyle" anlaşılır değil; ekran büyüsün,
+söylerken ses dalgası belirginleşsin, ilerleme söyleme bitince görünsün.
+5 animasyonlu akış taslağı üretildi; kullanıcı 01 "Sahne büyür"ü seçti.
+Commit yok.
+
+### Uygulananlar
+
+- `lib/trainer/koro/range_test.dart`: `_LadderView` içeriği
+  `TweenAnimationBuilder` ile dinleme aşamasına göre canlanır (azaltılmış
+  harekette anında); `_TurnCue` (mercan çip + açıklama, `range_title`
+  anahtarı) ve `_TakeTimer` (yalnız gösterge geri sayım); dizi ve sayaç
+  aynı yuvayı paylaşır, ekran zıplamaz.
+- `lib/trainer/koro/voice_waves.dart`: 7 örnekten kısa parçalar çizilmez.
+- `test/trainer/range_ladder_test.dart`: söyleme anında ipucu ve
+  açıklama görünür, dizi gizli; sonuçta dizi geri gelir.
+- `docs/design/range_scene_lab.html`: 5 akış taslağı.
+
+### Doğrulama ve sınırlar
+
+- Analyze ve format temiz; tam test **1309 geçti, 2 skip**.
+- Simülatörde piyano, sıra sende ve geri sayım görüldü. Gerçek ses ve
+  cihazla doğrulanmadı.

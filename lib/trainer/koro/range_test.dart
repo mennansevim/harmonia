@@ -709,80 +709,142 @@ class _LadderView extends StatelessWidget {
             color: TC.koro,
           ),
           Expanded(
-            child: FitOrScroll(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    PitchClass.midiName(ladder.currentMidi, notation),
-                    key: const Key('range_note'),
-                    style: TT.display,
-                  ),
-                  Text(
-                    tr(
-                      '${ladder.attempt}. deneme',
-                      'Attempt ${ladder.attempt}',
+            // When it is the singer's turn the stage grows: the note name
+            // steps back, the waves take the room the progress chain gave
+            // up, and a timer counts the take. The chain returns after.
+            child: TweenAnimationBuilder<double>(
+              tween: Tween(end: stage == _Stage.listening ? 1 : 0),
+              duration: MediaQuery.disableAnimationsOf(context)
+                  ? Duration.zero
+                  : const Duration(milliseconds: 550),
+              curve: Curves.easeInOutCubic,
+              builder: (context, sing, _) => FitOrScroll(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Transform.scale(
+                      scale: 1 - 0.3 * sing,
+                      child: Text(
+                        PitchClass.midiName(ladder.currentMidi, notation),
+                        key: const Key('range_note'),
+                        style: TT.display,
+                      ),
                     ),
-                    style: TT.small,
-                  ),
-                  const SizedBox(height: 10),
-                  Semantics(
-                    liveRegion: true,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(icon, size: 22, color: TC.ink),
-                        const SizedBox(width: 8),
-                        Flexible(
-                          child: Text(
-                            title,
-                            key: const Key('range_title'),
-                            textAlign: TextAlign.center,
-                            style: TT.h3,
+                    Opacity(
+                      opacity: 1 - 0.4 * sing,
+                      child: Text(
+                        tr(
+                          '${ladder.attempt}. deneme',
+                          'Attempt ${ladder.attempt}',
+                        ),
+                        style: TT.small,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Semantics(
+                      liveRegion: true,
+                      child: AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 280),
+                        transitionBuilder: (child, a) => FadeTransition(
+                          opacity: a,
+                          child: ScaleTransition(
+                            scale: Tween(begin: 0.92, end: 1.0).animate(a),
+                            child: child,
                           ),
                         ),
-                      ],
+                        child: stage == _Stage.listening
+                            ? _TurnCue(
+                                key: const ValueKey('cue'),
+                                note: PitchClass.midiName(
+                                  ladder.currentMidi,
+                                  notation,
+                                ),
+                              )
+                            : Row(
+                                key: ValueKey(title),
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(icon, size: 22, color: TC.ink),
+                                  const SizedBox(width: 8),
+                                  Flexible(
+                                    child: Text(
+                                      title,
+                                      key: const Key('range_title'),
+                                      textAlign: TextAlign.center,
+                                      style: TT.h3,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  AnimatedBuilder(
-                    animation: flash,
-                    builder: (context, _) {
-                      final f = Curves.easeOut.transform(
-                        1 - (flash.value - 0.15).abs().clamp(0.0, 1.0),
-                      );
-                      final shown = flash.isAnimating ? f : 0.0;
-                      // During feedback the ladder has already moved on:
-                      // keep the judged note in view until the next one.
-                      final judged = stage == _Stage.feedback && last != null
-                          ? last!.targetMidi
-                          : ladder.currentMidi;
-                      return Column(
-                        children: [
-                          VoiceWaves(
-                            target: judged,
-                            notation: notation,
-                            pitchMidi: stage == _Stage.listening
-                                ? trace.lastOrNull
-                                : null,
-                            levelDb: level,
-                            listening: stage == _Stage.listening,
-                            reference: stage == _Stage.playing,
-                            flash: shown,
-                          ),
-                          const SizedBox(height: 14),
-                          _LadderChain(
-                            ladder: ladder,
-                            stage: stage,
-                            last: last,
-                            target: judged,
-                            notation: notation,
-                          ),
-                        ],
-                      );
-                    },
-                  ),
-                ],
+                    const SizedBox(height: 16),
+                    AnimatedBuilder(
+                      animation: flash,
+                      builder: (context, _) {
+                        final f = Curves.easeOut.transform(
+                          1 - (flash.value - 0.15).abs().clamp(0.0, 1.0),
+                        );
+                        final shown = flash.isAnimating ? f : 0.0;
+                        // During feedback the ladder has already moved on:
+                        // keep the judged note in view until the next one.
+                        final judged = stage == _Stage.feedback && last != null
+                            ? last!.targetMidi
+                            : ladder.currentMidi;
+                        return Column(
+                          children: [
+                            VoiceWaves(
+                              target: judged,
+                              notation: notation,
+                              pitchMidi: stage == _Stage.listening
+                                  ? trace.lastOrNull
+                                  : null,
+                              levelDb: level,
+                              listening: stage == _Stage.listening,
+                              reference: stage == _Stage.playing,
+                              flash: shown,
+                              height: 230 + 110 * sing,
+                            ),
+                            const SizedBox(height: 14),
+                            // Chain and timer share one slot, so the screen
+                            // never jumps between the two.
+                            SizedBox(
+                              height: 106 * (1 - sing) + 44 * sing,
+                              child: Stack(
+                                clipBehavior: Clip.none,
+                                alignment: Alignment.topCenter,
+                                children: [
+                                  if (sing < 0.99)
+                                    Opacity(
+                                      opacity: 1 - sing,
+                                      child: Transform.translate(
+                                        offset: Offset(0, 30 * sing),
+                                        child: _LadderChain(
+                                          ladder: ladder,
+                                          stage: stage,
+                                          last: last,
+                                          target: judged,
+                                          notation: notation,
+                                        ),
+                                      ),
+                                    ),
+                                  if (stage == _Stage.listening)
+                                    Opacity(
+                                      opacity: sing,
+                                      child: _TakeTimer(
+                                        key: ValueKey(ladder.log.length),
+                                        length: _takeLength,
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -800,6 +862,92 @@ class _LadderView extends StatelessWidget {
       ),
     );
   }
+}
+
+/// The singer's cue: what to do now, said plainly.
+class _TurnCue extends StatelessWidget {
+  const _TurnCue({super.key, required this.note});
+  final String note;
+  @override
+  Widget build(BuildContext context) => Column(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      Container(
+        padding: const EdgeInsets.fromLTRB(16, 9, 20, 9),
+        decoration: BoxDecoration(
+          color: TC.coralSoft,
+          borderRadius: BorderRadius.circular(22),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Ic.mic, size: 20, color: TC.coralDeep),
+            const SizedBox(width: 8),
+            Text(
+              tr('Şimdi sen söyle', 'Now you sing'),
+              key: const Key('range_title'),
+              style: TT.h3.copyWith(color: TC.coralDeep),
+            ),
+          ],
+        ),
+      ),
+      const SizedBox(height: 6),
+      Text(
+        tr(
+          '$note notasını "aa" ile 3 saniye tut',
+          'Hold $note on "aa" for 3 seconds',
+        ),
+        textAlign: TextAlign.center,
+        style: TT.small,
+      ),
+    ],
+  );
+}
+
+/// Counts the take down so the singer knows how long to hold. Display only:
+/// the recording itself runs for [length] regardless.
+class _TakeTimer extends StatefulWidget {
+  const _TakeTimer({super.key, required this.length});
+  final Duration length;
+  @override
+  State<_TakeTimer> createState() => _TakeTimerState();
+}
+
+class _TakeTimerState extends State<_TakeTimer>
+    with SingleTickerProviderStateMixin {
+  late final _c = AnimationController(vsync: this, duration: widget.length)
+    ..forward();
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => AnimatedBuilder(
+    animation: _c,
+    builder: (context, _) {
+      final left = (widget.length.inMilliseconds * (1 - _c.value) / 1000)
+          .toStringAsFixed(1);
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 28),
+            child: ProgressBar(value: _c.value, color: TC.coral, height: 6),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            tr('${left.replaceAll('.', ',')} sn', '$left s'),
+            style: TT.small.copyWith(
+              fontWeight: FontWeight.w800,
+              color: TC.coralDeep,
+            ),
+          ),
+        ],
+      );
+    },
+  );
 }
 
 /// The run as a pulse chain: reached notes lit, misses marked, the target

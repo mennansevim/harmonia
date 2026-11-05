@@ -456,6 +456,9 @@ class _WavesPainter extends CustomPainter {
       }
     }
     if (run.isNotEmpty) runs.add(run);
+    // A blip shorter than ~0.1 s is noise, not a sung phrase: drawing it
+    // would stack the layers into stray dashes.
+    runs.removeWhere((r) => r.length < 7);
 
     Color tone(WaveSample s, {bool fill = false}) =>
         s.piano ? _piano : waveColor(s.cents, fill: fill);
