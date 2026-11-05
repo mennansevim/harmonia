@@ -3453,3 +3453,28 @@ ShazamKit/müzik tanıma yok. Commit yapılmadı.
 - Simülatörde piyano dalgası görüldü; ses dalgası test içi PNG ile kontrol
   edildi. Gerçek iPhone, gerçek ses ve 120 Hz his doğrulanmadı.
 
+## 2026-11-05 — FX-05 nabız dizisi, aralık testi nota haritası
+
+**Kullanıcı isteği:** Merdivendeki klavyeyi değiştir; notalar tize ve pese
+giderken işaretlensin; estetik ve profesyonel. 20 canlı taslak üretildi
+(`docs/design/range_map_lab.html`), kullanıcı 15 "Nabız dizisi"ni seçti.
+Commit yok.
+
+### Uygulananlar
+
+- `lib/trainer/koro/pulse_chain.dart`: `ChainMark`, `ChainPhase`,
+  `chainMarks(log)` (tutturulan kalır; yoksa son kaçırma/yanlış oktav),
+  `PulseChain` (AnimationController saati, yay fiziği, efekt listesi,
+  `RepaintBoundary`, azaltılmış harekette dalga/nabız/efekt yok).
+- `lib/trainer/koro/range_test.dart`: `_LadderKeys` yerine `_LadderChain`;
+  geri bildirimde hedef `last.targetMidi` (hem zincir hem dalgalar).
+- `test/trainer/pulse_chain_test.dart`: işaret kuralları; tüm aşamalarda
+  çizim ve temiz dispose.
+
+### Doğrulama ve sınırlar
+
+- `flutter analyze --no-pub` temiz; `dart format` temiz; tam test
+  **1308 geçti, 2 skip**.
+- Simülatörde piyano aşaması, dönüş ve kaçırma işareti görüldü; simülatör
+  mikrofonu sessiz olduğundan tutturma görünümü test içi PNG ile kontrol
+  edildi. Gerçek cihaz ve sesle doğrulanmadı.

@@ -1,0 +1,1167 @@
+<title>Aralık Haritası</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap">
+<style>
+/* Layout: one shared simulated range run drives ten phone-width map designs in a grid. */
+:root {
+  --bg: #F3EFE8; --fg: #292238; --muted: #6F6877; --panel: #FFFEFA; --line: #E5DEE7;
+  --accent: #6849CC; --accent-soft: #EEE7FF;
+  --font: "Manrope", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --bg: #17121F; --fg: #F1ECF6; --muted: #B3AABF; --panel: #221B2D; --line: #382E46; --accent: #B9A5FF; --accent-soft: #2E2440; color-scheme: dark; }
+}
+:root[data-theme="dark"] { --bg: #17121F; --fg: #F1ECF6; --muted: #B3AABF; --panel: #221B2D; --line: #382E46; --accent: #B9A5FF; --accent-soft: #2E2440; color-scheme: dark; }
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--font);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 28px 48px;
+}
+.wrap { max-width: 1180px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr); gap: 22px; }
+header { display: grid; gap: 8px; max-width: 70ch; }
+.eyebrow { font-size: 11px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--accent); }
+h1 { font-size: clamp(28px, 4vw, 40px); line-height: 1.05; margin: 0; font-weight: 800; letter-spacing: -.02em; text-wrap: balance; }
+header p { margin: 0; color: var(--muted); font-size: 14.5px; line-height: 1.55; }
+.legend { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { display: inline-flex; align-items: center; gap: 7px; font-size: 12.5px; font-weight: 600; padding: 5px 11px; border-radius: 99px; background: var(--panel); border: 1px solid var(--line); }
+.dot { width: 10px; height: 10px; border-radius: 50%; }
+.controls { display: flex; flex-wrap: wrap; gap: 12px 18px; align-items: center; background: var(--panel); border: 1px solid var(--line); border-radius: 20px; padding: 12px 16px; }
+.btn { font: inherit; font-size: 13px; font-weight: 700; border: 1px solid var(--line); background: var(--accent-soft); color: var(--fg); padding: 8px 14px; border-radius: 99px; cursor: pointer; }
+.btn[aria-pressed="true"] { background: var(--accent); color: #fff; border-color: transparent; }
+.btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.now { font-size: 13px; font-weight: 600; color: var(--muted); font-variant-numeric: tabular-nums; min-width: 0; }
+.now b { color: var(--fg); }
+.timeline { flex: 1 1 220px; height: 6px; border-radius: 3px; background: var(--line); position: relative; min-width: 0; }
+.timeline i { position: absolute; inset: 0 auto 0 0; border-radius: 3px; background: var(--accent); }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 420px), 1fr)); gap: 24px; }
+.concept { display: grid; gap: 10px; align-content: start; min-width: 0; }
+.concept h2 { margin: 0; font-size: 17px; font-weight: 800; display: flex; gap: 10px; align-items: baseline; }
+.concept h2 .id { font-size: 12px; font-weight: 800; color: var(--accent); letter-spacing: .1em; font-variant-numeric: tabular-nums; }
+.concept p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.5; }
+/* The frame is the app itself (light only), so its colours are fixed. */
+.phone { background: #F8F5EF; color: #292238; border: 1px solid #E5DEE7; border-radius: 28px; padding: 14px 14px 16px; display: grid; gap: 6px; box-shadow: 0 6px 0 #ECE6E7; }
+.phone .row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.phone .tag { font-size: 10.5px; font-weight: 800; letter-spacing: .12em; color: #6849CC; background: #EEE7FF; padding: 4px 10px; border-radius: 99px; white-space: nowrap; }
+.phone .st { font-size: 12px; font-weight: 700; color: #6F6877; text-align: right; }
+.phone canvas { width: 100%; height: 190px; display: block; }
+.series { display: grid; gap: 14px; min-width: 0; }
+.series-head { display: grid; gap: 4px; border-top: 1px solid var(--line); padding-top: 18px; }
+.series-head h2 { margin: 0; font-size: 20px; font-weight: 800; letter-spacing: -.01em; }
+.series-head p { margin: 0; color: var(--muted); font-size: 13.5px; max-width: 70ch; line-height: 1.5; }
+footer { color: var(--muted); font-size: 12.5px; line-height: 1.55; max-width: 72ch; }
+</style>
+
+<div class="wrap">
+  <header>
+    <span class="eyebrow">Ses aralığı · nota haritası</span>
+    <h1>Tize ve pese giderken her notayı işaretleyen yirmi harita</h1>
+    <p>Hepsi aynı örnek testi oynatıyor: A2'den başlayıp tize çıkış, D3'te iki kaçırmadan sonra pese dönüş, F2'de bitiş. Piyano çalarken hedef mor, sen söylerken mercan, tutunca lime olur. Her harita tutturulan notaları, kaçırmaları, yanlış oktavı ve yönü gösterir.</p>
+    <div class="legend" aria-label="İşaretler">
+      <span class="chip"><span class="dot" style="background:#D9F574;border:1px solid #A9CC3E"></span>Tutturuldu</span>
+      <span class="chip"><span class="dot" style="background:#FF6259"></span>Kaçtı</span>
+      <span class="chip"><span class="dot" style="background:#C98400"></span>Yanlış oktav</span>
+      <span class="chip"><span class="dot" style="background:#7455DB"></span>Hedef nota</span>
+      <span class="chip"><span class="dot" style="background:#292238"></span>Başlangıç</span>
+    </div>
+  </header>
+
+  <div class="controls">
+    <button class="btn" id="play" type="button" aria-pressed="true">Oynatılıyor</button>
+    <button class="btn" id="restart" type="button">Baştan</button>
+    <div class="timeline" aria-hidden="true"><i id="bar"></i></div>
+    <span class="now" id="now" aria-live="polite"></span>
+  </div>
+
+  <section class="series">
+    <div class="series-head">
+      <h2>Yeni seri · 11–20 · daire ve çizgi</h2>
+      <p>Daireler ve çizgilerle kurulmuş, daha hareketli on harita. Tutturunca dalga halkası ve kıvılcım, kaçırınca mercan halka; hedefe giden her hareket yaylı.</p>
+    </div>
+    <div class="grid" id="grid-new"></div>
+  </section>
+  <section class="series">
+    <div class="series-head"><h2>İlk seri · 01–10</h2></div>
+    <div class="grid" id="grid"></div>
+  </section>
+
+  <footer>Taslak. Örnek test simüle edilir; mikrofon kullanılmaz. Tutturma kararı uygulamadaki gerçek değerlendirmeden gelir (aynı oktavda ±40 sent); harita yalnız onu gösterir.</footer>
+</div>
+
+<script>
+(() => {
+  const C = { lav: '#7455DB', deep: '#5C3FB4', soft: '#EEE7FF', lime: '#D9F574', limeD: '#A9CC3E', limeDeep: '#477719', limeSoft: '#E9F8C8',
+    coral: '#FF6259', coralSoft: '#FFE3DF', amber: '#C98400', ink: '#292238', cream: '#F8F5EF', card: '#FFFEFA', line: '#E5DEE7', muted: '#6F6877', faint: '#A9A2B0' };
+  const NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+  const name = m => NAMES[((m % 12) + 12) % 12] + (Math.floor(m / 12) - 1);
+  const isBlack = m => [1, 3, 6, 8, 10].includes(((m % 12) + 12) % 12);
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const lerp = (a, b, t) => a + (b - a) * t;
+  const ease = t => 1 - Math.pow(1 - t, 3);
+  const back = t => { const c = 1.70158; return 1 + (c + 1) * Math.pow(t - 1, 3) + c * Math.pow(t - 1, 2); };
+  const hex = h => { const n = parseInt(h.slice(1), 16); return [n >> 16 & 255, n >> 8 & 255, n & 255]; };
+  const rgba = (h, a) => { const [r, g, b] = hex(h); return `rgba(${r},${g},${b},${clamp(a, 0, 1)})`; };
+  const LO = 36, HI = 57, START = 45;
+
+  // ---------- the example run ----------
+  // [note, result]: m = matched, x = missed, o = octave off.
+  const SCRIPT = [[45, 'm'], [46, 'm'], [47, 'm'], [48, 'm'], [49, 'm'], [50, 'm'], [51, 'x'], [51, 'm'], [52, 'x'], [52, 'o'], ['turn'],
+    [44, 'm'], [43, 'm'], [42, 'm'], [41, 'o'], [41, 'x'], ['end']];
+  const DUR = { piano: 0.85, listen: 1.4, feedback: 0.7, turn: 1.2, end: 3.2 };
+  const EV = []; let tt = 0; const count = {}; let d = 'up';
+  for (const s of SCRIPT) {
+    if (s[0] === 'turn') { EV.push({ k: 'turn', t0: tt, t1: tt += DUR.turn }); d = 'down'; continue; }
+    if (s[0] === 'end') { EV.push({ k: 'end', t0: tt, t1: tt += DUR.end }); continue; }
+    const [m, r] = s; count[m] = (count[m] || 0) + 1;
+    const base = { m, r, dir: d, att: count[m] };
+    for (const k of ['piano', 'listen', 'feedback']) EV.push({ ...base, k, t0: tt, t1: tt += DUR[k] });
+  }
+  const TOTAL = tt;
+  // Simulated live pitch: matched settles on the note, missed sits ~half a
+  // semitone off, octave off is the right note twelve semitones away.
+  function liveFor(e, p, t) {
+    if (p < 0.12) return null;
+    const k = (p - 0.12) / 0.88, vib = Math.sin(t * 34) * 0.05;
+    if (e.r === 'm') return e.m - 0.7 * Math.exp(-5 * k) + vib;
+    if (e.r === 'x') return e.m + (e.dir === 'up' ? -0.62 : 0.6) + 0.15 * Math.exp(-4 * k) + vib;
+    return e.m - 12 + 0.1 * Math.exp(-4 * k) + vib;
+  }
+  function stateAt(u, t) {
+    const S = { reached: new Set(), miss: new Map(), log: [], dir: 'up', target: START, phase: 'piano', att: 1, live: null, res: null, prog: 0, turnIndex: null, done: false };
+    for (const e of EV) {
+      if (e.t1 <= u) {
+        if (e.k === 'feedback') {
+          S.log.push({ m: e.m, r: e.r, dir: e.dir });
+          if (e.r === 'm') { S.reached.add(e.m); S.miss.delete(e.m); } else if (!S.reached.has(e.m)) S.miss.set(e.m, e.r);
+        }
+        if (e.k === 'turn') S.turnIndex = S.log.length;
+        continue;
+      }
+      S.phase = e.k; S.prog = clamp((u - e.t0) / (e.t1 - e.t0), 0, 1);
+      if (e.m !== undefined) { S.target = e.m; S.dir = e.dir; S.att = e.att; S.res = e.r; }
+      else if (e.k === 'turn') { S.dir = 'down'; S.target = 44; }
+      else if (e.k === 'end') { S.done = true; S.dir = 'down'; S.target = null; }
+      if (e.k === 'listen') S.live = liveFor(e, S.prog, t);
+      if (e.k === 'feedback') {
+        S.log.push({ m: e.m, r: e.r, dir: e.dir, fresh: true });
+        if (e.r === 'm') { S.reached.add(e.m); S.miss.delete(e.m); } else if (!S.reached.has(e.m)) S.miss.set(e.m, e.r);
+      }
+      break;
+    }
+    const r = [...S.reached];
+    S.low = r.length ? Math.min(...r) : null; S.high = r.length ? Math.max(...r) : null;
+    return S;
+  }
+  // Colour of the current target by phase.
+  function phaseCol(S) {
+    if (S.phase === 'piano') return C.lav;
+    if (S.phase === 'listen') return C.coral;
+    if (S.phase === 'feedback') return S.res === 'm' ? C.limeD : S.res === 'o' ? C.amber : C.coral;
+    return C.ink;
+  }
+  function statusText(S) {
+    if (S.done) return S.low !== null ? `Bitti · ${name(S.low)}–${name(S.high)}` : 'Bitti';
+    if (S.phase === 'turn') return 'Şimdi pese doğru';
+    const n = name(S.target);
+    if (S.phase === 'piano') return `Piyano · ${n}`;
+    if (S.phase === 'listen') return `Sen söyle · ${n}`;
+    return S.res === 'm' ? `Tuttu · ${n}` : S.res === 'o' ? `Yanlış oktav · ${n}` : `Kaçtı · ${n}`;
+  }
+
+  class Spring {
+    constructor(k = 170, d = 20) { this.k = k; this.d = d; this.x = null; this.v = 0; }
+    to(target, dt) {
+      if (this.x === null) { this.x = target; return target; }
+      const n = Math.max(1, Math.ceil(dt / 0.008)), h = dt / n;
+      for (let i = 0; i < n; i++) { this.v += (this.k * (target - this.x) - this.d * this.v) * h; this.x += this.v * h; }
+      return this.x;
+    }
+  }
+  // When each note first got its mark, so marks can pop in once.
+  function popper() {
+    const seen = new Map();
+    return {
+      k(key, t) { if (!seen.has(key)) seen.set(key, t); return clamp((t - seen.get(key)) / 0.45, 0, 1); },
+      reset() { seen.clear(); }
+    };
+  }
+  function keyboard(w, pad) {
+    const whites = []; for (let m = LO; m <= HI; m++) if (!isBlack(m)) whites.push(m);
+    const ww = (w - 2 * pad) / whites.length;
+    const cx = m => isBlack(m) ? pad + whites.indexOf(m - 1) * ww + ww : pad + whites.indexOf(m) * ww + ww / 2;
+    const fx = f => { const a = Math.floor(f), k = f - a; return lerp(cx(clamp(a, LO, HI)), cx(clamp(a + 1, LO, HI)), k); };
+    return { whites, ww, cx, fx };
+  }
+  function text(g, s, x, y, { size = 10, weight = 700, color = C.muted, align = 'center', base = 'middle' } = {}) {
+    g.font = `${weight} ${size}px Manrope, system-ui, sans-serif`; g.fillStyle = color; g.textAlign = align; g.textBaseline = base; g.fillText(s, x, y);
+  }
+  function chevron(g, x, y, s, dirUp, color, alpha) {
+    g.beginPath();
+    if (dirUp) { g.moveTo(x - s * 0.5, y - s * 0.6); g.lineTo(x + s * 0.4, y); g.lineTo(x - s * 0.5, y + s * 0.6); }
+    else { g.moveTo(x + s * 0.5, y - s * 0.6); g.lineTo(x - s * 0.4, y); g.lineTo(x + s * 0.5, y + s * 0.6); }
+    g.strokeStyle = rgba(color, alpha); g.lineWidth = 2; g.lineCap = 'round'; g.lineJoin = 'round'; g.stroke();
+  }
+  function xMark(g, x, y, s, color) {
+    g.beginPath(); g.moveTo(x - s, y - s); g.lineTo(x + s, y + s); g.moveTo(x + s, y - s); g.lineTo(x - s, y + s);
+    g.strokeStyle = color; g.lineWidth = 1.8; g.lineCap = 'round'; g.stroke();
+  }
+
+  const designs = [];
+
+  // 1 — refined piano: soft 3D keys, lime fills, flowing chevrons and a
+  // range bracket underneath.
+  designs.push({
+    name: 'İnce klavye',
+    text: 'Gerçekçi, yumuşak gölgeli tuşlar. Tutturulan tuş lime dolar, hedef tuş piyano çalarken basılır, sen söylerken mercan nabız atar. Üstte akan oklar yönü, altta köşeli parantez bulunan aralığı gösterir.',
+    init() { this.pop = popper(); this.cur = new Spring(); },
+    draw(g, w, h, t, dt, S) {
+      if (!S.log.length && S.phase === 'piano' && S.prog < 0.05) this.pop.reset();
+      const pad = 4, K = keyboard(w, pad), ky = 30, kh = h - 74, bh = kh * 0.6;
+      const tx = S.target !== null ? this.cur.to(K.cx(S.target), dt) : this.cur.x;
+      // direction chevrons from the start to the target
+      if (S.target !== null) {
+        const sx = K.cx(START), up = S.dir === 'up';
+        const n = Math.floor(Math.abs(tx - sx) / 14);
+        for (let i = 0; i < n; i++) {
+          const x = sx + (up ? 1 : -1) * (i * 14 + ((t * 30) % 14));
+          if ((up && x > tx - 8) || (!up && x < tx + 8)) continue;
+          chevron(g, x, 14, 7, up, up ? C.lav : C.deep, 0.25 + 0.5 * (i / Math.max(1, n)));
+        }
+      }
+      for (const m of K.whites) {
+        const x = pad + K.whites.indexOf(m) * K.ww, isT = m === S.target, press = isT && S.phase === 'piano' ? 2 * Math.sin(S.prog * Math.PI) : 0;
+        const gr = g.createLinearGradient(0, ky, 0, ky + kh);
+        const reached = S.reached.has(m), pk = reached ? ease(this.pop.k('w' + m, t)) : 0;
+        gr.addColorStop(0, reached ? rgba(C.limeSoft, 1) : C.card);
+        gr.addColorStop(1, reached ? `rgba(217,245,116,${0.35 + 0.65 * pk})` : '#F1ECE6');
+        g.fillStyle = gr; g.beginPath(); g.roundRect(x + 0.6, ky + press, K.ww - 1.2, kh, [0, 0, 6, 6]); g.fill();
+        g.strokeStyle = C.line; g.lineWidth = 1; g.stroke();
+        g.fillStyle = 'rgba(41,34,56,0.06)'; g.fillRect(x + 1, ky + kh - 4 + press, K.ww - 2, 3);
+        const mk = S.miss.get(m);
+        if (mk) { g.beginPath(); g.arc(x + K.ww / 2, ky + kh - 12, 3.2, 0, Math.PI * 2); g.fillStyle = mk === 'o' ? C.amber : C.coral; g.fill(); }
+        if (m % 12 === 0) text(g, name(m), x + K.ww / 2, ky + kh - 24, { size: 8.5, color: C.faint });
+      }
+      for (let m = LO; m <= HI; m++) if (isBlack(m)) {
+        const x = K.cx(m) - K.ww * 0.31, reached = S.reached.has(m);
+        const gr = g.createLinearGradient(0, ky, 0, ky + bh);
+        gr.addColorStop(0, reached ? '#6E8A2C' : '#3A3049'); gr.addColorStop(1, reached ? '#4F6A1C' : C.ink);
+        g.fillStyle = gr; g.beginPath(); g.roundRect(x, ky, K.ww * 0.62, bh, [0, 0, 4, 4]); g.fill();
+        const mk = S.miss.get(m);
+        if (mk) { g.beginPath(); g.arc(K.cx(m), ky + bh - 9, 2.6, 0, Math.PI * 2); g.fillStyle = mk === 'o' ? C.amber : C.coral; g.fill(); }
+      }
+      if (S.target !== null && tx !== null) {
+        const col = phaseCol(S), black = isBlack(S.target), wk = black ? K.ww * 0.66 : K.ww - 2, hk = black ? bh : kh;
+        const pulse = S.phase === 'listen' ? 0.5 + 0.5 * Math.sin(t * 6) : 0;
+        g.save(); g.shadowColor = rgba(col, 0.7); g.shadowBlur = 8 + 10 * pulse;
+        g.beginPath(); g.roundRect(tx - wk / 2, ky - 1, wk, hk + 2, 6); g.strokeStyle = col; g.lineWidth = 2.5; g.stroke(); g.restore();
+        g.beginPath(); g.moveTo(tx, ky - 5); g.lineTo(tx - 6, ky - 13); g.lineTo(tx + 6, ky - 13); g.closePath(); g.fillStyle = col; g.fill();
+      }
+      if (S.live !== null) {
+        const lx = K.fx(clamp(S.live, LO, HI)), off = S.live < LO;
+        g.beginPath(); g.arc(lx, ky + kh * 0.38, 5, 0, Math.PI * 2); g.fillStyle = rgba(C.coral, 0.9); g.fill();
+        g.strokeStyle = '#fff'; g.lineWidth = 1.5; g.stroke();
+        if (off) text(g, '8va ↓', lx + 16, ky + kh * 0.38, { size: 9, color: C.amber });
+      }
+      // start pin and range bracket
+      const by = ky + kh + 12;
+      g.beginPath(); g.moveTo(K.cx(START), ky + kh + 2); g.lineTo(K.cx(START) - 4, ky + kh + 8); g.lineTo(K.cx(START) + 4, ky + kh + 8); g.closePath(); g.fillStyle = C.ink; g.fill();
+      if (S.low !== null) {
+        const x0 = K.cx(S.low), x1 = K.cx(S.high);
+        g.beginPath(); g.moveTo(x0, by + 2); g.lineTo(x0, by + 8); g.lineTo(x1, by + 8); g.lineTo(x1, by + 2);
+        g.strokeStyle = C.limeDeep; g.lineWidth = 2; g.lineJoin = 'round'; g.stroke();
+        text(g, name(S.low), x0, by + 20, { size: 10, weight: 800, color: C.ink });
+        if (S.high !== S.low) text(g, name(S.high), x1, by + 20, { size: 10, weight: 800, color: C.ink });
+      }
+    }
+  });
+
+  // 2 — staircase: each semitone a step; the run climbs and descends it.
+  designs.push({
+    name: 'Merdiven',
+    text: 'Her yarım ses bir basamak. Tutturdukça basamaklar lime dolar, küçük bir top seni gösterir ve basamak basamak tize çıkar, sonra pese iner. Kaçırılan basamağın tepesinde mercan, yanlış oktavda kehribar şerit kalır.',
+    init() { this.pop = popper(); this.cur = new Spring(150, 18); this.hop = 0; this.last = null; },
+    draw(g, w, h, t, dt, S) {
+      const n = HI - LO + 1, pad = 6, cw = (w - 2 * pad) / n, base = h - 26, sh = (h - 70) / n;
+      const colX = m => pad + (m - LO) * cw;
+      const top = m => base - 14 - (m - LO) * sh;
+      for (let m = LO; m <= HI; m++) {
+        const x = colX(m), y = top(m), reached = S.reached.has(m), pk = reached ? back(this.pop.k('s' + m, t)) : 0;
+        g.fillStyle = reached ? rgba(C.lime, 0.35 + 0.65 * Math.min(1, pk)) : rgba(C.line, 0.7);
+        g.beginPath(); g.roundRect(x + 1, y - (reached ? 3 * (pk - 1) : 0), cw - 2, base - y, [4, 4, 0, 0]); g.fill();
+        if (reached) { g.fillStyle = C.limeD; g.fillRect(x + 1, y, cw - 2, 2.5); }
+        const mk = S.miss.get(m);
+        if (mk) { g.fillStyle = mk === 'o' ? C.amber : C.coral; g.fillRect(x + 1, y, cw - 2, 3); }
+        if (m === START) { g.beginPath(); g.arc(x + cw / 2, base + 8, 2.5, 0, Math.PI * 2); g.fillStyle = C.ink; g.fill(); }
+        if (m % 12 === 0) text(g, name(m), x + cw / 2, base + 16, { size: 9, color: C.faint });
+      }
+      g.fillStyle = C.line; g.fillRect(pad, base, w - 2 * pad, 1.5);
+      if (S.target !== null) {
+        if (this.last !== S.target) { this.hop = 1; this.last = S.target; }
+        this.hop = Math.max(0, this.hop - dt * 2.4);
+        const x = this.cur.to(colX(S.target) + cw / 2, dt), yTop = top(S.target);
+        const col = phaseCol(S);
+        g.save(); g.shadowColor = rgba(col, 0.6); g.shadowBlur = 10;
+        g.beginPath(); g.roundRect(colX(S.target) + 0.5, yTop, cw - 1, base - yTop, [4, 4, 0, 0]); g.strokeStyle = col; g.lineWidth = 2; g.stroke(); g.restore();
+        const bounce = Math.sin(this.hop * Math.PI) * 14;
+        const by = top(clamp(Math.round((x - pad - cw / 2) / cw) + LO, LO, HI)) - 10 - bounce;
+        g.beginPath(); g.arc(x, by, 6.5, 0, Math.PI * 2); g.fillStyle = col; g.fill(); g.strokeStyle = C.ink; g.lineWidth = 1.5; g.stroke();
+        text(g, name(S.target), x, by - 16, { size: 11, weight: 800, color: C.ink });
+        chevron(g, x + (S.dir === 'up' ? 18 : -18), by, 8, S.dir === 'up', col, 0.8);
+      }
+    }
+  });
+
+  // 3 — journey: every attempt as a point in time; the path climbs, turns
+  // and comes down.
+  designs.push({
+    name: 'Nota yolu',
+    text: 'Her deneme zaman çizgisinde bir nokta. Yol tize tırmanır, dönüş çizgisinde kıvrılır ve pese iner. Tutturulan dolu lime nokta, kaçırma mercan çarpı, yanlış oktav kehribar halka. Sıradaki hedef nabız atan halkayla bekler.',
+    init() { this.pop = popper(); this.cur = new Spring(); },
+    draw(g, w, h, t, dt, S) {
+      const left = 30, right = w - 10, top = 12, bottom = h - 16, N = 18;
+      const X = i => left + (right - left) * i / (N - 1), Y = m => lerp(bottom, top, (m - 40) / (54 - 40));
+      for (let m = 40; m <= 54; m++) {
+        if (m % 12 === 0 || m === START) {
+          g.strokeStyle = m === START ? rgba(C.ink, 0.25) : C.line; g.lineWidth = 1; g.setLineDash(m === START ? [3, 4] : []);
+          g.beginPath(); g.moveTo(left, Y(m)); g.lineTo(right, Y(m)); g.stroke(); g.setLineDash([]);
+          text(g, name(m), 2, Y(m), { size: 9, align: 'left', color: m === START ? C.ink : C.faint });
+        }
+      }
+      if (S.turnIndex !== null) {
+        const x = (X(S.turnIndex - 1) + X(S.turnIndex)) / 2;
+        g.setLineDash([2, 4]); g.strokeStyle = rgba(C.deep, 0.5); g.beginPath(); g.moveTo(x, top); g.lineTo(x, bottom); g.stroke(); g.setLineDash([]);
+        text(g, 'dönüş', x, bottom + 9, { size: 9, color: C.deep });
+      }
+      const pts = S.log.map((e, i) => [X(i), Y(e.m), e]);
+      if (pts.length > 1) {
+        g.beginPath(); g.moveTo(pts[0][0], pts[0][1]);
+        for (let i = 1; i < pts.length; i++) { const mx = (pts[i - 1][0] + pts[i][0]) / 2; g.bezierCurveTo(mx, pts[i - 1][1], mx, pts[i][1], pts[i][0], pts[i][1]); }
+        const gr = g.createLinearGradient(left, 0, right, 0); gr.addColorStop(0, rgba(C.lav, 0.7)); gr.addColorStop(1, rgba(C.deep, 0.7));
+        g.strokeStyle = gr; g.lineWidth = 2.5; g.stroke();
+      }
+      pts.forEach(([x, y, e], i) => {
+        const k = back(this.pop.k('p' + i, t)), r = 5 * Math.min(1.2, k);
+        if (e.r === 'm') { g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fillStyle = C.lime; g.fill(); g.strokeStyle = C.ink; g.lineWidth = 1.5; g.stroke(); }
+        else if (e.r === 'o') { g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.strokeStyle = C.amber; g.lineWidth = 2; g.stroke(); }
+        else xMark(g, x, y, r * 0.8, C.coral);
+      });
+      if (S.target !== null && S.phase !== 'feedback') {
+        const i = S.log.length, x = this.cur.to(X(i), dt), y = Y(S.target), col = phaseCol(S);
+        const p = (t * 1.2) % 1;
+        g.beginPath(); g.arc(x, y, 6 + p * 10, 0, Math.PI * 2); g.strokeStyle = rgba(col, (1 - p) * 0.8); g.lineWidth = 1.5; g.stroke();
+        g.beginPath(); g.arc(x, y, 6, 0, Math.PI * 2); g.fillStyle = '#fff'; g.fill(); g.strokeStyle = col; g.lineWidth = 2.5; g.stroke();
+        if (pts.length) { g.setLineDash([2, 3]); g.beginPath(); g.moveTo(pts[pts.length - 1][0], pts[pts.length - 1][1]); g.lineTo(x, y); g.strokeStyle = rgba(col, 0.6); g.lineWidth = 1.5; g.stroke(); g.setLineDash([]); }
+        text(g, name(S.target), x, y - 15, { size: 10.5, weight: 800, color: C.ink });
+        if (S.live !== null && S.live >= 40) { g.beginPath(); g.arc(x, Y(S.live), 3, 0, Math.PI * 2); g.fillStyle = C.coral; g.fill(); }
+      }
+    }
+  });
+
+  // 4 — dial: the range as an arc of semitones.
+  designs.push({
+    name: 'Kadran',
+    text: 'Yarım seslerin dizildiği bir kadran. Tutturulan dilimler lime yanar, ibre hedefe yaylanarak döner. Ortada hedef notanın adı ve yönü yazar; bulunan aralık kadranda kalın bir yay olarak kalır.',
+    init() { this.pop = popper(); this.cur = new Spring(140, 18); },
+    draw(g, w, h, t, dt, S) {
+      const cx = w / 2, cy = h * 0.6, R = Math.min(w * 0.42, h * 0.52);
+      const a0 = Math.PI * 0.85, a1 = Math.PI * 2.15, A = m => lerp(a0, a1, (m - LO) / (HI - LO));
+      const step = (a1 - a0) / (HI - LO);
+      for (let m = LO; m <= HI; m++) {
+        const a = A(m), reached = S.reached.has(m), mk = S.miss.get(m);
+        const pk = reached ? ease(this.pop.k('d' + m, t)) : 0;
+        g.beginPath(); g.arc(cx, cy, R, a - step * 0.42, a + step * 0.42);
+        g.strokeStyle = reached ? rgba(C.lime, 0.4 + 0.6 * pk) : mk ? rgba(mk === 'o' ? C.amber : C.coral, 0.75) : (isBlack(m) ? '#DCD5E2' : C.line);
+        g.lineWidth = reached ? 14 + 4 * (1 - pk) : 10; g.lineCap = 'butt'; g.stroke();
+        if (m % 12 === 0 || m === START) text(g, name(m), cx + Math.cos(a) * (R - 22), cy + Math.sin(a) * (R - 22), { size: 9, color: m === START ? C.ink : C.faint, weight: m === START ? 800 : 700 });
+      }
+      if (S.low !== null) { g.beginPath(); g.arc(cx, cy, R + 13, A(S.low) - step * 0.4, A(S.high) + step * 0.4); g.strokeStyle = C.limeDeep; g.lineWidth = 2.5; g.lineCap = 'round'; g.stroke(); }
+      if (S.target !== null) {
+        const a = this.cur.to(A(S.target), dt), col = phaseCol(S);
+        g.save(); g.shadowColor = rgba(col, 0.6); g.shadowBlur = 10;
+        g.beginPath(); g.moveTo(cx + Math.cos(a) * 18, cy + Math.sin(a) * 18); g.lineTo(cx + Math.cos(a) * (R + 8), cy + Math.sin(a) * (R + 8));
+        g.strokeStyle = col; g.lineWidth = 3; g.lineCap = 'round'; g.stroke(); g.restore();
+        g.beginPath(); g.arc(cx + Math.cos(a) * (R + 8), cy + Math.sin(a) * (R + 8), 5, 0, Math.PI * 2); g.fillStyle = col; g.fill();
+        g.beginPath(); g.arc(cx, cy, 16, 0, Math.PI * 2); g.fillStyle = C.ink; g.fill();
+        text(g, name(S.target), cx, cy - 34, { size: 20, weight: 800, color: C.ink });
+        text(g, S.dir === 'up' ? 'TİZE ↑' : 'PESE ↓', cx, cy + 30, { size: 10, weight: 800, color: S.dir === 'up' ? C.lav : C.deep });
+      } else if (S.low !== null) {
+        text(g, `${name(S.low)} – ${name(S.high)}`, cx, cy - 30, { size: 18, weight: 800, color: C.ink });
+      }
+    }
+  });
+
+  // 5 — vertical meter: the found range grows as a capsule up and down
+  // from the start.
+  designs.push({
+    name: 'Dikey ölçer',
+    text: 'Dikey bir ölçek: başlangıçtan yukarı ve aşağı büyüyen lime kapsül bulduğun aralıktır. Hedef nota kapsülün yanında kayan bir etiket. Sağda tavan, taban ve tutturulan nota sayısı özetlenir.',
+    init() { this.lo = new Spring(120, 16); this.hi = new Spring(120, 16); this.cur = new Spring(); },
+    draw(g, w, h, t, dt, S) {
+      const top = 14, bottom = h - 14, x = 64, Y = m => lerp(bottom, top, (m - LO) / (HI - LO));
+      for (let m = LO; m <= HI; m++) {
+        const y = Y(m), big = m % 12 === 0;
+        g.beginPath(); g.moveTo(x - (big ? 14 : isBlack(m) ? 6 : 9), y); g.lineTo(x - 4, y); g.strokeStyle = rgba(C.ink, big ? 0.5 : 0.2); g.lineWidth = 1; g.stroke();
+        if (big) text(g, name(m), x - 18, y, { size: 9, align: 'right', color: C.faint });
+        const mk = S.miss.get(m);
+        if (mk) { g.beginPath(); g.arc(x + 20, y, 2.6, 0, Math.PI * 2); g.fillStyle = mk === 'o' ? C.amber : C.coral; g.fill(); }
+      }
+      g.fillStyle = C.line; g.beginPath(); g.roundRect(x - 1, top - 4, 14, bottom - top + 8, 7); g.fill();
+      if (S.low !== null) {
+        const yHi = this.hi.to(Y(S.high) - 5, dt), yLo = this.lo.to(Y(S.low) + 5, dt);
+        const gr = g.createLinearGradient(0, yHi, 0, yLo); gr.addColorStop(0, C.lime); gr.addColorStop(1, C.limeD);
+        g.fillStyle = gr; g.beginPath(); g.roundRect(x - 1, yHi, 14, Math.max(14, yLo - yHi), 7); g.fill();
+        for (let i = 0; i < 4; i++) {
+          const k = ((t * 0.8 + i / 4) % 1), y = S.dir === 'up' ? lerp(yLo, yHi, k) : lerp(yHi, yLo, k);
+          if (y > yHi + 6 && y < yLo - 6) { g.save(); g.translate(x + 6, y); g.rotate(S.dir === 'up' ? -Math.PI / 2 : Math.PI / 2); chevron(g, 0, 0, 5, true, '#fff', 0.9 * Math.sin(k * Math.PI)); g.restore(); }
+        }
+      }
+      g.beginPath(); g.arc(x + 6, Y(START), 3, 0, Math.PI * 2); g.fillStyle = C.ink; g.fill();
+      if (S.target !== null) {
+        const y = this.cur.to(Y(S.target), dt), col = phaseCol(S);
+        g.beginPath(); g.moveTo(x + 16, y); g.lineTo(x + 24, y - 6); g.lineTo(x + 24, y + 6); g.closePath(); g.fillStyle = col; g.fill();
+        g.fillStyle = col; g.beginPath(); g.roundRect(x + 24, y - 11, 42, 22, 11); g.fill();
+        text(g, name(S.target), x + 45, y, { size: 11, weight: 800, color: col === C.limeD ? C.ink : '#fff' });
+      }
+      const sx = w * 0.58;
+      const rows = [['TAVAN', S.high !== null ? name(S.high) : '—'], ['TABAN', S.low !== null && S.turnIndex !== null ? name(S.low) : '—'], ['NOTA', String(S.reached.size)]];
+      rows.forEach(([k, v], i) => {
+        const y = 36 + i * 46;
+        text(g, k, sx, y, { size: 9.5, weight: 800, color: C.muted, align: 'left' });
+        text(g, v, sx, y + 20, { size: 22, weight: 800, color: C.ink, align: 'left' });
+      });
+    }
+  });
+
+  // 6 — note chips: a row of slim pills like a level meter.
+  designs.push({
+    name: 'Nota çipleri',
+    text: 'Her yarım ses ince bir hap. Tutturulan haplar lime dolup hafifçe zıplar, hedef hap uzar ve rengiyle o anki aşamayı söyler. Üstteki ok başlangıçtan hedefe uzanır ve yönü gösterir. Sade ve sayıya dayalı.',
+    init() { this.pop = popper(); this.cur = new Spring(); },
+    draw(g, w, h, t, dt, S) {
+      const n = HI - LO + 1, pad = 6, gap = 3, pw = (w - 2 * pad - gap * (n - 1)) / n, cy = h * 0.55, ph = 64;
+      const X = m => pad + (m - LO) * (pw + gap) + pw / 2;
+      for (let m = LO; m <= HI; m++) {
+        const x = X(m), reached = S.reached.has(m), isT = m === S.target, mk = S.miss.get(m);
+        const pk = reached ? back(this.pop.k('c' + m, t)) : 0;
+        let hh = ph * (isBlack(m) ? 0.72 : 1);
+        if (isT) hh += 22 + (S.phase === 'listen' ? 6 * Math.sin(t * 7) : 0);
+        const y0 = cy - hh / 2 - (reached ? 4 * Math.sin(Math.min(1, pk) * Math.PI) : 0);
+        g.fillStyle = reached ? C.lime : isT ? phaseCol(S) : isBlack(m) ? '#DCD5E2' : C.line;
+        g.beginPath(); g.roundRect(x - pw / 2, y0, pw, hh, pw / 2); g.fill();
+        if (reached) { g.strokeStyle = C.limeD; g.lineWidth = 1.2; g.stroke(); }
+        if (mk) { g.beginPath(); g.arc(x, y0 - 6, 2.6, 0, Math.PI * 2); g.fillStyle = mk === 'o' ? C.amber : C.coral; g.fill(); }
+        if (m % 12 === 0 || m === START) text(g, name(m), x, cy + ph / 2 + 22, { size: 9, color: m === START ? C.ink : C.faint, weight: m === START ? 800 : 700 });
+      }
+      if (S.target !== null) {
+        const sx = X(START), tx = this.cur.to(X(S.target), dt), y = cy - ph / 2 - 26;
+        g.beginPath(); g.moveTo(sx, y); g.lineTo(tx, y); g.strokeStyle = rgba(phaseCol(S), 0.8); g.lineWidth = 2; g.stroke();
+        g.beginPath(); g.arc(sx, y, 3, 0, Math.PI * 2); g.fillStyle = C.ink; g.fill();
+        chevron(g, tx + (S.dir === 'up' ? -2 : 2), y, 9, S.dir === 'up', phaseCol(S), 1);
+        text(g, name(S.target), tx, y - 13, { size: 11, weight: 800, color: C.ink });
+      }
+    }
+  });
+
+  // 7 — mountain profile: the range as a landscape with a summit flag and
+  // a valley flag.
+  designs.push({
+    name: 'Dağ silueti',
+    text: 'Aralık bir manzara gibi çizilir: tize çıktıkça dağ yükselir, zirveye "tavan" bayrağı dikilir, pese inince vadiye "taban" bayrağı konur. Küçük bir yürüyüşçü sıradaki notaya yürür.',
+    init() { this.cur = new Spring(120, 16); this.cy = new Spring(120, 16); },
+    draw(g, w, h, t, dt, S) {
+      const left = 8, right = w - 8, top = 26, bottom = h - 18, N = 18;
+      const X = i => left + (right - left) * i / (N - 1), Y = m => lerp(bottom, top, (m - 38) / (55 - 38));
+      const sky = g.createLinearGradient(0, top, 0, bottom); sky.addColorStop(0, 'rgba(238,231,255,0.9)'); sky.addColorStop(1, 'rgba(248,245,239,0)');
+      g.fillStyle = sky; g.fillRect(0, 0, w, h);
+      const pts = S.log.map((e, i) => [X(i), Y(e.r === 'm' ? e.m : e.m - 0.0), e]);
+      if (pts.length) {
+        const path = () => { g.beginPath(); g.moveTo(pts[0][0], bottom); g.lineTo(pts[0][0], pts[0][1]); for (let i = 1; i < pts.length; i++) { const mx = (pts[i - 1][0] + pts[i][0]) / 2; g.bezierCurveTo(mx, pts[i - 1][1], mx, pts[i][1], pts[i][0], pts[i][1]); } };
+        path(); g.lineTo(pts[pts.length - 1][0], bottom); g.closePath();
+        const gr = g.createLinearGradient(0, top, 0, bottom); gr.addColorStop(0, rgba(C.lav, 0.55)); gr.addColorStop(1, rgba(C.lime, 0.35));
+        g.fillStyle = gr; g.fill();
+        path(); g.strokeStyle = C.deep; g.lineWidth = 2; g.stroke();
+        pts.forEach(([x, y, e]) => { if (e.r !== 'm') { g.beginPath(); g.arc(x, y, 3, 0, Math.PI * 2); g.fillStyle = e.r === 'o' ? C.amber : C.coral; g.fill(); } });
+      }
+      const flag = (x, y, label, up) => {
+        g.beginPath(); g.moveTo(x, y); g.lineTo(x, y - 20); g.strokeStyle = C.ink; g.lineWidth = 1.5; g.stroke();
+        g.beginPath(); g.moveTo(x, y - 20); g.lineTo(x + 14, y - 16); g.lineTo(x, y - 12); g.closePath(); g.fillStyle = up ? C.lime : C.lav; g.fill(); g.strokeStyle = C.ink; g.lineWidth = 1; g.stroke();
+        text(g, label, x + 18, y - 17, { size: 9.5, weight: 800, color: C.ink, align: 'left' });
+      };
+      if (S.high !== null) { const i = S.log.findIndex(e => e.r === 'm' && e.m === S.high); if (i >= 0) flag(X(i), Y(S.high), `tavan ${name(S.high)}`, true); }
+      if (S.turnIndex !== null && S.low !== null && S.low < START) { const i = S.log.findIndex(e => e.r === 'm' && e.m === S.low); if (i >= 0) flag(X(i), Y(S.low), `taban ${name(S.low)}`, false); }
+      g.setLineDash([3, 4]); g.strokeStyle = rgba(C.ink, 0.3); g.lineWidth = 1; g.beginPath(); g.moveTo(left, Y(START)); g.lineTo(right, Y(START)); g.stroke(); g.setLineDash([]);
+      text(g, `başlangıç ${name(START)}`, left + 2, Y(START) + 9, { size: 8.5, align: 'left', color: C.muted });
+      if (S.target !== null) {
+        const x = this.cur.to(X(S.log.length - (S.phase === 'feedback' ? 1 : 0)), dt), y = this.cy.to(Y(S.target), dt), col = phaseCol(S);
+        const bob = Math.abs(Math.sin(t * 6)) * 3;
+        g.beginPath(); g.arc(x, y - 8 - bob, 5.5, 0, Math.PI * 2); g.fillStyle = col; g.fill(); g.strokeStyle = C.ink; g.lineWidth = 1.5; g.stroke();
+        g.beginPath(); g.moveTo(x, y - 3 - bob); g.lineTo(x, y); g.stroke();
+        text(g, name(S.target), x, y - 24 - bob, { size: 10.5, weight: 800, color: C.ink });
+      }
+    }
+  });
+
+  // 8 — light columns over flat keys: each reached key glows upward.
+  designs.push({
+    name: 'Işık sütunları',
+    text: 'Düz, sade bir klavyenin üstünde her tutturulan tuştan bir ışık sütunu yükselir; tutturdukça bir ışık orkestrası oluşur. Hedef tuşun sütunu aşamaya göre renk değiştirir ve sesinle nabız atar.',
+    init() { this.pop = popper(); this.cur = new Spring(); },
+    draw(g, w, h, t, dt, S) {
+      const pad = 4, K = keyboard(w, pad), ky = h - 46, kh = 30;
+      for (let m = LO; m <= HI; m++) {
+        const x = K.cx(m), reached = S.reached.has(m), isT = m === S.target, mk = S.miss.get(m);
+        let hh = 0, col = C.lime, a = 0.85;
+        if (reached) { const pk = ease(this.pop.k('l' + m, t)); hh = (40 + ((m * 37) % 40)) * pk; }
+        if (isT && S.phase !== 'turn') {
+          col = phaseCol(S); a = 0.75;
+          hh = S.phase === 'piano' ? 70 * Math.sin(S.prog * Math.PI) + 20 : S.phase === 'listen' ? 50 + 30 * Math.sin(t * 5) : Math.max(hh, 60);
+        }
+        if (mk && !reached && !isT) { hh = 10; col = mk === 'o' ? C.amber : C.coral; }
+        if (hh > 0) {
+          const cw = isBlack(m) ? K.ww * 0.45 : K.ww * 0.6;
+          const gr = g.createLinearGradient(0, ky, 0, ky - hh);
+          gr.addColorStop(0, rgba(col, a)); gr.addColorStop(1, rgba(col, 0));
+          g.save(); g.shadowColor = rgba(col, 0.6); g.shadowBlur = 10;
+          g.fillStyle = gr; g.beginPath(); g.roundRect(x - cw / 2, ky - hh, cw, hh, [cw / 2, cw / 2, 0, 0]); g.fill(); g.restore();
+        }
+      }
+      for (const m of K.whites) {
+        const x = pad + K.whites.indexOf(m) * K.ww;
+        g.fillStyle = S.reached.has(m) ? C.limeSoft : C.card; g.strokeStyle = C.line; g.lineWidth = 1;
+        g.beginPath(); g.roundRect(x + 0.6, ky, K.ww - 1.2, kh, [0, 0, 4, 4]); g.fill(); g.stroke();
+        if (m % 12 === 0) text(g, name(m), x + K.ww / 2, ky + kh + 9, { size: 8.5, color: C.faint });
+      }
+      for (let m = LO; m <= HI; m++) if (isBlack(m)) { g.fillStyle = S.reached.has(m) ? '#5E7A24' : C.ink; g.beginPath(); g.roundRect(K.cx(m) - K.ww * 0.3, ky, K.ww * 0.6, kh * 0.6, [0, 0, 3, 3]); g.fill(); }
+      g.beginPath(); g.arc(K.cx(START), ky + kh + 9, 2.5, 0, Math.PI * 2); g.fillStyle = C.ink; g.fill();
+      if (S.target !== null) {
+        const x = this.cur.to(K.cx(S.target), dt);
+        g.strokeStyle = phaseCol(S); g.lineWidth = 2; g.beginPath(); g.moveTo(x - 7, ky - 2); g.lineTo(x + 7, ky - 2); g.stroke();
+        text(g, `${name(S.target)} ${S.dir === 'up' ? '↑' : '↓'}`, clamp(x, 20, w - 20), 12, { size: 11, weight: 800, color: C.ink });
+      }
+    }
+  });
+
+  // 9 — ruler: a precise horizontal scale with the found range as a
+  // capsule and a needle for the target.
+  designs.push({
+    name: 'Cetvel',
+    text: 'Hassas bir yarım ses cetveli. Bulunan aralık lime bir kapsül olarak iki yana esneyerek büyür, içinden yön okları akar. İbre hedef notaya yaylanır; kaçırmalar cetvelin üstünde çarpı olarak kalır. En kurumsal ve okunaklı seçenek.',
+    init() { this.lo = new Spring(140, 17); this.hi = new Spring(140, 17); this.cur = new Spring(160, 18); },
+    draw(g, w, h, t, dt, S) {
+      const pad = 16, y = h * 0.55, X = m => pad + (m - LO) / (HI - LO) * (w - 2 * pad);
+      g.fillStyle = C.line; g.beginPath(); g.roundRect(pad - 6, y - 7, w - 2 * pad + 12, 14, 7); g.fill();
+      if (S.low !== null) {
+        const x0 = this.lo.to(X(S.low) - 6, dt), x1 = this.hi.to(X(S.high) + 6, dt);
+        const gr = g.createLinearGradient(x0, 0, x1, 0); gr.addColorStop(0, C.limeD); gr.addColorStop(1, C.lime);
+        g.fillStyle = gr; g.beginPath(); g.roundRect(x0, y - 7, Math.max(14, x1 - x0), 14, 7); g.fill();
+        for (let i = 0; i < 6; i++) {
+          const k = (t * 0.6 + i / 6) % 1, x = S.dir === 'up' ? lerp(x0, x1, k) : lerp(x1, x0, k);
+          if (x > x0 + 8 && x < x1 - 8) chevron(g, x, y, 5, S.dir === 'up', '#ffffff', 0.85 * Math.sin(k * Math.PI));
+        }
+        text(g, name(S.low), x0, y + 34, { size: 11, weight: 800, color: C.ink });
+        if (S.high !== S.low) text(g, name(S.high), x1, y + 34, { size: 11, weight: 800, color: C.ink });
+      }
+      for (let m = LO; m <= HI; m++) {
+        const x = X(m), big = m % 12 === 0;
+        g.beginPath(); g.moveTo(x, y + 11); g.lineTo(x, y + 11 + (big ? 10 : isBlack(m) ? 4 : 6)); g.strokeStyle = rgba(C.ink, big ? 0.55 : 0.25); g.lineWidth = 1; g.stroke();
+        if (big) text(g, name(m), x, y + 50, { size: 9, color: C.faint });
+        const mk = S.miss.get(m);
+        if (mk) xMark(g, x, y - 18, 3.2, mk === 'o' ? C.amber : C.coral);
+      }
+      g.beginPath(); g.moveTo(X(START), y + 11); g.lineTo(X(START) - 4, y + 18); g.lineTo(X(START) + 4, y + 18); g.closePath(); g.fillStyle = C.ink; g.fill();
+      if (S.target !== null) {
+        const x = this.cur.to(X(S.target), dt), col = phaseCol(S);
+        g.save(); g.shadowColor = rgba(col, 0.6); g.shadowBlur = 8;
+        g.beginPath(); g.moveTo(x, y - 30); g.lineTo(x, y + 9); g.strokeStyle = col; g.lineWidth = 2.5; g.stroke(); g.restore();
+        g.fillStyle = col; g.beginPath(); g.roundRect(x - 22, y - 52, 44, 22, 11); g.fill();
+        text(g, name(S.target), x, y - 41, { size: 11, weight: 800, color: col === C.limeD ? C.ink : '#fff' });
+        if (S.live !== null && S.live >= LO) { g.beginPath(); g.arc(X(S.live), y, 4, 0, Math.PI * 2); g.fillStyle = '#fff'; g.fill(); g.strokeStyle = C.coral; g.lineWidth = 2; g.stroke(); }
+      }
+    }
+  });
+
+  // 10 — strings: one string per semitone; reached strings glow, the
+  // target string vibrates with the voice.
+  designs.push({
+    name: 'Teller',
+    text: 'Her yarım ses bir tel; pes teller kalın, tiz teller ince. Piyano çalınca hedef tel titreşir, sen söylerken sesinle titremeye devam eder. Tutturulan teller lime parlar, kaçırılanların üstünde küçük bir boncuk kalır.',
+    init() { this.pop = popper(); this.pluck = new Map(); this.lastT = null; this.lastPhase = null; this.cur = new Spring(); },
+    draw(g, w, h, t, dt, S) {
+      const n = HI - LO + 1, pad = 14, top = 22, bottom = h - 22, X = m => pad + (m - LO) / (n - 1) * (w - 2 * pad);
+      if (S.target !== null && (S.target !== this.lastT || S.phase !== this.lastPhase) && (S.phase === 'piano' || S.phase === 'listen')) this.pluck.set(S.target, t);
+      this.lastT = S.target; this.lastPhase = S.phase;
+      g.fillStyle = 'rgba(169,162,176,0.25)'; g.fillRect(pad - 6, top - 6, w - 2 * pad + 12, 4); g.fillRect(pad - 6, bottom + 2, w - 2 * pad + 12, 4);
+      for (let m = LO; m <= HI; m++) {
+        const x = X(m), reached = S.reached.has(m), isT = m === S.target, mk = S.miss.get(m);
+        const thick = lerp(3, 1.1, (m - LO) / (n - 1));
+        const since = this.pluck.has(m) ? t - this.pluck.get(m) : 99;
+        let amp = Math.exp(-since * 2.2) * 7;
+        if (isT && S.phase === 'listen' && S.live !== null) amp = Math.max(amp, 3 + 2 * Math.sin(t * 3));
+        g.beginPath();
+        for (let i = 0; i <= 24; i++) {
+          const k = i / 24, yy = lerp(top, bottom, k), dx = amp * Math.sin(Math.PI * k) * Math.sin(t * 60 + m);
+          i ? g.lineTo(x + dx, yy) : g.moveTo(x + dx, yy);
+        }
+        const col = isT ? phaseCol(S) : reached ? C.limeD : rgba(C.ink, 0.28);
+        if (reached || isT) { g.save(); g.shadowColor = isT ? rgba(phaseCol(S), 0.8) : 'rgba(217,245,116,1)'; g.shadowBlur = 10; }
+        g.strokeStyle = col; g.lineWidth = thick + (reached ? 0.8 : 0); g.stroke();
+        if (reached || isT) g.restore();
+        if (mk) { g.beginPath(); g.arc(x, top + 12, 3, 0, Math.PI * 2); g.fillStyle = mk === 'o' ? C.amber : C.coral; g.fill(); }
+        if (m % 12 === 0 || m === START) text(g, name(m), x, bottom + 14, { size: 9, color: m === START ? C.ink : C.faint, weight: m === START ? 800 : 700 });
+      }
+      if (S.target !== null) {
+        const x = this.cur.to(X(S.target), dt);
+        text(g, name(S.target), x, top - 13, { size: 11, weight: 800, color: C.ink });
+        chevron(g, x + (S.dir === 'up' ? 18 : -18), top - 13, 7, S.dir === 'up', phaseCol(S), 0.9);
+      }
+    }
+  });
+
+  // ================= second series: circles and lines (11–20) =================
+
+  // Short-lived ripples and sparks.
+  function makeFx() {
+    const items = [];
+    return {
+      ring(x, y, col, r0 = 6, r1 = 34, life = 0.75) { items.push({ k: 'r', x, y, col, r0, r1, life, t: 0 }); },
+      burst(x, y, col, n = 16, sp = 70) {
+        for (let i = 0; i < n; i++) {
+          const a = Math.random() * Math.PI * 2, s = sp * (0.45 + Math.random());
+          items.push({ k: 'p', x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s, col, life: 0.6 + Math.random() * 0.45, t: 0, r: 1 + Math.random() * 1.8 });
+        }
+      },
+      draw(g, dt) {
+        for (let i = items.length - 1; i >= 0; i--) { items[i].t += dt; if (items[i].t > items[i].life) items.splice(i, 1); }
+        for (const it of items) {
+          const k = it.t / it.life;
+          if (it.k === 'r') {
+            g.beginPath(); g.arc(it.x, it.y, lerp(it.r0, it.r1, ease(k)), 0, Math.PI * 2);
+            g.strokeStyle = rgba(it.col, (1 - k) * 0.85); g.lineWidth = 2.4 * (1 - k) + 0.4; g.stroke();
+          } else {
+            it.vx *= Math.pow(0.08, dt); it.vy = it.vy * Math.pow(0.08, dt) + 40 * dt;
+            it.x += it.vx * dt; it.y += it.vy * dt;
+            g.beginPath(); g.arc(it.x, it.y, it.r * (1 - k * 0.6), 0, Math.PI * 2); g.fillStyle = rgba(it.col, 1 - k); g.fill();
+          }
+        }
+      }
+    };
+  }
+  // Calls fn once for every result as soon as it is judged.
+  function watch(self, S, fn) {
+    if (self._n === undefined || S.log.length < self._n) self._n = 0;
+    while (self._n < S.log.length) { fn(S.log[self._n], self._n); self._n++; }
+  }
+  const resCol = r => r === 'm' ? C.limeD : r === 'o' ? C.amber : C.coral;
+  function resultFx(fx, e, x, y) {
+    if (e.r === 'm') { fx.ring(x, y, C.limeD, 6, 36); fx.ring(x, y, C.lime, 4, 22, 0.5); fx.burst(x, y, C.limeD, 16, 75); }
+    else fx.ring(x, y, resCol(e.r), 4, 22, 0.6);
+  }
+  function glowDot(g, x, y, r, fill, glow, stroke) {
+    g.save(); g.shadowColor = glow; g.shadowBlur = r * 2.2;
+    g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fillStyle = fill; g.fill(); g.restore();
+    if (stroke) { g.strokeStyle = stroke; g.lineWidth = 1.3; g.stroke(); }
+  }
+  function star4(g, x, y, r, rot) {
+    g.beginPath();
+    for (let i = 0; i < 8; i++) { const a = rot + i * Math.PI / 4, rr = i % 2 ? r * 0.32 : r; g.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr); }
+    g.closePath();
+  }
+  function angSpring(st, target, dt) {
+    if (st.x === null) { st.x = target; st.v = 0; return target; }
+    while (target - st.x > Math.PI) target -= Math.PI * 2;
+    while (target - st.x < -Math.PI) target += Math.PI * 2;
+    const n = Math.max(1, Math.ceil(dt / 0.008)), h = dt / n;
+    for (let i = 0; i < n; i++) { st.v += (150 * (target - st.x) - 19 * st.v) * h; st.x += st.v * h; }
+    return st.x;
+  }
+  const NEW = [];
+
+  // 11 — pitch clock: twelve note names as hours, the two octaves as two
+  // rings; the hand swings to the target, a thin hand follows the voice.
+  NEW.push({
+    name: 'Saat kadranı',
+    text: 'Bir saat gibi: on iki nota saat yerinde, iki oktav iki halka. Akrep hedef notaya yaylanarak döner ve halkasına uzanır; sen söylerken ince mercan yelkovan sesini izler. Tutturulan notalar halkada lime taşlar olarak kalır.',
+    init() { this.fx = makeFx(); this.ang = { x: null, v: 0 }; this.live = { x: null, v: 0 }; this.rad = new Spring(150, 18); },
+    draw(g, w, h, t, dt, S) {
+      const cx = w / 2, cy = h / 2 + 2, R2 = Math.min(w, h) * 0.45, R1 = R2 * 0.62;
+      const A = m => (((m % 12) + 12) % 12) / 12 * Math.PI * 2 - Math.PI / 2, Rm = m => m < 48 ? R1 : R2;
+      const P = m => [cx + Math.cos(A(m)) * Rm(m), cy + Math.sin(A(m)) * Rm(m)];
+      watch(this, S, e => { const [x, y] = P(e.m); resultFx(this.fx, e, x, y); });
+      const face = g.createRadialGradient(cx, cy - R2 * 0.3, 4, cx, cy, R2 + 10);
+      face.addColorStop(0, '#FFFFFF'); face.addColorStop(1, '#F1ECF6');
+      g.beginPath(); g.arc(cx, cy, R2 + 9, 0, Math.PI * 2); g.fillStyle = face; g.fill(); g.strokeStyle = C.line; g.lineWidth = 1; g.stroke();
+      for (let i = 0; i < 60; i++) {
+        const a = i / 60 * Math.PI * 2, big = i % 5 === 0;
+        g.beginPath(); g.moveTo(cx + Math.cos(a) * (R2 + 8), cy + Math.sin(a) * (R2 + 8)); g.lineTo(cx + Math.cos(a) * (R2 + (big ? 3 : 6)), cy + Math.sin(a) * (R2 + (big ? 3 : 6)));
+        g.strokeStyle = rgba(C.ink, big ? 0.45 : 0.15); g.lineWidth = big ? 1.5 : 1; g.stroke();
+      }
+      for (const r of [R1, R2]) { g.beginPath(); g.arc(cx, cy, r, 0, Math.PI * 2); g.strokeStyle = rgba(C.lav, 0.18); g.lineWidth = 6; g.stroke(); }
+      for (let pc = 0; pc < 12; pc++) if (![1, 3, 6, 8, 10].includes(pc)) {
+        const a = pc / 12 * Math.PI * 2 - Math.PI / 2;
+        text(g, NAMES[pc], cx + Math.cos(a) * (R1 + R2) / 2, cy + Math.sin(a) * (R1 + R2) / 2, { size: 8.5, color: C.faint });
+      }
+      for (let m = LO; m <= HI; m++) {
+        const [x, y] = P(m), mk = S.miss.get(m);
+        if (S.reached.has(m)) glowDot(g, x, y, 4.6, C.lime, 'rgba(169,204,62,0.9)', C.ink);
+        else if (mk) { g.beginPath(); g.arc(x, y, 3.6, 0, Math.PI * 2); g.strokeStyle = resCol(mk); g.lineWidth = 2; g.stroke(); }
+        else { g.beginPath(); g.arc(x, y, 1.6, 0, Math.PI * 2); g.fillStyle = rgba(C.ink, 0.3); g.fill(); }
+      }
+      if (S.target !== null) {
+        const a = angSpring(this.ang, A(S.target), dt), r = this.rad.to(Rm(S.target), dt), col = phaseCol(S);
+        g.beginPath(); g.moveTo(cx, cy); g.arc(cx, cy, r - 2, a - 0.32, a); g.closePath(); g.fillStyle = rgba(col, 0.1); g.fill();
+        g.save(); g.shadowColor = rgba(col, 0.6); g.shadowBlur = 8;
+        g.beginPath(); g.moveTo(cx - Math.cos(a) * 10, cy - Math.sin(a) * 10); g.lineTo(cx + Math.cos(a) * (r - 7), cy + Math.sin(a) * (r - 7));
+        g.strokeStyle = col; g.lineWidth = 3.2; g.lineCap = 'round'; g.stroke(); g.restore();
+        g.beginPath(); g.arc(cx + Math.cos(a) * r, cy + Math.sin(a) * r, 7, 0, Math.PI * 2); g.strokeStyle = col; g.lineWidth = 2.5; g.stroke();
+        if (S.live !== null) {
+          const la = angSpring(this.live, A(Math.round(S.live)) + (S.live - Math.round(S.live)) * Math.PI / 6, dt);
+          g.beginPath(); g.moveTo(cx, cy); g.lineTo(cx + Math.cos(la) * (R2 - 2), cy + Math.sin(la) * (R2 - 2)); g.strokeStyle = rgba(C.coral, 0.85); g.lineWidth = 1.2; g.stroke();
+        } else this.live.x = null;
+        text(g, name(S.target), cx, cy + R1 * 0.5, { size: 12, weight: 800, color: C.ink });
+      }
+      g.beginPath(); g.arc(cx, cy, 5, 0, Math.PI * 2); g.fillStyle = C.ink; g.fill();
+      text(g, '2', cx, cy - R1 + 9, { size: 7.5, color: C.faint }); text(g, '3', cx, cy - R2 + 9, { size: 7.5, color: C.faint });
+      this.fx.draw(g, dt);
+    }
+  });
+
+  // 12 — constellation: notes as stars along a rising line; every matched
+  // note lights a star and draws a line to the previous one.
+  NEW.push({
+    name: 'Takımyıldız',
+    text: 'Notalar yükselen bir hat boyunca yıldızlar. Tutturdukça yıldız parlar ve bir öncekine ışıklı bir çizgi çekilir; test bitince sesinin takımyıldızı ortaya çıkar. Hedef yıldızın etrafında kesik bir halka döner.',
+    init() { this.fx = makeFx(); this.lines = []; this.prev = null; this.cx = new Spring(); this.cy = new Spring(); this.bg = Array.from({ length: 46 }, () => ({ x: Math.random(), y: Math.random(), p: Math.random() * 6 })); },
+    draw(g, w, h, t, dt, S) {
+      const pad = 16, P = m => [pad + (m - LO) / (HI - LO) * (w - 2 * pad), lerp(h - 22, 20, (m - LO) / (HI - LO)) + Math.sin(m * 2.7) * 11];
+      watch(this, S, e => {
+        const [x, y] = P(e.m); resultFx(this.fx, e, x, y);
+        if (e.r === 'm') { this.lines.push({ from: this.prev, to: e.m, t0: t }); this.prev = e.m; }
+      });
+      for (const s of this.bg) { g.beginPath(); g.arc(s.x * w, s.y * h, 0.9, 0, Math.PI * 2); g.fillStyle = rgba(C.lav, 0.12 + 0.12 * Math.sin(t * 1.5 + s.p)); g.fill(); }
+      for (const ln of this.lines) {
+        if (ln.from === null) continue;
+        const [x0, y0] = P(ln.from), [x1, y1] = P(ln.to), k = ease(clamp((t - ln.t0) / 0.55, 0, 1));
+        g.save(); g.shadowColor = 'rgba(169,204,62,0.9)'; g.shadowBlur = 6;
+        g.beginPath(); g.moveTo(x0, y0); g.lineTo(lerp(x0, x1, k), lerp(y0, y1, k)); g.strokeStyle = rgba(C.limeD, 0.85); g.lineWidth = 1.6; g.stroke(); g.restore();
+      }
+      for (let m = LO; m <= HI; m++) {
+        const [x, y] = P(m), mk = S.miss.get(m);
+        if (S.reached.has(m)) {
+          const s = 7 * (1 + 0.14 * Math.sin(t * 3 + m));
+          g.save(); g.shadowColor = 'rgba(217,245,116,1)'; g.shadowBlur = 14;
+          star4(g, x, y, s, t * 0.3 + m); g.fillStyle = C.lime; g.fill(); g.restore();
+          star4(g, x, y, s, t * 0.3 + m); g.strokeStyle = C.limeDeep; g.lineWidth = 1; g.stroke();
+          g.beginPath(); g.arc(x, y, 1.6, 0, Math.PI * 2); g.fillStyle = '#fff'; g.fill();
+        } else if (mk) { star4(g, x, y, 4.5, 0.4); g.fillStyle = rgba(resCol(mk), 0.85); g.fill(); }
+        else { star4(g, x, y, 3, 0.2); g.fillStyle = rgba(C.ink, 0.22); g.fill(); }
+        if (m === START) text(g, name(m), x, y + 14, { size: 9, weight: 800, color: C.ink });
+      }
+      if (S.target !== null) {
+        const [tx0, ty0] = P(S.target), x = this.cx.to(tx0, dt), y = this.cy.to(ty0, dt), col = phaseCol(S);
+        g.save(); g.translate(x, y); g.rotate(t * 1.4); g.setLineDash([3, 4]);
+        g.beginPath(); g.arc(0, 0, 13 + (S.phase === 'listen' ? 2 * Math.sin(t * 6) : 0), 0, Math.PI * 2); g.strokeStyle = col; g.lineWidth = 2; g.stroke(); g.restore();
+        text(g, name(S.target), x, y - 22, { size: 11, weight: 800, color: C.ink });
+      }
+      this.fx.draw(g, dt);
+    }
+  });
+
+  // 13 — metro line: going up is one line, going down another; stations
+  // fill as they are reached, a train runs between them.
+  NEW.push({
+    name: 'Metro hattı',
+    text: 'Bir metro haritası: tize çıkış mor hat, pese iniş koyu mor hat, başlangıç aktarma istasyonu. Tutturulan istasyonlar lime dolar, kaçırılanlar mercan halkayla işaretlenir. Küçük tren hedef istasyona yaylanarak gider, dönüşte aktarmadan alt hatta geçer.',
+    init() { this.fx = makeFx(); this.tx = new Spring(120, 16); this.ty = new Spring(120, 16); },
+    draw(g, w, h, t, dt, S) {
+      const pad = 16, y1 = h * 0.34, y2 = h * 0.74, X = m => pad + (m - LO) / (HI - LO) * (w - 2 * pad), sx = X(START);
+      const rowOf = e => e.dir === 'up' ? y1 : y2;
+      watch(this, S, e => resultFx(this.fx, e, X(e.m), rowOf(e)));
+      const upMax = Math.max(START, ...S.log.filter(e => e.dir === 'up').map(e => e.m), S.dir === 'up' && S.target !== null ? S.target : START);
+      const dnMin = Math.min(START, ...S.log.filter(e => e.dir === 'down').map(e => e.m), S.dir === 'down' && S.target !== null ? S.target : START);
+      const line = (xa, ya, xb, yb, col, a, wdt) => { g.beginPath(); g.moveTo(xa, ya); g.lineTo(xb, yb); g.strokeStyle = rgba(col, a); g.lineWidth = wdt; g.lineCap = 'round'; g.stroke(); };
+      line(sx, y1, X(HI), y1, C.lav, 0.18, 6); line(X(LO), y2, sx, y2, C.deep, 0.18, 6);
+      g.beginPath(); g.moveTo(sx, y1); g.lineTo(sx, y2); g.strokeStyle = rgba(C.ink, 0.15); g.lineWidth = 6; g.stroke();
+      line(sx, y1, X(upMax), y1, C.lav, 1, 6);
+      if (S.dir === 'down' || S.turnIndex !== null) {
+        g.beginPath(); g.moveTo(sx, y1); g.lineTo(sx, y2 - 10); g.quadraticCurveTo(sx, y2, sx - 10, y2); g.lineTo(X(dnMin), y2);
+        g.strokeStyle = C.deep; g.lineWidth = 6; g.lineCap = 'round'; g.lineJoin = 'round'; g.stroke();
+      }
+      const station = (m, y, dir) => {
+        const x = X(m), e = [...S.log].reverse().find(l => l.m === m && l.dir === dir);
+        if (e && e.r === 'm') { g.beginPath(); g.arc(x, y, 6.5, 0, Math.PI * 2); g.fillStyle = C.lime; g.fill(); g.strokeStyle = C.ink; g.lineWidth = 2; g.stroke(); }
+        else if (e) { g.beginPath(); g.arc(x, y, 5.5, 0, Math.PI * 2); g.fillStyle = '#fff'; g.fill(); g.strokeStyle = resCol(e.r); g.lineWidth = 2.4; g.stroke(); }
+        else { g.beginPath(); g.arc(x, y, 3.6, 0, Math.PI * 2); g.fillStyle = '#fff'; g.fill(); g.strokeStyle = rgba(dir === 'up' ? C.lav : C.deep, 0.5); g.lineWidth = 1.6; g.stroke(); }
+        if (m % 12 === 0 || (e && e.r === 'm' && (m === S.high || m === S.low))) text(g, name(m), x, dir === 'up' ? y - 15 : y + 15, { size: 9, weight: 800, color: e ? C.ink : C.faint });
+      };
+      for (let m = START; m <= HI; m++) station(m, y1, 'up');
+      for (let m = LO; m < START; m++) station(m, y2, 'down');
+      g.beginPath(); g.roundRect(sx - 9, y1 - 9, 18, y2 - y1 + 18, 9); g.strokeStyle = C.ink; g.lineWidth = 2; g.fillStyle = '#fff'; g.fill(); g.stroke();
+      text(g, name(START), sx + 16, (y1 + y2) / 2, { size: 9, weight: 800, color: C.ink, align: 'left' });
+      text(g, 'TİZE →', w - pad, y1 - 26, { size: 8.5, weight: 800, color: C.lav, align: 'right' });
+      text(g, '← PESE', pad, y2 + 28, { size: 8.5, weight: 800, color: C.deep, align: 'left' });
+      if (S.target !== null) {
+        const x = this.tx.to(X(S.target), dt), y = this.ty.to(S.dir === 'up' ? y1 : y2, dt), col = phaseCol(S);
+        g.save(); g.shadowColor = rgba(col, 0.6); g.shadowBlur = 10;
+        g.beginPath(); g.roundRect(x - 13, y - 7, 26, 14, 7); g.fillStyle = col; g.fill(); g.restore();
+        for (const dx of [-6, 0, 6]) { g.fillStyle = 'rgba(255,255,255,0.85)'; g.beginPath(); g.roundRect(x + dx - 2, y - 3, 4, 4, 1); g.fill(); }
+      }
+      this.fx.draw(g, dt);
+    }
+  });
+
+  // 14 — bouncing ball: each attempt is a jump along the note axis; jumps
+  // leave arcs, matched ones solid, missed ones dashed.
+  NEW.push({
+    name: 'Zıplayan top',
+    text: 'Bir top nota ekseninde her denemede bir sonraki notaya zıplar ve yere iner. Zıplamalar iz bırakır: tutturulan yaylar lime ve dolu, kaçırılanlar mercan ve kesik. Top sen söylerken hafifçe sekip sesini dinler.',
+    init() { this.fx = makeFx(); this.squash = 0; this.land = null; },
+    draw(g, w, h, t, dt, S) {
+      const pad = 16, base = h - 30, X = m => pad + (m - LO) / (HI - LO) * (w - 2 * pad);
+      const H = (a, b) => clamp(24 + 9 * Math.abs(b - a), 24, 80);
+      watch(this, S, e => resultFx(this.fx, e, X(e.m), base - 7));
+      g.beginPath(); g.moveTo(pad - 4, base); g.lineTo(w - pad + 4, base); g.strokeStyle = C.line; g.lineWidth = 2; g.stroke();
+      for (let m = LO; m <= HI; m++) {
+        const x = X(m), big = m % 12 === 0;
+        g.beginPath(); g.moveTo(x, base + 3); g.lineTo(x, base + (big ? 9 : 5)); g.strokeStyle = rgba(C.ink, big ? 0.45 : 0.2); g.lineWidth = 1; g.stroke();
+        if (big) text(g, name(m), x, base + 17, { size: 9, color: C.faint });
+        if (S.reached.has(m)) { g.beginPath(); g.arc(x, base, 3, 0, Math.PI * 2); g.fillStyle = C.limeD; g.fill(); }
+      }
+      const done = S.log.filter(e => !e.fresh);
+      done.forEach((e, i) => {
+        const a = i ? done[i - 1].m : START;
+        if (a === e.m) return;
+        const x0 = X(a), x1 = X(e.m), hh = H(a, e.m), al = 0.3 + 0.7 * ((i + 1) / done.length);
+        g.beginPath(); g.moveTo(x0, base - 2); g.quadraticCurveTo((x0 + x1) / 2, base - 2 * hh, x1, base - 2);
+        g.setLineDash(e.r === 'm' ? [] : [3, 4]); g.strokeStyle = rgba(resCol(e.r), al); g.lineWidth = e.r === 'm' ? 2 : 1.6; g.stroke(); g.setLineDash([]);
+      });
+      if (S.target !== null || S.done) {
+        const prev = done.length ? done[done.length - 1].m : START;
+        let bx, by, col = phaseCol(S);
+        const tm = S.target ?? prev;
+        if (S.phase === 'piano' || S.phase === 'turn') {
+          const k = ease(S.phase === 'turn' ? clamp(S.prog * 1.2, 0, 1) : S.prog);
+          if (prev === tm) { bx = X(tm); by = lerp(base - 80, base - 7, k); }
+          else { bx = lerp(X(prev), X(tm), k); by = base - 7 - 4 * H(prev, tm) * k * (1 - k); }
+          const key = `${S.log.length}-${tm}`;
+          if (k > 0.97 && this.land !== key) { this.land = key; this.squash = 1; this.fx.ring(X(tm), base, rgba(col, 1) && col, 4, 18, 0.45); }
+        } else { bx = X(tm); by = base - 7 - (S.phase === 'listen' ? 5 * Math.abs(Math.sin(t * 7)) : 0); }
+        this.squash = Math.max(0, this.squash - dt * 4);
+        const sq = Math.sin(this.squash * Math.PI) * 0.35;
+        g.beginPath(); g.ellipse(bx, base + 1, 8 * (1 - (base - by) / 120), 2.2, 0, 0, Math.PI * 2); g.fillStyle = 'rgba(41,34,56,0.15)'; g.fill();
+        const bg = g.createRadialGradient(bx - 3, by - 3, 1, bx, by, 8);
+        bg.addColorStop(0, '#fff'); bg.addColorStop(1, col);
+        g.beginPath(); g.ellipse(bx, by + 7 * sq * 0.5, 7.5 * (1 + sq), 7.5 * (1 - sq), 0, 0, Math.PI * 2); g.fillStyle = bg; g.fill(); g.strokeStyle = C.ink; g.lineWidth = 1.4; g.stroke();
+        if (S.target !== null) text(g, name(S.target), bx, by - 18, { size: 11, weight: 800, color: C.ink });
+      }
+      this.fx.draw(g, dt);
+    }
+  });
+
+  // 15 — pulse chain: a line of circles; reached ones breathe in a wave,
+  // light pulses run towards the target, a ring counts down the take.
+  NEW.push({
+    name: 'Nabız dizisi',
+    text: 'Bir ip üzerinde dizili halkalar. Tutturulanlar lime olur ve sırayla nefes alıp dalga gibi atar; başlangıçtan hedefe doğru ışık nabızları akar ve yönü gösterir. Hedef halkanın etrafındaki yay, o aşamanın ne kadar sürdüğünü sayar.',
+    init() { this.fx = makeFx(); this.lo = new Spring(140, 17); this.hi = new Spring(140, 17); this.cur = new Spring(); },
+    draw(g, w, h, t, dt, S) {
+      const pad = 18, y = h * 0.5, X = m => pad + (m - LO) / (HI - LO) * (w - 2 * pad);
+      watch(this, S, e => resultFx(this.fx, e, X(e.m), y));
+      g.beginPath(); g.moveTo(pad - 6, y); g.lineTo(w - pad + 6, y); g.strokeStyle = C.line; g.lineWidth = 2; g.stroke();
+      if (S.low !== null) {
+        const x0 = this.lo.to(X(S.low), dt), x1 = this.hi.to(X(S.high), dt);
+        const gr = g.createLinearGradient(x0, 0, x1, 0); gr.addColorStop(0, C.limeD); gr.addColorStop(1, C.lime);
+        g.beginPath(); g.moveTo(x0, y); g.lineTo(x1, y); g.strokeStyle = gr; g.lineWidth = 6; g.lineCap = 'round'; g.stroke();
+      }
+      if (S.target !== null) {
+        const sx = X(START), tx = this.cur.to(X(S.target), dt);
+        for (let i = 0; i < 3; i++) {
+          const k = (t * 0.7 + i / 3) % 1, x = lerp(sx, tx, k);
+          g.beginPath(); g.arc(x, y, 3.2, 0, Math.PI * 2); g.fillStyle = rgba(phaseCol(S), Math.sin(k * Math.PI) * 0.9); g.fill();
+        }
+      }
+      for (let m = LO; m <= HI; m++) {
+        const x = X(m), mk = S.miss.get(m);
+        if (S.reached.has(m)) {
+          const k = ((t * 0.8 - (m - LO) * 0.08) % 1 + 1) % 1;
+          g.beginPath(); g.arc(x, y, 7 + 9 * ease(k), 0, Math.PI * 2); g.strokeStyle = rgba(C.limeD, (1 - k) * 0.5); g.lineWidth = 1.4; g.stroke();
+          glowDot(g, x, y, 6.5, C.lime, 'rgba(169,204,62,0.8)', C.ink);
+        } else {
+          g.beginPath(); g.arc(x, y, isBlack(m) ? 2.6 : 3.6, 0, Math.PI * 2); g.fillStyle = '#fff'; g.fill(); g.strokeStyle = rgba(C.ink, 0.25); g.lineWidth = 1.3; g.stroke();
+        }
+        if (mk) { g.beginPath(); g.arc(x, y + 16, 2.8, 0, Math.PI * 2); g.fillStyle = resCol(mk); g.fill(); }
+        if (m % 12 === 0 || m === START) text(g, name(m), x, y + 30, { size: 9, weight: m === START ? 800 : 700, color: m === START ? C.ink : C.faint });
+      }
+      if (S.target !== null) {
+        const x = this.cur.x, col = phaseCol(S);
+        g.beginPath(); g.arc(x, y, 10, 0, Math.PI * 2); g.fillStyle = '#fff'; g.fill(); g.strokeStyle = col; g.lineWidth = 2.5; g.stroke();
+        g.beginPath(); g.arc(x, y, 15, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * S.prog); g.strokeStyle = col; g.lineWidth = 2.5; g.lineCap = 'round'; g.stroke();
+        text(g, name(S.target), x, y - 28, { size: 11, weight: 800, color: C.ink });
+        chevron(g, x + (S.dir === 'up' ? 24 : -24), y - 28, 7, S.dir === 'up', col, 0.9);
+      }
+      this.fx.draw(g, dt);
+    }
+  });
+
+  // 16 — radar: notes as points on a sweeping radar; the higher the note
+  // the further out. The sweep pings every reached note.
+  NEW.push({
+    name: 'Radar',
+    text: 'Dönen bir radar: notalar ekranda noktalar, tiz notalar merkezden daha uzakta. Tarama çizgisi tutturulan notaların üzerinden geçtikçe onlar "ping" verir. Hedef nokta yanıp söner; kaçırmalar çarpı olarak kalır.',
+    init() { this.fx = makeFx(); this.sw = 0; this.pinged = new Map(); this.rev = 0; },
+    draw(g, w, h, t, dt, S) {
+      const cx = w / 2, cy = h / 2, R = Math.min(w, h) * 0.46;
+      const A = m => -Math.PI / 2 - 2.6 + (m - LO) / (HI - LO) * 5.2, Rr = m => lerp(R * 0.3, R * 0.9, (m - LO) / (HI - LO));
+      const P = m => [cx + Math.cos(A(m)) * Rr(m), cy + Math.sin(A(m)) * Rr(m)];
+      watch(this, S, e => { const [x, y] = P(e.m); resultFx(this.fx, e, x, y); });
+      const bg = g.createRadialGradient(cx, cy, 0, cx, cy, R);
+      bg.addColorStop(0, 'rgba(238,231,255,0.95)'); bg.addColorStop(1, 'rgba(238,231,255,0.35)');
+      g.beginPath(); g.arc(cx, cy, R, 0, Math.PI * 2); g.fillStyle = bg; g.fill();
+      for (const k of [0.33, 0.66, 1]) { g.beginPath(); g.arc(cx, cy, R * k, 0, Math.PI * 2); g.strokeStyle = rgba(C.lav, 0.25); g.lineWidth = 1; g.stroke(); }
+      g.beginPath(); g.moveTo(cx - R, cy); g.lineTo(cx + R, cy); g.moveTo(cx, cy - R); g.lineTo(cx, cy + R); g.strokeStyle = rgba(C.lav, 0.15); g.stroke();
+      const prevSw = this.sw; this.sw += dt * 1.5;
+      if (Math.floor(this.sw / (Math.PI * 2)) !== Math.floor(prevSw / (Math.PI * 2))) this.rev++;
+      const sw = this.sw % (Math.PI * 2);
+      for (let i = 0; i < 26; i++) {
+        const a = sw - i * 0.035;
+        g.beginPath(); g.moveTo(cx, cy); g.arc(cx, cy, R, a - 0.036, a); g.closePath(); g.fillStyle = rgba(C.lav, 0.22 * (1 - i / 26)); g.fill();
+      }
+      g.beginPath(); g.moveTo(cx, cy); g.lineTo(cx + Math.cos(sw) * R, cy + Math.sin(sw) * R); g.strokeStyle = rgba(C.deep, 0.8); g.lineWidth = 1.6; g.stroke();
+      for (let m = LO; m <= HI; m++) {
+        const [x, y] = P(m), mk = S.miss.get(m);
+        if (S.reached.has(m)) {
+          const d = Math.atan2(Math.sin(sw - A(m)), Math.cos(sw - A(m)));
+          if (d >= 0 && d < 0.15 && this.pinged.get(m) !== this.rev) { this.pinged.set(m, this.rev); this.fx.ring(x, y, C.limeD, 4, 16, 0.6); }
+          glowDot(g, x, y, 4.4, C.lime, 'rgba(169,204,62,0.9)', C.ink);
+        } else if (mk) xMark(g, x, y, 3, resCol(mk));
+        else { g.beginPath(); g.arc(x, y, 1.4, 0, Math.PI * 2); g.fillStyle = rgba(C.deep, 0.3); g.fill(); }
+      }
+      if (S.target !== null) {
+        const [x, y] = P(S.target), col = phaseCol(S), blink = 0.5 + 0.5 * Math.sin(t * 8);
+        g.save(); g.translate(x, y); g.rotate(Math.PI / 4);
+        g.beginPath(); g.rect(-5, -5, 10, 10); g.fillStyle = rgba(col, 0.5 + 0.5 * blink); g.fill(); g.restore();
+        g.beginPath(); g.arc(x, y, 11, 0, Math.PI * 2); g.strokeStyle = rgba(col, 0.6); g.lineWidth = 1.5; g.stroke();
+        text(g, name(S.target), x + (x > cx ? 22 : -22), y - 10, { size: 10.5, weight: 800, color: C.ink });
+      }
+      g.beginPath(); g.arc(cx, cy, 3, 0, Math.PI * 2); g.fillStyle = C.deep; g.fill();
+      this.fx.draw(g, dt);
+    }
+  });
+
+  // 17 — spiral: the whole range coiled into a spiral; the found range is
+  // a glowing section, a comet slides along it.
+  NEW.push({
+    name: 'Sarmal',
+    text: 'Bütün aralık içten dışa açılan bir sarmal: pes notalar merkeze yakın, tiz notalar dışta. Bulduğun aralık sarmalın parlayan bir bölümü olur, kuyruklu bir yıldız sarmal boyunca hedef notaya kayar.',
+    init() { this.fx = makeFx(); this.s = new Spring(110, 16); this.trail = []; },
+    draw(g, w, h, t, dt, S) {
+      const cx = w / 2, cy = h / 2, R = Math.min(w, h) * 0.47, r0 = 12, turns = 1.8;
+      const Q = s => { const a = -Math.PI / 2 + s * turns * Math.PI * 2, r = r0 + s * (R - r0); return [cx + Math.cos(a) * r, cy + Math.sin(a) * r]; };
+      const sOf = m => (m - LO) / (HI - LO);
+      watch(this, S, e => { const [x, y] = Q(sOf(e.m)); resultFx(this.fx, e, x, y); });
+      const path = (s0, s1) => { g.beginPath(); for (let s = s0; s <= s1 + 1e-6; s += 0.004) { const [x, y] = Q(s); s === s0 ? g.moveTo(x, y) : g.lineTo(x, y); } };
+      path(0, 1); g.strokeStyle = rgba(C.lav, 0.22); g.lineWidth = 5; g.lineCap = 'round'; g.stroke();
+      if (S.low !== null) {
+        path(sOf(S.low), sOf(S.high));
+        g.save(); g.shadowColor = 'rgba(169,204,62,0.9)'; g.shadowBlur = 10; g.strokeStyle = C.lime; g.lineWidth = 6; g.stroke(); g.restore();
+      }
+      for (let m = LO; m <= HI; m++) {
+        const [x, y] = Q(sOf(m)), mk = S.miss.get(m);
+        if (S.reached.has(m)) glowDot(g, x, y, 3.8, '#fff', 'rgba(169,204,62,0.9)', C.limeDeep);
+        else if (mk) { g.beginPath(); g.arc(x, y, 3.4, 0, Math.PI * 2); g.strokeStyle = resCol(mk); g.lineWidth = 2; g.stroke(); }
+        else { g.beginPath(); g.arc(x, y, 1.5, 0, Math.PI * 2); g.fillStyle = rgba(C.ink, 0.3); g.fill(); }
+        if (m % 12 === 0) { const [lx, ly] = Q(sOf(m)); text(g, name(m), lx + 14, ly, { size: 8.5, color: C.faint }); }
+      }
+      if (S.target !== null) {
+        const s = this.s.to(sOf(S.target), dt), col = phaseCol(S);
+        this.trail.push(s); if (this.trail.length > 16) this.trail.shift();
+        this.trail.forEach((ts, i) => { const [x, y] = Q(ts), k = i / this.trail.length; g.beginPath(); g.arc(x, y, 1 + 4 * k, 0, Math.PI * 2); g.fillStyle = rgba(col, 0.1 + 0.4 * k); g.fill(); });
+        const [x, y] = Q(s);
+        glowDot(g, x, y, 6.5, col, rgba(col, 0.9), C.ink);
+        text(g, name(S.target), cx, cy, { size: 12, weight: 800, color: C.ink });
+      }
+      this.fx.draw(g, dt);
+    }
+  });
+
+  // 18 — sunburst: a rising sun whose rays are the notes; reached rays
+  // grow long and lime, the target ray pulses.
+  NEW.push({
+    name: 'Güneş ışınları',
+    text: 'Ufukta doğan bir güneş; her ışın bir nota, soldan sağa pesten tize. Tutturulan ışınlar yaylanarak uzar ve lime parlar, hedef ışın aşamanın rengiyle nabız atar. Test sonunda güneşin şekli sesinin aralığını anlatır.',
+    init() { this.fx = makeFx(); this.len = Array.from({ length: HI - LO + 1 }, () => new Spring(110, 12)); },
+    draw(g, w, h, t, dt, S) {
+      const cx = w / 2, cy = h - 16, n = HI - LO + 1, r0 = 32, maxL = Math.min(h - 40, w * 0.4);
+      const A = m => Math.PI + (m - LO + 0.5) / n * Math.PI;
+      watch(this, S, e => { const a = A(e.m), L = this.len[e.m - LO].x || 10; resultFx(this.fx, e, cx + Math.cos(a) * (r0 + L), cy + Math.sin(a) * (r0 + L)); });
+      g.beginPath(); g.moveTo(0, cy); g.lineTo(w, cy); g.strokeStyle = C.line; g.lineWidth = 1.5; g.stroke();
+      for (let m = LO; m <= HI; m++) {
+        const i = m - LO, a = A(m), isT = m === S.target, mk = S.miss.get(m), reached = S.reached.has(m);
+        let L = 10, col = rgba(C.ink, 0.18), wdt = 3;
+        if (reached) { L = maxL * (0.55 + 0.25 * ((m * 29) % 7) / 7); col = C.limeD; wdt = 4.5; }
+        else if (mk) { L = 18; col = resCol(mk); }
+        if (isT) { L = maxL * (0.85 + 0.1 * Math.sin(t * 6)); col = phaseCol(S); wdt = 5; }
+        const l = this.len[i].to(L, dt);
+        const x0 = cx + Math.cos(a) * r0, y0 = cy + Math.sin(a) * r0, x1 = cx + Math.cos(a) * (r0 + l), y1 = cy + Math.sin(a) * (r0 + l);
+        const gr = g.createLinearGradient(x0, y0, x1, y1);
+        const c0 = col.startsWith('#') ? col : C.ink;
+        if (col.startsWith('#')) { gr.addColorStop(0, rgba(c0, 1)); gr.addColorStop(1, rgba(c0, reached || isT ? 0.25 : 0.6)); } else { gr.addColorStop(0, col); gr.addColorStop(1, col); }
+        if (reached || isT) { g.save(); g.shadowColor = isT ? rgba(phaseCol(S), 0.7) : 'rgba(217,245,116,0.9)'; g.shadowBlur = 8; }
+        g.beginPath(); g.moveTo(x0, y0); g.lineTo(x1, y1); g.strokeStyle = gr; g.lineWidth = wdt; g.lineCap = 'round'; g.stroke();
+        if (reached || isT) g.restore();
+      }
+      const sg = g.createRadialGradient(cx, cy - 8, 2, cx, cy, r0 - 4);
+      sg.addColorStop(0, '#FFFFFF'); sg.addColorStop(1, S.phase === 'feedback' && S.res === 'm' ? C.lime : '#CFC2F5');
+      g.save(); g.shadowColor = 'rgba(217,245,116,0.8)'; g.shadowBlur = 16;
+      g.beginPath(); g.arc(cx, cy, r0 - 4, Math.PI, 0); g.closePath(); g.fillStyle = sg; g.fill(); g.restore();
+      if (S.target !== null) text(g, name(S.target), cx, cy - 11, { size: 12, weight: 800, color: C.ink });
+      text(g, 'PES', 8, cy - 8, { size: 8.5, weight: 800, color: C.faint, align: 'left' });
+      text(g, 'TİZ', w - 8, cy - 8, { size: 8.5, weight: 800, color: C.faint, align: 'right' });
+      this.fx.draw(g, dt);
+    }
+  });
+
+  // 19 — bubbles: every reached note releases a bubble that floats above
+  // its place on the axis; misses rise and pop.
+  NEW.push({
+    name: 'Baloncuklar',
+    text: 'Tutturduğun her nota, eksendeki yerinden süzülen bir baloncuk bırakır ve orada yüzer. Kaçırılan nota küçük bir mercan baloncuk olarak yükselip patlar. Hedef nota şeffaf, sesinle şişen ve titreyen büyük bir baloncuk.',
+    init() { this.fx = makeFx(); this.b = new Map(); this.pops = []; },
+    draw(g, w, h, t, dt, S) {
+      const pad = 16, base = h - 22, X = m => pad + (m - LO) / (HI - LO) * (w - 2 * pad);
+      watch(this, S, e => {
+        if (e.r === 'm') { if (!this.b.has(e.m)) this.b.set(e.m, new Spring(60, 7)); this.b.get(e.m).x = base; }
+        else this.pops.push({ m: e.m, r: e.r, t0: t });
+      });
+      g.beginPath(); g.moveTo(pad - 6, base); g.lineTo(w - pad + 6, base); g.strokeStyle = C.line; g.lineWidth = 2; g.stroke();
+      for (let m = LO; m <= HI; m++) if (m % 12 === 0 || m === START) text(g, name(m), X(m), base + 11, { size: 9, color: m === START ? C.ink : C.faint, weight: m === START ? 800 : 700 });
+      for (const [m, sp] of this.b) {
+        const x = X(m), y = sp.to(base - 46 - ((m * 17) % 48), dt) + Math.sin(t * 1.6 + m) * 3;
+        g.beginPath(); g.moveTo(x, base); g.lineTo(x, y + 9); g.strokeStyle = rgba(C.limeD, 0.25); g.lineWidth = 1; g.stroke();
+        const bg = g.createRadialGradient(x - 3, y - 3, 1, x, y, 9);
+        bg.addColorStop(0, 'rgba(255,255,255,0.95)'); bg.addColorStop(0.5, rgba(C.lime, 0.85)); bg.addColorStop(1, rgba(C.limeD, 0.9));
+        g.beginPath(); g.arc(x, y, 8.5, 0, Math.PI * 2); g.fillStyle = bg; g.fill(); g.strokeStyle = rgba(C.limeDeep, 0.5); g.lineWidth = 1; g.stroke();
+        if (m === S.high || m === S.low) text(g, name(m), x, y - 16, { size: 9, weight: 800, color: C.ink });
+      }
+      this.pops = this.pops.filter(p => t - p.t0 < 1.1);
+      for (const p of this.pops) {
+        const k = (t - p.t0) / 0.7, x = X(p.m);
+        if (k < 1) {
+          const y = base - 10 - ease(k) * 50;
+          g.beginPath(); g.arc(x, y, 5, 0, Math.PI * 2); g.fillStyle = rgba(resCol(p.r), 0.25); g.fill(); g.strokeStyle = resCol(p.r); g.lineWidth = 1.5; g.stroke();
+        } else if (!p.popped) { p.popped = true; this.fx.burst(x, base - 60, resCol(p.r), 10, 50); }
+      }
+      if (S.target !== null) {
+        const x = X(S.target), y = base - 82, col = phaseCol(S);
+        const inflate = S.phase === 'listen' ? 4 + 2 * Math.sin(t * 6) : S.phase === 'piano' ? 2 * Math.sin(S.prog * Math.PI) : 0;
+        const r = 14 + inflate, wob = 1.5 * Math.sin(t * 5);
+        g.beginPath(); g.ellipse(x, y, r + wob, r - wob, 0, 0, Math.PI * 2);
+        g.fillStyle = rgba(col, 0.12); g.fill(); g.strokeStyle = col; g.lineWidth = 2; g.stroke();
+        g.beginPath(); g.ellipse(x - r * 0.35, y - r * 0.4, r * 0.25, r * 0.13, -0.6, 0, Math.PI * 2); g.fillStyle = 'rgba(255,255,255,0.8)'; g.fill();
+        text(g, name(S.target), x, y + 1, { size: 10, weight: 800, color: C.ink });
+        g.setLineDash([2, 3]); g.beginPath(); g.moveTo(x, y + r + 2); g.lineTo(x, base - 2); g.strokeStyle = rgba(col, 0.5); g.lineWidth = 1; g.stroke(); g.setLineDash([]);
+      }
+      this.fx.draw(g, dt);
+    }
+  });
+
+  // 20 — string weave: one horizontal line per semitone; reached lines
+  // glow and ripple, the target line vibrates, a reading head runs along it.
+  NEW.push({
+    name: 'Çizgi örgüsü',
+    text: 'Her yarım ses yatay ince bir çizgi; hepsi bir dokuma gibi üst üste. Hedef çizgi piyano çalınca titreşir, sen söylerken üzerinde bir okuma başı ilerler. Tutturulduğunda çizgi lime parlar ve o noktadan iki yana bir dalga yayılır.',
+    init() { this.fx = makeFx(); this.rip = []; },
+    draw(g, w, h, t, dt, S) {
+      const left = 30, right = w - 8, Y = m => lerp(h - 12, 12, (m - LO) / (HI - LO));
+      const headX = S.phase === 'listen' ? lerp(left, right, S.prog) : S.phase === 'feedback' ? right : left;
+      watch(this, S, e => { this.rip.push({ m: e.m, t0: t, x0: right - 30, r: e.r }); resultFx(this.fx, e, right - 30, Y(e.m)); });
+      this.rip = this.rip.filter(r => t - r.t0 < 2.4);
+      for (let m = LO; m <= HI; m++) {
+        const y = Y(m), isT = m === S.target, reached = S.reached.has(m), mk = S.miss.get(m);
+        const vib = isT ? (S.phase === 'piano' ? 3 * Math.sin(S.prog * Math.PI) : S.phase === 'listen' ? 1.6 : 0.6) : 0;
+        g.beginPath();
+        for (let x = left; x <= right; x += 3) {
+          let dy = vib * Math.sin(x * 0.18 + t * 22);
+          for (const r of this.rip) if (r.m === m) { const a = t - r.t0; dy += 5 * Math.exp(-a * 1.8) * Math.sin((x - r.x0) * 0.12 - a * 14) * Math.exp(-Math.abs(x - r.x0) / 140); }
+          x === left ? g.moveTo(x, y + dy) : g.lineTo(x, y + dy);
+        }
+        if (isT) { g.save(); g.shadowColor = rgba(phaseCol(S), 0.7); g.shadowBlur = 8; g.strokeStyle = phaseCol(S); g.lineWidth = 2.4; g.stroke(); g.restore(); }
+        else if (reached) { g.save(); g.shadowColor = 'rgba(217,245,116,1)'; g.shadowBlur = 6; g.strokeStyle = C.limeD; g.lineWidth = 2; g.stroke(); g.restore(); }
+        else { g.setLineDash(m === START ? [3, 4] : []); g.strokeStyle = m === START ? rgba(C.ink, 0.45) : rgba(C.ink, isBlack(m) ? 0.07 : 0.13); g.lineWidth = 1; g.stroke(); g.setLineDash([]); }
+        if (mk && !reached) { g.beginPath(); g.arc(left - 8, y, 2.6, 0, Math.PI * 2); g.fillStyle = resCol(mk); g.fill(); }
+        if (m % 12 === 0 || isT) text(g, name(m), 2, y, { size: isT ? 10 : 8.5, weight: isT ? 800 : 700, color: isT ? C.ink : C.faint, align: 'left' });
+      }
+      if (S.target !== null && S.phase === 'listen') {
+        const y = Y(S.target), ly = S.live !== null && S.live >= LO ? Y(S.live) : y;
+        g.beginPath(); g.moveTo(headX, y); g.lineTo(headX, ly); g.strokeStyle = rgba(C.coral, 0.6); g.lineWidth = 1.2; g.stroke();
+        glowDot(g, headX, ly, 4.5, C.coral, 'rgba(255,98,89,0.8)', '#fff');
+      }
+      this.fx.draw(g, dt);
+    }
+  });
+  NEW.forEach((d, i) => { d.id = 11 + i; d.group = 'new'; });
+  designs.forEach((d, i) => { d.id = i + 1; });
+  designs.unshift(...NEW);
+
+  // ---------- page wiring ----------
+  const grids = { new: document.getElementById('grid-new'), old: document.getElementById('grid') };
+  const views = designs.map(ds => {
+    const grid = grids[ds.group === 'new' ? 'new' : 'old'];
+    const el = document.createElement('article');
+    el.className = 'concept';
+    el.innerHTML = `
+      <h2><span class="id">${String(ds.id).padStart(2, '0')}</span>${ds.name}</h2>
+      <div class="phone" aria-label="${ds.name} önizlemesi">
+        <div class="row"><span class="tag">TİZE DOĞRU · 0 NOTA</span><span class="st">—</span></div>
+        <canvas role="img" aria-label="${ds.name}: aralık testi haritası"></canvas>
+      </div>
+      <p>${ds.text}</p>`;
+    grid.appendChild(el);
+    ds.init();
+    return { ds, canvas: el.querySelector('canvas'), tag: el.querySelector('.tag'), st: el.querySelector('.st'), w: 0, h: 0 };
+  });
+  function size() {
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    for (const v of views) {
+      const w = v.canvas.clientWidth, h = v.canvas.clientHeight;
+      if (w === v.w && h === v.h) continue;
+      v.w = w; v.h = h; v.canvas.width = Math.round(w * dpr); v.canvas.height = Math.round(h * dpr);
+      v.ctx = v.canvas.getContext('2d'); v.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+  }
+  const ro = new ResizeObserver(size); ro.observe(grids.new); ro.observe(grids.old); size();
+
+  const playB = document.getElementById('play'), restartB = document.getElementById('restart');
+  const bar = document.getElementById('bar'), nowEl = document.getElementById('now');
+  let playing = !matchMedia('(prefers-reduced-motion: reduce)').matches, clock = playing ? 0 : 6.2, last = performance.now(), ui = 0, prevU = 0;
+  const setPlay = p => { playing = p; playB.setAttribute('aria-pressed', String(p)); playB.textContent = p ? 'Oynatılıyor' : 'Duraklatıldı'; };
+  setPlay(playing);
+  playB.addEventListener('click', () => setPlay(!playing));
+  restartB.addEventListener('click', () => { clock = 0; for (const v of views) v.ds.init(); setPlay(true); });
+
+  function frame(now) {
+    const dt = Math.min(0.05, (now - last) / 1000); last = now;
+    if (playing) clock += dt;
+    const u = clock % TOTAL;
+    if (u < prevU) for (const v of views) v.ds.init();
+    prevU = u;
+    const S = stateAt(u, clock);
+    for (const v of views) {
+      if (!v.ctx) continue;
+      v.ctx.clearRect(0, 0, v.w, v.h); v.ctx.save(); v.ds.draw(v.ctx, v.w, v.h, clock, playing ? dt : 0, S); v.ctx.restore();
+    }
+    ui += dt;
+    if (ui > 0.1) {
+      ui = 0;
+      const tag = `${S.dir === 'up' ? 'TİZE' : 'PESE'} DOĞRU · ${S.reached.size} NOTA`, st = statusText(S);
+      for (const v of views) { if (v.tag.textContent !== tag) v.tag.textContent = tag; if (v.st.textContent !== st) v.st.textContent = st; }
+      bar.style.width = `${(u / TOTAL) * 100}%`;
+      nowEl.innerHTML = `<b>${st}</b> · ${S.target !== null ? `${S.att}. deneme` : 'sonuç'}`;
+    }
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+</script>

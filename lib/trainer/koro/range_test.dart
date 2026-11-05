@@ -17,6 +17,7 @@ import '../ui/audio_reactive_orb.dart';
 import '../ui/kit.dart';
 import 'range_ladder.dart';
 import 'range_visuals.dart';
+import 'pulse_chain.dart';
 import 'voice_waves.dart';
 import '../../domain/lang.dart';
 
@@ -751,10 +752,15 @@ class _LadderView extends StatelessWidget {
                         1 - (flash.value - 0.15).abs().clamp(0.0, 1.0),
                       );
                       final shown = flash.isAnimating ? f : 0.0;
+                      // During feedback the ladder has already moved on:
+                      // keep the judged note in view until the next one.
+                      final judged = stage == _Stage.feedback && last != null
+                          ? last!.targetMidi
+                          : ladder.currentMidi;
                       return Column(
                         children: [
                           VoiceWaves(
-                            target: ladder.currentMidi,
+                            target: judged,
                             notation: notation,
                             pitchMidi: stage == _Stage.listening
                                 ? trace.lastOrNull
@@ -765,13 +771,12 @@ class _LadderView extends StatelessWidget {
                             flash: shown,
                           ),
                           const SizedBox(height: 14),
-                          _LadderKeys(
+                          _LadderChain(
                             ladder: ladder,
-                            live: stage == _Stage.listening
-                                ? trace.lastOrNull
-                                : null,
+                            stage: stage,
+                            last: last,
+                            target: judged,
                             notation: notation,
-                            press: shown,
                           ),
                         ],
                       );
@@ -797,19 +802,21 @@ class _LadderView extends StatelessWidget {
   }
 }
 
-/// The keyboard around the run: reached keys lit, the current note
-/// outlined, the live pitch as a dot.
-class _LadderKeys extends StatelessWidget {
-  const _LadderKeys({
+/// The run as a pulse chain: reached notes lit, misses marked, the target
+/// timed, and the direction shown by light running towards it.
+class _LadderChain extends StatelessWidget {
+  const _LadderChain({
     required this.ladder,
-    required this.live,
+    required this.stage,
+    required this.last,
+    required this.target,
     required this.notation,
-    required this.press,
   });
   final RangeLadder ladder;
-  final double? live;
+  final _Stage stage;
+  final RangeAttempt? last;
+  final int target;
   final NoteNotation notation;
-  final double press;
   @override
   Widget build(BuildContext context) {
     final touched = {
@@ -818,20 +825,35 @@ class _LadderKeys extends StatelessWidget {
       ladder.currentMidi,
       ladder.startMidi,
     };
-    var lo = touched.reduce(math.min) - 3, hi = touched.reduce(math.max) + 3;
-    // At least an octave and a half, so a short run still reads as a piano.
-    while (hi - lo < 18) {
+    var lo = touched.reduce(math.min) - 2, hi = touched.reduce(math.max) + 2;
+    // At least an octave and a bit, so a short run still reads as a range.
+    while (hi - lo < 14) {
       lo--;
       hi++;
     }
-    return KeyboardMap(
+    final judged = last?.judgement.match;
+    return PulseChain(
       low: lo,
       high: hi,
-      reached: ladder.reached.toSet(),
-      target: ladder.currentMidi,
-      live: live,
+      start: ladder.startMidi,
+      marks: chainMarks(ladder.log),
+      attempts: ladder.log.length,
       notation: notation,
-      press: press,
+      target: stage == _Stage.turn ? null : target,
+      up: ladder.direction == RangeDirection.up,
+      phase: switch (stage) {
+        _Stage.playing => ChainPhase.piano,
+        _Stage.listening => ChainPhase.listening,
+        _Stage.turn => ChainPhase.turn,
+        _ => ChainPhase.feedback,
+      },
+      result: switch (judged) {
+        null => null,
+        RangeMatch.matched => ChainMark.matched,
+        RangeMatch.octaveOff => ChainMark.octave,
+        _ => ChainMark.missed,
+      },
+      listenFor: _takeLength,
     );
   }
 }

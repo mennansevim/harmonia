@@ -5,6 +5,23 @@
 **Sahip:** Mennan Sevim  
 **Platform:** Flutter mobil uygulama; ileride web ve öğretmen paneli
 
+**2026-11-05 — FX-05 nabız dizisi (aralık testi nota haritası):** Kullanıcı
+20 taslak arasından (`docs/design/range_map_lab.html`, yayınlı taslak
+sayfası) "Nabız dizisi"ni seçti. Merdivendeki klavye (`KeyboardMap`)
+yerine `PulseChain` (`lib/trainer/koro/pulse_chain.dart`): ip üzerinde
+yarım ses halkaları; tutturulanlar lime, sırayla nefes alan dalga; bulunan
+aralık esneyen lime bant; başlangıçtan hedefe akan ışık nabızları (yön);
+hedef halkasında aşama sayacı (piyanoda döner, dinlerken 3 sn'de dolar,
+geri bildirimde tam); sonuçta dalga halkası + kıvılcım (tuttu) ya da
+mercan/kehribar halka (kaçtı/yanlış oktav); görünen aralık yaylı geçişle
+genişler. Geri bildirimde artık değerlendirilen nota gösterilir (ladder
+zaten sonrakine geçmişti); aynı düzeltme `VoiceWaves` hedefine de uygulandı,
+dalga geçmişi geri bildirimde silinmiyor. Puan, eşik, rubrik değişmedi.
+Sonuç sayfasındaki `KeyboardMap` duruyor. 2 yeni test; tam test **1308
+geçti, 2 skip**; analyze ve format temiz. Simülatörde piyano, dönüş ve
+kaçırma işareti görüldü; tutturma efekti test içi PNG ile. **Gerçek ses ve
+cihazla görülmedi.**
+
 **2026-11-05 — FX-04 ses dalgaları (aralık testi dinleme anı):** Kullanıcı
 15 taslak arasından "ses dalgaları"nı seçti (`docs/design/range_listening_lab.html`,
 yayınlı taslak sayfası). Merdivendeki `PitchTrail` ve küre yerine
