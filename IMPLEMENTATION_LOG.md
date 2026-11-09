@@ -4228,3 +4228,16 @@ erişilebilirlik regresyonları, ses motoru koruma kontrolü).
   dokunulmadı. Gelişim başlığındaki “Sesinin haritası” ifadesi aynı kaldı.
 - Gerçek cihaz, VoiceOver/TalkBack, yaş grubu ve eğitimci değerlendirmesi
   yapılmadı (`not_run`). Commit, push, upload yok.
+
+## 2026-11-09 — iOS IPA 1.0.0+13 (WIDE-01…03 dahil)
+
+- `pubspec.yaml` 1.0.0+12 → 1.0.0+13; önceki IPA `build/ios/ipa-1.0.0+12/`.
+- `flutter build ipa --release --dart-define=RESONIA_CHANNEL=beta
+  --export-options-plist=<+12 ExportOptions, destination=export>` exit 0.
+  `build/ios/ipa/Vocalart.ipa` 35.680.940 byte, SHA-256
+  `7c5ba8b40035fdfb9c8549cbb62f912085c0300fb2b10637ea8fc9f8dcd5650e`.
+- `verify_ios_ipa.py --pubspec pubspec.yaml`: passed — 1.0.0 (13), Apple
+  Distribution L3Z9U2B39K, 4 Mach-O bundle, 8 privacy manifest; doğrulayıcı
+  testleri 16/16. Flutter'ın varsayılan LaunchImage uyarısı önceki
+  build'lerdeki gibi sürüyor (launch ekranı storyboard ile çiziliyor).
+- Upload, TestFlight ve fiziksel cihaz denemesi yapılmadı.
