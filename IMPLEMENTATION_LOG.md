@@ -4241,3 +4241,28 @@ erişilebilirlik regresyonları, ses motoru koruma kontrolü).
   testleri 16/16. Flutter'ın varsayılan LaunchImage uyarısı önceki
   build'lerdeki gibi sürüyor (launch ekranı storyboard ile çiziliyor).
 - Upload, TestFlight ve fiziksel cihaz denemesi yapılmadı.
+
+## 2026-11-09 — PATH-01 ders yolu, "Devam et" ve kademeli kutlama
+
+- `lib/trainer/ui/celebration.dart`: `celebrationFor` yalnız oturumun
+  kurduğu olaydan kademe seçer: ölçülmüş ders tamamı → küçük patlama;
+  geçilen ara durak (%80, mevcut eşik) → 3 havai fişek + bayrak; geçilen
+  final ya da biten beceri → 7 havai fişek + kupa. Serbest çalışma, intro,
+  yanıtsız oturum ve geçilemeyen kapı kutlanmaz. Kapalı formlu, deterministik
+  painter; dokunma ve semantik yok; hareket azaltmada kıvılcım yok, kapılarda
+  durağan rozet; haptik ayarına uyar. Yeni bağımlılık/lisanslı animasyon yok.
+- `SessionEnd`: kutlama katmanı; geçilen düğümden sonra beceride sıradaki
+  düğüm varsa "Devam et: <ders>" + "Şimdilik bitir". `LessonFlow` sıradakini
+  `pushReplacement` ile açar. Final için "Final sınavı geçildi", beceri
+  bitince "Bu becerinin tüm dersleri tamamlandı." Skor, eşik, XP, yıldız ve
+  ilerleme formülleri değişmedi.
+- `SkillScreen`: liste yerine zikzak yol (`pathX`, 8 düğümde tekrar), noktalı
+  patika (biten kısım yeşil), sıradaki düğümde "BAŞLA", kilitli gri, yıldızlar
+  dolu + tekrar önerisi simgesi; her düğüm "başlık, durum" semantik etiketi.
+- Test: `test/trainer/path_celebration_test.dart` 14 test. Tam kalite kapısı
+  format 427/0, analyze temiz, **1416 test + 2 opt-in skip** (sonrasında
+  eklenen final testiyle). Görsel: gerçek fontlu widget render'ında yol,
+  ders/ara durak/final kutlaması gözle incelendi; rozet ikon fontu ve kıvılcım
+  boyutu buna göre düzeltildi. iOS 26.5 simülatöründe debug build açıldı ama
+  oturum sırasında simülatör kapandı; uçtan uca simülatör/cihaz turu,
+  VoiceOver ve gerçek kullanıcı algısı doğrulanmadı.

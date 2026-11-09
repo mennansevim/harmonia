@@ -5,6 +5,7 @@ import '../domain/curriculum.dart';
 import '../domain/trainers.dart';
 import '../quiz/quiz.dart';
 import '../quiz/quiz_view.dart';
+import '../ui/celebration.dart';
 import '../ui/kit.dart';
 import '../../domain/lang.dart';
 
@@ -17,6 +18,10 @@ import '../../domain/lang.dart';
 /// skill gain are different statements. The headline says what happened
 /// (completed / answers measured); XP is practice volume and stays in the
 /// details; one "next step" card names the single suggested follow-up.
+///
+/// PATH-01: a passed lesson or gate celebrates by tier ([celebrationFor])
+/// and, when [onContinue] is set and the skill has a next node, offers
+/// "Devam et" so the path keeps going without a trip back to Today.
 class SessionEnd extends StatelessWidget {
   const SessionEnd({
     super.key,
@@ -26,6 +31,7 @@ class SessionEnd extends StatelessWidget {
     this.passed = true,
     this.title,
     this.retryConfig,
+    this.onContinue,
   });
   final LessonNode? node;
   final QuizSummary summary;
@@ -35,6 +41,10 @@ class SessionEnd extends StatelessWidget {
 
   /// How the session sounded; enables the short retry when set.
   final QuizConfig? retryConfig;
+
+  /// Opens the skill's next node in place of this one; null hides
+  /// "Devam et".
+  final VoidCallback? onContinue;
 
   @override
   Widget build(BuildContext context) {
@@ -51,6 +61,8 @@ class SessionEnd extends StatelessWidget {
     final measured = s.total > 0;
     final verdict = !measured
         ? tr('Bu turda yanıt kaydedilmedi', 'No answers were recorded')
+        : gate && passed && node?.kind == NodeKind.finalExam
+        ? tr('Final sınavı geçildi', 'Final exam passed')
         : gate
         ? (passed
               ? tr('Ara durak geçildi', 'Checkpoint passed')
@@ -60,7 +72,13 @@ class SessionEnd extends StatelessWidget {
         // Every finished lesson is complete (completeNode); accuracy is told
         // apart in the note, never as a pass/fail or skill verdict.
         : tr('Ders tamamlandı', 'Lesson complete');
-    final note = !measured
+    final note =
+        measured && passed && node != null && store.nextNode(kind) == null
+        ? tr(
+            'Bu becerinin tüm dersleri tamamlandı.',
+            'Every lesson of this skill is complete.',
+          )
+        : !measured
         ? tr(
             'Puan ya da ilerleme yazılmadı. İstediğin zaman yeniden dene.',
             'No score or progress was written. Try again whenever you like.',
@@ -107,6 +125,18 @@ class SessionEnd extends StatelessWidget {
     final weakest = missed.isEmpty ? null : items.first;
     final sang = node != null && !gate && kind == TrainerKind.pitch;
     final upNext = store.nextNode(kind);
+    final canContinue =
+        onContinue != null &&
+        node != null &&
+        measured &&
+        passed &&
+        upNext != null;
+    final tier = celebrationFor(
+      node: node,
+      measured: measured,
+      passed: passed,
+      skillDone: node != null && upNext == null,
+    );
     // One suggested follow-up, in this order: retry today's misses, else the
     // next lesson. A failed checkpoint already says what to do in its note.
     final (String, String, (String, VoidCallback)?)? nextStep =
@@ -122,7 +152,7 @@ class SessionEnd extends StatelessWidget {
               () => _retry(context, missed),
             ),
           )
-        : upNext != null && !gate && measured
+        : upNext != null && !gate && measured && !canContinue
         ? (
             tr('Sıradaki: ${upNext.title}', 'Next: ${upNext.title}'),
             tr(
@@ -134,274 +164,302 @@ class SessionEnd extends StatelessWidget {
         : null;
     return Scaffold(
       backgroundColor: TC.canvas,
-      body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: ListView(
-                padding: const EdgeInsets.fromLTRB(18, 24, 18, 16),
-                children: [
-                  Text(
-                    (title ?? node?.title ?? kind.title).toUpperCase(),
-                    style: TT.caps.copyWith(color: color),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(verdict, style: TT.h2),
-                  const SizedBox(height: 4),
-                  Text(note, style: TT.body),
-                  const SizedBox(height: 18),
-                  if (measured)
-                    HeroCard(
-                      ring: false,
-                      padding: const EdgeInsets.all(20),
-                      child: Column(
-                        children: [
-                          Semantics(
-                            label: tr(
-                              '${s.total} sorudan ${s.correct} ilk denemede doğru',
-                              '${s.correct} of ${s.total} right on the first try',
-                            ),
-                            excludeSemantics: true,
-                            child: SizedBox(
-                              width: 128,
-                              height: 128,
-                              child: CustomPaint(
-                                painter: _ScoreRing(
-                                  s.total == 0 ? 0 : s.correct / s.total,
+      body: Stack(
+        children: [
+          SafeArea(
+            child: Column(
+              children: [
+                Expanded(
+                  child: ListView(
+                    padding: const EdgeInsets.fromLTRB(18, 24, 18, 16),
+                    children: [
+                      Text(
+                        (title ?? node?.title ?? kind.title).toUpperCase(),
+                        style: TT.caps.copyWith(color: color),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(verdict, style: TT.h2),
+                      const SizedBox(height: 4),
+                      Text(note, style: TT.body),
+                      const SizedBox(height: 18),
+                      if (measured)
+                        HeroCard(
+                          ring: false,
+                          padding: const EdgeInsets.all(20),
+                          child: Column(
+                            children: [
+                              Semantics(
+                                label: tr(
+                                  '${s.total} sorudan ${s.correct} ilk denemede doğru',
+                                  '${s.correct} of ${s.total} right on the first try',
                                 ),
-                                child: Center(
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Text(
-                                        '${s.correct}',
-                                        key: const Key('session_score'),
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 40,
-                                          fontWeight: FontWeight.w800,
-                                          height: 1,
-                                          fontFeatures: [
-                                            FontFeature.tabularFigures(),
-                                          ],
-                                        ),
+                                excludeSemantics: true,
+                                child: SizedBox(
+                                  width: 128,
+                                  height: 128,
+                                  child: CustomPaint(
+                                    painter: _ScoreRing(
+                                      s.total == 0 ? 0 : s.correct / s.total,
+                                    ),
+                                    child: Center(
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Text(
+                                            '${s.correct}',
+                                            key: const Key('session_score'),
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 40,
+                                              fontWeight: FontWeight.w800,
+                                              height: 1,
+                                              fontFeatures: [
+                                                FontFeature.tabularFigures(),
+                                              ],
+                                            ),
+                                          ),
+                                          const SizedBox(height: 2),
+                                          Text(
+                                            tr(
+                                              '/ ${s.total} ilk deneme',
+                                              '/ ${s.total} first tries',
+                                            ),
+                                            style: const TextStyle(
+                                              color: TC.heroMuted,
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                      const SizedBox(height: 2),
-                                      Text(
-                                        tr(
-                                          '/ ${s.total} ilk deneme',
-                                          '/ ${s.total} first tries',
-                                        ),
-                                        style: const TextStyle(
-                                          color: TC.heroMuted,
-                                          fontSize: 12,
-                                        ),
-                                      ),
-                                    ],
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
-                          ),
-                          const SizedBox(height: 14),
-                          Text(
-                            tr(
-                              '${kind.shortTitle} · dokunma yanıtlarından ölçüldü',
-                              '${kind.shortTitle} · measured from your taps',
-                            ),
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(
-                              color: TC.heroMuted,
-                              fontSize: 12.5,
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          // Wraps instead of overflowing on narrow screens
-                          // and large text.
-                          Wrap(
-                            alignment: WrapAlignment.center,
-                            spacing: 10,
-                            runSpacing: 8,
-                            children: [
-                              _Stat(
-                                value: percent(s.accuracy),
-                                label: tr('ilk deneme', 'first try'),
+                              const SizedBox(height: 14),
+                              Text(
+                                tr(
+                                  '${kind.shortTitle} · dokunma yanıtlarından ölçüldü',
+                                  '${kind.shortTitle} · measured from your taps',
+                                ),
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                  color: TC.heroMuted,
+                                  fontSize: 12.5,
+                                ),
                               ),
-                              // Question count, not XP: XP is practice volume
-                              // and lives in the details (WIDE-03).
-                              _Stat(
-                                value: '${s.total}',
-                                label: tr('soru', 'questions'),
+                              const SizedBox(height: 12),
+                              // Wraps instead of overflowing on narrow screens
+                              // and large text.
+                              Wrap(
+                                alignment: WrapAlignment.center,
+                                spacing: 10,
+                                runSpacing: 8,
+                                children: [
+                                  _Stat(
+                                    value: percent(s.accuracy),
+                                    label: tr('ilk deneme', 'first try'),
+                                  ),
+                                  // Question count, not XP: XP is practice volume
+                                  // and lives in the details (WIDE-03).
+                                  _Stat(
+                                    value: '${s.total}',
+                                    label: tr('soru', 'questions'),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
-                        ],
-                      ),
-                    ),
-                  if (store.practicedToday && store.streak > 0) ...[
-                    const SizedBox(height: 10),
-                    Container(
-                      key: const Key('session_streak'),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 10,
-                      ),
-                      decoration: BoxDecoration(
-                        color: TC.sun.withValues(alpha: 0.25),
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      child: Row(
-                        children: [
-                          const Icon(Ic.sun, color: TC.onSun),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Text(
-                              tr(
-                                '${store.streak} gün üst üste çalıştın',
-                                store.streak == 1
-                                    ? 'You practised today'
-                                    : 'You practised ${store.streak} days in a row',
+                        ),
+                      if (store.practicedToday && store.streak > 0) ...[
+                        const SizedBox(height: 10),
+                        Container(
+                          key: const Key('session_streak'),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 10,
+                          ),
+                          decoration: BoxDecoration(
+                            color: TC.sun.withValues(alpha: 0.25),
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Ic.sun, color: TC.onSun),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  tr(
+                                    '${store.streak} gün üst üste çalıştın',
+                                    store.streak == 1
+                                        ? 'You practised today'
+                                        : 'You practised ${store.streak} days in a row',
+                                  ),
+                                  style: TT.title.copyWith(color: TC.onSun),
+                                ),
                               ),
-                              style: TT.title.copyWith(color: TC.onSun),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                  const SizedBox(height: 12),
-                  _Evidence(
-                    key: const Key('evidence_measured'),
-                    status: measured
-                        ? tr('ÖLÇÜLDÜ', 'MEASURED')
-                        : tr('ÖLÇÜLMEDİ', 'NOT MEASURED'),
-                    statusColor: measured ? TC.green : TC.muted,
-                    title: !measured
-                        ? tr('Dinleme yanıtları', 'Listening answers')
-                        : weakest == null
-                        ? tr(
-                            'Tüm sesler ilk denemede doğru',
-                            'Every sound right on the first try',
-                          )
-                        : tr(
-                            '${label(weakest.key)} ayrımı',
-                            'Telling ${label(weakest.key)} apart',
-                          ),
-                    body: !measured
-                        ? tr(
-                            'Yanıt olmadığı için doğru ya da yanlış sayılmadı.',
-                            'With no answers, nothing counted as right or wrong.',
-                          )
-                        : weakest == null
-                        ? tr(
-                            'Bu turda karışan ses yok.',
-                            'Nothing got mixed up this round.',
-                          )
-                        : missed.length == 1
-                        ? tr(
-                            '${weakest.value.$2 - weakest.value.$1} soruda karıştı',
-                            'Mixed up in ${weakest.value.$2 - weakest.value.$1} questions',
-                          )
-                        : tr(
-                            '${weakest.value.$2 - weakest.value.$1} soruda karıştı · '
-                                'toplam ${missed.length} seste hata var',
-                            'Mixed up in ${weakest.value.$2 - weakest.value.$1} questions · '
-                                'mistakes on ${missed.length} sounds in all',
-                          ),
-                  ),
-                  if (sang)
-                    _Evidence(
-                      key: Key('evidence_sing'),
-                      status: tr('DENEYSEL', 'EXPERIMENTAL'),
-                      statusColor: TC.amber,
-                      title: tr('Söyle adımı', 'Singing step'),
-                      body: tr(
-                        'Söyleme puanlanmaz. Mikrofonu açtıysan gördüğün '
-                            'sent farkı yalnız tanısaldı.',
-                        'Singing is not scored. If you turned the microphone on, '
-                            'the cent difference you saw was diagnostic only.',
-                      ),
-                    ),
-                  if (store.breathedToday)
-                    _Evidence(
-                      key: Key('evidence_breath'),
-                      status: tr('ÖLÇÜLMEDİ', 'NOT MEASURED'),
-                      statusColor: TC.muted,
-                      title: tr('Nefes', 'Breath'),
-                      body: tr(
-                        'Yönlendirme tamamlandı; kalite puanı üretilmedi.',
-                        'Guidance completed; no quality score was produced.',
-                      ),
-                    ),
-                  if (nextStep != null) ...[
-                    const SizedBox(height: 4),
-                    _NextStep(
-                      title: nextStep.$1,
-                      body: nextStep.$2,
-                      action: nextStep.$3,
-                    ),
-                  ],
-                  const SizedBox(height: 8),
-                  Theme(
-                    data: Theme.of(
-                      context,
-                    ).copyWith(dividerColor: Colors.transparent),
-                    child: ExpansionTile(
-                      key: const Key('session_details'),
-                      tilePadding: const EdgeInsets.symmetric(horizontal: 4),
-                      childrenPadding: const EdgeInsets.symmetric(
-                        horizontal: 4,
-                      ),
-                      title: Text(
-                        tr(
-                          'AYRINTILI KANIT · SORU BAZINDA',
-                          'DETAILED EVIDENCE · BY QUESTION',
-                        ),
-                        style: TT.caps,
-                      ),
-                      subtitle: Text(
-                        tr(
-                          '+$xp XP · pratik puanı, beceri ölçümü değil',
-                          '+$xp XP · practice points, not a skill measure',
-                        ),
-                        style: TT.small,
-                      ),
-                      children: [
-                        for (final e in items)
-                          _ItemRow(
-                            label: label(e.key),
-                            correct: e.value.$1,
-                            total: e.value.$2,
-                            color: color,
-                          ),
-                        Padding(
-                          padding: EdgeInsets.only(top: 6, bottom: 4),
-                          child: Text(
-                            tr(
-                              'Yalnız ilk denemeler sayılır. Kısa tekrar bu '
-                                  'sonuçları ve ilerlemeyi değiştirmez.',
-                              'Only first tries count. A quick retry does not change '
-                                  'these results or your progress.',
-                            ),
-                            style: TT.small,
+                            ],
                           ),
                         ),
                       ],
-                    ),
+                      const SizedBox(height: 12),
+                      _Evidence(
+                        key: const Key('evidence_measured'),
+                        status: measured
+                            ? tr('ÖLÇÜLDÜ', 'MEASURED')
+                            : tr('ÖLÇÜLMEDİ', 'NOT MEASURED'),
+                        statusColor: measured ? TC.green : TC.muted,
+                        title: !measured
+                            ? tr('Dinleme yanıtları', 'Listening answers')
+                            : weakest == null
+                            ? tr(
+                                'Tüm sesler ilk denemede doğru',
+                                'Every sound right on the first try',
+                              )
+                            : tr(
+                                '${label(weakest.key)} ayrımı',
+                                'Telling ${label(weakest.key)} apart',
+                              ),
+                        body: !measured
+                            ? tr(
+                                'Yanıt olmadığı için doğru ya da yanlış sayılmadı.',
+                                'With no answers, nothing counted as right or wrong.',
+                              )
+                            : weakest == null
+                            ? tr(
+                                'Bu turda karışan ses yok.',
+                                'Nothing got mixed up this round.',
+                              )
+                            : missed.length == 1
+                            ? tr(
+                                '${weakest.value.$2 - weakest.value.$1} soruda karıştı',
+                                'Mixed up in ${weakest.value.$2 - weakest.value.$1} questions',
+                              )
+                            : tr(
+                                '${weakest.value.$2 - weakest.value.$1} soruda karıştı · '
+                                    'toplam ${missed.length} seste hata var',
+                                'Mixed up in ${weakest.value.$2 - weakest.value.$1} questions · '
+                                    'mistakes on ${missed.length} sounds in all',
+                              ),
+                      ),
+                      if (sang)
+                        _Evidence(
+                          key: Key('evidence_sing'),
+                          status: tr('DENEYSEL', 'EXPERIMENTAL'),
+                          statusColor: TC.amber,
+                          title: tr('Söyle adımı', 'Singing step'),
+                          body: tr(
+                            'Söyleme puanlanmaz. Mikrofonu açtıysan gördüğün '
+                                'sent farkı yalnız tanısaldı.',
+                            'Singing is not scored. If you turned the microphone on, '
+                                'the cent difference you saw was diagnostic only.',
+                          ),
+                        ),
+                      if (store.breathedToday)
+                        _Evidence(
+                          key: Key('evidence_breath'),
+                          status: tr('ÖLÇÜLMEDİ', 'NOT MEASURED'),
+                          statusColor: TC.muted,
+                          title: tr('Nefes', 'Breath'),
+                          body: tr(
+                            'Yönlendirme tamamlandı; kalite puanı üretilmedi.',
+                            'Guidance completed; no quality score was produced.',
+                          ),
+                        ),
+                      if (nextStep != null) ...[
+                        const SizedBox(height: 4),
+                        _NextStep(
+                          title: nextStep.$1,
+                          body: nextStep.$2,
+                          action: nextStep.$3,
+                        ),
+                      ],
+                      const SizedBox(height: 8),
+                      Theme(
+                        data: Theme.of(
+                          context,
+                        ).copyWith(dividerColor: Colors.transparent),
+                        child: ExpansionTile(
+                          key: const Key('session_details'),
+                          tilePadding: const EdgeInsets.symmetric(
+                            horizontal: 4,
+                          ),
+                          childrenPadding: const EdgeInsets.symmetric(
+                            horizontal: 4,
+                          ),
+                          title: Text(
+                            tr(
+                              'AYRINTILI KANIT · SORU BAZINDA',
+                              'DETAILED EVIDENCE · BY QUESTION',
+                            ),
+                            style: TT.caps,
+                          ),
+                          subtitle: Text(
+                            tr(
+                              '+$xp XP · pratik puanı, beceri ölçümü değil',
+                              '+$xp XP · practice points, not a skill measure',
+                            ),
+                            style: TT.small,
+                          ),
+                          children: [
+                            for (final e in items)
+                              _ItemRow(
+                                label: label(e.key),
+                                correct: e.value.$1,
+                                total: e.value.$2,
+                                color: color,
+                              ),
+                            Padding(
+                              padding: EdgeInsets.only(top: 6, bottom: 4),
+                              child: Text(
+                                tr(
+                                  'Yalnız ilk denemeler sayılır. Kısa tekrar bu '
+                                      'sonuçları ve ilerlemeyi değiştirmez.',
+                                  'Only first tries count. A quick retry does not change '
+                                      'these results or your progress.',
+                                ),
+                                style: TT.small,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+                  child: canContinue
+                      ? Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            BigButton(
+                              key: const Key('session_continue'),
+                              label: tr(
+                                'Devam et: ${upNext.title}',
+                                'Continue: ${upNext.title}',
+                              ),
+                              icon: Ic.play,
+                              onPressed: onContinue,
+                            ),
+                            TextButton(
+                              key: const Key('session_done'),
+                              onPressed: onDone,
+                              child: Text(tr('Şimdilik bitir', 'Stop for now')),
+                            ),
+                          ],
+                        )
+                      : BigButton(
+                          key: const Key('session_done'),
+                          label: tr('Bitti', 'Done'),
+                          onPressed: onDone,
+                        ),
+                ),
+              ],
             ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
-              child: BigButton(
-                key: const Key('session_done'),
-                label: tr('Bitti', 'Done'),
-                onPressed: onDone,
-              ),
-            ),
-          ],
-        ),
+          ),
+          if (tier != CelebrationTier.none)
+            Positioned.fill(child: Celebration(tier: tier)),
+        ],
       ),
     );
   }

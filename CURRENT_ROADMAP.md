@@ -1,5 +1,15 @@
 # Resonia — Current Roadmap
 
+**2026-11-09 — PATH-01 ders yolu ve kutlama (kod + test):** Beceri ekranı
+zikzak ders yoluna döndü; geçilen düğümden sonra "Devam et" sıradaki dersi
+açar. Kutlama kademeli ve yalnız kurulan olaya bağlı: ders → küçük patlama,
+ara durak → havai fişek, final/beceri sonu → kupa. Serbest çalışma, yanıtsız
+oturum ve geçilemeyen kapı kutlanmaz; skor/eşik/XP değişmedi. Kalite kapısı
+temiz, 1416 test + 2 opt-in skip. Açık: simülatör/cihaz uçtan uca turu,
+VoiceOver, hareket/haptik kullanıcı algısı. Sıradaki önerilen dilim:
+dürüst karşılaştırma mesajları (kendi geçmişi + yayımlanmış aralık normları);
+"%x kullanıcıdan iyi" sunucu ve onaylı toplu veri olmadan gösterilmez.
+
 **2026-11-09 — WIDE-03 sade sonuç (kod + test):** Ders sonu artık
 “tamamlandı” ile doğruluğu ayırır; yanıt yoksa “ölçülmedi” der, puan
 göstermez. XP başlıktan çıktı ve “pratik puanı, beceri ölçümü değil” diye

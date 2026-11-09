@@ -102,6 +102,23 @@ class _LessonFlowState extends State<LessonFlow> with WidgetsBindingObserver {
     if (!_intro) store.recordSession();
   }
 
+  /// PATH-01 "Devam et": the skill's next node replaces this lesson, so
+  /// Back returns to wherever the first lesson was opened from.
+  void _continue() {
+    final next = TrainerScope.of(context).store.nextNode(kind);
+    if (next == null) return;
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute<bool>(
+        builder: (_) => LessonFlow(
+          node: next,
+          random: widget.random,
+          pitchSingSessionFactory: widget.pitchSingSessionFactory,
+        ),
+      ),
+      result: _passed,
+    );
+  }
+
   void _forward() {
     switch (_step) {
       case _Step.overview:
@@ -243,6 +260,7 @@ class _LessonFlowState extends State<LessonFlow> with WidgetsBindingObserver {
       passed: _passed,
       retryConfig: _gen.config,
       onDone: () => Navigator.of(context).pop(_passed),
+      onContinue: _continue,
     ),
     _ => _frame(),
   };
