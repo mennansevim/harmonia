@@ -6,7 +6,9 @@ import '../domain/trainers.dart';
 import '../quiz/quiz.dart';
 import '../quiz/quiz_view.dart';
 import '../ui/celebration.dart';
+import '../../app/theme/resonia_theme.dart';
 import '../ui/kit.dart';
+import '../ui/motion.dart';
 import '../../domain/lang.dart';
 
 /// End of a lesson, gate or free session in two layers: a headline result
@@ -178,96 +180,112 @@ class SessionEnd extends StatelessWidget {
                         style: TT.caps.copyWith(color: color),
                       ),
                       const SizedBox(height: 6),
-                      Text(verdict, style: TT.h2),
+                      Entrance(child: Text(verdict, style: TT.h2)),
                       const SizedBox(height: 4),
-                      Text(note, style: TT.body),
+                      Entrance(index: 1, child: Text(note, style: TT.body)),
                       const SizedBox(height: 18),
                       if (measured)
-                        HeroCard(
-                          ring: false,
-                          padding: const EdgeInsets.all(20),
-                          child: Column(
-                            children: [
-                              Semantics(
-                                label: tr(
-                                  '${s.total} sorudan ${s.correct} ilk denemede doğru',
-                                  '${s.correct} of ${s.total} right on the first try',
-                                ),
-                                excludeSemantics: true,
-                                child: SizedBox(
-                                  width: 128,
-                                  height: 128,
-                                  child: CustomPaint(
-                                    painter: _ScoreRing(
-                                      s.total == 0 ? 0 : s.correct / s.total,
-                                    ),
-                                    child: Center(
-                                      child: Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Text(
-                                            '${s.correct}',
-                                            key: const Key('session_score'),
-                                            style: const TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 40,
-                                              fontWeight: FontWeight.w800,
-                                              height: 1,
-                                              fontFeatures: [
-                                                FontFeature.tabularFigures(),
-                                              ],
-                                            ),
+                        Entrance(
+                          index: 2,
+                          child: HeroCard(
+                            ring: false,
+                            padding: const EdgeInsets.all(20),
+                            child: Column(
+                              children: [
+                                Semantics(
+                                  label: tr(
+                                    '${s.total} sorudan ${s.correct} ilk denemede doğru',
+                                    '${s.correct} of ${s.total} right on the first try',
+                                  ),
+                                  excludeSemantics: true,
+                                  child: SizedBox(
+                                    width: 128,
+                                    height: 128,
+                                    // The ring fills up to the result.
+                                    child: TweenAnimationBuilder<double>(
+                                      tween: Tween(
+                                        begin: 0,
+                                        end: s.total == 0
+                                            ? 0
+                                            : s.correct / s.total,
+                                      ),
+                                      duration: ResoniaMotion.reduced(context)
+                                          ? Duration.zero
+                                          : const Duration(milliseconds: 900),
+                                      curve: Motion.curve,
+                                      builder: (context, v, ring) =>
+                                          CustomPaint(
+                                            painter: _ScoreRing(v),
+                                            child: ring,
                                           ),
-                                          const SizedBox(height: 2),
-                                          Text(
-                                            tr(
-                                              '/ ${s.total} ilk deneme',
-                                              '/ ${s.total} first tries',
+                                      child: Center(
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Text(
+                                              '${s.correct}',
+                                              key: const Key('session_score'),
+                                              style: const TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 40,
+                                                fontWeight: FontWeight.w800,
+                                                height: 1,
+                                                fontFeatures: [
+                                                  FontFeature.tabularFigures(),
+                                                ],
+                                              ),
                                             ),
-                                            style: const TextStyle(
-                                              color: TC.heroMuted,
-                                              fontSize: 12,
+                                            const SizedBox(height: 2),
+                                            Text(
+                                              tr(
+                                                '/ ${s.total} ilk deneme',
+                                                '/ ${s.total} first tries',
+                                              ),
+                                              style: const TextStyle(
+                                                color: TC.heroMuted,
+                                                fontSize: 12,
+                                              ),
                                             ),
-                                          ),
-                                        ],
+                                          ],
+                                        ),
                                       ),
                                     ),
                                   ),
                                 ),
-                              ),
-                              const SizedBox(height: 14),
-                              Text(
-                                tr(
-                                  '${kind.shortTitle} · dokunma yanıtlarından ölçüldü',
-                                  '${kind.shortTitle} · measured from your taps',
-                                ),
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                  color: TC.heroMuted,
-                                  fontSize: 12.5,
-                                ),
-                              ),
-                              const SizedBox(height: 12),
-                              // Wraps instead of overflowing on narrow screens
-                              // and large text.
-                              Wrap(
-                                alignment: WrapAlignment.center,
-                                spacing: 10,
-                                runSpacing: 8,
-                                children: [
-                                  _Stat(
-                                    value: percent(s.accuracy),
-                                    label: tr('ilk deneme', 'first try'),
+                                const SizedBox(height: 14),
+                                Text(
+                                  tr(
+                                    '${kind.shortTitle} · dokunma yanıtlarından ölçüldü',
+                                    '${kind.shortTitle} · measured from your taps',
                                   ),
-                                  // Question count, not XP: XP is practice volume
-                                  // and lives in the details (WIDE-03).
-                                  _Stat(
-                                    value: '${s.total}',
-                                    label: tr('soru', 'questions'),
+                                  textAlign: TextAlign.center,
+                                  style: const TextStyle(
+                                    color: TC.heroMuted,
+                                    fontSize: 12.5,
                                   ),
-                                ],
-                              ),
-                            ],
+                                ),
+                                const SizedBox(height: 12),
+                                // Wraps instead of overflowing on narrow screens
+                                // and large text.
+                                Wrap(
+                                  alignment: WrapAlignment.center,
+                                  spacing: 10,
+                                  runSpacing: 8,
+                                  children: [
+                                    _Stat(
+                                      value: percent(s.accuracy),
+                                      label: tr('ilk deneme', 'first try'),
+                                    ),
+                                    // Question count, not XP: XP is practice volume
+                                    // and lives in the details (WIDE-03).
+                                    _Stat(
+                                      value: '${s.total}',
+                                      label: tr('soru', 'questions'),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       if (store.practicedToday && store.streak > 0) ...[
@@ -458,7 +476,7 @@ class SessionEnd extends StatelessWidget {
             ),
           ),
           if (tier != CelebrationTier.none)
-            Positioned.fill(child: Celebration(tier: tier)),
+            Positioned.fill(child: Celebration(tier: tier, sound: true)),
         ],
       ),
     );

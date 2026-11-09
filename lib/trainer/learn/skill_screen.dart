@@ -7,6 +7,7 @@ import '../practice/practice_setup.dart';
 import '../state/trainer_store.dart';
 import '../stats/stats_tab.dart';
 import '../ui/kit.dart';
+import '../ui/motion.dart';
 import 'lesson_flow.dart';
 import '../../domain/lang.dart';
 
@@ -48,22 +49,27 @@ class _SkillScreenState extends State<SkillScreen> {
     for (var i = 0; i < nodes.length; i++) {
       final node = nodes[i];
       rows.add(
-        _PathNode(
-          key: ValueKey(node.id),
-          node: node,
-          color: color,
-          x: pathX(i),
-          prevX: i == 0 || nodes[i - 1].kind == NodeKind.checkpoint
-              ? null
-              : pathX(i - 1),
-          nextX: i == nodes.length - 1 || node.kind == NodeKind.checkpoint
-              ? null
-              : pathX(i + 1),
-          walked: store.progressOf(node.id) != null,
-          current: node.id == next?.id,
-          progress: store.progressOf(node.id),
-          unlocked: store.isUnlocked(node),
-          onTap: () => _open(node),
+        // Nodes rise in along the path once, when first shown.
+        Entrance(
+          key: ValueKey('enter_${node.id}'),
+          index: i,
+          child: _PathNode(
+            key: ValueKey(node.id),
+            node: node,
+            color: color,
+            x: pathX(i),
+            prevX: i == 0 || nodes[i - 1].kind == NodeKind.checkpoint
+                ? null
+                : pathX(i - 1),
+            nextX: i == nodes.length - 1 || node.kind == NodeKind.checkpoint
+                ? null
+                : pathX(i + 1),
+            walked: store.progressOf(node.id) != null,
+            current: node.id == next?.id,
+            progress: store.progressOf(node.id),
+            unlocked: store.isUnlocked(node),
+            onTap: () => _open(node),
+          ),
         ),
       );
       if (node.kind == NodeKind.checkpoint) {

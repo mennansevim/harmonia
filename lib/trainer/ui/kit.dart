@@ -5,6 +5,7 @@ import 'package:lucide_icons_flutter/lucide_icons_300.dart';
 
 import '../../domain/lang.dart';
 import '../domain/trainers.dart';
+import 'motion.dart';
 
 /// The design's line icons, at the thin stroke its Figma frames use.
 typedef Ic = LucideIcons300;
@@ -137,6 +138,7 @@ ThemeData trainerTheme() {
     splashFactory: InkRipple.splashFactory,
   );
   return base.copyWith(
+    pageTransitionsTheme: resoniaPageTransitions,
     textTheme: base.textTheme.apply(bodyColor: TC.ink, displayColor: TC.ink),
     appBarTheme: const AppBarTheme(
       backgroundColor: TC.canvas,

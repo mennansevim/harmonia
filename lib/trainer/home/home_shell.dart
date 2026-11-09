@@ -8,6 +8,7 @@ import '../../choir/app/choir_tab.dart';
 import '../../choir/app/choir_text.dart';
 import '../app/scope.dart';
 import '../domain/curriculum.dart';
+import '../domain/placement.dart';
 import '../domain/trainers.dart';
 import '../domain/music.dart';
 import '../koro/koro_hub.dart';
@@ -16,6 +17,7 @@ import '../koro/voice_count.dart';
 import '../learn/review_cards.dart';
 import '../prepare/breath_screen.dart';
 import '../learn/lesson_flow.dart';
+import '../learn/placement_flow.dart';
 import '../practice/practice_setup.dart';
 import '../settings/settings_tab.dart';
 import '../state/trainer_store.dart';
@@ -207,9 +209,17 @@ class _NavBar extends StatelessWidget {
   }
 }
 
-/// Which trainer today's session focuses on: onboarding focus, else the
-/// last trainer used, else the first trainer with an unfinished path.
+/// Which trainer today's session focuses on. With a goal: the first
+/// unfinished path on the goal's track (PLACE-01). Without one (older
+/// saves): the last trainer used, else the onboarding focus, else the first
+/// trainer with an unfinished path.
 TrainerKind focusTrainer(TrainerStore store) {
+  final goal = PracticeGoalInfo.fromId(store.answers['goal']);
+  if (goal != null) {
+    for (final k in goal.track) {
+      if (store.nextNode(k) != null) return k;
+    }
+  }
   final focus = store.answers['focus'];
   final candidates = <TrainerKind>[
     if (store.lastTrainer != null)
@@ -273,6 +283,29 @@ Future<void> beginTodayRoute(TrainerStore store, NavigatorState nav) async {
     if (go != true) return;
   }
   if (route.lesson) await startTodaySession(store, nav);
+}
+
+/// Placement test on the goal's first path (PLACE-01), then today's lesson
+/// if the learner asks for it. A beginner level asks for the "some" start.
+Future<void> beginPlacement(
+  TrainerStore store,
+  NavigatorState nav, {
+  TrainerKind? trainer,
+}) async {
+  final kind =
+      trainer ??
+      PracticeGoalInfo.fromId(store.answers['goal'])?.lesson ??
+      focusTrainer(store);
+  final stated = ExperienceLevelInfo.fromId(store.answers['level']);
+  final level = stated != null && stated.offersPlacement
+      ? stated
+      : ExperienceLevel.some;
+  final go = await nav.push<bool>(
+    MaterialPageRoute(
+      builder: (_) => PlacementFlow(trainer: kind, level: level),
+    ),
+  );
+  if (go == true) await startTodaySession(store, nav);
 }
 
 class _PlayTabState extends State<PlayTab> {

@@ -5,6 +5,7 @@
 // Writes only to build/phone_preview/. Run after render_icons_test.dart
 // (and logo_variants_test.dart for the variant phones):
 //   flutter test tool/brand/phone_preview_test.dart
+import 'dart:convert';
 import 'dart:io';
 import 'dart:math' as math;
 import 'dart:ui' as ui;
@@ -145,9 +146,17 @@ void _glyph(Canvas c, Rect r, int id, Color ink) {
 }
 
 class _Icons {
-  _Icons(this.store, this.dark, this.tinted, this.fg, this.androidBg);
+  _Icons(
+    this.store,
+    this.dark,
+    this.tinted,
+    this.fg,
+    this.androidBg, {
+    this.androidBgImage,
+  });
   final ui.Image store, dark, tinted, fg;
   final Color androidBg;
+  final ui.Image? androidBgImage;
 }
 
 /// Our icon in a given mode, in [r] (pt space already scaled by canvas).
@@ -196,13 +205,18 @@ void _ours(Canvas c, Rect r, _Mode m, _Icons ic, {ui.Image? override}) {
     case _Mode.android:
       c.save();
       c.clipPath(Path()..addOval(r));
-      c.drawRect(r, Paint()..color = ic.androidBg);
       // Adaptive layer is 108 dp, visible circle 72 dp: scale 1.5x.
       final full = Rect.fromCenter(
         center: r.center,
         width: r.width * 1.5,
         height: r.height * 1.5,
       );
+      final bgImg = ic.androidBgImage;
+      if (bgImg == null) {
+        c.drawRect(r, Paint()..color = ic.androidBg);
+      } else {
+        c.drawImageRect(bgImg, Rect.fromLTWH(0, 0, 432, 432), full, _hq);
+      }
       c.drawImageRect(ic.fg, Rect.fromLTWH(0, 0, 432, 432), full, _hq);
       c.restore();
   }
@@ -438,6 +452,41 @@ void main() {
       _ours(c, const Rect.fromLTWH(0, 0, 60, 60), _Mode.dark, ic);
     });
     await _save(zoom, '${out.path}/koyu_yakin.png');
+
+    // Layered 3D concepts (icon_3d_test.dart): all modes per concept, and
+    // the three concepts side by side in light mode.
+    final concepts = Directory('$root/build/icon_3d');
+    if (concepts.existsSync()) {
+      final dirs = concepts.listSync().whereType<Directory>().toList()
+        ..sort((a, b) => a.path.compareTo(b.path));
+      final lights = <ui.Image>[];
+      for (final d in dirs) {
+        final id = d.uri.pathSegments.where((s) => s.isNotEmpty).last;
+        final cic = _Icons(
+          await _load('${d.path}/ios/default.png'),
+          await _load('${d.path}/ios/dark.png'),
+          await _load('${d.path}/ios/tinted.png'),
+          await _load('${d.path}/android/ic_launcher_foreground.png'),
+          Colors.black,
+          androidBgImage: await _load(
+            '${d.path}/android/ic_launcher_background.png',
+          ),
+        );
+        final spec = File('${d.path}/ios/spec.json');
+        final name = spec.existsSync()
+            ? (jsonDecode(spec.readAsStringSync()) as Map)['concept'] as String
+            : id;
+        final row = <ui.Image>[
+          await _phone(_Mode.light, cic, '$name · iOS Açık', slots: ours),
+          await _phone(_Mode.dark, cic, '$name · iOS Koyu', slots: ours),
+          await _phone(_Mode.tinted, cic, '$name · iOS Renkli', slots: ours),
+          await _phone(_Mode.android, cic, '$name · Android', slots: ours),
+        ];
+        await _save(await _row(row), '${out.path}/konsept_$id.png');
+        lights.add(row.first);
+      }
+      await _save(await _row(lights), '${out.path}/konseptler.png');
+    }
 
     // Variant phones: each group's ten icons spread among neighbours.
     final variants = Directory('$root/build/logo_variants');

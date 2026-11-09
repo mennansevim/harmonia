@@ -6,7 +6,9 @@ import 'package:flutter/material.dart';
 import '../app/scope.dart';
 import '../domain/music.dart';
 import '../domain/trainers.dart';
+import '../ui/interval_keyboard.dart';
 import '../ui/kit.dart';
+import '../ui/motion.dart';
 import 'quiz.dart';
 import '../../domain/lang.dart';
 
@@ -28,6 +30,7 @@ class QuizView extends StatefulWidget {
     this.showCounter = true,
     this.onExit,
     this.forceHints = false,
+    this.stopWhen,
   });
 
   final String title;
@@ -44,6 +47,10 @@ class QuizView extends StatefulWidget {
 
   /// Lessons always explain a miss, regardless of the hints preference.
   final bool forceHints;
+
+  /// Ends the round early once the answers so far settle the result
+  /// (placement gates, PLACE-01). Null = every question is asked.
+  final bool Function(List<AnswerRecord> records)? stopWhen;
 
   @override
   State<QuizView> createState() => _QuizViewState();
@@ -200,7 +207,7 @@ class _QuizViewState extends State<QuizView> {
   }
 
   void _next() {
-    if (_last) {
+    if (_last || (widget.stopWhen?.call(_records) ?? false)) {
       widget.onFinished(QuizSummary(List.of(_records)));
       return;
     }
@@ -372,6 +379,14 @@ class _QuizViewState extends State<QuizView> {
       children: [
         const SizedBox(height: 18),
         _statusText(),
+        if (_explainable)
+          TextButton.icon(
+            key: const Key('quiz_names_help'),
+            style: TextButton.styleFrom(foregroundColor: _color),
+            onPressed: () => _explain(_q.options),
+            icon: const Icon(Ic.circleHelp, size: 18),
+            label: Text(tr('Bu adlar ne demek?', 'What do these names mean?')),
+          ),
         const Spacer(),
         _disc(),
         const Spacer(),
@@ -404,21 +419,114 @@ class _QuizViewState extends State<QuizView> {
     );
   }
 
-  Widget _targetChip() => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-    decoration: BoxDecoration(
-      color: soft(_color),
-      borderRadius: BorderRadius.circular(30),
-    ),
-    child: Text(
-      _label(_q.target, long: true),
-      style: TextStyle(
-        fontSize: 20,
-        fontWeight: FontWeight.w800,
-        color: _color,
+  Widget _targetChip() {
+    final chip = Container(
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+      decoration: BoxDecoration(
+        color: soft(_color),
+        borderRadius: BorderRadius.circular(30),
       ),
-    ),
-  );
+      child: Text(
+        _label(_q.target, long: true),
+        style: TextStyle(
+          fontSize: 20,
+          fontWeight: FontWeight.w800,
+          color: _color,
+        ),
+      ),
+    );
+    if (!_explainable) return chip;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Flexible(child: chip),
+        IconButton(
+          key: const Key('quiz_what_is'),
+          tooltip: tr('Bu ne demek?', 'What does this mean?'),
+          color: _color,
+          icon: const Icon(Ic.circleHelp),
+          onPressed: () => _explain([_q.target]),
+        ),
+      ],
+    );
+  }
+
+  /// Interval, chord and scale names (m2, dom7, Dorian…) are explained on
+  /// request (QA-INT-01/02).
+  bool get _explainable => const {
+    TrainerKind.interval,
+    TrainerKind.chord,
+    TrainerKind.scale,
+  }.contains(_q.trainer);
+
+  List<String> get _namingRules => switch (_q.trainer) {
+    TrainerKind.chord => chordNamingRules(),
+    TrainerKind.scale => scaleNamingRules(),
+    _ => intervalNamingRules(),
+  };
+
+  /// "m2 · Küçük 2'li", or the name alone when it has no short form.
+  String _helpTitle(String id) {
+    final short = _label(id);
+    final full = _label(id, long: true);
+    return short == full ? full : '$short · $full';
+  }
+
+  Widget _diagram(String id) => switch (_q.trainer) {
+    TrainerKind.chord => NotesKeyboard.chord(Chords.byId(id), color: _color),
+    TrainerKind.scale => NotesKeyboard.scale(Scales.byId(id), color: _color),
+    _ => IntervalKeyboard(interval: Intervals.byId(id), color: _color),
+  };
+
+  /// What [ids] mean, with the naming rules; the clock pauses meanwhile.
+  /// Text and a silent keyboard only: nothing plays, so the answer is not
+  /// given away.
+  Future<void> _explain(List<String> ids) async {
+    final paused = _countdown?.isActive ?? false;
+    _countdown?.cancel();
+    await showTrainerSheet<void>(
+      context,
+      (context) => ConstrainedBox(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.sizeOf(context).height * 0.75,
+        ),
+        child: SingleChildScrollView(
+          key: const Key('quiz_explain'),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                ids.length == 1
+                    ? _label(ids.single, long: true)
+                    : tr('Bu adlar ne demek?', 'What do these names mean?'),
+                style: TT.h2,
+              ),
+              const SizedBox(height: 12),
+              for (final id in ids) ...[
+                Text(_helpTitle(id), style: TT.title.copyWith(color: _color)),
+                const SizedBox(height: 2),
+                Text(itemFeel(_q.trainer, id), style: TT.body),
+                const SizedBox(height: 12),
+              ],
+              if (ids.length == 1) ...[
+                _diagram(ids.single),
+                const SizedBox(height: 16),
+              ],
+              Text(tr('ADLAR NASIL OKUNUR', 'HOW NAMES READ'), style: TT.caps),
+              const SizedBox(height: 6),
+              for (final rule in _namingRules)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 6),
+                  child: Text('• $rule', style: TT.small),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+    if (!mounted) return;
+    if (paused && _phase == _Phase.answering && _secondsLeft != null) _tick();
+  }
 
   Widget _yesNoBody() => Column(
     children: [
@@ -440,9 +548,12 @@ class _QuizViewState extends State<QuizView> {
                       label: tr('Evet', 'Yes'),
                       button: true,
                       excludeSemantics: true,
+                      // Neutral until answered: a green "yes" read as the
+                      // right answer even when "no" was correct.
                       child: BigButton(
                         label: tr('Evet, bu', 'Yes, this one'),
-                        color: TC.green,
+                        color: TC.card,
+                        icon: Ic.check,
                         onPressed: _phase == _Phase.answering
                             ? () => _yesNo(true)
                             : null,
@@ -457,7 +568,8 @@ class _QuizViewState extends State<QuizView> {
                       excludeSemantics: true,
                       child: BigButton(
                         label: tr('Hayır, değil', 'No, it isn\'t'),
-                        color: TC.coralDeep,
+                        color: TC.card,
+                        icon: Ic.x,
                         onPressed: _phase == _Phase.answering
                             ? () => _yesNo(false)
                             : null,
@@ -759,36 +871,44 @@ class _OptionButton extends StatelessWidget {
       enabled: onTap != null,
       label: text,
       excludeSemantics: true,
-      child: GestureDetector(
-        onTap: onTap == null
-            ? null
-            : () {
-                tapHaptic();
-                onTap!();
-              },
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 150),
-          height: 56,
-          alignment: Alignment.center,
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-          decoration: BoxDecoration(
-            color: fill,
-            borderRadius: BorderRadius.circular(14),
-            border: Border(
-              left: BorderSide(color: edge),
-              top: BorderSide(color: edge),
-              right: BorderSide(color: edge),
-              bottom: BorderSide(color: edge, width: 4),
-            ),
-          ),
-          child: FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Text(
-              text,
-              style: TextStyle(
-                fontSize: 17,
-                fontWeight: FontWeight.w800,
-                color: fg,
+      // Motion only: no interface note between reference sounds, which
+      // would disturb the pitch the learner is holding (UX-MOTION-01).
+      child: Shake(
+        trigger: state == false ? text : null,
+        child: Bump(
+          trigger: state == true ? text : null,
+          child: GestureDetector(
+            onTap: onTap == null
+                ? null
+                : () {
+                    tapHaptic();
+                    onTap!();
+                  },
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 150),
+              height: 56,
+              alignment: Alignment.center,
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              decoration: BoxDecoration(
+                color: fill,
+                borderRadius: BorderRadius.circular(14),
+                border: Border(
+                  left: BorderSide(color: edge),
+                  top: BorderSide(color: edge),
+                  right: BorderSide(color: edge),
+                  bottom: BorderSide(color: edge, width: 4),
+                ),
+              ),
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  text,
+                  style: TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w800,
+                    color: fg,
+                  ),
+                ),
               ),
             ),
           ),
@@ -827,42 +947,48 @@ class _SoundRow extends StatelessWidget {
       label: tr('Ses $letter', 'Sound $letter'),
       selected: selected,
       excludeSemantics: true,
-      child: AppCard(
-        onTap: onTap,
-        border: accent == TC.line ? null : accent,
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        child: Row(
-          children: [
-            Container(
-              width: 34,
-              height: 34,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: accent == TC.line ? soft(color) : accent,
-                shape: BoxShape.circle,
-              ),
-              child: Text(
-                letter,
-                style: TextStyle(
-                  fontWeight: FontWeight.w900,
-                  color: accent == TC.line ? color : Colors.white,
+      child: Shake(
+        trigger: wrong ? letter : null,
+        child: Bump(
+          trigger: correct ? letter : null,
+          child: AppCard(
+            onTap: onTap,
+            border: accent == TC.line ? null : accent,
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            child: Row(
+              children: [
+                Container(
+                  width: 34,
+                  height: 34,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: accent == TC.line ? soft(color) : accent,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Text(
+                    letter,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w900,
+                      color: accent == TC.line ? color : Colors.white,
+                    ),
+                  ),
                 ),
-              ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    selected
+                        ? tr(
+                            'Seçili · tekrar dinlemek için dokun',
+                            'Selected · tap to hear it again',
+                          )
+                        : tr('Dinle', 'Listen'),
+                    style: TT.title,
+                  ),
+                ),
+                Icon(Ic.circlePlay, color: color),
+              ],
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                selected
-                    ? tr(
-                        'Seçili · tekrar dinlemek için dokun',
-                        'Selected · tap to hear it again',
-                      )
-                    : tr('Dinle', 'Listen'),
-                style: TT.title,
-              ),
-            ),
-            Icon(Ic.circlePlay, color: color),
-          ],
+          ),
         ),
       ),
     );

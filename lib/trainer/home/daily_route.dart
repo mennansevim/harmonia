@@ -57,15 +57,41 @@ extension PracticeGoalInfo on PracticeGoal {
     ),
   };
 
-  /// The ear lesson path that opens the route; null = no ready lesson for
-  /// this goal yet (the route never falls back to another goal's lesson).
-  TrainerKind? get lesson => switch (this) {
-    PracticeGoal.beginner || PracticeGoal.voice => TrainerKind.pitch,
-    PracticeGoal.ear ||
-    PracticeGoal.choir ||
-    PracticeGoal.exam => TrainerKind.interval,
-    PracticeGoal.stage => null,
+  /// The goal's ear-lesson track, in order (PLACE-01). Today's lesson is
+  /// the first unfinished path on it; any path can still be opened by hand.
+  /// Empty = no ready lesson for this goal yet (never another goal's).
+  /// Draft order: not educator-approved. Echo/rhythm/part-singing modules
+  /// are lab exercises outside the track until their device gates close.
+  List<TrainerKind> get track => switch (this) {
+    PracticeGoal.beginner => const [
+      TrainerKind.pitch,
+      TrainerKind.interval,
+      TrainerKind.chord,
+    ],
+    PracticeGoal.ear => const [
+      TrainerKind.interval,
+      TrainerKind.chord,
+      TrainerKind.scale,
+      TrainerKind.progression,
+    ],
+    PracticeGoal.exam => const [
+      TrainerKind.interval,
+      TrainerKind.pitch,
+      TrainerKind.chord,
+      TrainerKind.scale,
+      TrainerKind.progression,
+    ],
+    PracticeGoal.choir => const [
+      TrainerKind.interval,
+      TrainerKind.pitch,
+      TrainerKind.chord,
+    ],
+    PracticeGoal.voice => const [TrainerKind.pitch, TrainerKind.interval],
+    PracticeGoal.stage => const [],
   };
+
+  /// The path that opens the track; null = no ready lesson for this goal.
+  TrainerKind? get lesson => track.firstOrNull;
 
   /// Content this goal needs that is not ready (educator approval or
   /// recordings missing). Shown as such, never offered as a route step.

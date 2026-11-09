@@ -4242,6 +4242,26 @@ erişilebilirlik regresyonları, ses motoru koruma kontrolü).
   build'lerdeki gibi sürüyor (launch ekranı storyboard ile çiziliyor).
 - Upload, TestFlight ve fiziksel cihaz denemesi yapılmadı.
 
+## 2026-11-09 — BRAND-03 katmanlı 3D ikon konseptleri
+
+- Araştırma: Apple HIG App icons (katmanlı ikon: arka plan + birkaç dolu
+  ön katman, net kenar, foto yerine illüstrasyon, cam/gölge/specular'ı
+  sistem ekler; default/dark/clear/tinted), iOS 27 çok katmanlı cam (MacRumors),
+  Android adaptive (108 dp katman, 66 dp güvenli alan, monochrome katman).
+  Sonuç: fotogerçekçi master Liquid Glass katman modeline uymuyor.
+- tool/brand/icon_3d_test.dart: nota ve bant vektör olarak yeniden çizildi
+  (Path + aynı geometriden SVG). Üç konsept: Cam Bant (mor, buzlu cam bant),
+  Yumuşak 3D (patlıcan + spot, hacimli nota, kumaş bant), Yankı (krem +
+  yarı saydam halkalar). Her biri için iOS default/dark/tinted 1024, Icon
+  Composer'a düz SVG katmanlar + spec.json, Android fg/bg/mono 432, patlatılmış
+  katman görünümü ve sunum tablosu; çıktı build/icon_3d/.
+- phone_preview_test.dart: konseptleri dört modda telefon ana ekranında
+  gösterir (build/phone_preview/konsept_*.png, konseptler.png).
+- Doğrulama: tool/brand analyze temiz, betikler çalıştı, görüntüler gözle
+  rafine edildi (figür ölçeği, bant konumu/açısı, bayrak, sap-baş birleşimi).
+  Önizlemelerdeki cam/gölge efektleri yaklaşık; Icon Composer'da, simülatörde
+  veya cihazda görülmedi. Uygulama ikonu değişmedi; commit yok.
+
 ## 2026-11-09 — PATH-01 ders yolu, "Devam et" ve kademeli kutlama
 
 - `lib/trainer/ui/celebration.dart`: `celebrationFor` yalnız oturumun
@@ -4266,3 +4286,365 @@ erişilebilirlik regresyonları, ses motoru koruma kontrolü).
   boyutu buna göre düzeltildi. iOS 26.5 simülatöründe debug build açıldı ama
   oturum sırasında simülatör kapandı; uçtan uca simülatör/cihaz turu,
   VoiceOver ve gerçek kullanıcı algısı doğrulanmadı.
+
+## 2026-11-09 — UX-MOTION-01 rehberli, müzikal ilk açılış ve ortak hareket dili
+
+**Kullanıcı isteği:** Paylaşılan bir onboarding videosunun (X gönderisi,
+başka bir ürün) ses ve geçiş hissini Resonia girişine uyarlamak ve bunu
+uygulamanın genel animasyon davranışı yapmak. Video kare kare ve ses
+spektrogramıyla incelendi: yumuşak "tık"lar, harf belirdikçe yükselen kısa
+nota merdivenleri, karakter "cıvıltısı", kademeli girişler, sonda akor +
+konfeti. O ürünün karakterleri, metni ve görselleri kopyalanmadı; desen
+Resonia'nın kendi diline (nota karoları, mor ses küresi, pentatonik notalar)
+çevrildi.
+
+- `lib/trainer/audio/ui_sounds.dart`: `UiCue` (tap/select/deselect/advance/
+  back/chatter/hello/success + 10 pentatonik nota) ve deterministik
+  `UiCueRenderer` (marimba benzeri toplamalı sentez, seviye ≤ 0,34, uçlarda
+  tık yok). `UiSounds` referans sesten ayrı 3 oyunculu havuz; audio session'ı
+  aktive etmez (iOS'ta mevcut kategori ve sessiz anahtarı geçerli). Dosyalar
+  sabit `resonia-ui-cues` geçici klasörüne bir kez yazılır. Kayıtlı/lisanslı
+  ses yok. Sesler hiçbir zaman ölçüm referansı veya skor işareti değildir.
+- `TrainerAudio.ui`; `TrainerStore.uiSounds` (varsayılan açık, prefs'te,
+  reset'te açık); Ayarlar'da "Arayüz sesleri" anahtarı.
+- `lib/trainer/ui/motion.dart`: `Motion` token'ları, `uiCue`/`uiFeedback`
+  (ses + haptik ayarına uyar), `Entrance` (kademeli giriş, ≤220 ms gecikme),
+  `PopIn`, `Bump`, `GuideBubble` (420 ms "yazıyor" → satır + cıvıltı; ekran
+  okuyucuya satır anında), `GuideOrb`, `NoteTile`, `LetterTiles`,
+  `FloatingNotes`, `StepSwitcher` (yönlü yatay kayma). Gecikmeler timer değil
+  AnimationController ile; hareket azaltmada içerik anında ve durağan.
+- Onboarding: `karşılama → isim → hedef → süre → hazır`. Karşılamada Do–Si
+  (EN: C–B) karoları kürenin çevresinde belirir ("hello" koşusu). İsim
+  isteğe bağlı ("Şimdilik atla"), 24 karakter, yalnız cihazda
+  (`username`); her yeni harf bir karo + sıradaki pentatonik nota. Rehber
+  sonraki adımda isimle selamlar. Hedef seçimi select, koro kutusu
+  select/deselect, dakika seçimi yükselen nota. Hazır ekranında "HAZIRSIN,
+  <AD>!", mevcut `Celebration` lesson patlaması ve arpej — kurulumun gerçekten
+  bittiği an. Eski kayıtların adım eşlemesi değişmedi; yeni `name` adımı.
+- Testler: yeni `test/trainer/ui_motion_test.dart` (8 test: sentez seviyesi/
+  determinizm/tıksız uçlar, benzersiz id, pentatonik eşleme, harf→nota akışı,
+  atlama, sesler kapalıyken sessizlik, hareket azaltma, tercih kalıcılığı).
+  Onboarding süren testler isim adımını geçecek şekilde güncellendi; büyük
+  yazı denetiminde karo taşması ve hazır ekranında bağlantının ekran dışına
+  itilmesi bulunup düzeltildi. Tam kalite kapısı: format 430/0, analyze
+  temiz, **1424 test + 2 opt-in skip**. Ekran görüntüsü turuyla (gerçek
+  font) karşılama/isim/hedef/hazır gözle incelendi.
+- Sınırlar: Seslerin gerçek hoparlörde duyulması, gecikme, sessiz anahtar ve
+  mikrofonlu ekranlarla etkileşim cihazda denenmedi; simülatör/cihaz,
+  VoiceOver/TalkBack ve kullanıcı algısı doğrulanmadı. Hareket dili şimdilik
+  yalnız onboarding'e bağlı; diğer ekranlara yayılması ayrı dilim.
+  `integration_test` içindeki eski `opt_singer` yolculuğu zaten günceldışıydı,
+  dokunulmadı.
+
+## 2026-11-09 — UX-MOTION-02 hareket dilinin uygulamaya yayılması
+
+**Kullanıcı isteği:** UX-MOTION-01 hareket dilini sayfa geçişlerine ve
+ders/sonuç ekranlarına yaymak.
+
+- Ses kuralı (pedagojik): kulak eğitimi soru ve karşılaştırma ekranlarında
+  arayüz notası **çalınmaz**; araya giren tonal ses öğrencinin tuttuğu perdeyi
+  bozar. Orada yalnız hareket + mevcut haptik. Ayrıca `uiCue` merkezi
+  olarak `TrainerAudio.playing` sürerken susar.
+- Sayfa geçişi: `trainerTheme` → `resoniaPageTransitions`. Android/masaüstü
+  için `ResoniaPageTransitionsBuilder` (yeni sayfa sağdan hafif kayıp
+  belirir, alttaki sola çekilip kararır); iOS/macOS'ta yerel Cupertino
+  korunur (kenardan geri kaydırma). Hareket azaltmada geçiş yok.
+- Soru ekranı (`quiz_view.dart`): seçenek düğmeleri ve A/B/C ses satırları
+  doğruda `Bump`, yanlışta `Shake`. Skor/kayıt/ipucu akışı değişmedi.
+- Ders sonu (`session_end.dart`): karar, not ve skor kartı kademeli girer;
+  skor halkası 0'dan sonuca dolar (sayı ve semantik etiket anında doğru).
+  `Celebration(sound: true)`: ders → `success`, ara durak/final → yeni
+  `fanfare` (1,58 sn). Kutlama yoksa (serbest çalışma, geçilemeyen kapı,
+  yanıtsız oturum) ses de yok.
+- Ders yolu (`skill_screen.dart`): düğümler ilk görünüşte sırayla yükselir.
+- `Bump` artık yalnız yeni pozitif tetikte zıplar (seçim kaldırılınca
+  durağan); yeni `Shake`.
+- Testler: `ui_motion_test.dart` +3 (referans çalarken sessizlik, tema
+  geçişleri/iOS yerel, Bump/Shake tetik kuralları); `path_celebration_test`
+  kutlama seslerini doğrular (success/fanfare/sessiz). Tam kalite kapısı:
+  format 430/0, analyze temiz, **1427 test + 2 opt-in skip**. Ekran görüntüsü
+  turu yeni geçişlerle geçti; yol, ders sonu, karşılaştırma ve ayarlar gözle
+  incelendi.
+- Sınırlar: mikrofon kaydı sırasında arayüz sesi yalnız kurgu gereği yok
+  (kayıt ekranlarında `uiCue` çağrısı yok); kayıt durumuna bağlı ayrı bir
+  susturma kapısı eklenmedi. Gerçek cihazda ses/gecikme/sessiz anahtar,
+  geçiş akıcılığı, VoiceOver/TalkBack ve kullanıcı algısı doğrulanmadı. Ana
+  sekme içerikleri (Bugün, Gelişim) ve mikrofonlu egzersiz ekranları bu
+  dilimde ele alınmadı.
+
+## 2026-11-09 — iOS IPA 1.0.0+14 (UX-MOTION-01/02 dahil)
+
+- `pubspec.yaml` 1.0.0+13 → 1.0.0+14; önceki IPA `build/ios/ipa-1.0.0+13/`.
+- `flutter build ipa --release --dart-define=RESONIA_CHANNEL=beta
+  --export-options-plist=<+13 ExportOptions, destination=export>` exit 0.
+  `build/ios/ipa/Vocalart.ipa` 35.734.119 byte, SHA-256
+  `cac34fd49745325fbd1fbd6b8ffbc3d2237a6f51658ebeed78acdd307dec5f0a`.
+- `verify_ios_ipa.py --pubspec pubspec.yaml`: passed — 1.0.0 (14), Apple
+  Distribution L3Z9U2B39K, 4 Mach-O bundle, 8 privacy manifest, profil
+  2027-09-25'e kadar geçerli. Flutter'ın LaunchImage uyarısı önceki
+  build'lerdeki gibi (launch ekranı storyboard ile çiziliyor).
+- Upload, TestFlight ve fiziksel cihaz denemesi yapılmadı.
+
+## 2026-11-09 — QA-NOTE-01 tek nota adlandırması, açılışta dil, nötr evet/hayır
+
+**Kullanıcı bildirimi (TestFlight 1.0.0+14):** "Do ve Mi soruyorsun, C/E
+seçtiriyorsun"; "doğru bildiğim halde başka şık yeşil yanıyor"; açılışta dil
+seçeneği isteği; gerçek piyano sesi sorusu.
+
+- Kök neden 1: `itemLabel` notasyon verilmezse solfej varsayıyordu;
+  `curriculum.dart` ders başlıklarını notasyonsuz üretiyor ve yollar yalnız
+  dile göre önbellekleniyordu. İngilizce cihazda notasyon harf (C–E) iken
+  ders adı "New: Do and Mi" çıkıyordu. Ayrıca pitch açıklamaları ("Do'ya
+  çeken yeden ses", mod/aralık/akor örnekleri) solfej sabitiydi.
+  Düzeltme: `NoteNames.current` (Lang.en gibi uygulama geneli),
+  `TrainerStore.notation` setter'ı ile senkron; `itemLabel` varsayılanı
+  öğrencinin adlandırması; yol önbelleği dil+notasyon anahtarlı; Türkçe
+  açıklamalar `NoteNames.of` ile ek gerektirmeyen kalıpta ("C sesine
+  göre"); veri metinlerindeki "Do-Mi-Sol" örnekleri harf modunda "C-E-G",
+  İngilizce "C-E-G"/"E → F" dizileri solfej modunda çevrilir (tek "A" gibi
+  sözcüklere dokunulmaz).
+- Kök neden 2 (olası): seçmeli/"hangi ses"/evet-hayır sorularında doğru
+  cevap için yalnız seçilen şıkkın yeşil olduğu 6 tohumlu probla doğrulandı;
+  mantık hatası bulunamadı. Evet/hayır sorusunda "Evet, bu" düğmesi cevaptan
+  önce de yeşil boyalıydı; "Hayır" doğruyken yeşil başka şık gibi okunuyordu.
+  İki düğme nötr kart rengi + ✓/✕ ikonu oldu. Kullanıcının gördüğü ekran
+  kesinleşmedi; ekran görüntüsü istenecek.
+- Karşılama ekranında Türkçe/English seçimi (Ayarlar'daki aynı `language`
+  ayarı); "Başlayalım"daki notasyon varsayılanı seçilen dile uyar. Kahraman
+  küre 210→190 px (test fontunda CTA kaydırma gerektiriyordu).
+- Testler: yeni `test/trainer/note_names_test.dart` (7 test: iki dilde harf
+  modunda pitch yolu/ipuçları/aralık/akor metinlerinde solfej kalmaması,
+  solfej modunda İngilizce, metin dönüşüm sınırları, store senkronu, dil
+  seçimi ↔ notasyon, nötr evet/hayır). İngilizce denetimi dil adını
+  ("Türkçe") istisna sayar. Tam kalite kapısı: format 431/0, analyze temiz,
+  **1434 test + 2 opt-in skip**. Karşılama gerçek fontla gözle incelendi.
+- Piyano: `assets/audio/piano/notes` içinde kullanıcının kendi kaydı (izin
+  2026-11-03, `cleared_partial`) E1–G5 beyaz tuşlar var; bugün yalnız ses
+  aralığı testi kullanıyor, sorular sentez. Siyah tuşlar ve G5 üstü yok;
+  akorlar için AGENTS kararı hazır 2/3/4 sesli kayıtlar (tekil mix ana yol
+  değil). Refactor kullanıcı onayı bekliyor; bu dilimde yapılmadı.
+- Sınırlar: cihazda doğrulanmadı; IPA yeniden üretilmedi.
+
+## 2026-11-09 — AUDIO-PIANO-01 tek nota seslerinde kayıtlı piyano
+
+**Kullanıcı isteği:** "Çaldığın nota gerçek piyano sesi olmalı" — onaylandı.
+
+- `lib/trainer/audio/piano_sampler.dart`: kullanıcının izinli kaydı
+  (`assets/audio/piano/notes`, E1–G5 beyaz tuşlar, `cleared_partial`;
+  ADR-040 ile tutulan A5+ hariç) üzerinden render. Kural: bir `SoundSpec`
+  yalnız **her olayı tek nota** ve her nota kayıtla karşılanabiliyorsa
+  kayıttan çalar; aksi halde tamamı sentezde kalır (tek seste iki tını
+  karışmaz). Siyah tuş: üstteki beyaz tuştan bir yarım ses aşağı, yoksa
+  alttakinden yukarı (lineer interpolasyon, ±1 yarım ses). Kayıt başındaki
+  0–0,4 sn sessizlik kırpılır (%5 tepe eşiği, 5 ms ön pay); nota yazılı
+  süresinde 120 ms sönümle kesilir; tepe 0,8'e normalize (synth ile aynı).
+  Akor ve eşzamanlı aralıklar tekil kayıtlardan kurulmaz; AGENTS gereği
+  hazır 2/3/4 sesli kayıtlar beklenir.
+- `TrainerAudio.render`/`play`: piyano tınısında önce kayıt, olmazsa synth;
+  diğer tınılar synth. Kayıt yüklenirken yeni ses/stop gelirse eski ses
+  çalınmaz.
+- Bilerek değiştirilmeyen: `TrainerPitchSingSession` (mikrofonlu tanı)
+  referansı synth'te kaldı; yanıt penceresi/kalibrasyon 1,3 sn synth'e göre
+  ve kaydın sönümünün mikrofona sızması ölçülmeden değiştirilmemeli.
+- Ayarlar teşekkür metni: piyano notaları Vocalart için kaydedildi; akorlar
+  ve diğer enstrümanlar sentez; üçüncü taraf lisanslı kayıt yok.
+- Testler: `test/trainer/piano_sampler_test.dart` 4 test — 8 nota (4 beyaz,
+  4 kaydırılmış siyah, G♯5 dahil) kendi perdesinde ve komşusunun 2 katı
+  üstünde; akor/menzil dışı/boş synth'te; A1'in geç başlangıcı kırpılıp
+  melodi zamanlaması ve sönüm sonrası sessizlik korunuyor; TrainerAudio
+  tını kuralı. Tam kalite kapısı: format 433/0, analyze temiz, **1438 test
+  + 2 opt-in skip**. Dinleme örneği üretildi; cihaz hoparlöründe, gecikme ve
+  dosya yükleme süresi ölçülmedi. Tiz bölgede A5 ve üstü synth'te; siyah
+  tuşlar ve A5+ kaydedilirse kaydırma ve synth geri dönüşü azalır.
+
+## 2026-11-09 — iOS IPA 1.0.0+15 (QA-NOTE-01, AUDIO-PIANO-01 dahil)
+
+- `pubspec.yaml` 1.0.0+14 → 1.0.0+15; önceki IPA `build/ios/ipa-1.0.0+14/`.
+- `flutter build ipa --release --dart-define=RESONIA_CHANNEL=beta
+  --export-options-plist=<+14 ExportOptions>` exit 0.
+  `build/ios/ipa/Vocalart.ipa` 35.743.849 byte, SHA-256
+  `499fabc9a46ce8e4baa36b62d1ba25714d2e19ae6f1b5e56684e511b657b1542`;
+  pakette 31 piyano nota WAV'ı.
+- `verify_ios_ipa.py --pubspec pubspec.yaml`: passed — 1.0.0 (15), Apple
+  Distribution L3Z9U2B39K, 4 Mach-O bundle, 8 privacy manifest.
+- Upload, TestFlight ve fiziksel cihaz denemesi yapılmadı.
+
+## 2026-11-09 — AUDIO-PIANO-02 notalarda patlama (tık) giderildi
+
+**Kullanıcı bildirimi (1.0.0+15):** "Notalarda patlamalar var."
+
+- Ölçüm: bazı kayıtlar vuruşun ortasından başlıyor (dosyanın ilk örneği
+  yüksek). Örnek dizide en büyük örnekler arası sıçrama 0,277 (E4 başı) ve
+  0,155 (La başı) idi; sessizlikten tek örnekte bu sıçrama hoparlörde
+  patlama olarak duyulur. Kayıtların DC kayması ihmal edilebilir (≤0,02).
+- `PianoSampler.mix`: her notaya 5 ms yükseltilmiş kosinüs girişi; sönüm
+  doğrusal yerine kosinüs; nota kaydın sonuna ulaşacaksa sönüm kayıt içinde
+  biter (kesilme yok). Düzeltmeden sonra başlangıçlardaki en büyük sıçrama
+  0,06; kalan en büyükler (0,075) nota içi ve ham kayıtların doğal düzeyi.
+- `TrainerAudio.playNote` (ses aralığı testi) ham dosyayı değil örnekleyiciyi
+  kullanır; aynı patlama orada da vardı.
+- `JustAudioClipPlayer(fadeOnInterrupt:)`: hâlâ çalan klibi yeni ses veya
+  stop öncesi ~30 ms'de kısar. Yalnız `TrainerAudio` açar; ölçüm yapan
+  akışlar (mikrofonlu tanı, koro, aralık/ritim ekranları) varsayılan
+  kapalıyla tam başlangıç zamanlamasını korur.
+- Testler: `piano_sampler_test` +2 — E1–G♯5 her erişilebilir nota sessizlikten
+  başlar/sessizliğe döner, ilk 2 ms ve son 100 ms'de sıçrama < 0,04 (eski
+  kodda E4'te 0,277 ile düşerdi); yazılı süreden kısa, yüksek genlikli
+  yapay kayıt kesilmeden söner. Tam kalite kapısı: format 433/0, analyze
+  temiz, **1440 test + 2 opt-in skip**.
+- Sınırlar: hoparlörde dinlenerek doğrulanmadı; just_audio'nun platform
+  tarafı başlatma/durdurma davranışı ve iOS ses oturumu kaynaklı olası tık
+  bu testlerin dışında. IPA yeniden üretilmedi.
+
+## 2026-11-09 — iOS IPA 1.0.0+16 (AUDIO-PIANO-02 dahil)
+
+- `pubspec.yaml` 1.0.0+15 → 1.0.0+16; önceki IPA `build/ios/ipa-1.0.0+15/`.
+- `flutter build ipa --release --dart-define=RESONIA_CHANNEL=beta
+  --export-options-plist=<+15 ExportOptions>` exit 0.
+  `build/ios/ipa/Vocalart.ipa` 35744747 byte, SHA-256
+  `fa315d46e069008b8ada37edcfeba93da8355c2d3215ed4d8a8fdf2ad5dda44b`.
+- `verify_ios_ipa.py --pubspec pubspec.yaml`: passed — 1.0.0 (16), Apple
+  Distribution L3Z9U2B39K, 4 Mach-O bundle, 8 privacy manifest.
+- Upload, TestFlight ve fiziksel cihaz denemesi yapılmadı.
+
+## 2026-11-09 — QA-INT-01 aralık adlarının yeni başlayana anlatılması
+
+**Kullanıcı bildirimi:** "Küçük 2'li nedir? m2 / M2 bu değerlere hakim
+değilim; bunları girişte anlat."
+
+- Aralık açıklamaları (TR/EN, 12 aralık) jargonsuz yeniden yazıldı:
+  "dominant/tonik/çevrim" yerine tuş sayısı ve duyuluş ("En küçük adım:
+  klavyede hemen yan yana iki tuş"). Öznel duyuluş sözcükleri ("koyu",
+  "parlak", "gergin") yaygın eğitim dili; eğitimci onayı alınmadı.
+- Aralık "Başlarken"e yeni slayt "Aralık adları nasıl okunur?":
+  sayı = kapsanan nota adı (iki uç dahil), yarım ses = yan yana iki tuş,
+  küçük/büyük = aynı sayının iki boyu (m/M), tam (P4/P5/P8), artık (A4).
+  Metin `intervalNamingRules()` (domain) ile ortak; nota adları ayardan.
+- `IntervalKeyboard`: iki oktavlık sessiz klavye; örneğin iki notası dolu,
+  kökten itibaren her tuşta yarım ses sayısı. Her yeni aralığın "Dinle"
+  sayfasında; "Kısa adı" satırı (m2) ve "Solfej örneği" → "Örnek".
+- Soru ekranı (yalnız aralık): seçenekler kısaltmaysa "Bu adlar ne
+  demek?", hedef ad gösteriliyorsa "?" → alt sayfa: her kısaltma + tam ad +
+  açıklama, tek hedefte klavye, okuma kuralları. Ses çalmaz (cevabı ele
+  vermez); açıkken süre durur.
+- Nota "Dinle" sayfasındaki "C'ya göre" eki "C sesinden" kalıbına çevrildi.
+- Testler: `test/trainer/interval_help_test.dart` 7 test (örnek köklerin
+  klavyeye sığması, jargonsuz açıklama, adlandırma slaytı, klavye tuş
+  sayımı ve semantik, sessiz yardım sayfası, hedef "?" + klavye, nota
+  sorularında yardım yok). Tam kalite kapısı: format 435/0, analyze temiz,
+  **1447 test + 2 opt-in skip**. Soru, yardım sayfası ve m2/M2/P5 klavyesi
+  gerçek fontla gözle incelendi.
+- Sınırlar: cihazda ve gerçek yeni başlayanla denenmedi; akor/dizi adları
+  için benzer yardım bu dilimde yok. IPA yeniden üretilmedi.
+
+## 2026-11-09 — BENCH-MODEL-01 ses eğitimi modeli: benchmark, ağırlık ve yük incelemesi
+
+**Kullanıcı isteği:** "Ses eğitimi için model uygun mu? Benchmark et, ağırlık ve
+yük dağılımı uygun mu, derin araştır." Uygulama kodu, rubrik, tolerans ve sabitler
+**değiştirilmedi**; commit/push/deploy yok.
+
+- Eklenenler: `tool/benchmark/detector_benchmark.dart` (sentetik ses benzeri
+  sinyal + gerçek piyano kayıtlarında `YinPitchFrameAnalyzer`/
+  `RecordingPitchAnalyzer` ve iki alternatif algoritma),
+  `model_benchmark.dart` (skor ağırlıkları, kapı/yıldız istatistiği, müfredat
+  maruziyeti, tekrar kartı), `timing_benchmark.dart` (hesap yükü),
+  `review_threshold_whatif.dart` (büyüme eşiği ne-olursa). Rapor:
+  `docs/research/VOCAL_MODEL_BENCHMARK_2026-11-09.md` (dış kanıt bölümüyle).
+- Bulgular (ayrıntı raporda): sentetik seste YIN C2–C6 boyunca ±2 c, SNR ≥10 dB
+  sağlam, 5 dB'de çöküş (MPM dayanıklı; kalite kapısı 15 dB); tek ses
+  skorunda 50→50,5 c için 45 puan uçurum, vibrato extent >±35 c "kararsız"
+  (bu skor aktif TrainerApp'te yok); `RangeScore` genişlik ağırlığı .60 ve
+  ölçüm eşleme gürültüsüne duyarlı; ara durak (12 soru, %80) ayırt edici değil;
+  1310 puanlı sorunun tamamı algı; son öğeler ilk öğeden 4–9× az çalışılıyor;
+  `ItemMemory.answered` büyüme koşulu (h/2) vade eşiğinden (0,234h) büyük →
+  günlük kullanıcıda kart 90 günde 90 kez tekrar.
+- Ek (aynı gün, kullanıcı onayıyla): `tool/benchmark/rhythm_benchmark.dart`
+  — gerçek `EventRhythmAnalyzer`/`ClapOnsetDetector` ve 12 ritimle: mükemmel
+  bilen simüle performansçı geçme oranı yetenekli %85/tipik %65/acemi %41;
+  ritim süresiyle korelasyon −0,99, uygulamanın seviye sırasıyla −0,06;
+  tempo normalize alternatifi %85→%100 ve yanlış ritmi kabul %18→%8 (uygulamada
+  yok); detektör tespit−gerçek zaman SD 1,5 ms, hassasiyet tepe −24 dBFS'e
+  kadar sessiz odada, enerji başlangıcı olduğundan öksürük/ünsüz de tetikliyor.
+  İlk koşuda detektör gecikmesi 0,0 ms çıktı (sentetik alkışlar 5 ms adım
+  ızgarasına hizalıydı); rastgele alt-adım fazıyla düzeltildi.
+- Rapor §6b: repodaki rakip analizleri + web taraması (ajan): Türk
+  konservatuvar kılavuzları (OMÜ, Ankara HBV, Selçuk [P]) tekrar tabanlı;
+  melodi+ritim payı %40–80; ABRSM/RCM üretim ağırlıklı; Zarate 2010
+  yalnız dinleme eğitiminin şarkıya aktarılmadığını gösteriyor (küçük örnek).
+  Rakiplerin soru sayısı/geçme oranı yayımlanmamış. İTÜ/İstanbul/MSGSÜ cevap
+  biçimi doğrulanamadı; kaynakların hepsini birincil açmadım.
+- Doğrulama: `dart tool/quality_check.dart` format+analyze temiz, **1452 test
+  + 2 opt-in skip** (ritim betiği dahil son koşu; ilk koşuda 1447 idi, fark
+  çalışma ağacındaki diğer değişikliklerden). `model_benchmark` iki koşuda
+  aynı çıktıyı verdi.
+- Sınırlar: tüm ses sentetik veya piyano; simüle şarkıcı/öğrenen; yankı, eşlik
+  sızıntısı, mikrofon AGC'si, gerçek insan sesi, telefon CPU süresi ve öğrenme
+  etkisi ölçülmedi. Dış kanıt ikinci el/özet düzeyinde olanlar raporda
+  işaretli. Rubrik/tolerans/ağırlık değişiklikleri kullanıcı/eğitimci kararı
+  bekliyor (AGENTS.md).
+
+## 2026-11-09 — QA-INT-02 akor ve dizi adlarının anlatılması
+
+**Kullanıcı isteği:** QA-INT-01'deki yardımı akor ve dizilere de eklemek.
+
+- Akor (9) ve dizi (11) açıklamaları TR/EN jargonsuz yeniden yazıldı (kökten
+  yarım ses, "ortadaki nota bir tuş aşağıda", T/Y adımları açıklamalı).
+  Eski dizi metinlerindeki "Do'dan" kalıbı harf modunda "C'dan" oluyordu;
+  yeni metinler "C sesinden" kalıbında. Her akor/dizi için `exampleRoot`.
+- `NotesKeyboard` (sessiz): akor — notalar tuşlarında adıyla, "Do + Mi +
+  Sol birlikte · aralar 4 + 3 yarım ses"; dizi — oktava kadar notalar ve
+  "Adımlar: T T Y T T T Y · T = 2 tuş, Y = 1 tuş" (EN W/H).
+- "Başlarken"e "Akor adları nasıl okunur?" ve "Dizi adları nasıl
+  okunur?" slaytları (`chordNamingRules`/`scaleNamingRules`, domain).
+- "Dinle" tanış sayfası: akorda klavye + "Kısa adı" (maj), dizide merdivenin
+  altında klavye.
+- Soru ekranı yardımı aralık + akor + dizi için: "kısa · tam ad" (aynıysa
+  tek ad), açıklama, tek hedefte uygun klavye, türe göre okuma kuralları;
+  ses çalmaz, süre durur.
+- Testler: `interval_help_test.dart` +5 (örneklerin klavyeye sığması ve
+  harf modunda ek kalmaması, iki yeni slayt, akor notaları/dizi adımları,
+  akor kısaltma yardımı, dizi hedefi klavyesi). Tam kalite kapısı: format
+  440/0, analyze temiz, **1452 test + 2 opt-in skip**. Akor yardımı ve
+  maj/dom7/majör/Dorian klavyeleri gerçek fontla gözle incelendi.
+- Sınırlar: duyuluş sözcükleri eğitimci onaylı değil; akor dizisi
+  (progression) adları kapsanmadı; artık üçlüde Sol♯ klavyede La♭ adıyla
+  görünür (enharmonik, tek ad tablosu). Cihazda denenmedi, IPA yok.
+
+## 2026-11-09 — PLACE-01 hedef parkuru, seviye sorusu ve yerleştirme testi
+
+**Kullanıcı isteği:** Eğitim modeli esnek olsun; girişte yeni başlayan /
+tecrübeli ayrımı, test uzunluğu tecrübeye göre optimize. BENCH-MODEL-01
+oturumuyla iş bölümü yapıldı; sayı/yıldız düzeltmeleri oradan geldi.
+
+- Hedef artık tek ders değil, sıralı bir **parkur** (`PracticeGoal.track`,
+  taslak, eğitimci onaysız): beginner Nota→Aralık→Akor; ear
+  Aralık→Akor→Dizi→Yürüyüş; exam Aralık→Nota→Akor→Dizi→Yürüyüş; choir
+  Aralık→Nota→Akor; voice Nota→Aralık; stage boş. `lesson` = parkurun ilki
+  (eski davranış aynı). `focusTrainer` hedef varsa parkurdaki ilk bitmemiş
+  yolu seçer; hedefsiz eski kayıtlar eski kuralla. Akor/Dizi/Yürüyüş ilk kez
+  rotaya giriyor. Ezgi/ritim/çok sesli lab'da, rota ve ustalık dışında.
+- Onboarding: hedef → **seviye** (yeni / biraz biliyorum / tecrübeli) →
+  dakika. `answers['level']`; Ayarlar'dan değişir. Hedef ve seviye bağımsız;
+  ikisi de tolerans, eşik veya içerik değiştirmez.
+- **Yerleştirme** (`placement.dart`, `placement_flow.dart`): parkurun ilk
+  yolunun kendi kapıları, `QuizConfig.forNode` uzunluğuyla (12 / final 20).
+  Erken bitirme `GateStop`: ceil(0,8·L) doğru = geçti, L−ihtiyaç+1 yanlış =
+  kaldı (12'de 10/3, 20'de 16/5); karar tam testle birebir aynı (tüm
+  doğru/yanlış sıralarıyla test edildi). Store'a doğruluk tam L'ye bölünerek
+  yazılır (10/12 = 0,83 → 2★; erken bitirme 3★ şişirmez). Başlangıç:
+  biraz → AD1'den yukarı, ilk kalışta durur; tecrübeli → sondan bir önceki
+  ara durak, geçerse final dahil yukarı, kalırsa geçene dek birer aşağı.
+  Sonuç mevcut `completeNode` kapı kuralıyla yazılır; `answers['placed']`.
+  Her turdan sonra "Burada durayım"; sonuç ekranda "yaklaşık".
+- `QuizView.stopWhen` (isteğe bağlı; null = eski davranış).
+- Ayarlar: Seviye ve "Seviyemi bul" (parkurdaki güncel yol).
+- Testler: `placement_test.dart` +18; 6 onboarding yürüyüşüne seviye adımı.
+  Tam kalite kapısı: format+analyze temiz, **1470 test + 2 opt-in skip**.
+- Sınırlar: 12 soruluk kapı düşük ayırt edici (BENCH-MODEL-01: %85'lik
+  öğrenci %74 geçer), yerleştirme ±1 durak yanılabilir; eşik değişmedi.
+  Geçen kapı önceki düğümleri stars:1 ile tamamlar ve atlanan öğelere tekrar
+  kartı oluşmaz (mevcut kural). Parkur sırası ve seviye metinleri eğitimci
+  onaysız; `exam` için ezgi/ritim tekrarı slotu kullanıcı kararı. Eski
+  `lib/domain/models/learner_profile.dart` `PracticeGoal`'u ayrı eski
+  katmanda (20+ dosya) kullanıldığı için kapsam dışı. Cihazda, gerçek
+  öğrenciyle denenmedi; IPA yok.

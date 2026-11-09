@@ -5,8 +5,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 import '../../app/theme/resonia_theme.dart';
+import '../audio/ui_sounds.dart';
 import '../domain/curriculum.dart';
 import 'kit.dart';
+import 'motion.dart';
 
 /// How big the end-of-session celebration is (PATH-01). Decided only from
 /// what the session actually established, never from accuracy alone:
@@ -42,6 +44,7 @@ class Celebration extends StatefulWidget {
     super.key,
     required this.tier,
     this.haptics = true,
+    this.sound = false,
     this.seed = 11,
   });
 
@@ -49,6 +52,11 @@ class Celebration extends StatefulWidget {
 
   /// Also needs [ResoniaHapticsScope] to allow haptics.
   final bool haptics;
+
+  /// Plays the matching interface cue once (lesson → success, checkpoint
+  /// and finale → fanfare), subject to the interface sound setting. Off by
+  /// default: a celebration must not sound over reference audio.
+  final bool sound;
 
   /// Spark layout; fixed so tests are repeatable.
   final int seed;
@@ -100,6 +108,12 @@ class _CelebrationState extends State<Celebration>
     _hapticsAllowed = ResoniaHapticsScope.enabled(context);
     if (_started || widget.tier == CelebrationTier.none) return;
     _started = true;
+    if (widget.sound) {
+      uiCue(
+        context,
+        widget.tier == CelebrationTier.lesson ? UiCue.success : UiCue.fanfare,
+      );
+    }
     // Reduced motion: a lesson pop has nothing left to show.
     if (_reduced && widget.tier == CelebrationTier.lesson) return;
     final clock = AnimationController(vsync: this, duration: _duration)

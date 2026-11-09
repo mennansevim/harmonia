@@ -103,13 +103,24 @@ class TrainerStore extends ChangeNotifier {
   int trialReminderDays = 2;
 
   // Preferences.
-  NoteNotation notation = NoteNotation.solfege;
+  NoteNotation _notation = NoteNotation.solfege;
+
+  /// Note naming; also sets [NoteNames.current] so every label agrees.
+  NoteNotation get notation => _notation;
+  set notation(NoteNotation value) {
+    _notation = value;
+    NoteNames.current = value;
+  }
+
   int transposition = 0;
   Timbre timbre = Timbre.piano;
   bool keyboard = false;
   bool hints = true;
   bool hintsPromptShown = false;
   bool notifications = false;
+
+  /// Short interface sounds (taps, choices, steps). Never reference pitches.
+  bool uiSounds = true;
 
   // Progress.
   final Map<String, NodeProgress> nodes = {};
@@ -230,6 +241,7 @@ class TrainerStore extends ChangeNotifier {
     hints = true;
     hintsPromptShown = false;
     notifications = false;
+    uiSounds = true;
     nodes.clear();
     stats.clear();
     days.clear();
@@ -447,6 +459,7 @@ class TrainerStore extends ChangeNotifier {
       'hints': hints,
       'hintsPromptShown': hintsPromptShown,
       'notifications': notifications,
+      'uiSounds': uiSounds,
     },
     'nodes': {for (final e in nodes.entries) e.key: e.value.toJson()},
     'stats': {
@@ -515,6 +528,7 @@ class TrainerStore extends ChangeNotifier {
     hints = get<bool>(prefs, 'hints') ?? true;
     hintsPromptShown = get<bool>(prefs, 'hintsPromptShown') ?? false;
     notifications = get<bool>(prefs, 'notifications') ?? false;
+    uiSounds = get<bool>(prefs, 'uiSounds') ?? true;
     nodes.clear();
     (get<Map<String, Object?>>(doc, 'nodes') ?? const {}).forEach((k, v) {
       if (v is Map<String, Object?>) {

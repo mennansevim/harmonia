@@ -132,11 +132,16 @@ class _TrainerAppState extends State<TrainerApp> with WidgetsBindingObserver {
     ).catchError((Object _) {});
   }
 
-  void _onboardingFinished(bool begin) {
-    if (!begin) return;
+  void _onboardingFinished(ObExit exit) {
+    if (exit == ObExit.home) return;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final nav = _navigator.currentState;
-      if (nav != null) beginTodayRoute(_store, nav);
+      if (nav == null) return;
+      if (exit == ObExit.placement) {
+        beginPlacement(_store, nav);
+      } else {
+        beginTodayRoute(_store, nav);
+      }
     });
   }
 

@@ -6,6 +6,64 @@ import '../../domain/lang.dart';
 
 enum NoteNotation { letter, solfege }
 
+/// The learner's note naming, app-wide, like [Lang.en] for wording. Lesson
+/// titles and hints are text built from data, so they read this rather
+/// than assuming Do Re Mi; [TrainerStore] keeps it in step with the
+/// setting.
+abstract final class NoteNames {
+  static NoteNotation current = NoteNotation.solfege;
+
+  /// Name of pitch class [pc] in the current naming.
+  static String of(int pc) => PitchClass.name(pc, current);
+
+  static const _letterFor = {
+    'Do': 'C',
+    'Re': 'D',
+    'Mi': 'E',
+    'Fa': 'F',
+    'Sol': 'G',
+    'La': 'A',
+    'Si': 'B',
+  };
+
+  // A whole solfège word, optionally altered; never inside another word.
+  static final _solfegeWord = RegExp(
+    r'(?<![A-Za-zÇĞİÖŞÜçğıöşü])(Do|Re|Mi|Fa|Sol|La|Si)(?![A-Za-zÇĞİÖŞÜçğıöşü])',
+  );
+
+  static const _solfegeFor = {
+    'C': 'Do',
+    'D': 'Re',
+    'E': 'Mi',
+    'F': 'Fa',
+    'G': 'Sol',
+    'A': 'La',
+    'B': 'Si',
+  };
+
+  // Note runs such as "C-E-G" or "E → F": two or more joined letters, so a
+  // lone "A" in an English sentence is never touched.
+  static final _letterRun = RegExp(
+    r'(?<![A-Za-z])[A-G][♭♯]?(?:\s*[-→]\s*[A-G][♭♯]?)+(?![A-Za-z])',
+  );
+  static final _letter = RegExp(r'[A-G]');
+
+  /// English example text is written in letters; with solfège naming its
+  /// note runs read "Do-Mi-Sol". Other text is returned unchanged.
+  static String inTextEn(String text) => current == NoteNotation.solfege
+      ? text.replaceAllMapped(
+          _letterRun,
+          (m) => m[0]!.replaceAllMapped(_letter, (l) => _solfegeFor[l[0]]!),
+        )
+      : text;
+
+  /// Turkish example text is written in solfège ("Do-Mi-Sol"); with letter
+  /// naming it reads "C-E-G" instead. Other text is returned unchanged.
+  static String inText(String text) => current == NoteNotation.letter
+      ? text.replaceAllMapped(_solfegeWord, (m) => _letterFor[m[1]]!)
+      : text;
+}
+
 /// Twelve pitch classes, 0 = C/Do.
 abstract final class PitchClass {
   static const letters = [
@@ -115,8 +173,30 @@ class IntervalType {
   final String _feelEn;
   final String _anchorEn;
   String get name => tr(_name, _nameEn);
-  String get feel => tr(_feel, _feelEn);
-  String get anchor => tr(_anchor, _anchorEn);
+  String get feel => tr(NoteNames.inText(_feel), NoteNames.inTextEn(_feelEn));
+  String get anchor =>
+      tr(NoteNames.inText(_anchor), NoteNames.inTextEn(_anchorEn));
+
+  /// Pitch class the example starts on ("E → F" → 4), for diagrams.
+  int get exampleRoot {
+    final m = RegExp(r'^([A-G])([♭♯]?)').firstMatch(_anchorEn)!;
+    final natural = const {
+      'C': 0,
+      'D': 2,
+      'E': 4,
+      'F': 5,
+      'G': 7,
+      'A': 9,
+      'B': 11,
+    }[m[1]]!;
+    return (natural +
+            (m[2] == '♯'
+                ? 1
+                : m[2] == '♭'
+                ? -1
+                : 0)) %
+        12;
+  }
 }
 
 abstract final class Intervals {
@@ -125,120 +205,120 @@ abstract final class Intervals {
       'm2',
       1,
       'Küçük 2\'li',
-      'Bir yarım ses; iki komşu tuş.',
+      'En küçük adım: klavyede hemen yan yana iki tuş, arada tuş yok.',
       'Mi → Fa',
       'Minor 2nd',
-      'One semitone; two neighbouring keys.',
+      'The smallest step: two keys right next to each other, nothing in between.',
       'E → F',
     ),
     IntervalType(
       'M2',
       2,
       'Büyük 2\'li',
-      'Bir tam ses; dizinin olağan adımı.',
+      'İki yarım ses: arada bir tuş atlanır. Bir dizide notadan notaya olağan adım.',
       'Do → Re',
       'Major 2nd',
-      'One whole tone; the usual step of a scale.',
+      'Two semitones: one key is skipped. The usual step from note to note in a scale.',
       'C → D',
     ),
     IntervalType(
       'm3',
       3,
       'Küçük 3\'lü',
-      'Üç yarım ses; minör akorun alt aralığı.',
+      'Üç yarım ses. Minör (daha koyu duyulan) akorun ilk iki notası arası.',
       'La → Do',
       'Minor 3rd',
-      'Three semitones; the lower interval of a minor chord.',
+      'Three semitones. The gap between the first two notes of a minor (darker-sounding) chord.',
       'A → C',
     ),
     IntervalType(
       'M3',
       4,
       'Büyük 3\'lü',
-      'Dört yarım ses; majör akorun alt aralığı.',
+      'Dört yarım ses. Majör (daha parlak duyulan) akorun ilk iki notası arası.',
       'Do → Mi',
       'Major 3rd',
-      'Four semitones; the lower interval of a major chord.',
+      'Four semitones. The gap between the first two notes of a major (brighter-sounding) chord.',
       'C → E',
     ),
     IntervalType(
       'P4',
       5,
       'Tam 4\'lü',
-      'Beş yarım ses; dominantdan tonik\'e çıkış.',
+      'Beş yarım ses. Açık ve sağlam duyulan bir sıçrama.',
       'Sol → Do',
       'Perfect 4th',
-      'Five semitones; from the dominant up to the tonic.',
+      'Five semitones. An open, steady-sounding leap.',
       'G → C',
     ),
     IntervalType(
       'A4',
       6,
       'Artık 4\'lü',
-      'Altı yarım ses; oktavı tam ikiye böler.',
+      'Altı yarım ses: oktavın tam ortası. Gergin, çözülmek isteyen bir ses.',
       'Fa → Si',
       'Augmented 4th',
-      'Six semitones; splits the octave exactly in two.',
+      'Six semitones: exactly half an octave. A tense sound that wants to move on.',
       'F → B',
     ),
     IntervalType(
       'P5',
       7,
       'Tam 5\'li',
-      'Yedi yarım ses; akort ederken duyulan boşluk.',
+      'Yedi yarım ses. Çok boş ve uyumlu duyulur; telli çalgılar böyle akort edilir.',
       'Do → Sol',
       'Perfect 5th',
-      'Seven semitones; the open sound heard when tuning.',
+      'Seven semitones. Very open and stable; string instruments are tuned this way.',
       'C → G',
     ),
     IntervalType(
       'm6',
       8,
       'Küçük 6\'lı',
-      'Sekiz yarım ses; büyük 3\'lünün çevrimi.',
+      'Sekiz yarım ses. Geniş, biraz hüzünlü bir sıçrama.',
       'Mi → Do',
       'Minor 6th',
-      'Eight semitones; the inversion of a major 3rd.',
+      'Eight semitones. A wide, slightly sad leap.',
       'E → C',
     ),
     IntervalType(
       'M6',
       9,
       'Büyük 6\'lı',
-      'Dokuz yarım ses; küçük 3\'lünün çevrimi.',
+      'Dokuz yarım ses. Geniş, sıcak ve açık bir sıçrama.',
       'Do → La',
       'Major 6th',
-      'Nine semitones; the inversion of a minor 3rd.',
+      'Nine semitones. A wide, warm and open leap.',
       'C → A',
     ),
     IntervalType(
       'm7',
       10,
       'Küçük 7\'li',
-      'On yarım ses; dominant 7\'li akorun dış sesleri.',
+      'On yarım ses. Oktavdan iki yarım ses dar; çözülmemiş duyulur.',
       'Sol → Fa',
       'Minor 7th',
-      'Ten semitones; the outer notes of a dominant 7th chord.',
+      'Ten semitones. Two semitones short of an octave; sounds unresolved.',
       'G → F',
     ),
     IntervalType(
       'M7',
       11,
       'Büyük 7\'li',
-      'On bir yarım ses; oktavın bir yarım ses altı.',
+      'On bir yarım ses. Oktavın hemen bir alt tuşu; çok gergin.',
       'Do → Si',
       'Major 7th',
-      'Eleven semitones; a semitone below the octave.',
+      'Eleven semitones. One key short of an octave; very tense.',
       'C → B',
     ),
     IntervalType(
       'P8',
       12,
       'Oktav',
-      'On iki yarım ses; aynı notanın üst kopyası.',
+      'On iki yarım ses: aynı nota, bir kat yukarıda.',
       'Do → Do',
       'Octave',
-      'Twelve semitones; the same note, one copy higher.',
+      'Twelve semitones: the same note, one level higher.',
       'C → C',
     ),
   ];
@@ -253,16 +333,20 @@ class ChordQuality {
     this._feel,
     this.tones,
     this._nameEn,
-    this._feelEn,
-  );
+    this._feelEn, {
+    this.exampleRoot = 0,
+  });
   final String id;
   final String label;
+
+  /// Pitch class the example chord is built on, for diagrams.
+  final int exampleRoot;
   final String _name;
   final String _feel;
   final String _nameEn;
   final String _feelEn;
   String get name => tr(_name, _nameEn);
-  String get feel => tr(_feel, _feelEn);
+  String get feel => tr(NoteNames.inText(_feel), NoteNames.inTextEn(_feelEn));
 
   /// Semitones above the root.
   final List<int> tones;
@@ -274,82 +358,91 @@ abstract final class Chords {
       'maj',
       'maj',
       'Majör üçlü',
-      'Kök, büyük 3\'lü, tam 5\'li (Do-Mi-Sol).',
+      'Üç nota birlikte: kök, 4 yarım ses yukarısı ve 7 yarım ses yukarısı. Parlak ve kararlı duyulur (Do-Mi-Sol).',
       [0, 4, 7],
       'Major triad',
-      'Root, major 3rd, perfect 5th (C-E-G).',
+      'Three notes together: the root, 4 semitones up and 7 semitones up. Bright and settled (C-E-G).',
+      exampleRoot: 0,
     ),
     ChordQuality(
       'min',
       'min',
       'Minör üçlü',
-      'Kök, küçük 3\'lü, tam 5\'li (La-Do-Mi).',
+      'Majörün ortadaki notası bir tuş aşağıda: kökten 3 yarım ses. Daha koyu duyulur (La-Do-Mi).',
       [0, 3, 7],
       'Minor triad',
-      'Root, minor 3rd, perfect 5th (A-C-E).',
+      'A major chord with the middle note one key lower: 3 semitones from the root. Darker (A-C-E).',
+      exampleRoot: 9,
     ),
     ChordQuality(
       'dim',
       'dim',
       'Eksik üçlü',
-      'Üst üste iki küçük 3\'lü (Si-Re-Fa).',
+      'Üst üste iki küçük 3\'lü: 3 + 3 yarım ses. Sıkışık ve gergin (Si-Re-Fa).',
       [0, 3, 6],
       'Diminished triad',
-      'Two minor 3rds stacked (B-D-F).',
+      'Two minor 3rds stacked: 3 + 3 semitones. Tight and tense (B-D-F).',
+      exampleRoot: 11,
     ),
     ChordQuality(
       'aug',
       'aug',
       'Artık üçlü',
-      'Üst üste iki büyük 3\'lü (Do-Mi-Sol♯).',
+      'Üst üste iki büyük 3\'lü: 4 + 4 yarım ses. Havada kalan bir ses (Do-Mi-Sol♯).',
       [0, 4, 8],
       'Augmented triad',
-      'Two major 3rds stacked (C-E-G♯).',
+      'Two major 3rds stacked: 4 + 4 semitones. Sounds suspended in the air (C-E-G♯).',
+      exampleRoot: 0,
     ),
     ChordQuality(
       'maj7',
       'maj7',
       'Majör 7\'li',
-      'Majör üçlü ve büyük 7\'li (Do-Mi-Sol-Si).',
+      'Majör akor ve kökün bir tuş altındaki nota (11 yarım ses). Yumuşak bir caz rengi (Do-Mi-Sol-Si).',
       [0, 4, 7, 11],
       'Major 7th',
-      'Major triad plus a major 7th (C-E-G-B).',
+      'A major chord plus the note one key below the octave (11 semitones). A soft jazz colour (C-E-G-B).',
+      exampleRoot: 0,
     ),
     ChordQuality(
       'min7',
       'min7',
       'Minör 7\'li',
-      'Minör üçlü ve küçük 7\'li (Re-Fa-La-Do).',
+      'Minör akor ve kökten 10 yarım ses yukarıdaki nota. Yumuşak ve koyu (Re-Fa-La-Do).',
       [0, 3, 7, 10],
       'Minor 7th',
-      'Minor triad plus a minor 7th (D-F-A-C).',
+      'A minor chord plus the note 10 semitones above the root. Soft and dark (D-F-A-C).',
+      exampleRoot: 2,
     ),
     ChordQuality(
       'dom7',
       'dom7',
       'Dominant 7\'li',
-      'Majör üçlü ve küçük 7\'li (Sol-Si-Re-Fa).',
+      'Majör akor ve kökten 10 yarım ses yukarıdaki nota. Bir sonraki akora gitmek ister (Sol-Si-Re-Fa).',
       [0, 4, 7, 10],
       'Dominant 7th',
-      'Major triad plus a minor 7th (G-B-D-F).',
+      'A major chord plus the note 10 semitones above the root. It wants to move on to the next chord (G-B-D-F).',
+      exampleRoot: 7,
     ),
     ChordQuality(
       'hdim7',
       'hdim7',
       'Yarım eksik 7\'li',
-      'Eksik üçlü ve küçük 7\'li (Si-Re-Fa-La).',
+      'Eksik akor ve kökten 10 yarım ses yukarıdaki nota. Gergin ama eksik 7\'liden yumuşak (Si-Re-Fa-La).',
       [0, 3, 6, 10],
       'Half-diminished 7th',
-      'Diminished triad plus a minor 7th (B-D-F-A).',
+      'A diminished chord plus the note 10 semitones above the root. Tense, but softer than a diminished 7th (B-D-F-A).',
+      exampleRoot: 11,
     ),
     ChordQuality(
       'dim7',
       'dim7',
       'Eksik 7\'li',
-      'Dört küçük 3\'lü; sesler eşit aralıklı.',
+      'Dört nota, hepsi 3\'er yarım ses arayla. Çok gergin ve simetrik.',
       [0, 3, 6, 9],
       'Diminished 7th',
-      'Four minor 3rds; the notes are evenly spaced.',
+      'Four notes, each 3 semitones apart. Very tense and symmetrical.',
+      exampleRoot: 11,
     ),
   ];
   static ChordQuality byId(String id) => all.firstWhere((c) => c.id == id);
@@ -364,6 +457,7 @@ class ScaleType {
     this._nameEn,
     this._feelEn, {
     this.color,
+    this.exampleRoot = 0,
   });
   final String id;
   final String _name;
@@ -371,13 +465,16 @@ class ScaleType {
   final String _nameEn;
   final String _feelEn;
   String get name => tr(_name, _nameEn);
-  String get feel => tr(_feel, _feelEn);
+  String get feel => tr(NoteNames.inText(_feel), NoteNames.inTextEn(_feelEn));
 
   /// Semitones above the root, ascending, without the octave.
   final List<int> steps;
 
   /// Index into [steps] of the characteristic "color note", if any.
   final int? color;
+
+  /// Pitch class the example scale starts on, for diagrams.
+  final int exampleRoot;
 }
 
 abstract final class Scales {
@@ -385,97 +482,108 @@ abstract final class Scales {
     ScaleType(
       'major',
       'Majör',
-      'T T Y T T T Y · Do\'dan beyaz tuşlar.',
+      'Yedi nota, adımlar T T Y T T T Y. Bildik "Do Re Mi" dizisi; beyaz tuşlarda Do sesinden başlar.',
       [0, 2, 4, 5, 7, 9, 11],
       'Major',
-      'W W H W W W H · the white keys from C.',
+      'Seven notes, steps W W H W W W H. The familiar "do re mi" scale; the white keys from C.',
+      exampleRoot: 0,
     ),
     ScaleType(
       'natural_minor',
       'Doğal minör',
-      'T Y T T Y T T · La\'dan beyaz tuşlar.',
+      'Adımlar T Y T T Y T T. Majörden daha koyu; beyaz tuşlarda La sesinden başlar.',
       [0, 2, 3, 5, 7, 8, 10],
       'Natural minor',
-      'W H W W H W W · the white keys from A.',
+      'Steps W H W W H W W. Darker than major; the white keys from A.',
+      exampleRoot: 9,
       color: 2,
     ),
     ScaleType(
       'harmonic_minor',
       'Armonik minör',
-      'Doğal minör, 7. derece yarım ses tiz.',
+      'Doğal minör, yalnız 7. nota bir yarım ses yukarıda; 6. ile 7. nota arasında 3 yarım seslik geniş bir adım oluşur.',
       [0, 2, 3, 5, 7, 8, 11],
       'Harmonic minor',
-      'Natural minor with the 7th degree a semitone higher.',
+      'Natural minor with only the 7th note a semitone higher; a wide 3-semitone step appears between the 6th and 7th.',
+      exampleRoot: 9,
       color: 6,
     ),
     ScaleType(
       'melodic_minor',
       'Melodik minör',
-      'Doğal minör, 6. ve 7. derece tiz.',
+      'Doğal minör, 6. ve 7. notalar birer yarım ses yukarıda; yukarı çıkarken yumuşak akar.',
       [0, 2, 3, 5, 7, 9, 11],
       'Melodic minor',
-      'Natural minor with the 6th and 7th degrees raised.',
+      'Natural minor with the 6th and 7th notes a semitone higher; it flows smoothly going up.',
+      exampleRoot: 9,
       color: 5,
     ),
     ScaleType(
       'dorian',
       'Dorian',
-      'T Y T T T Y T · Re\'den beyaz tuşlar.',
+      'Adımlar T Y T T T Y T. Minöre benzer ama 6. nota daha yukarıda; beyaz tuşlarda Re sesinden başlar.',
       [0, 2, 3, 5, 7, 9, 10],
       'Dorian',
-      'W H W W W H W · the white keys from D.',
+      'Steps W H W W W H W. Like minor, but the 6th note is higher; the white keys from D.',
+      exampleRoot: 2,
       color: 5,
     ),
     ScaleType(
       'phrygian',
       'Frigyen',
-      'Y T T T Y T T · Mi\'den beyaz tuşlar.',
+      'Adımlar Y T T T Y T T. İlk adım yarım ses; beyaz tuşlarda Mi sesinden başlar.',
       [0, 1, 3, 5, 7, 8, 10],
       'Phrygian',
-      'H W W W H W W · the white keys from E.',
+      'Steps H W W W H W W. The first step is a semitone; the white keys from E.',
+      exampleRoot: 4,
       color: 1,
     ),
     ScaleType(
       'lydian',
       'Lidyen',
-      'T T T Y T T Y · Fa\'dan beyaz tuşlar.',
+      'Adımlar T T T Y T T Y. Majöre benzer ama 4. nota yarım ses yukarıda; beyaz tuşlarda Fa sesinden başlar.',
       [0, 2, 4, 6, 7, 9, 11],
       'Lydian',
-      'W W W H W W H · the white keys from F.',
+      'Steps W W W H W W H. Like major, but the 4th note is a semitone higher; the white keys from F.',
+      exampleRoot: 5,
       color: 3,
     ),
     ScaleType(
       'mixolydian',
       'Miksolidyen',
-      'T T Y T T Y T · Sol\'den beyaz tuşlar.',
+      'Adımlar T T Y T T Y T. Majöre benzer ama 7. nota yarım ses aşağıda; beyaz tuşlarda Sol sesinden başlar.',
       [0, 2, 4, 5, 7, 9, 10],
       'Mixolydian',
-      'W W H W W H W · the white keys from G.',
+      'Steps W W H W W H W. Like major, but the 7th note is a semitone lower; the white keys from G.',
+      exampleRoot: 7,
       color: 6,
     ),
     ScaleType(
       'pentatonic_major',
       'Majör pentatonik',
-      'Majörden 4. ve 7. derece çıkarılmış beş ses.',
+      'Beş nota: majörün 4. ve 7. notaları çıkarılmış. Yarım ses adımı yok, çok yumuşak duyulur.',
       [0, 2, 4, 7, 9],
       'Major pentatonic',
-      'Five notes: major without the 4th and 7th degrees.',
+      'Five notes: major without its 4th and 7th. No semitone steps, so it sounds very smooth.',
+      exampleRoot: 0,
     ),
     ScaleType(
       'pentatonic_minor',
       'Minör pentatonik',
-      'Minörden 2. ve 6. derece çıkarılmış beş ses.',
+      'Beş nota: minörün 2. ve 6. notaları çıkarılmış. Pop ve blues\'ta çok sık.',
       [0, 3, 5, 7, 10],
       'Minor pentatonic',
-      'Five notes: minor without the 2nd and 6th degrees.',
+      'Five notes: minor without its 2nd and 6th. Very common in pop and blues.',
+      exampleRoot: 9,
     ),
     ScaleType(
       'blues',
       'Blues',
-      'Minör pentatonik ve artık 4\'lü.',
+      'Minör pentatonik ve araya eklenen bir "blues notası" (kökten 6 yarım ses).',
       [0, 3, 5, 6, 7, 10],
       'Blues',
-      'Minor pentatonic plus the augmented 4th.',
+      'Minor pentatonic plus one added "blue note" (6 semitones above the root).',
+      exampleRoot: 9,
       color: 3,
     ),
   ];
@@ -499,7 +607,7 @@ class Progression {
   final List<(int, String)> chords;
   final String _feel;
   final String _feelEn;
-  String get feel => tr(_feel, _feelEn);
+  String get feel => tr(NoteNames.inText(_feel), NoteNames.inTextEn(_feelEn));
 }
 
 abstract final class Progressions {
@@ -579,3 +687,85 @@ abstract final class Progressions {
   ];
   static Progression byId(String id) => all.firstWhere((p) => p.id == id);
 }
+
+/// How interval names read, for anyone who has never seen "m2" (QA-INT-01).
+/// Text only; shared by the intro slide and the quiz help sheet.
+List<String> intervalNamingRules() {
+  final n = NoteNames.of;
+  return [
+    tr(
+      'Sayı, iki notayı da sayarak kaç nota adı kapsadığıdır: '
+          '${n(0)}→${n(2)} 2\'li, ${n(0)}→${n(4)} 3\'lü, ${n(0)}→${n(7)} 5\'li.',
+      'The number counts the note names covered, both ends included: '
+          '${n(0)}→${n(2)} is a 2nd, ${n(0)}→${n(4)} a 3rd, ${n(0)}→${n(7)} a 5th.',
+    ),
+    tr(
+      'Yarım ses en küçük adımdır: klavyede hemen yan yana iki tuş, siyahlar dahil.',
+      'A semitone is the smallest step: two keys right next to each other, black ones included.',
+    ),
+    tr(
+      'Küçük ve büyük, aynı sayının iki boyudur; büyük olan bir yarım ses '
+          'geniştir. Kısaltma: küçük = m, büyük = M (m2 = küçük 2\'li, M2 = büyük 2\'li).',
+      'Minor and major are two sizes of the same number; major is one '
+          'semitone wider. Short forms: minor = m, major = M (m2, M2).',
+    ),
+    tr(
+      '4\'lü, 5\'li ve oktav "tam" diye anılır (P4, P5, P8). Tam 4\'lünün bir '
+          'yarım ses genişi artık 4\'lüdür (A4).',
+      '4ths, 5ths and the octave are called "perfect" (P4, P5, P8). One '
+          'semitone wider than a perfect 4th is an augmented 4th (A4).',
+    ),
+  ];
+}
+
+/// How chord names read, for beginners (QA-INT-02).
+List<String> chordNamingRules() => [
+  tr(
+    'Akor, aynı anda çalınan üç ya da daha çok notadır. Notalar genellikle '
+        '3\'lü aralıklarla üst üste dizilir.',
+    'A chord is three or more notes played at once, usually stacked in '
+        '3rds.',
+  ),
+  tr(
+    'Majör (maj) ile minör (min) arasındaki tek fark ortadaki notadır: '
+        'majörde kökten 4, minörde 3 yarım ses yukarıda.',
+    'The only difference between major (maj) and minor (min) is the middle '
+        'note: 4 semitones above the root in major, 3 in minor.',
+  ),
+  tr(
+    'Eksik (dim) iki küçük 3\'lü, artık (aug) iki büyük 3\'lü üst üstedir.',
+    'Diminished (dim) is two minor 3rds stacked, augmented (aug) two major '
+        '3rds.',
+  ),
+  tr(
+    'Adında 7 olan akorlar (maj7, min7, dom7…) dördüncü bir nota taşır: '
+        'kökün 10 ya da 11 yarım ses üstü.',
+    'Chords with a 7 in the name (maj7, min7, dom7…) add a fourth note, 10 or '
+        '11 semitones above the root.',
+  ),
+];
+
+/// How scale names read, for beginners (QA-INT-02).
+List<String> scaleNamingRules() => [
+  tr(
+    'Dizi, bir notadan bir üstteki aynı notaya adım adım çıkan notalardır.',
+    'A scale is the notes stepping up from one note to the same note an '
+        'octave higher.',
+  ),
+  tr(
+    'T = tam ses (2 tuş), Y = yarım ses (1 tuş). Bir diziyi bu adımların '
+        'sırası belirler.',
+    'W = whole step (2 keys), H = half step (1 key). The order of these '
+        'steps defines a scale.',
+  ),
+  tr(
+    'Modlar (Dorian, Frigyen, Lidyen, Miksolidyen) beyaz tuşları farklı bir '
+        'notadan başlatarak elde edilir.',
+    'The modes (Dorian, Phrygian, Lydian, Mixolydian) are the white keys '
+        'started from a different note.',
+  ),
+  tr(
+    'Pentatonik diziler 7 yerine 5 notalıdır.',
+    'Pentatonic scales have 5 notes instead of 7.',
+  ),
+];

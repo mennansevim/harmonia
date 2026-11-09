@@ -261,13 +261,14 @@ class SoundFactory {
 String itemLabel(
   TrainerKind kind,
   String id, {
-  NoteNotation notation = NoteNotation.solfege,
+  NoteNotation? notation,
   int transposition = 0,
   bool long = false,
 }) => switch (kind) {
+  // Without an explicit naming, the learner's own: never a silent Do Re Mi.
   TrainerKind.pitch => PitchClass.name(
     int.parse(id) - transposition + 12,
-    notation,
+    notation ?? NoteNames.current,
   ),
   TrainerKind.interval => long ? Intervals.byId(id).name : id,
   TrainerKind.chord => long ? Chords.byId(id).name : Chords.byId(id).label,
@@ -277,7 +278,7 @@ String itemLabel(
 
 String itemFeel(TrainerKind kind, String id) => switch (kind) {
   TrainerKind.pitch => tr(
-    'Do\'ya göre yerini düşün, sonra adını söyle.',
+    '${NoteNames.of(0)} sesine göre yerini düşün, sonra adını söyle.',
     'Place it against the tonic, then name it.',
   ),
   TrainerKind.interval =>

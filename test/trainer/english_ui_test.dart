@@ -63,7 +63,10 @@ Future<List<String>> wordingWithScroll(WidgetTester tester) async {
 void expectEnglish(Iterable<String> wording, String where) {
   final turkish = [
     for (final w in wording)
-      if (_turkishLetters.hasMatch(w) || _turkishWords.hasMatch(w)) w,
+      // A language's own name is shown in that language on the picker.
+      if (w != 'Türkçe' &&
+          (_turkishLetters.hasMatch(w) || _turkishWords.hasMatch(w)))
+        w,
   ];
   expect(turkish, isEmpty, reason: 'Turkish wording on $where');
 }
@@ -90,8 +93,13 @@ void main() {
 
     expectEnglish(visibleWording(tester), 'welcome');
     await tapKey(tester, 'get_started');
+    expectEnglish(visibleWording(tester), 'name');
+    await tapKey(tester, 'ob_continue');
     expectEnglish(visibleWording(tester), 'goal');
     await tapKey(tester, 'goal_choir');
+    await tapKey(tester, 'ob_continue');
+    expectEnglish(visibleWording(tester), 'level');
+    await tapKey(tester, 'level_beginner');
     await tapKey(tester, 'ob_continue');
     expectEnglish(visibleWording(tester), 'minutes');
     await tapKey(tester, 'minutes_10');

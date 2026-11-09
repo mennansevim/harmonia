@@ -198,10 +198,10 @@ List<_Stage> _one(List<(String, String)> rows) => [
 ];
 
 /// Built once per wording language: lesson titles are part of the data.
-final _paths = <bool, Map<TrainerKind, TrainerPath>>{};
+final _paths = <String, Map<TrainerKind, TrainerPath>>{};
 
 Map<TrainerKind, TrainerPath> get trainerPaths =>
-    _paths[Lang.en] ??= _buildPaths();
+    _paths['${Lang.en}-${NoteNames.current.name}'] ??= _buildPaths();
 
 Map<TrainerKind, TrainerPath> _buildPaths() => {
   // Notes in a tonal ear-training order: tonic, triad, then scale steps,
@@ -228,22 +228,46 @@ Map<TrainerKind, TrainerPath> _buildPaths() => {
         (
           '2',
           tr(
-            'Do ile Mi arasındaki basamak.',
+            '${NoteNames.of(0)} ile ${NoteNames.of(4)} arasındaki basamak.',
             'The step between the tonic and the third.',
           ),
         ),
-        ('5', tr('Mi\'nin yarım ses üstü.', 'A semitone above the third.')),
-        ('9', tr('Sol\'ün bir tam ses üstü.', 'A whole tone above the fifth.')),
+        (
+          '5',
+          tr(
+            '${NoteNames.of(4)} sesinin yarım ses üstü.',
+            'A semitone above the third.',
+          ),
+        ),
+        (
+          '9',
+          tr(
+            '${NoteNames.of(7)} sesinin bir tam ses üstü.',
+            'A whole tone above the fifth.',
+          ),
+        ),
         (
           '11',
           tr(
-            'Do\'ya çeken yeden ses.',
+            '${NoteNames.of(0)} sesine çeken yeden ses.',
             'The leading tone that pulls to the tonic.',
           ),
         ),
         ('10', tr('İlk değiştirilmiş ses.', 'The first altered note.')),
-        ('6', tr('Fa ile Sol arası.', 'Between the fourth and the fifth.')),
-        ('3', tr('Re ile Mi arası.', 'Between the second and the third.')),
+        (
+          '6',
+          tr(
+            '${NoteNames.of(5)} ile ${NoteNames.of(7)} arası.',
+            'Between the fourth and the fifth.',
+          ),
+        ),
+        (
+          '3',
+          tr(
+            '${NoteNames.of(2)} ile ${NoteNames.of(4)} arası.',
+            'Between the second and the third.',
+          ),
+        ),
       ]),
       _Stage(
         ['8', '1'],
@@ -295,7 +319,7 @@ Map<TrainerKind, TrainerPath> _buildPaths() => {
       IntroSlide(
         tr('Doğru dinleme', 'Listening well'),
         tr(
-          'Her notayı Do\'ya göre düşün: ne kadar yukarıda?',
+          'Her notayı ${NoteNames.of(0)} sesine göre düşün: ne kadar yukarıda?',
           'Think of each note against the tonic: how far up is it?',
         ),
         [
@@ -410,7 +434,7 @@ Map<TrainerKind, TrainerPath> _buildPaths() => {
             'Distances are counted in semitones.',
           ),
           tr(
-            'Her aralık için bir solfej örneği verilir (ör. Do → Mi).',
+            'Her aralık için bir nota örneği verilir (ör. ${NoteNames.of(0)} → ${NoteNames.of(4)}).',
             'Each interval comes with an example (e.g. C → E).',
           ),
           tr(
@@ -418,6 +442,16 @@ Map<TrainerKind, TrainerPath> _buildPaths() => {
             'You practise upwards first, then downwards and together.',
           ),
         ],
+      ),
+      IntroSlide(
+        tr('Aralık adları nasıl okunur?', 'How interval names read'),
+        tr(
+          'Küçük 2\'li, M3, P5… Adın iki parçası var: bir sayı ve bir boy. '
+              'Her yeni aralıkta klavyede kaç tuş olduğunu da göreceksin.',
+          'Minor 2nd, M3, P5… A name has two parts: a number and a size. '
+              'Each new interval also shows how many keys it spans.',
+        ),
+        intervalNamingRules(),
       ),
       IntroSlide(
         tr('Nasıl çalışılır', 'How to practise'),
@@ -529,6 +563,16 @@ Map<TrainerKind, TrainerPath> _buildPaths() => {
           ),
         ],
       ),
+      IntroSlide(
+        tr('Akor adları nasıl okunur?', 'How chord names read'),
+        tr(
+          'maj, min, dim, dom7… Her yeni akorda notalarını klavyede adlarıyla '
+              'göreceksin.',
+          'maj, min, dim, dom7… Each new chord also shows its notes by name '
+              'on a keyboard.',
+        ),
+        chordNamingRules(),
+      ),
     ],
   ),
   TrainerKind.scale: _ladder(
@@ -556,10 +600,19 @@ Map<TrainerKind, TrainerPath> _buildPaths() => {
             'A five-note scale common in folk tunes.',
           ),
         ),
-        ('dorian', tr('Re\'den başlayan mod.', 'The mode that starts on D.')),
+        (
+          'dorian',
+          tr(
+            '${NoteNames.of(2)} sesinden başlayan mod.',
+            'The mode that starts on D.',
+          ),
+        ),
         (
           'mixolydian',
-          tr('Sol\'den başlayan mod.', 'The mode that starts on G.'),
+          tr(
+            '${NoteNames.of(7)} sesinden başlayan mod.',
+            'The mode that starts on G.',
+          ),
         ),
         (
           'melodic_minor',
@@ -575,8 +628,20 @@ Map<TrainerKind, TrainerPath> _buildPaths() => {
             'A five-note scale drawn from minor.',
           ),
         ),
-        ('lydian', tr('Fa\'dan başlayan mod.', 'The mode that starts on F.')),
-        ('phrygian', tr('Mi\'den başlayan mod.', 'The mode that starts on E.')),
+        (
+          'lydian',
+          tr(
+            '${NoteNames.of(5)} sesinden başlayan mod.',
+            'The mode that starts on F.',
+          ),
+        ),
+        (
+          'phrygian',
+          tr(
+            '${NoteNames.of(4)} sesinden başlayan mod.',
+            'The mode that starts on E.',
+          ),
+        ),
         (
           'blues',
           tr(
@@ -619,6 +684,16 @@ Map<TrainerKind, TrainerPath> _buildPaths() => {
             'In the singing step you sing up the scale with note names.',
           ),
         ],
+      ),
+      IntroSlide(
+        tr('Dizi adları nasıl okunur?', 'How scale names read'),
+        tr(
+          'Majör, Dorian, pentatonik… Her yeni dizide adımlarını klavyede '
+              'göreceksin.',
+          'Major, Dorian, pentatonic… Each new scale also shows its steps on '
+              'a keyboard.',
+        ),
+        scaleNamingRules(),
       ),
     ],
   ),

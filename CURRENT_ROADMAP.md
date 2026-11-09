@@ -1,5 +1,96 @@
 # Resonia — Current Roadmap
 
+**2026-11-09 — PLACE-01 hedef parkuru, seviye ve yerleştirme (kod + test):**
+Hedef sıralı bir parkur seçiyor (Akor/Dizi/Yürüyüş ilk kez rotada); girişte
+ayrı seviye adımı (yeni / biraz / tecrübeli). Yerleştirme yolun kendi
+kapılarıyla, %80 kuralı aynı, sonuç belli olunca erken biter (12'de 10
+doğru / 3 yanlış); tecrübeli sondan bir önceki ara duraktan başlar, kalırsa
+iner. Doğruluk tam uzunluğa bölünür (yıldız şişmez). Ayarlar'dan seviye ve
+"Seviyemi bul". **1470 test + 2 opt-in skip**. Açık: parkur sırası ve
+metinler eğitimci onayı, kapı ayırt ediciliği (±1 durak), `exam` için
+tekrar slotu kararı, cihaz/öğrenci denemesi.
+
+**2026-11-09 — BENCH-MODEL-01 model/ağırlık/yük incelemesi (ölçüm + belge,
+uygulama kodu değişmedi):** `tool/benchmark/` (4 betik) ve
+[rapor](docs/research/VOCAL_MODEL_BENCHMARK_2026-11-09.md). Sentetik ses
+benzeri sinyallerde YIN çekirdeği C2–C6'da ±2 c, SNR ≥10 dB'de sağlam, 5 dB'de
+çöküyor (kalite kapısı 15 dB); MPM dayanıklı. Skor: tek ses skorunda 50→50,5 c
+için 45 puan uçurum ve vibrato "kararsız" (aktif uygulamada bağlı değil);
+aralık skorunda genişlik %60 ve ölçüm eşleme doğruluğuna duyarlı; 12 soruluk
+kapı düşük ayırt edici (%85'lik öğrenci %74 geçer). Müfredat: 1310 puanlı
+sorunun tamamı algı, ses üretimi ölçülmüyor; zor öğeler 4–9× az çalışılıyor.
+Tekrar kartında büyüme eşiği hatası: günlük kullanıcıda 90 günde 90 tekrar
+(tek sabitle ~10). Tüm veri sentetik/simülasyon; kalite kapısı format+analyze
+temiz, **1452 test + 2 opt-in skip** (ritim betiği dahil son koşu).
+Ek: alkışla ritim ölçüldü (`rhythm_benchmark.dart`): mükemmel bilen
+performansçının geçme oranı ritim süresiyle −0,99, seviye sırasıyla −0,06
+(mutlak ±120 ms kuralı); detektör jitter'ı ~1,5 ms. Rakip/eğitim mimarisi
+karşılaştırması (rapor §6b): açılan Türk konservatuvar kılavuzlarında cevap
+biçimi tekrar (şarkı/alkış/kalem), çoktan seçmeli işitme maddesi bulunamadı;
+uygulamada ezgi/ritim tekrarı var ama rota ve ilerleme dışında; `exam` hedefi
+adlandırma yoluna bağlı. Hedefe göre hüküm: kulak eğitimi evet, sınav bugünkü
+hâliyle hayır, şan/ses hazırlık katmanı. Açık: gerçek insan/yankı/cihaz
+benchmark'ı (BENCH-01), eğitimci kararı (aralık skoru, kapı, tolerans, `exam`
+rotası, ritim kuralı), HLR kalibrasyonu. Hiçbir rubrik/tolerans/sabit
+değiştirilmedi.
+
+**2026-11-09 — QA-INT-02 akor ve dizi adları anlatımı (kod + test):** Akor
+ve dizi açıklamaları jargonsuz; iki yeni "nasıl okunur?" slaytı; tanış
+sayfasında notaları adıyla gösteren klavye (akor) ve adım kalıbı (dizi);
+soru ekranı yardımı akor ve dizilere genişledi. **1452 test + 2 opt-in
+skip**. Açık: eğitimci onayı, akor dizisi adları, cihaz denemesi.
+
+**2026-11-09 — QA-INT-01 aralık adları anlatımı (kod + test):** Aralık
+açıklamaları jargonsuz; "Başlarken"de "Aralık adları nasıl okunur?"
+(sayı, yarım ses, küçük/büyük = m/M, tam/artık); her yeni aralıkta tuş sayan
+klavye; soru ekranında sessiz "Bu adlar ne demek?" / "?" yardımı.
+**1447 test + 2 opt-in skip**. Açık: cihaz/yeni başlayan denemesi, eğitimci
+onayı, akor ve dizi adları için benzer yardım.
+
+**2026-11-09 — AUDIO-PIANO-02 patlama düzeltmesi (kod + test):** Vuruş
+ortasından başlayan kayıtlar sessizlikten tek örnekte 0,28'e sıçrıyordu.
+Notalara 5 ms kosinüs giriş/kosinüs sönüm, kayıt sonunda kesilme yerine
+sönüm; ses aralığı testi de örnekleyiciden; eğitim sesleri yarıda
+kesilirken ~30 ms kısılır (ölçüm akışları hariç). **1440 test + 2 opt-in
+skip**. Açık: hoparlörde dinleme ve yeni IPA.
+
+**2026-11-09 — AUDIO-PIANO-01 kayıtlı piyano (kod + test):** Piyano
+tınısında tek nota sesleri (nota, ardışık aralık, dizi, ezgi) kullanıcının
+izinli kaydından çalar; siyah tuşlar ±1 yarım ses kaydırma, kayıt başı
+sessizliği kırpılır. Akor/eşzamanlı aralık ve A5+ notalar bütünüyle synth'te
+(tek seste tını karışmaz); mikrofonlu tanı referansı bilerek synth.
+**1438 test + 2 opt-in skip**. Açık: cihazda dinleme/gecikme, siyah tuş ve
+A5+ kayıtları, hazır akor kayıtları.
+
+**2026-11-09 — QA-NOTE-01 tek nota adlandırması + açılışta dil (kod + test):**
+TestFlight bildirimi: ders adı "Do ve Mi" derken şıklar "C/E" idi. Ders
+başlıkları, ipuçları ve örnekler artık öğrencinin notasyonunu izliyor
+(`NoteNames`). Evet/hayır düğmeleri cevaptan önce nötr (önceden "Evet" hep
+yeşildi). Karşılamada Türkçe/English seçimi. **1434 test + 2 opt-in skip**.
+Açık: "başka şık yeşil" bildiriminin ekranı kesinleşmedi; kayıtlı piyano
+(E1–G5 beyaz tuşlar, izinli) ile soru seslerinin refactor'u onay bekliyor.
+
+**2026-11-09 — UX-MOTION-02 hareket dili uygulamaya yayıldı (kod + test):**
+Ortak sayfa geçişi (Android'de yükselip belirme, iOS'ta yerel Cupertino),
+soru ekranında doğruya zıplama / yanlışa sallanma, ders sonunda kademeli
+giriş + dolan skor halkası + kazanılmış kutlamaya ses (ders → başarı,
+ara durak/final → fanfar), ders yolunda düğümlerin sırayla belirmesi. Kural:
+kulak eğitimi soru/karşılaştırma ekranlarında ve referans ses çalarken arayüz
+notası yok. Kalite kapısı temiz, **1427 test + 2 opt-in skip**. Açık: cihazda
+ses/akıcılık, VoiceOver/TalkBack, Bugün/Gelişim sekmeleri ve mikrofonlu
+ekranlarda hareket dili.
+
+**2026-11-09 — UX-MOTION-01 rehberli, müzikal ilk açılış (kod + test):**
+Onboarding `karşılama → isim → hedef → süre → hazır` oldu. Mor ses küresi
+rehber olarak "yazıyor…" balonuyla konuşur; isim isteğe bağlı ve her harf
+pentatonik bir notayla karo olarak belirir; seçimler ve adımlar kısa
+sentezlenmiş notalarla yanıt verir, sonda akor + küçük patlama. Ortak hareket
+dili `lib/trainer/ui/motion.dart`, sesler `lib/trainer/audio/ui_sounds.dart`
+(lisanslı ses yok, Ayarlar'da kapatılabilir, hareket azaltmaya uyar). Kalite
+kapısı temiz, **1424 test + 2 opt-in skip**. Açık: cihazda ses/gecikme/sessiz
+anahtar, VoiceOver, kullanıcı algısı; hareket dilinin diğer ekranlara
+yayılması (sayfa geçişleri, ders/sonuç ekranları) sonraki dilim.
+
 **2026-11-09 — PATH-01 ders yolu ve kutlama (kod + test):** Beceri ekranı
 zikzak ders yoluna döndü; geçilen düğümden sonra "Devam et" sıradaki dersi
 açar. Kutlama kademeli ve yalnız kurulan olaya bağlı: ders → küçük patlama,
@@ -46,7 +137,7 @@ hash envanteriyle son karşılaştırmada fark yok; ses algoritması değiştiri
 Gerçek yaş grubu/cihaz/eğitimci pilotu yapılmadı; mevcut kullanıcı değişiklikleri
 korundu. Sonraki önerilen dilim WIDE-01/02; mevcut dış kabul kapıları açık.
 
-**Tarih:** 2026-11-09 (son güncelleme: HUM-06a güvenli hizmet operasyonları sözleşmesi)
+**Tarih:** 2026-11-09 (son güncelleme: QA-INT-02 akor ve dizi adları)
 **Durum:** Faz 1 — güvenilirlik sözleşmeleri, yerel kayıt laboratuvarı, deneysel DSP/worker, kalibrasyon/kalite kapısı ve misafir uygulama kabuğu kod-test seviyesinde. Tek ses skor ekranı hâlâ simülasyon; fiziksel cihaz, insan sesi benchmark'ı, eğitimci içerik onayı ve öğretim pilotu kapıları açık. **Hiçbir modül cihazda/pilotta doğrulanmış veya yayında değil.**
 **Sahip:** Mennan Sevim  
 **Platform:** Flutter mobil uygulama; ileride web ve öğretmen paneli

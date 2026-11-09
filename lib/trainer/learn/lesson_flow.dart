@@ -14,6 +14,7 @@ import '../quiz/quiz.dart';
 import '../quiz/quiz_view.dart';
 import '../sing/trainer_pitch_sing_mobile.dart';
 import '../sing/trainer_pitch_sing_session.dart';
+import '../ui/interval_keyboard.dart';
 import '../ui/kit.dart';
 import 'session_end.dart';
 import '../../domain/lang.dart';
@@ -471,7 +472,7 @@ class _LessonFlowState extends State<LessonFlow> with WidgetsBindingObserver {
       (
         tr('Yeri', 'Place'),
         tr(
-          '${_label('0')}\'ya göre ${int.parse(item)} yarım ses yukarıda',
+          '${_label('0')} sesinden ${int.parse(item)} yarım ses yukarıda',
           '${int.parse(item)} semitones above ${_label('0')}',
         ),
       ),
@@ -484,10 +485,14 @@ class _LessonFlowState extends State<LessonFlow> with WidgetsBindingObserver {
           '${Intervals.byId(item).semitones} semitones',
         ),
       ),
-      (tr('Solfej örneği', 'Example'), Intervals.byId(item).anchor),
+      (tr('Örnek', 'Example'), Intervals.byId(item).anchor),
+      // The short form seen on answer buttons, tied to the full name here.
+      (tr('Kısa adı', 'Short name'), item),
     ],
     TrainerKind.chord => [
       (tr('Ses sayısı', 'Notes'), '${Chords.byId(item).tones.length}'),
+      // The short form seen on answer buttons.
+      (tr('Kısa adı', 'Short name'), Chords.byId(item).label),
     ],
     TrainerKind.scale => [
       (tr('Nota sayısı', 'Notes'), '${Scales.byId(item).steps.length}'),
@@ -528,9 +533,23 @@ class _LessonFlowState extends State<LessonFlow> with WidgetsBindingObserver {
                     ],
                   ),
                 ),
+              if (kind == TrainerKind.interval) ...[
+                const SizedBox(height: 6),
+                IntervalKeyboard(
+                  key: const Key('interval_keyboard'),
+                  interval: Intervals.byId(item),
+                  color: color,
+                ),
+              ],
+              if (kind == TrainerKind.chord) ...[
+                const SizedBox(height: 6),
+                NotesKeyboard.chord(Chords.byId(item), color: color),
+              ],
               if (kind == TrainerKind.scale) ...[
                 const SizedBox(height: 6),
                 ScaleLadder(scale: Scales.byId(item), color: color),
+                const SizedBox(height: 12),
+                NotesKeyboard.scale(Scales.byId(item), color: color),
               ],
             ],
           ),

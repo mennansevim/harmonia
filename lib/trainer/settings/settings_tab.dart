@@ -9,6 +9,8 @@ import '../../choir/data/choir_store.dart';
 import '../app/scope.dart';
 import '../audio/synth.dart';
 import '../domain/music.dart';
+import '../domain/placement.dart';
+import '../domain/trainers.dart';
 import '../home/home_shell.dart';
 import '../home/daily_route.dart';
 import '../state/trainer_store.dart';
@@ -274,6 +276,42 @@ class SettingsTab extends StatelessWidget {
                         ..save(),
                     ),
                   ),
+                  // PLACE-01: the stated level and a re-runnable placement
+                  // on the track's current path. Progress is never removed.
+                  _Item(
+                    key: const Key('settings_level'),
+                    icon: Ic.signal,
+                    title: tr('Seviye', 'Level'),
+                    value:
+                        ExperienceLevelInfo.fromId(
+                          store.answers['level'],
+                        )?.title ??
+                        tr('Seçilmedi', 'Not chosen'),
+                    onTap: () => _pick<ExperienceLevel?>(
+                      context,
+                      tr('Seviye', 'Level'),
+                      ExperienceLevel.values,
+                      ExperienceLevelInfo.fromId(store.answers['level']),
+                      (l) => l!.title,
+                      (l) => store
+                        ..answers['level'] = l!.id
+                        ..save(),
+                    ),
+                  ),
+                  _Item(
+                    key: const Key('settings_placement'),
+                    icon: Ic.target,
+                    title: tr('Seviyemi bul', 'Find my level'),
+                    subtitle: tr(
+                      '${focusTrainer(store).title} · kısa ve yaklaşık',
+                      '${focusTrainer(store).title} · short and approximate',
+                    ),
+                    onTap: () => beginPlacement(
+                      store,
+                      Navigator.of(context),
+                      trainer: focusTrainer(store),
+                    ),
+                  ),
                   _Item(
                     key: const Key('settings_minutes'),
                     icon: Ic.timer,
@@ -372,6 +410,19 @@ class SettingsTab extends StatelessWidget {
                         TrainerScope.of(context).audio.timbre = t;
                       },
                     ),
+                  ),
+                  _Toggle(
+                    key: const Key('ui_sounds_toggle'),
+                    icon: Ic.music2,
+                    title: tr('Arayüz sesleri', 'Interface sounds'),
+                    subtitle: tr(
+                      'Dokunuş ve geçişlerde kısa notalar',
+                      'Short notes on taps and transitions',
+                    ),
+                    value: store.uiSounds,
+                    onChanged: (v) => store
+                      ..uiSounds = v
+                      ..save(),
                   ),
                   _Toggle(
                     icon: Ic.keyboard,
@@ -499,8 +550,8 @@ class SettingsTab extends StatelessWidget {
                       context,
                       tr('Teşekkürler', 'Thanks'),
                       tr(
-                        'Flutter, just_audio, record ve açık kaynak topluluğuna. Tüm sesler uygulama içinde sentezlenir; lisanslı kayıt kullanılmaz.',
-                        'To Flutter, just_audio, record and the open source community. All sounds are synthesised in the app; no licensed recordings are used.',
+                        'Flutter, just_audio, record ve açık kaynak topluluğuna. Piyano notaları Vocalart için kaydedildi; akorlar ve diğer enstrümanlar uygulama içinde sentezlenir. Üçüncü taraf lisanslı kayıt kullanılmaz.',
+                        'To Flutter, just_audio, record and the open source community. Piano notes were recorded for Vocalart; chords and the other instruments are synthesised in the app. No third-party licensed recordings are used.',
                       ),
                     ),
                   ),

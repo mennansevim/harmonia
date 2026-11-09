@@ -109,9 +109,14 @@ void main() {
       try {
         await audit('karsilama');
         await tap('get_started');
+        await audit('isim');
+        await tap('ob_continue');
         await audit('hedef');
         await tap('goal_choir');
         await audit('hedef-secili');
+        await tap('ob_continue');
+        await audit('seviye');
+        await tap('level_beginner');
         await tap('ob_continue');
         await audit('sure');
         await tap('minutes_10');

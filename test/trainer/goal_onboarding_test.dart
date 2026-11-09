@@ -31,14 +31,18 @@ Future<TrainerStore> _onboard(
   String goal, {
   bool toggleChoir = false,
   int minutes = 10,
+  String level = 'beginner',
 }) async {
   final store = memoryStore();
   await store.load();
   await tester.pumpWidget(app(store));
   await settle(tester);
   await tapKey(tester, 'get_started');
+  await tapKey(tester, 'ob_continue'); // Name is optional.
   await tapKey(tester, 'goal_$goal');
   if (toggleChoir) await tapKey(tester, 'ob_choir');
+  await tapKey(tester, 'ob_continue');
+  await tapKey(tester, 'level_$level');
   await tapKey(tester, 'ob_continue');
   await tapKey(tester, 'minutes_$minutes');
   await tapKey(tester, 'ob_continue');
@@ -143,8 +147,10 @@ void main() {
     await settle(tester);
     expect(find.text('Sesini ve kulağını\nher gün geliştir'), findsOneWidget);
     await tapKey(tester, 'get_started');
+    await tapKey(tester, 'ob_continue'); // Name is optional.
+    await tapKey(tester, 'ob_continue'); // Name is optional.
     expect(find.text('Ne için çalışıyorsun?'), findsOneWidget);
-    expect(find.text('1/2'), findsOneWidget);
+    expect(find.text('2/4'), findsOneWidget);
     // Continue stays disabled until a goal is picked.
     await tapKey(tester, 'ob_continue');
     expect(find.text('Ne için çalışıyorsun?'), findsOneWidget);
@@ -159,8 +165,15 @@ void main() {
       containsSemantics(hasCheckedState: true, isChecked: true),
     );
     await tapKey(tester, 'ob_continue');
+    expect(find.text('Müzikte neredesin?'), findsOneWidget);
+    expect(find.text('3/4'), findsOneWidget);
+    // Continue stays disabled until a level is picked.
+    await tapKey(tester, 'ob_continue');
+    expect(find.text('Müzikte neredesin?'), findsOneWidget);
+    await tapKey(tester, 'level_beginner');
+    await tapKey(tester, 'ob_continue');
     expect(find.text('Günde kaç dakika ayırabilirsin?'), findsOneWidget);
-    expect(find.text('2/2'), findsOneWidget);
+    expect(find.text('4/4'), findsOneWidget);
     _expectNoMovedStep();
     await tapKey(tester, 'minutes_10');
     await tapKey(tester, 'ob_continue');
@@ -205,6 +218,8 @@ void main() {
     await tester.pumpWidget(app(store));
     await settle(tester);
     await tapKey(tester, 'get_started');
+    await tapKey(tester, 'ob_continue'); // Name is optional.
+    await tapKey(tester, 'ob_continue'); // Name is optional.
     await tapKey(tester, 'goal_ear');
     await tapKey(tester, 'ob_continue');
     await tester.tap(find.byTooltip('Geri').first);
@@ -355,6 +370,8 @@ void main() {
     // Already in a choir: the conductor role is kept as it was.
     expect(store.roles, {'conductor'});
     await tapKey(tester, 'ob_continue');
+    await tapKey(tester, 'level_beginner');
+    await tapKey(tester, 'ob_continue');
     expect(store.dailyMinutes, 15);
     await tapKey(tester, 'ob_continue');
     await tester.ensureVisible(find.text('Ana sayfaya git'));
@@ -374,7 +391,7 @@ void main() {
     await tester.pumpWidget(app(store));
     await settle(tester);
     expect(find.text('Günde kaç dakika ayırabilirsin?'), findsOneWidget);
-    expect(find.text('2/2'), findsOneWidget);
+    expect(find.text('4/4'), findsOneWidget);
   });
 
   testWidgets('a run saved on the old reminder step resumes at ready and '

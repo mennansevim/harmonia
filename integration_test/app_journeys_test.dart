@@ -79,7 +79,10 @@ void main() {
     await launch(tester);
     expect(find.byKey(const Key('get_started')), findsOneWidget);
     await tapKey(tester, 'get_started');
+    await tapKey(tester, 'ob_continue'); // Name is optional.
     await tapKey(tester, 'goal_choir');
+    await tapKey(tester, 'ob_continue');
+    await tapKey(tester, 'level_beginner');
     await tapKey(tester, 'ob_continue');
     await tapKey(tester, 'minutes_10');
     await tapKey(tester, 'ob_continue');

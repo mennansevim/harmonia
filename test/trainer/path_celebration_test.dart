@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:resonia/app/theme/resonia_theme.dart';
+import 'package:resonia/trainer/app/scope.dart';
 import 'package:resonia/trainer/domain/curriculum.dart';
 import 'package:resonia/trainer/domain/trainers.dart';
 import 'package:resonia/trainer/learn/session_end.dart';
@@ -192,6 +193,9 @@ void main() {
   });
 
   group('SessionEnd', () {
+    List<String> cues(WidgetTester tester) =>
+        TrainerScope.read(tester.element(find.byType(SessionEnd))).audio.ui.log;
+
     Future<(TrainerStore, List<String>)> show(
       WidgetTester tester,
       QuizSummary summary, {
@@ -229,6 +233,8 @@ void main() {
       final lesson = _path.nodes[1];
       final (store, taps) = await show(tester, _summary(4), node: lesson);
       expect(_sparks, findsOneWidget);
+      // The one earned celebration sounds once (UX-MOTION-01).
+      expect(cues(tester), ['success']);
       final next = store.nextNode(TrainerKind.pitch)!;
       expect(find.text('Devam et: ${next.title}'), findsOneWidget);
       // The "next lesson" card would repeat the button, so it is gone.
@@ -246,6 +252,7 @@ void main() {
       await show(tester, _summary(4), node: _first(NodeKind.checkpoint));
       await tester.pump(const Duration(milliseconds: 700));
       expect(_sparks, findsOneWidget);
+      expect(cues(tester), ['fanfare']);
       expect(_flag, findsOneWidget);
       await settle(tester, 3000);
     });
@@ -256,6 +263,7 @@ void main() {
       final gate = _first(NodeKind.checkpoint);
       await show(tester, _summary(1), node: gate, passed: false);
       expect(_sparks, findsNothing);
+      expect(cues(tester), isEmpty);
       expect(_flag, findsNothing);
       expect(find.byKey(const Key('session_continue')), findsNothing);
       expect(find.text('Bitti'), findsOneWidget);
@@ -281,6 +289,7 @@ void main() {
     testWidgets('free practice: no celebration, no "Devam et"', (tester) async {
       await show(tester, _summary(4));
       expect(_sparks, findsNothing);
+      expect(cues(tester), isEmpty);
       expect(find.byKey(const Key('session_continue')), findsNothing);
     });
   });

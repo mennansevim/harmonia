@@ -91,8 +91,18 @@ void main() {
     );
     await shot('welcome');
     await tap(key('get_started'));
+    await shot('ob_name');
+    await tester.enterText(key('ob_name'), 'Ayşe');
+    for (var i = 0; i < 8; i++) {
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+    await shot('ob_name_typed');
+    await tap(key('ob_continue'));
     await tap(key('goal_choir'));
     await shot('ob_goal');
+    await tap(key('ob_continue'));
+    await tap(key('level_beginner'));
+    await shot('ob_level');
     await tap(key('ob_continue'));
     await tap(key('minutes_10'));
     await shot('ob_minutes');
