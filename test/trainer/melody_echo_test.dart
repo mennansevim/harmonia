@@ -98,9 +98,11 @@ void main() {
     await tester.pumpWidget(app(store));
     await settle(tester);
     late _Backend backend;
+    var rounds = 0;
     Navigator.of(tester.element(find.byType(HomeShell))).push(
       MaterialPageRoute<void>(
         builder: (_) => MelodyEchoScreen(
+          onRoundFinished: () => rounds++,
           random: math.Random(4),
           worker: FakeRecordingPitchWorker.new,
           backendFactory: (reference) => backend = _Backend(reference),
@@ -147,6 +149,7 @@ void main() {
       );
     }
     expect(store.melodyEchoLevel, 1);
+    expect(rounds, 1, reason: 'one finished round reports once');
     expect(find.byKey(const Key('echo_next')), findsOneWidget);
     await tester.pumpWidget(const SizedBox());
     await tester.pump(const Duration(seconds: 1));

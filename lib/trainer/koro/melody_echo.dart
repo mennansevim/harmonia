@@ -29,11 +29,16 @@ class MelodyEchoScreen extends StatefulWidget {
     this.backendFactory,
     this.worker,
     this.random,
+    this.onRoundFinished,
   });
   final MelodyReferenceBackend Function(DiagnosticMelodyReference)?
   backendFactory;
   final RecordingPitchWorker Function()? worker;
   final math.Random? random;
+
+  /// Called once per round when a measurement was taken (a round was done,
+  /// not necessarily passed). Used by the exam route's echo step.
+  final VoidCallback? onRoundFinished;
   @override
   State<MelodyEchoScreen> createState() => _MelodyEchoScreenState();
 }
@@ -58,6 +63,7 @@ class _MelodyEchoScreenState extends State<MelodyEchoScreen>
   int _level = 0;
   bool _started = false;
   bool _counted = false;
+  bool _reported = false;
 
   /// Whole octaves the melody is moved after a take sung an octave away, so
   /// the next try sits where this voice actually is.
@@ -195,6 +201,13 @@ class _MelodyEchoScreenState extends State<MelodyEchoScreen>
     }
     final outcome = s.outcome;
     if (outcome != null && !_counted) _octaveHint = _octaveAway(outcome);
+    if (outcome != null &&
+        !_reported &&
+        !outcome.needsRetry &&
+        outcome.alignment != null) {
+      _reported = true;
+      widget.onRoundFinished?.call();
+    }
     if (outcome != null && !_counted && _passed(outcome)) {
       _counted = true;
       final store = TrainerScope.read(context).store;
@@ -213,6 +226,7 @@ class _MelodyEchoScreenState extends State<MelodyEchoScreen>
     setState(() {
       _started = true;
       _counted = false;
+      _reported = false;
       _octaveHint = null;
     });
     final stale =

@@ -931,7 +931,7 @@ class _ReadyState extends State<_Ready> {
   Widget build(BuildContext context) {
     final store = TrainerScope.of(context).store;
     final name = store.username.trim();
-    final route = routeFor(store.answers, store.dailyMinutes);
+    final route = store.route;
     final goal = route.goal;
     final focus =
         (store.answers['focus'] as List?)?.whereType<String>().toList() ??
@@ -956,6 +956,15 @@ class _ReadyState extends State<_Ready> {
         ),
       if (trainer != null)
         (trainerIcon(trainer), tr('Ders', 'Lesson'), trainer.title),
+      if (route.echoStep != null)
+        (
+          Ic.repeat,
+          tr('Tekrar', 'Echo'),
+          tr(
+            'Melodi yankısı ile alkışla ritim dönüşümlü; taslak ölçüm',
+            'Melody echo and clap the rhythm in turn; draft measurement',
+          ),
+        ),
       if (route.voiceStep)
         (
           Ic.audioLines,

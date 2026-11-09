@@ -256,21 +256,37 @@ void main() {
     expect(store.voicePart, isNotNull);
     // Octave-off answers above A4 were played but never reached.
     expect(singer.played, contains(71));
-    // RANGE-04: 16 of 36 semitones (44), 17 cents sharp (accuracy 83),
-    // all on the first try: 0.6·44 + 0.25·83 + 0.15·100 = 62.
-    expect(store.rangeScores, [62]);
-    expect(find.text('62'), findsOneWidget);
+    // RANGE-04 (match-1): 17 cents sharp = closeness 83 → accuracy
+    // (83−60)/40·100 = 57.5, all on the first try:
+    // 0.625·57.5 + 0.375·100 = 73. The 16-semitone width is not scored.
+    expect(store.rangeScores, [73]);
+    expect(find.text('73'), findsOneWidget);
     expect(find.text('İlk testin'), findsOneWidget);
+    expect(find.byKey(const Key('range_score_note')), findsOneWidget);
+    expect(find.text('Genişlik'), findsNothing);
     expect(
       find.textContaining('Eğitimsiz yetişkinler için tipik'),
       findsOneWidget,
     );
+    // The result stays readable at 320 px wide and 1.8× text.
+    tester.view
+      ..physicalSize = const Size(320, 700)
+      ..devicePixelRatio = 1;
+    tester.platformDispatcher.textScaleFactorTestValue = 1.8;
+    addTearDown(() {
+      tester.view.reset();
+      tester.platformDispatcher.clearTextScaleFactorTestValue();
+    });
+    await tester.pump();
+    await tester.pump();
+    final overflow = tester.takeException();
+    expect(overflow, isNull);
     await tester.ensureVisible(find.byKey(const Key('range_score_info')));
     await tester.tap(find.byKey(const Key('range_score_info')));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('range_score_explain')), findsOneWidget);
-    expect(find.textContaining('%60 genişlik'), findsOneWidget);
-    expect(find.textContaining('16 yarım ses → 44'), findsOneWidget);
+    expect(find.textContaining('%62,5 isabet'), findsOneWidget);
+    expect(find.textContaining('puana girmez'), findsOneWidget);
     await tester.tap(find.text('Tamam'));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('range_score_explain')), findsNothing);

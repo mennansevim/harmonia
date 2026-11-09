@@ -34,6 +34,8 @@ class SessionEnd extends StatelessWidget {
     this.title,
     this.retryConfig,
     this.onContinue,
+    this.onReviewPrevious,
+    this.onRetryGate,
   });
   final LessonNode? node;
   final QuizSummary summary;
@@ -47,6 +49,12 @@ class SessionEnd extends StatelessWidget {
   /// Opens the skill's next node in place of this one; null hides
   /// "Devam et".
   final VoidCallback? onContinue;
+
+  /// A failed gate: opens the lesson right before it again.
+  final VoidCallback? onReviewPrevious;
+
+  /// A failed gate: runs the same gate again.
+  final VoidCallback? onRetryGate;
 
   @override
   Widget build(BuildContext context) {
@@ -141,8 +149,21 @@ class SessionEnd extends StatelessWidget {
     );
     // One suggested follow-up, in this order: retry today's misses, else the
     // next lesson. A failed checkpoint already says what to do in its note.
+    final failedGate = gate && measured && !passed;
     final (String, String, (String, VoidCallback)?)? nextStep =
-        measured && weakest != null && retryConfig != null
+        failedGate && onReviewPrevious != null
+        ? (
+            tr('Önceki dersi tekrar et', 'Repeat the previous lesson'),
+            tr(
+              'Kapıdan hemen önceki dersi yeniden aç; hazır olunca kapıyı yeniden dene.',
+              'Reopen the lesson right before the gate; try the gate again when ready.',
+            ),
+            (
+              tr('Önceki dersi aç', 'Open the previous lesson'),
+              onReviewPrevious!,
+            ),
+          )
+        : measured && weakest != null && retryConfig != null
         ? (
             tr('Karışanları kısa tekrarla çalış', 'Practise the mix-ups'),
             tr(
@@ -446,7 +467,24 @@ class SessionEnd extends StatelessWidget {
                 ),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
-                  child: canContinue
+                  child: failedGate && onRetryGate != null
+                      ? Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            BigButton(
+                              key: const Key('session_retry_gate'),
+                              label: tr('Yeniden dene', 'Try again'),
+                              icon: Ic.rotateCcw,
+                              onPressed: onRetryGate,
+                            ),
+                            TextButton(
+                              key: const Key('session_done'),
+                              onPressed: onDone,
+                              child: Text(tr('Şimdilik bitir', 'Stop for now')),
+                            ),
+                          ],
+                        )
+                      : canContinue
                       ? Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [

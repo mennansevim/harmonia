@@ -178,6 +178,17 @@ bulgusudur.
   ve arayüz "aralık" diyor.
 - **Tekrarlanabilirlik** (sabit şarkıcı 18 yarım ses, σ=25 c, 400 tekrar):
   puan SD 3,7; ölçülen yarım ses SD 1,8 — pratik aracı için kabul edilebilir.
+- **Sonrası (P2, 2026-11-09):** `RangeScore` artık `match-1`: puan = %62,5
+  doğruluk + %37,5 ilk deneme; genişlik (`semitones`, `width`, bant) yalnız
+  betimleyici. Doğruluk (ortalama closeness − 60)/40·100 ile 0–100'e
+  yayıldı. `tool/benchmark/model_benchmark.dart` §B yeniden çalıştırıldı:
+  36 yarım ses gevşek (0/%0) 0 puan, 14 yarım ses temiz 100 puan; hiçbir
+  genişlikte gevşek-geniş temiz-dar'ı geçmiyor. Simüle şarkıcılarda puan ↔
+  gerçek aralık korelasyonu 0,52 → **−0,01**, puan ↔ gürültü −0,66 → −0,76.
+  Ölçülen aralığın σ=60 c'de düşük çıkması (σ=60 c, 30 yarım sesi ~9 ölçer)
+  ve %11–20 skor-yok oranı **değişmedi**: yalnız puan genişliği
+  ödüllendirmiyor, ölçümün kendisi hâlâ eşleme doğruluğuna bağlı. Eski
+  skorlar `rangeScoreModel` sürümüyle silinir. Gerçek şarkıcıyla ölçülmedi.
 
 ### 4.3 Geçiş kapısı ve yıldızlar (`TrainerStore.completeNode`)
 
@@ -196,6 +207,16 @@ yıldız ≥%95 → 3, ≥%80 → 2. Gerçek kapılar için (tüm 5 yol):
   %60'lık öğrenciyi %8,3 geçirir, %80'liği %55,8 geçirir.
 - **3 yıldız = 10 soruda 10/10.** Gerçek %90 doğruluk için P(3★) = %35;
   %95 için %60. Yıldız büyük ölçüde şans.
+- **Sonrası (P3, 2026-11-09):** 3★ eşiği ≥%90'a indi (10 soruda 9, 12'de 11,
+  20'de 18 doğru); 2★ ≥%80 ve %80 geçme eşiği aynı. P(3★), eski (yeni) —
+  gerçek %90: ders (n=10) %35 → **%74**, ara durak (12) %28 → **%66**, final
+  (20) %39 → **%68**; gerçek %80: ders %11 → %38. Yani 3★ daha ulaşılır:
+  yıldız şansı azaldı ama gerçek %70'lik öğrenci de dersin %15'inde 3★ alıyor
+  (eskiden %3). Yıldız **pratik göstergesi**, ustalık değil; ustalık kanıtı
+  ayrı ("pekişti": kapı başına son 3 denemede ≥2 gün, ≥36 soru, birleşik
+  ≥%80; yalnız gösterge). Erken biten yerleştirmede 10/12 = 0,83 → 2★,
+  11/12 → 3★ (tam uzunluğa bölünür). Pekişti eşikleri (2 gün, 36 soru, %80)
+  taslak varsayımdır; pilot verisiyle doğrulanmadı.
 - **XP:** doğru +10, yanlış +2. Rastgele tıklama (2 seçenek) mükemmel
   oturumun %60'ı; 1 sn/tıklama ile saatte 21 600 XP, 15 sn/özenli soru ile
   2 400 XP. XP zaten "pratik puanı, beceri ölçümü değil" etiketli (WIDE-03);
@@ -330,6 +351,17 @@ Tempo normalizasyonu hem geçme oranını yükseltiyor hem yanlış ritmi
 kabul etmeyi azaltıyor (sapma gürültüsünü gideriyor); en küçük kareler uyumu
 fazla cömert (150 ms'lik yanlışı %68 kabul ediyor). Parametreler varsayımdır;
 yönü sağlam, büyüklüğü gerçek öğrencilerle doğrulanmalı.
+
+**Sonrası (P1, 2026-11-09):** `clap_rhythm.dart` artık tempo normalizasyonunu
+uyguluyor (`normalizeClapTempo`; ±120 ms, 10 ms bandı ve analizör aynı) ve
+seviye sırası anahtarına ritim süresi eklendi (senkop, vuruş dışı, **süre**,
+en kısa aralık, vuruş sayısı). Betik yeni sırayla yeniden çalıştırıldı:
+corr(geçme, seviye) **−0,06 → −0,37** (süre korelasyonu −0,99 aynı).
+Tablodaki geçme oranları hâlâ ESKİ mutlak kuralın simülasyonu; yeni kuralın
+oranları bu betikte yeniden ölçülmedi. Sıranın ilk anahtarı senkop olduğu için
+(en kolay ritimler önce) korelasyon sıfıra inmedi; bu bilinçli. Gerçek insan
+alkışı ölçülmedi. Dokunmatik "Ritim tekrarı" aynı çapa/drift sorununu taşıyabilir;
+ayrıca doğrulanmadı ve değiştirilmedi.
 
 **Alkış detektörü** (5 ms adım, −42 dBFS taban, tabanın 16 dB üstü, 9 dB
 yükselme, 90 ms bekleme), sentetik alkışlar, rastgele alt-adım fazı:

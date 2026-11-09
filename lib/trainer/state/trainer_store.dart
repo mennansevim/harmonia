@@ -11,6 +11,8 @@ import '../domain/curriculum.dart';
 import '../domain/music.dart';
 import '../domain/review_memory.dart';
 import '../domain/trainers.dart';
+import '../home/daily_route.dart';
+import '../koro/range_score.dart' show rangeScoreModelVersion;
 
 /// Where the local document lives. Tests use [MemoryTrainerPersistence].
 abstract interface class TrainerPersistence {
@@ -46,6 +48,46 @@ class NodeProgress {
   final int stars;
   final bool review;
   Map<String, Object?> toJson() => {'stars': stars, 'review': review};
+}
+
+/// One finished attempt at a gate (checkpoint or final exam): questions
+/// actually asked, how many were right, and the local day.
+class GateAttempt {
+  const GateAttempt({
+    required this.correct,
+    required this.total,
+    required this.day,
+  });
+  final int correct;
+  final int total;
+  final String day;
+  List<Object> toJson() => [correct, total, day];
+}
+
+/// Practice evidence for a gate across attempts. It is an indicator only:
+/// it never locks, unlocks or routes anything.
+class GateEvidence {
+  const GateEvidence({
+    required this.days,
+    required this.questions,
+    required this.correct,
+  });
+  final int days;
+  final int questions;
+  final int correct;
+  double get accuracy => questions == 0 ? 0 : correct / questions;
+
+  /// "Consolidated": confirmed on at least [minDays] separate days, at least
+  /// [minQuestions] questions in all and at least [minAccuracy] combined.
+  /// Draft hypothesis from LEARNING_MODEL.md (a skill shown on two separate
+  /// days with enough valid questions), not an educator-validated mastery
+  /// standard.
+  bool get consolidated =>
+      days >= minDays && questions >= minQuestions && accuracy >= minAccuracy;
+
+  static const minDays = 2;
+  static const minQuestions = 36;
+  static const minAccuracy = 0.8;
 }
 
 class ItemStat {
@@ -181,6 +223,26 @@ class TrainerStore extends ChangeNotifier {
     save();
   }
 
+  /// Today's route for the stored goal and minutes, echo step included.
+  DailyRoute get route => routeFor(
+    answers,
+    dailyMinutes,
+    lastEcho: echoLast,
+    echoDoneToday: echoedToday,
+  );
+
+  /// Last finished echo exercise (exam route, P4): its kind and day key.
+  /// "Done", not "measured": it ticks the route step only, never XP, streak,
+  /// mastery or history.
+  EchoStep? echoLast;
+  String? echoDay;
+  bool get echoedToday => echoDay == dayKey(now);
+  void markEchoDone(EchoStep kind) {
+    echoLast = kind;
+    echoDay = dayKey(now);
+    save();
+  }
+
   Future<void> load() async {
     try {
       final doc = await _persistence.read();
@@ -243,6 +305,7 @@ class TrainerStore extends ChangeNotifier {
     notifications = false;
     uiSounds = true;
     nodes.clear();
+    gateAttempts.clear();
     stats.clear();
     days.clear();
     xp = 0;
@@ -255,6 +318,8 @@ class TrainerStore extends ChangeNotifier {
     melodyEchoLevel = 0;
     clapLevel = 0;
     breathDay = null;
+    echoLast = null;
+    echoDay = null;
     language = null;
     memory.clear();
     reviewDay = null;
@@ -296,17 +361,37 @@ class TrainerStore extends ChangeNotifier {
   double mastery(TrainerKind trainer) =>
       completedCount(trainer) / trainerPaths[trainer]!.lessonCount;
 
-  static int starsFor(double accuracy) => accuracy >= 0.95
+  /// Stars show how clean one round was; they are a practice indicator, not
+  /// proof of mastery (that is [gateEvidence]). 3 stars at 90% means at most
+  /// one miss in 10 or 12 questions and two in 20: a 95% cut made 3 stars
+  /// depend mostly on luck (at a true 90% only about one round in three
+  /// reached it, VOCAL_MODEL_BENCHMARK §4.3).
+  static const threeStarAccuracy = 0.9;
+  static const twoStarAccuracy = 0.8;
+
+  static int starsFor(double accuracy) => accuracy >= threeStarAccuracy
       ? 3
-      : accuracy >= 0.8
+      : accuracy >= twoStarAccuracy
       ? 2
       : 1;
 
   /// Records a finished node. A passed gate completes every earlier node.
   /// Returns whether the node counts as passed.
-  bool completeNode(LessonNode node, double accuracy) {
+  ///
+  /// [correct] and [total] (questions actually asked) feed the gate attempt
+  /// log; [accuracy] alone decides pass and stars, as before. Lessons are not
+  /// logged.
+  bool completeNode(
+    LessonNode node,
+    double accuracy, {
+    int? correct,
+    int? total,
+  }) {
     final path = trainerPaths[node.trainer]!;
     final passed = node.isGate ? accuracy >= 0.8 : true;
+    if (node.isGate && correct != null && total != null && total > 0) {
+      _logGateAttempt(node.id, correct.clamp(0, total), total);
+    }
     if (!passed) {
       save();
       return false;
@@ -330,6 +415,31 @@ class TrainerStore extends ChangeNotifier {
     lastTrainer = node.trainer.id;
     save();
     return true;
+  }
+
+  // ---- Gate attempt log (mastery indicator) ----
+
+  /// Last attempts per gate, oldest first, at most [maxGateAttempts].
+  final Map<String, List<GateAttempt>> gateAttempts = {};
+  static const maxGateAttempts = 3;
+
+  void _logGateAttempt(String nodeId, int correct, int total) {
+    final list = gateAttempts.putIfAbsent(nodeId, () => []);
+    list.add(GateAttempt(correct: correct, total: total, day: dayKey(now)));
+    if (list.length > maxGateAttempts) {
+      list.removeRange(0, list.length - maxGateAttempts);
+    }
+  }
+
+  /// Evidence over the logged attempts of a gate; null without any.
+  GateEvidence? gateEvidence(String nodeId) {
+    final list = gateAttempts[nodeId];
+    if (list == null || list.isEmpty) return null;
+    return GateEvidence(
+      days: {for (final a in list) a.day}.length,
+      questions: list.fold(0, (n, a) => n + a.total),
+      correct: list.fold(0, (n, a) => n + a.correct),
+    );
   }
 
   // ---- Practice evidence ----
@@ -462,6 +572,10 @@ class TrainerStore extends ChangeNotifier {
       'uiSounds': uiSounds,
     },
     'nodes': {for (final e in nodes.entries) e.key: e.value.toJson()},
+    'gateAttempts': {
+      for (final e in gateAttempts.entries)
+        e.key: [for (final a in e.value) a.toJson()],
+    },
     'stats': {
       for (final t in stats.entries)
         t.key: {
@@ -485,9 +599,12 @@ class TrainerStore extends ChangeNotifier {
     'lastStreakCelebrated': lastStreakCelebrated,
     'koroRange': koroRange,
     'rangeScores': rangeScores,
+    'rangeScoreModel': rangeScoreModelVersion,
     'melodyEchoLevel': melodyEchoLevel,
     'clapLevel': clapLevel,
     'breathDay': breathDay,
+    'echoLast': echoLast?.id,
+    'echoDay': echoDay,
     'language': language,
     'memoryModel': memoryModelVersion,
     'memory': {
@@ -538,6 +655,34 @@ class TrainerStore extends ChangeNotifier {
         );
       }
     });
+    gateAttempts.clear();
+    (get<Map<String, Object?>>(doc, 'gateAttempts') ?? const {}).forEach((
+      id,
+      v,
+    ) {
+      if (v is! List) return;
+      final list = <GateAttempt>[
+        for (final a in v)
+          if (a is List &&
+              a.length == 3 &&
+              a[0] is int &&
+              a[1] is int &&
+              a[2] is String &&
+              (a[1] as int) > 0 &&
+              (a[0] as int) >= 0 &&
+              (a[0] as int) <= (a[1] as int))
+            GateAttempt(
+              correct: a[0] as int,
+              total: a[1] as int,
+              day: a[2] as String,
+            ),
+      ];
+      if (list.isNotEmpty) {
+        gateAttempts[id] = list.length > maxGateAttempts
+            ? list.sublist(list.length - maxGateAttempts)
+            : list;
+      }
+    });
     stats.clear();
     (get<Map<String, Object?>>(doc, 'stats') ?? const {}).forEach((t, items) {
       if (items is! Map<String, Object?>) return;
@@ -576,10 +721,14 @@ class TrainerStore extends ChangeNotifier {
       );
     lastStreakCelebrated = get<String>(doc, 'lastStreakCelebrated');
     koroRange = get<String>(doc, 'koroRange');
+    // Scores of another formula (the pre-match-1 scale included width) are
+    // not comparable: drop them rather than mix scales.
     rangeScores
       ..clear()
       ..addAll(
-        (get<List<Object?>>(doc, 'rangeScores') ?? const [])
+        (get<String>(doc, 'rangeScoreModel') != rangeScoreModelVersion
+                ? const <Object?>[]
+                : get<List<Object?>>(doc, 'rangeScores') ?? const [])
             .whereType<int>()
             .where((p) => p >= 0 && p <= 100)
             .take(maxRangeScores),
@@ -587,6 +736,8 @@ class TrainerStore extends ChangeNotifier {
     melodyEchoLevel = (get<int>(doc, 'melodyEchoLevel') ?? 0).clamp(0, 99);
     clapLevel = (get<int>(doc, 'clapLevel') ?? 0).clamp(0, 99);
     breathDay = get<String>(doc, 'breathDay');
+    echoLast = EchoStepInfo.fromId(get<String>(doc, 'echoLast'));
+    echoDay = get<String>(doc, 'echoDay');
     memory.clear();
     // Another model version's half-lives mean something else: start over
     // rather than reinterpret them.

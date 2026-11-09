@@ -1,0 +1,24 @@
+{
+  "_help": "ŞABLON — gerçek veri değil. Her kayıt için bir 'entries' öğesi kopyalayın; sha256 dosyanın gerçek özeti olmalı (shasum -a 256 dosya.wav). Şema: lib/domain/audio/audio_fixture_manifest.dart (schemaVersion 1, mono PCM16 WAV). Bu şablon bilerek geçersizdir: analiz aracı onu reddeder.",
+  "schemaVersion": 1,
+  "codec": "mono_pcm16_wav",
+  "entries": [
+    {
+      "path": "P01_C4_quiet_phoneA.wav",
+      "fixture": {
+        "id": "P01-C4-quiet-phoneA-01",
+        "source": "humanRecording",
+        "partition": "development",
+        "signal": "voice",
+        "sampleRateHz": 44100,
+        "sampleCount": 0,
+        "sha256": "REPLACE_WITH_64_HEX_CHARS",
+        "rightsReference": "REPLACE: haklar/lisans belgesi referansı (ör. PILOT-RIGHTS-001)",
+        "consentReference": "REPLACE: rıza formu referansı (ör. PILOT-CONSENT-P01)",
+        "subjectGroup": "REPLACE: anonim grup kodu (ör. S01) — ad/soyad YAZMAYIN",
+        "expectedFrequenciesHz": [261.63],
+        "a4Hz": 440
+      }
+    }
+  ]
+}

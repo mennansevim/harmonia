@@ -1,0 +1,14 @@
+{
+  "_help": "ŞABLON — gerçek veri değil. manifest.json'daki her fixture id için bir kayıt gerekir (fazlası da eksiği de reddedilir). Alanlar PILOT_PROTOCOL_2026-11.md §3a. expectedFrequenciesHz = katılımcıdan İSTENEN nota; labelClass = katılımcının GERÇEKTE yaptığı (eğitimci uzlaşısı).",
+  "schemaVersion": 1,
+  "records": {
+    "P01-C4-quiet-phoneA-01": {
+      "labelClass": "correct_note | octave_up | octave_down | wrong_note | silence | speech_noise | unstable_vibrato | short_buffer | clipped | accompaniment_leak",
+      "device": "REPLACE: telefon modeli + işletim sistemi sürümü",
+      "route": "builtin | speaker | wired | bluetooth | usb",
+      "room": "quiet | reverberant | tv_ac",
+      "labels": { "A": "correct_note", "B": "correct_note" },
+      "gateResult": "usable | rejected (uygulama kalite kapısı kaydı varsa; yoksa alanı silin)"
+    }
+  }
+}

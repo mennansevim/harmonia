@@ -1,5 +1,76 @@
 # Resonia — Current Roadmap
 
+**2026-11-10 — P5 doğrulama pilotu hazırlığı (belge + araç; veri YOK):**
+`docs/research/PILOT_PROTOCOL_2026-11.md` (perde ≥100 etiketli holdout, alkış,
+aralık test–tekrar, 4 haftalık kart; önceden kayıtlı ölçüt yordamı; rıza/hak/
+silme taslağı; ikili etiketleme; karar kapıları tablosu) ve `docs/research/pilot/`
+(kayıt rehberi, manifest ve meta şablonları, taslak ölçüt dosyası, rıza TASLAĞI).
+`tool/benchmark/pilot_analysis.dart`: manifest + WAV'ları `AudioFixtureLoader`
+ile okur, `app-yin`/`yin+fallback`/`mpm` için sınıf×sonuç, ±50/±40 c, oktav,
+çekimserlik, yanlış-başarı, cihaz/route/oda kırılımı, Wilson aralıkları ve
+Cohen kappa üretir; veri yoksa açık hata (çıkış 2); yalnız humanRecording +
+holdout karar tablosuna girer; hüküm yalnız dondurulmuş ölçüt dosyasıyla.
+Kalite kapısı temiz: **1538 test + 2 skip**. **Hiçbir pilot sonucu yok;
+BENCH-01/VAD-01/CAL-02 açık.** Yazılmadı: alkış/aralık/kart analiz betikleri,
+izinli yerel günlük dışa aktarma (kart verisi bunsuz toplanamaz), CPU/frame
+ölçümü. Katılımcı, rıza, hukuk incelemesi, eğitimci etiketi ve ölçüt
+dondurma sizde.
+
+**2026-11-09 — P4 `exam` rotasına tekrar alıştırması (kod + test):** Yalnız
+`exam` hedefi ve günlük süre >5 dk iken rotada bir "Tekrar alıştırması" adımı:
+melodi yankısı ve alkışla ritim dönüşümlü (son türün tersi; ilk kez melodi;
+bugün yapıldıysa bugünün türü). Adım mevcut ekranları açar; bir tur bitince
+"yapıldı" olarak işaretlenir (`echoLast`/`echoDay`, geriye uyumlu) — XP, seri,
+ustalık, geçmiş ve lab seviyeleri DEĞİŞMEZ. Rota `stepCount` yeni adımı sayar
+(10 dk: nefes + ders + tekrar); diğer hedeflerin ve hedefsiz eski kayıtların
+rotası aynı. `pendingContent` (exam) 2/3/4 sesli tekrarın kayıt beklediğini
+söylüyor; 2/3/4 sesli placeholder kapalı. Kalite kapısı temiz: **1525 test +
+2 skip**. Cihazda denenmedi; melodi yankısı yalnız canlı ses olan cihazda
+açılır (testte açılmıyor, uyarı gösteriyor); adım metinleri eğitimci onaysız;
+ekrandaki "~N dk" ayarı rotadan hesaplanmıyor (kullanıcı seçimi), bu yüzden
+süre hesabı değişmedi.
+
+**2026-11-09 — P3 yıldız eşiği, kapı kanıtı ve başarısız kapı önerisi (kod +
+test):** 3★ eşiği ≥%90 (2★ ≥%80, %80 geçme, 12/20 soru, ders=her zaman tamam ve
+kilit mantığı aynı); yıldız "pratik göstergesi, ustalık değil". Kapı başına son 3
+deneme günlüğü (`gateAttempts`: doğru, sorulan, gün; yerleştirme durakları dahil,
+eski kayıt boş yüklenir) ve **yalnız gösterge** "pekişti" (≥2 gün, ≥36 soru,
+birleşik ≥%80): ders yolunda kapı düğümünde küçük rozet ("iki ayrı günde
+doğrulandı"), kilit/rota/yıldızı etkilemez. Başarısız kapıda tek öneri "Önceki
+dersi tekrar et" + "Yeniden dene". Simülasyon: gerçek %90'da 3★ ders %35→%74.
+Kalite kapısı temiz: **1507 test + 2 skip**. Eşikler taslak; pilot, cihaz ve eğitimci
+onayı yok. Açık: 1,8× yazıda ders yolu düğümlerinde (eski) 6 px taşma.
+
+**2026-11-09 — P2 aralık skorundan genişlik çıkarıldı (kod + test):** Puan =
+%62,5 doğruluk + %37,5 ilk deneme (`rangeScoreModelVersion` `match-1`);
+doğruluk 40 cent kenarından tam isabete 0–100 yayıldı. Genişlik/bant
+betimleyici: sonuç ekranı önce "E3–B4 · N yarım ses", sonra "Eşleme", sade not
+("ses tipi veya yetenek değil"), sıra metni "kendi önceki denemelerine göre".
+**Eski aralık skorları silinir** (`rangeScoreModel` anahtarı; koroRange ve
+diğer veriler korunur). `range_ladder.dart` ve 40 c/2 deneme kuralı değişmedi.
+Kalite kapısı temiz: **1488 test + 2 skip**. Gerçek şarkıcı/cihazda denenmedi; ölçülen
+aralığın düşük gürültülü şarkıcıda eksik çıkması sürüyor.
+
+**2026-11-09 — P1 Alkışla ritim tempo normalize kuralı (kod + test):** İlk alkış
+hâlâ çapa; alkış sayısı ritimle eşitse ilk→son alkış süresi referans süreye
+ölçekleniyor (`normalizeClapTempo`), sonra aynı ±120 ms ve 0 eksik/0 fazla.
+%15'ten fazla tempo sapmasında sonuçta sessiz not ("Tempo ≈ %N hızlıydı/yavaştı");
+geçme/skor/XP etkilenmez. Seviye sırasına ritim süresi eklendi (senkop, vuruş
+dışı, süre, en kısa aralık, vuruş sayısı); **mevcut `clapLevel` değerleri yeni
+sıraya göre farklı ritme denk gelebilir**. Simülasyonda corr(geçme, seviye)
+−0,06 → −0,37. Kalite kapısı temiz: **1484 test + 2 skip**. Gerçek insan alkışı ve cihaz
+denenmedi; dokunmatik "Ritim tekrarı" ayrıca doğrulanmadı.
+
+**2026-11-09 — P0 tekrar kartı büyüme eşiği (kod + test):** Doğru cevap yarı
+ömrü artık kart vadesi gelince (Δ ≥ `dueFraction`·h, `dueFraction` =
+log2(1/reviewTarget) ≈ 0,234) iki katına çıkarır; eskiden h/2 gerekiyordu ve
+yarı ömür tavanı ≈ 4× ziyaret aralığında kalıyordu. `memoryModelVersion`
+`hlr-lite-2`: **kullanıcıların mevcut tekrar kartları sıfırlanır** (xp, düğüm,
+gün korunur). ×2/÷2, 0,5–60 sınırı, `reviewTarget`, tur boyu, `dueCards`
+değişmedi. Simülasyon (sentetik, pilot verisi değil): günlük gelen 90 günde
+≤12 tekrar ve h=60; haftalık ≤8; %85 doğrulukta <40. Kalite kapısı
+temiz: **1477 test + 2 skip**. Cihazda/öğrenciyle denenmedi.
+
 **2026-11-09 — PLACE-01 hedef parkuru, seviye ve yerleştirme (kod + test):**
 Hedef sıralı bir parkur seçiyor (Akor/Dizi/Yürüyüş ilk kez rotada); girişte
 ayrı seviye adımı (yeni / biraz / tecrübeli). Yerleştirme yolun kendi

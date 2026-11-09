@@ -11,7 +11,9 @@ import '../domain/curriculum.dart';
 import '../domain/placement.dart';
 import '../domain/trainers.dart';
 import '../domain/music.dart';
+import '../koro/clap_rhythm.dart';
 import '../koro/koro_hub.dart';
+import '../koro/melody_echo.dart';
 import '../koro/range_test.dart';
 import '../koro/voice_count.dart';
 import '../learn/review_cards.dart';
@@ -266,7 +268,7 @@ class PlayTab extends StatefulWidget {
 /// today's route), then the ear lesson when the route has one. Nothing here
 /// opens the microphone; voice steps start only from their own card.
 Future<void> beginTodayRoute(TrainerStore store, NavigatorState nav) async {
-  final route = routeFor(store.answers, store.dailyMinutes);
+  final route = store.route;
   if (route.breath && !store.breathedToday) {
     final go = await nav.push<bool>(
       MaterialPageRoute(
@@ -943,7 +945,7 @@ class _DailyRoute extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final route = routeFor(store.answers, store.dailyMinutes);
+    final route = store.route;
     final breathDone = store.breathedToday;
     // A route without a ready lesson is done once the guide is done.
     final lessonDone = route.lesson ? store.sessionToday : breathDone;
@@ -1001,6 +1003,61 @@ class _DailyRoute extends StatelessWidget {
                 ),
           icon: trainerIcon(trainer),
           done: lessonDone,
+        ),
+      // Exam route: one repetition exercise, alternating melody / clap.
+      // "Done", not "measured": a draft lab exercise that feeds no XP,
+      // streak or mastery.
+      if (route.echoStep case final echo?)
+        _StepData(
+          key: 'route_echo',
+          short: tr('Tekrar', 'Echo'),
+          title: switch (echo) {
+            EchoStep.melody => tr(
+              'Tekrar alıştırması · melodi yankısı',
+              'Repeat practice · melody echo',
+            ),
+            EchoStep.clap => tr(
+              'Tekrar alıştırması · alkışla ritim',
+              'Repeat practice · clap the rhythm',
+            ),
+          },
+          subtitle: store.echoedToday
+              ? tr('Bugün yapıldı', 'Done today')
+              : tr(
+                  'taslak ölçüm · mikrofon isteğe bağlı',
+                  'draft measurement · microphone optional',
+                ),
+          icon: echo == EchoStep.melody ? Ic.music2 : Ic.hand,
+          done: store.echoedToday,
+          onTap: () {
+            // Melody echo needs the real microphone pipeline, as in the lab.
+            if (echo == EchoStep.melody &&
+                !TrainerScope.of(context).liveAudio) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    tr(
+                      'Bu çalışma yalnız cihazda açılır.',
+                      'This exercise opens on a device only.',
+                    ),
+                  ),
+                ),
+              );
+              return;
+            }
+            Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) => switch (echo) {
+                  EchoStep.melody => MelodyEchoScreen(
+                    onRoundFinished: () => store.markEchoDone(echo),
+                  ),
+                  EchoStep.clap => ClapRhythmScreen(
+                    onRoundFinished: () => store.markEchoDone(echo),
+                  ),
+                },
+              ),
+            );
+          },
         ),
       if (route.voiceStep)
         _StepData(

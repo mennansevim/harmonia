@@ -646,8 +646,10 @@ class _RangeTestScreenState extends State<RangeTestScreen>
   }
 }
 
-/// RANGE-04: the run's score, its personal place and the published
-/// reference band, with the calculation one tap away.
+/// RANGE-04: how precisely the reached notes were matched (the range itself
+/// is shown above and is not scored), the place among the learner's own
+/// earlier tests and the published reference band; the calculation is one
+/// tap away.
 class _ScoreCard extends StatelessWidget {
   const _ScoreCard({required this.score, this.rank, this.tests});
   final RangeScore score;
@@ -676,7 +678,6 @@ class _ScoreCard extends StatelessWidget {
       ),
     };
     final parts = [
-      (tr('Genişlik', 'Width'), score.width),
       (tr('İsabet', 'Accuracy'), score.accuracy),
       (tr('İlk denemede', 'First try'), score.firstTry),
     ];
@@ -687,9 +688,7 @@ class _ScoreCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Expanded(
-                child: Text(tr('ARALIK PUANI', 'RANGE SCORE'), style: TT.caps),
-              ),
+              Expanded(child: Text(tr('EŞLEME', 'MATCH'), style: TT.caps)),
               IconButton(
                 key: const Key('range_score_info'),
                 tooltip: tr('Nasıl hesaplanır?', 'How is it calculated?'),
@@ -699,9 +698,8 @@ class _ScoreCard extends StatelessWidget {
               ),
             ],
           ),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.baseline,
-            textBaseline: TextBaseline.alphabetic,
+          Wrap(
+            crossAxisAlignment: WrapCrossAlignment.end,
             children: [
               Text(
                 '${score.points}',
@@ -709,23 +707,19 @@ class _ScoreCard extends StatelessWidget {
                 style: TT.h1,
               ),
               Text(' / 100', style: TT.body),
-              const Spacer(),
-              if (rank != null && tests != null)
-                Text(
-                  tests == 1
-                      ? tr('İlk testin', 'Your first test')
-                      : tr(
-                          'Kendi $tests testin içinde $rank.',
-                          'No. $rank of your $tests tests',
-                        ),
-                  key: const Key('range_score_rank'),
-                  style: TT.small.copyWith(
-                    fontWeight: FontWeight.w800,
-                    color: rank == 1 && tests! > 1 ? TC.limeDeep : TC.ink,
-                  ),
-                ),
             ],
           ),
+          if (rank != null && tests != null)
+            Text(
+              tests == 1
+                  ? tr('İlk testin', 'Your first test')
+                  : tr(
+                      'Kendi önceki denemelerine göre: $tests testin içinde $rank.',
+                      'Compared with your own earlier tests: No. $rank of $tests.',
+                    ),
+              key: const Key('range_score_rank'),
+              style: TT.small.copyWith(fontWeight: FontWeight.w800),
+            ),
           const SizedBox(height: 10),
           for (final (label, value) in parts)
             Padding(
@@ -757,6 +751,15 @@ class _ScoreCard extends StatelessWidget {
             ),
           const SizedBox(height: 8),
           Text(band, key: const Key('range_score_band'), style: TT.small),
+          const SizedBox(height: 6),
+          Text(
+            tr(
+              'Bu, ölçülen aralık — hassas eşleyebildiğin aralık; ses tipi veya yetenek değil.',
+              'This is the measured range — the range you could match precisely; not a voice type or a measure of ability.',
+            ),
+            key: const Key('range_score_note'),
+            style: TT.small,
+          ),
         ],
       ),
     );
@@ -775,24 +778,19 @@ class _ScoreCard extends StatelessWidget {
           children: [
             for (final line in [
               tr(
-                'Puan = %60 genişlik + %25 isabet + %15 ilk denemede tutma.',
-                'Score = 60% width + 25% accuracy + 15% first try.',
-              ),
-              tr(
-                'Genişlik: tutturduğun en pes ve en tiz nota arası yarım ses, '
-                    '$rangeScoreFullWidth yarım ses (3 oktav) = 100. Bu testte '
-                    '${score.semitones} yarım ses → ${_pct(score.width)}.',
-                'Width: semitones between your lowest and highest matched '
-                    'note; $rangeScoreFullWidth semitones (3 octaves) = 100. '
-                    'This test: ${score.semitones} semitones → '
-                    '${_pct(score.width)}.',
+                'Eşleme = %62,5 isabet + %37,5 ilk denemede tutma. Aralığın '
+                    'genişliği (${score.semitones} yarım ses) puana girmez; '
+                    'yalnız hangi notaları hassas eşleyebildiğini gösterir.',
+                'Match = 62.5% accuracy + 37.5% first try. The width of the '
+                    'range (${score.semitones} semitones) is not in the score; '
+                    'it only shows which notes you could match precisely.',
               ),
               tr(
                 'İsabet: tutturulan notaların çalınan notaya ortalama '
-                    'yakınlığı (40 cent içi tutturma sayılır) → '
+                    'yakınlığı; tam isabet 100, 40 cent sınırı 0 → '
                     '${_pct(score.accuracy)}.',
                 'Accuracy: average closeness of matched notes to the played '
-                    'note (within 40 cents counts as matched) → '
+                    'note; exact is 100, the 40-cent limit is 0 → '
                     '${_pct(score.accuracy)}.',
               ),
               tr(
@@ -810,10 +808,10 @@ class _ScoreCard extends StatelessWidget {
                     'counts as matched.',
               ),
               tr(
-                'Sıralama yalnız bu telefondaki kendi testlerinle '
-                    'karşılaştırır; başka kullanıcılarla değil.',
-                'The ranking compares only your own tests on this phone, '
-                    'not other users.',
+                'Karşılaştırma yalnız bu telefondaki kendi önceki '
+                    'denemelerinle; başka kullanıcılarla değil.',
+                'The comparison is only with your own earlier tests on this '
+                    'phone, not with other users.',
               ),
               tr(
                 'Referans bant araştırmadan gelir: eğitimsiz yetişkinler '

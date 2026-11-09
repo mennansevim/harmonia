@@ -68,6 +68,9 @@ class _SkillScreenState extends State<SkillScreen> {
             current: node.id == next?.id,
             progress: store.progressOf(node.id),
             unlocked: store.isUnlocked(node),
+            consolidated:
+                node.isGate &&
+                (store.gateEvidence(node.id)?.consolidated ?? false),
             onTap: () => _open(node),
           ),
         ),
@@ -283,6 +286,7 @@ class _PathNode extends StatelessWidget {
     required this.current,
     required this.progress,
     required this.unlocked,
+    this.consolidated = false,
     required this.onTap,
   });
   final LessonNode node;
@@ -293,6 +297,9 @@ class _PathNode extends StatelessWidget {
   final bool current;
   final NodeProgress? progress;
   final bool unlocked;
+
+  /// Gate attempts add up to the consolidated indicator (never a lock).
+  final bool consolidated;
   final VoidCallback onTap;
 
   static const height = 132.0;
@@ -316,8 +323,10 @@ class _PathNode extends StatelessWidget {
     final state = complete
         ? tr(
             'tamamlandı, ${progress!.stars}/3 yıldız'
+                '${consolidated ? ', iki ayrı günde doğrulandı' : ''}'
                 '${progress!.review ? ', tekrar önerilir' : ''}',
             'done, ${progress!.stars} of 3 stars'
+                '${consolidated ? ', confirmed on two separate days' : ''}'
                 '${progress!.review ? ', a review is suggested' : ''}',
           )
         : current
@@ -419,26 +428,46 @@ class _PathNode extends StatelessWidget {
                               ),
                             ),
                             if (complete)
-                              Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  for (var s = 0; s < 3; s++)
-                                    Icon(
-                                      Icons.star_rounded,
-                                      size: 16,
-                                      color: s < progress!.stars
-                                          ? TC.amber
-                                          : TC.line,
-                                    ),
-                                  if (progress!.review) ...[
-                                    const SizedBox(width: 3),
-                                    const Icon(
-                                      Ic.rotateCcw,
-                                      size: 13,
-                                      color: TC.warn,
-                                    ),
+                              FittedBox(
+                                fit: BoxFit.scaleDown,
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    for (var s = 0; s < 3; s++)
+                                      Icon(
+                                        Icons.star_rounded,
+                                        size: 16,
+                                        color: s < progress!.stars
+                                            ? TC.amber
+                                            : TC.line,
+                                      ),
+                                    if (consolidated) ...[
+                                      const SizedBox(width: 3),
+                                      Tooltip(
+                                        message: tr(
+                                          'iki ayrı günde doğrulandı',
+                                          'confirmed on two separate days',
+                                        ),
+                                        child: Icon(
+                                          Icons.verified_rounded,
+                                          key: Key(
+                                            'gate_consolidated_${node.id}',
+                                          ),
+                                          size: 14,
+                                          color: TC.green,
+                                        ),
+                                      ),
+                                    ],
+                                    if (progress!.review) ...[
+                                      const SizedBox(width: 3),
+                                      const Icon(
+                                        Ic.rotateCcw,
+                                        size: 13,
+                                        color: TC.warn,
+                                      ),
+                                    ],
                                   ],
-                                ],
+                                ),
                               ),
                           ],
                         ),

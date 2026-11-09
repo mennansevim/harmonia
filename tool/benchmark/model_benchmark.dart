@@ -109,45 +109,35 @@ void scorerSection() {
 
 // ------------------------------------------------------------ B. range score
 void rangeSection() {
-  w('\n## B. RangeScore weights (width .60 / accuracy .25 / first-try .15)');
+  w(
+    '\n## B. RangeScore (match-1: accuracy $rangeScoreAccuracyWeight / first-try $rangeScoreFirstTryWeight; width descriptive, not scored)',
+  );
   RangeScore s(int semis, double acc, double first) => RangeScore(
     semitones: semis,
     width: math.min(1, semis / rangeScoreFullWidth) * 100,
     accuracy: acc,
     firstTry: first,
   );
-  final loose = s(36, 60, 0), clean = s(14, 100, 100);
+  final loose = s(36, 0, 0), clean = s(14, 100, 100);
   w(
-    'Source comment says a wide range sung loosely cannot beat a narrower clean one. Checked on the real formula:',
+    'Check on the real formula: a wide range sung loosely must not beat a narrower clean one.',
   );
   w(
-    '- 36 semitones, accuracy 60 (lowest a matched take can have), 0% first-try → ${loose.points} pts',
+    '- 36 semitones, accuracy 0 (the 40-cent edge), 0% first-try → ${loose.points} pts',
   );
   w('- 14 semitones, accuracy 100, 100% first-try → ${clean.points} pts');
   w(
-    '| semitones | loose (acc 60, first-try 0) | clean-14 | loose beats clean? |',
+    '| semitones | loose (acc 0, first-try 0) | clean-14 | loose beats clean? |',
   );
   w('|---|---|---|---|');
   for (final semis in [14, 18, 22, 26, 30, 34, 36]) {
-    final l = s(semis, 60, 0);
+    final l = s(semis, 0, 0);
     w(
       '| $semis | ${l.points} | ${clean.points} | ${l.total > clean.total ? 'YES' : 'no'} |',
     );
   }
-  // break-even
-  for (var semis = 14; semis <= 36; semis++) {
-    if (s(semis, 60, 0).total > clean.total) {
-      w(
-        'Break-even: a loosely-sung range of $semis semitones already outranks a clean 14-semitone range.',
-      );
-      break;
-    }
-  }
   w(
-    'Maximum points from width alone: ${(rangeScoreWidthWeight * 100).round()} of 100; accuracy+first-try can add at most ${((rangeScoreAccuracyWeight + rangeScoreFirstTryWeight) * 100).round()}.',
-  );
-  w(
-    'Accuracy part is bounded to [60,100] because only matched takes (≤40 c) count, so its real spread is ${((rangeScoreAccuracyWeight) * 40).round()} points.',
+    'Width contributes 0 of 100 points; accuracy (rescaled from closeness 60–100 to 0–100) and first-try share the score.',
   );
 
   // Simulated singers through the REAL ladder.
@@ -251,7 +241,7 @@ void rangeSection() {
 void gateSection() {
   w('\n## C. Gate / star statistics on the shipped lesson paths');
   w(
-    'Rules copied from trainer_store.dart: gate passes at ≥80% (checkpoint 12 q, final 20 q); lesson = always completes (10 q); stars ≥95% → 3, ≥80% → 2, else 1; review flag <70%.',
+    'Rules copied from trainer_store.dart: gate passes at ≥80% (checkpoint 12 q, final 20 q); lesson = always completes (10 q); stars ≥90% → 3 (was ≥95%), ≥80% → 2, else 1; review flag <70%. (Keep in sync with TrainerStore.starsFor: that file imports Flutter, so the cuts are copied here.)',
   );
   w(
     '| trainer | gate | n | pool (chance = 1/pool) | pass cut | P(pass by guessing) | P(pass | true 70%) | P(pass | 80%) | P(pass | 85%) | P(pass | 90%) |',
@@ -267,16 +257,27 @@ void gateSection() {
       );
     }
   }
+  // Smallest correct count c with c/n >= 0.9 (new) and >= 0.95 (old).
+  int need(int n, double acc) {
+    var c = 0;
+    while (c / n < acc - 1e-12) {
+      c++;
+    }
+    return c;
+  }
+
   w(
-    '\n3-star probability (needs ≥95%): n=10 lesson: needs 10/10; n=12: 12/12; n=20: ≥19/20.',
+    '\n3-star probability: new cut ≥90% needs ${need(10, .9)}/10, ${need(12, .9)}/12, ${need(20, .9)}/20; the old ≥95% cut needed ${need(10, .95)}/10, ${need(12, .95)}/12, ${need(20, .95)}/20. 10/12 = 83% stays 2★ (early placement pass divides by the full length).',
   );
   w(
-    '| true accuracy | P(3★) lesson n=10 | P(3★) checkpoint n=12 | P(3★) final n=20 | P(≥2★) lesson | P(review flag) lesson |',
+    '| true accuracy | P(3★) lesson n=10 new (old) | P(3★) checkpoint n=12 new (old) | P(3★) final n=20 new (old) | P(≥2★) lesson | P(review flag) lesson |',
   );
   w('|---|---|---|---|---|---|');
   for (final p in [.7, .8, .85, .9, .95, .98]) {
+    String t(int n) =>
+        '${f(100 * binomTail(n, need(n, .9), p), 0)}% (${f(100 * binomTail(n, need(n, .95), p), 0)}%)';
     w(
-      '| ${f(p * 100, 0)}% | ${f(100 * binomTail(10, 10, p), 0)}% | ${f(100 * binomTail(12, 12, p), 0)}% | ${f(100 * binomTail(20, 19, p), 0)}% | ${f(100 * binomTail(10, 8, p), 0)}% | ${f(100 * (1 - binomTail(10, 7, p)), 0)}% |',
+      '| ${f(p * 100, 0)}% | ${t(10)} | ${t(12)} | ${t(20)} | ${f(100 * binomTail(10, 8, p), 0)}% | ${f(100 * (1 - binomTail(10, 7, p)), 0)}% |',
     );
   }
   w(

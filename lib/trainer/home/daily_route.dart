@@ -104,8 +104,12 @@ extension PracticeGoalInfo on PracticeGoal {
           'guide only.',
     ),
     PracticeGoal.exam => tr(
-      'Porte okuma, deşifre ve dikte içerikleri henüz hazır değil.',
-      'Staff reading, sight-reading and dictation content is not ready yet.',
+      'Porte okuma, deşifre ve dikte içerikleri henüz hazır değil. '
+          'Makam melodileri, solfej ve dikte henüz hazır değil; 2/3/4 sesli '
+          'tekrar kayıt bekliyor.',
+      'Staff reading, sight-reading and dictation content is not ready yet. '
+          'Makam melodies, solfège and dictation are not ready; 2/3/4-voice '
+          'repetition is waiting for recordings.',
     ),
     PracticeGoal.voice => tr(
       'Eğitimci onaylı ses ısınma rutinleri henüz hazır değil.',
@@ -114,6 +118,25 @@ extension PracticeGoalInfo on PracticeGoal {
     _ => null,
   };
 }
+
+/// A lab "echo" exercise an exam route adds (P4): the way conservatory
+/// ear tests are answered is repetition (sing back, clap back), not choosing.
+/// Practice only: it never feeds XP, streak, mastery or history.
+enum EchoStep { melody, clap }
+
+extension EchoStepInfo on EchoStep {
+  String get id => name;
+
+  static EchoStep? fromId(Object? id) =>
+      id is String ? EchoStep.values.asNameMap()[id] : null;
+
+  /// The other kind: echo steps alternate day by day.
+  EchoStep get other =>
+      this == EchoStep.melody ? EchoStep.clap : EchoStep.melody;
+}
+
+/// Longest daily time (minutes) with no echo step; longer adds one.
+const echoStepMinMinutes = 5;
 
 /// Today's route. Deterministic and content-free: it only decides which
 /// route steps appear, and only from content that already ships.
@@ -129,6 +152,7 @@ class DailyRoute {
     required this.voiceStep,
     this.lesson = true,
     this.goal,
+    this.echoStep,
   });
 
   factory DailyRoute.forMinutes(int minutes) => minutes <= 3
@@ -138,9 +162,24 @@ class DailyRoute {
       : const DailyRoute(breathSeconds: 120, voiceStep: true);
 
   /// The route for a goal; null keeps the legacy minutes-only route.
-  factory DailyRoute.plan({PracticeGoal? goal, required int minutes}) {
+  ///
+  /// [lastEcho] is the echo kind practised last ([echoDoneToday]: it was
+  /// today). An exam route longer than [echoStepMinMinutes] adds one echo
+  /// step: today's kind if already done today, else the opposite of the last
+  /// one (melody when none yet). No other goal gets an echo step.
+  factory DailyRoute.plan({
+    PracticeGoal? goal,
+    required int minutes,
+    EchoStep? lastEcho,
+    bool echoDoneToday = false,
+  }) {
     if (goal == null) return DailyRoute.forMinutes(minutes);
     final short = minutes <= 5;
+    final echo = goal == PracticeGoal.exam && minutes > echoStepMinMinutes
+        ? (lastEcho == null
+              ? EchoStep.melody
+              : (echoDoneToday ? lastEcho : lastEcho.other))
+        : null;
     return switch (goal) {
       // Listening goals: breath only when there is time, no microphone step.
       PracticeGoal.beginner ||
@@ -149,6 +188,7 @@ class DailyRoute {
         breathSeconds: minutes <= 3 ? 0 : (short ? 60 : 120),
         voiceStep: false,
         goal: goal,
+        echoStep: echo,
       ),
       // Voice goals always start with breath; the optional voice step joins
       // from 5 minutes.
@@ -179,17 +219,29 @@ class DailyRoute {
   /// The goal the route was planned for; null = legacy minutes-only route.
   final PracticeGoal? goal;
 
+  /// The echo exercise of an exam route longer than 5 minutes; else null.
+  final EchoStep? echoStep;
+
   bool get breath => breathSeconds > 0;
   int get stepCount =>
-      (lesson ? 1 : 0) + (breath ? 1 : 0) + (voiceStep ? 1 : 0);
+      (lesson ? 1 : 0) +
+      (breath ? 1 : 0) +
+      (voiceStep ? 1 : 0) +
+      (echoStep != null ? 1 : 0);
 }
 
 /// Daily minutes offered in onboarding and Settings.
 const dailyMinuteChoices = [3, 5, 10, 15, 20];
 
 /// Today's route for the stored goal and minutes.
-DailyRoute routeFor(Map<String, Object?> answers, int minutes) =>
-    DailyRoute.plan(
-      goal: PracticeGoalInfo.fromId(answers['goal']),
-      minutes: minutes,
-    );
+DailyRoute routeFor(
+  Map<String, Object?> answers,
+  int minutes, {
+  EchoStep? lastEcho,
+  bool echoDoneToday = false,
+}) => DailyRoute.plan(
+  goal: PracticeGoalInfo.fromId(answers['goal']),
+  minutes: minutes,
+  lastEcho: lastEcho,
+  echoDoneToday: echoDoneToday,
+);

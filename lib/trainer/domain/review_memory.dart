@@ -5,12 +5,19 @@ import 'dart:math' as math;
 /// A simplified half-life model after Settles & Meeder (ACL 2016): the
 /// chance of recalling an item decays as `p = 2^(−Δ/h)`, where Δ is the time
 /// since it was last answered and h its half-life. A card is due when p
-/// falls below [reviewTarget]. Deterministic and versioned; parameters are
-/// draft defaults until a learner benchmark tunes them.
-const memoryModelVersion = 'hlr-lite-1';
+/// falls below [reviewTarget]. A correct answer grows the half-life only once
+/// the card was due (Δ ≥ [dueFraction]·h); an earlier, same-session answer is
+/// massed practice. Deterministic and versioned; parameters are draft
+/// defaults until a learner benchmark tunes them.
+const memoryModelVersion = 'hlr-lite-2';
 
 /// Recall probability below which a card is due.
 const reviewTarget = 0.85;
+
+/// Fraction of a half-life after which a card is due:
+/// `2^(−f) = reviewTarget` ⇒ `f = log2(1 / reviewTarget)` (≈ 0.234). Moves
+/// with [reviewTarget]; it is also the growth threshold in [ItemMemory.answered].
+final double dueFraction = -math.log(reviewTarget) / math.ln2;
 
 /// Half-life bounds and the starting value, in days.
 const minHalfLifeDays = 0.5;
@@ -54,9 +61,9 @@ class ItemMemory {
   );
 
   /// A first-attempt answer at [now]. A correct answer doubles the half-life
-  /// only after a real gap (at least half a half-life): answering the same
-  /// item again a minute later is massed practice and builds no spacing.
-  /// A wrong answer always halves it.
+  /// only once the card was due ([dueFraction] of a half-life has passed):
+  /// answering before that (the same session) is massed practice and builds
+  /// no spacing. A wrong answer always halves it.
   ItemMemory answered(bool correct, DateTime now) {
     if (!correct) {
       return ItemMemory(
@@ -66,7 +73,7 @@ class ItemMemory {
         lapses: lapses + 1,
       );
     }
-    final spaced = _days(now) >= halfLifeDays / 2;
+    final spaced = _days(now) >= halfLifeDays * dueFraction;
     return ItemMemory(
       halfLifeDays: spaced
           ? math.min(maxHalfLifeDays, halfLifeDays * 2)

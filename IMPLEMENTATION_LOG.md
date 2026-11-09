@@ -4648,3 +4648,153 @@ oturumuyla iş bölümü yapıldı; sayı/yıldız düzeltmeleri oradan geldi.
   `lib/domain/models/learner_profile.dart` `PracticeGoal`'u ayrı eski
   katmanda (20+ dosya) kullanıldığı için kapsam dışı. Cihazda, gerçek
   öğrenciyle denenmedi; IPA yok.
+
+### 2026-11-09 — P0 tekrar kartı büyüme eşiği
+- `lib/trainer/domain/review_memory.dart`: `dueFraction` (= −ln(reviewTarget)/ln2)
+  eklendi; `answered` içinde `spaced` koşulu `Δ ≥ h·dueFraction`; sürüm
+  `hlr-lite-2`. `trainer_store.dart` değişmedi (sürüm farkında kartları zaten
+  sıfırlıyor).
+- Testler (`test/trainer/review_cards_test.dart`): vade anında ×2, vadeden
+  önce büyümez/reps artmaz, `dueFraction`↔`reviewTarget`, yanlış cevap h/2
+  (alt sınır 0,5), 90 günlük ziyaret simülasyonları (günlük ≤12 ve h=60,
+  haftalık ≤8, %85 doğrulukta <40), `hlr-lite-1` kaydı sıfırlanır ve xp
+  korunur. Eski 0,5 kuralına geri alınınca 4 yeni test başarısız oluyor.
+- Kalite kapısı: format+analyze+test temiz, 1477 test + 2 skip.
+- Etki: mevcut kullanıcıların tekrar kartları sıfırlanır.
+- Sınırlar: katsayı/eşik değerleri taslak, pilot verisiyle ayarlanacak;
+  simülasyon sentetik; cihazda ve gerçek öğrenciyle denenmedi.
+
+### 2026-11-09 — P1 Alkışla ritim tempo normalize kuralı ve seviye sırası
+- `lib/trainer/koro/clap_rhythm.dart`: `normalizeClapTempo` (sayı eşitse
+  ilk→son süreyi referansa ölçekler; eşit değilse, tek alkışta veya sıfır
+  sürede ölçeklemez), `clapSpanRatio`, `clapTempoNote` (eşik
+  `RhythmImitationOutcome.tempoHintThreshold` = %15; TR/EN). `_judge` normalize
+  edilmiş onsetleri analizöre verir; sonuç ipucuna tempo notu eklenir, geçme
+  kararı/skor/XP değişmez. `clapRhythmsEasyToHard` anahtarı: senkop, vuruş
+  dışı, süre ms, en kısa aralık, vuruş sayısı, katalog.
+- `tool/benchmark/rhythm_benchmark.dart` sıra kopyası güncellendi; yeniden
+  çalıştırıldı: corr(geçme, seviye) −0,37. Belge §5.5'e "Sonrası" eklendi.
+- Testler: %5/%10 yavaş-hızlı mükemmel echo yalnız normalizeyle geçer (eski
+  mutlak kural %10 yavaşta başarısız); 150 ms kaydırılmış alkış, eksik ve fazla
+  alkış hâlâ geçmez; eşit olmayan sayıda ölçekleme yok; tek alkış/sıfır süre
+  güvenli; tempo notu eşiği ve TR/EN; yeni sıra pairwise sabit; ekranda yavaş
+  ama doğru echo geçip "Tempo ≈ %30 yavaştı" der.
+- Kalite kapısı: format+analyze+test temiz, 1484 test + 2 skip.
+- Sınırlar: ±120/10 ms, EventRhythmAnalyzer, ClapOnsetDetector,
+  RhythmImitationEvaluator değişmedi. Simülasyon yeni kuralın geçme oranlarını
+  yeniden ölçmedi; gerçek insan alkışı ve cihaz denenmedi; dokunmatik Ritim
+  tekrarı drift açısından ayrıca doğrulanmadı. Mevcut clapLevel değerleri yeni
+  sırada farklı ritme denk gelebilir.
+
+### 2026-11-09 — P2 aralık skorundan genişlik çıkarıldı (`match-1`)
+- `lib/trainer/koro/range_score.dart`: `total` = 0,625·doğruluk + 0,375·ilk
+  deneme; genişlik ağırlığı kaldırıldı (`semitones`, `width`, `band`
+  betimleyici). Doğruluk = (ort. closeness − 60)/40·100 (0..100, yalnız
+  eşleşen takeler). `rangeScoreModelVersion = 'match-1'`.
+- `lib/trainer/state/trainer_store.dart`: yalnız `rangeScoreModel` anahtarı
+  (encode/decode); farklı/yok sürümde `rangeScores` yok sayılır. `resetAll`
+  zaten temizliyor; `koroRange` ayrı, dokunulmadı.
+- `lib/trainer/koro/range_test.dart`: kart başlığı "EŞLEME", genişlik çubuğu
+  yok, not "ses tipi veya yetenek değil", sıra metni "kendi önceki
+  denemelerine göre", açıklama diyaloğu yeni formüle göre; puan satırı Row →
+  Wrap (320 px / 1,8× yazıda 5,5 px taşıyordu).
+- Testler: genişlik puanı değiştirmez; 36 yarım ses gevşek 0, 14 temiz 100;
+  doğruluk 0/20/39 cent → 100/50/2,5; ölçülmemiş/ıskalanmış take aralık/skor
+  üretmez; eski/başka sürüm skorları silinir (xp, koroRange korunur); ekran
+  testi 73 puan, 320 px + 1,8× taşmaz; english_ui_test geçer.
+- `tool/benchmark/model_benchmark.dart` §B yeni formüle göre; çıktı belge
+  §4.2'ye işlendi: puan↔gerçek aralık 0,52 → −0,01.
+- Kalite kapısı: format+analyze+test temiz, 1488 test + 2 skip.
+- Sınırlar: kullanıcıların eski aralık skorları silinir; `range_ladder.dart`,
+  40 c / 2 deneme ve kalite kapısı değişmedi; ölçülen aralığın gürültülü
+  şarkıcıda düşük çıkması ve %11–20 skor-yok oranı sürüyor; gerçek şarkıcı ve
+  cihazda denenmedi; "Eşleme" metinleri eğitimci onaysız.
+
+### 2026-11-09 — P3 yıldız eşiği, kapı kanıtı ve başarısız kapı önerisi
+- `trainer_store.dart`: `starsFor` 3★ ≥%90 (`threeStarAccuracy`), 2★ ≥%80;
+  gerekçe/"pratik göstergesi" notu kodda. `completeNode(node, accuracy,
+  {correct, total})`: kapı denemesi günlüğü (`gateAttempts`, son 3, başarısız
+  denemeler dahil, ders yazılmaz), `gateEvidence` → `GateEvidence.consolidated`
+  (≥2 gün, ≥36 soru, ≥%80 birleşik). Şema geriye uyumlu: yeni anahtar,
+  bozuk girişler atlanır, `resetAll` temizler. %80 geçme, kilitler, ders kuralı
+  değişmedi.
+- `lesson_flow.dart`/`placement_flow.dart`: sorulan soru sayısı ve doğru
+  sayısı günlüğe gider; `GateStop` ve yerleştirme algoritması değişmedi
+  (erken bitirme yine tam uzunluğa bölünür).
+- `session_end.dart`: başarısız kapıda "Önceki dersi tekrar et" önerisi +
+  "Yeniden dene" (+ "Şimdilik bitir"); `lesson_flow.dart` önceki dersi veya
+  kapıyı yerinde açar.
+- `skill_screen.dart`: kapı düğümünde "iki ayrı günde doğrulandı" rozeti
+  (ikon + tooltip/semantik; ek satır 132 px düğüm yüksekliğini aştığı için
+  metin satırı yerine ikon).
+- Testler (`test/trainer/gate_evidence_test.dart`, `placement_test.dart`):
+  starsFor sınırları (0,79/0,80/0,89/0,90/0,94/0,95), 9/10 – 11/12 – 18/20,
+  10/12 = 2★ ve 11/12 = 3★, kapı 0,79 kalır/0,80 geçer, ders her zaman
+  tamam, kilit mantığı, günlük ≤3 ve eski veri, bozuk giriş, pekişti sınırları
+  (36 soru, %80, 2 gün), aynı gün konsolide olmaz, kilit/yıldız değişmez,
+  başarısız kapı önerisi TR/EN, rozet.
+- `tool/benchmark/model_benchmark.dart` §C yeni eşiğe göre; belge §4.3'e
+  P(3★) eski/yeni: gerçek %90'da ders %35→%74.
+- Kalite kapısı: format+analyze+test temiz, 1507 test + 2 skip.
+- Sınırlar: günlükte yerleştirme için sorulan soru sayısı tutulur (erken
+  geçiş yukarı yanlı doğruluk verebilir; sınır 36 soru); pekişti eşikleri
+  taslak, pilot/eğitimci onayı yok; 3★ daha ulaşılır (gerçek %70'lik öğrenci
+  derste %15 3★); ders yolu düğümlerinde 1,8× yazıda eskiden beri 6 px taşma
+  ve 320 px'te 1,3 px taşma (bu değişiklikten bağımsız) düzeltilmedi; cihazda
+  denenmedi.
+
+### 2026-11-09 — P4 exam rotası tekrar alıştırması
+- `daily_route.dart`: `EchoStep {melody, clap}` (+`other`, `fromId`),
+  `echoStepMinMinutes = 5`; `DailyRoute.plan/routeFor` `lastEcho` ve
+  `echoDoneToday` alır; yalnız `exam` ve dakika >5 iken `echoStep`; `stepCount`
+  sayar. `pendingContent` (exam) mevcut metni korur ve "Makam melodileri,
+  solfej ve dikte henüz hazır değil; 2/3/4 sesli tekrar kayıt bekliyor."
+  ekler (TR/EN).
+- `trainer_store.dart`: `echoLast`/`echoDay` (encode/decode/resetAll, eski
+  kayıtta null, bilinmeyen tür yok sayılır), `echoedToday`, `markEchoDone`
+  (yalnız bunları yazar; XP/seri/gün/düğüm/hafıza/lab seviyesi dokunulmaz),
+  `route` getter (`routeFor` + echo geçmişi).
+- `home_shell.dart`: `route_echo` adımı "Tekrar alıştırması · melodi
+  yankısı/alkışla ritim", alt başlık "taslak ölçüm · mikrofon isteğe bağlı",
+  yapılınca "Bugün yapıldı". Mevcut `MelodyEchoScreen`/`ClapRhythmScreen`
+  açılır; melodi yankısı canlı ses yoksa Koro'daki gibi "yalnız cihazda" uyarır.
+  `beginTodayRoute` ve onboarding özeti `store.route` kullanır (özette echo
+  satırı).
+- `melody_echo.dart`/`clap_rhythm.dart`: isteğe bağlı `onRoundFinished`
+  (melodi: ölçüm alındı ve yeniden deneme gerekmedi; alkış: alkış duyuldu;
+  tur başına bir kez). Ölçüm/eşik kodu değişmedi.
+- Testler (`exam_echo_route_test.dart`, melody/clap testlerine sayaç): 3/5/10
+  dk adım kümeleri, dönüşümlü tür, diğer hedefler ve hedefsiz kayıt aynı, XP/
+  seri/ustalık değişmez, tek başına echo pratik günü değil, kalıcılık ve eski
+  kayıt, kart TR/EN, 5 dk'da yok, hazır olmayan 2/3/4 önerilmez.
+- Kalite kapısı: format+analyze+test temiz, 1525 test + 2 skip.
+- Sınırlar: cihazda ve gerçek mikrofonla denenmedi; lab ekranlarının ölçümü
+  taslak; yeni adım metinleri eğitimci onaysız; "~N dk" kullanıcı ayarı,
+  rotadan hesaplanan süre değil; İTÜ/İstanbul/MSGSÜ cevap biçimi doğrulanmadı
+  (rapor); Koro'da melodi "Ezgi tekrarı" diye geçiyor, rota prompt'taki
+  "melodi yankısı" adını kullanıyor (ad tutarlılığı kararı açık).
+
+### 2026-11-10 — P5 doğrulama pilotu: protokol, araç, şablonlar
+- Belgeler: `docs/research/PILOT_PROTOCOL_2026-11.md`;
+  `docs/research/pilot/{RECORDING_GUIDE.md, CONSENT_DRAFT.md,
+  manifest_template.json, pilot_meta_template.json, criteria_template.json}`.
+  Ölçütler taslaktır ve veriye bakılmadan kullanıcı/eğitimci tarafından
+  dondurulur; hukuk metni TASLAKTIR (incelenmedi); çocuk/ergen kapsam dışı.
+- `tool/benchmark/pilot_analysis.dart` (+ `detector_benchmark.dart`'tan
+  `runAll`/`algs` yeniden kullanımı): `AudioFixtureManifest` v1 + sidecar
+  `pilot_meta.json` (labelClass, device, route, room, labels, gateResult).
+  Veri yok/şablon/özet uyuşmazlığı/meta eksik → `PilotInputError`, çıkış 2;
+  sentetik veya enstrüman satırı karar tablosuna girmez; hüküm yalnız
+  `frozen: true` ölçüt dosyasıyla ve Wilson aralığına göre (PASS / FAIL /
+  inconclusive).
+- Testler (`test/tool/pilot_analysis_test.dart`): Wilson, outcome (doğru/
+  oktav/yanlış/çekimser), kappa, hüküm mantığı, eksik veri hatası, şablonların
+  reddi, eksik meta, bozuk etiket/route, değiştirilmiş dosya (hash), sentetik
+  satırların karar setine girmemesi, taslak ölçütle hüküm yok. Bir test
+  sentetik tonu YALNIZ kod yolunu denemek için "human holdout" ilan eder
+  (yorumla işaretli, sayılar sonuç değil).
+- Kalite kapısı: format+analyze+test temiz, 1538 test + 2 skip.
+- Sınırlar: gerçek katılımcı/rıza/kayıt/eğitimci yok; HİÇBİR sonuç üretilmedi
+  veya uydurulmadı; ölçüt sayıları öneri; alkış, aralık ve kart analizleri
+  için betik ve uygulama içi izinli günlük dışa aktarma YAZILMADI; telefon
+  CPU/frame süresi ölçülmedi; hukuk incelemesi ve eğitimci rubrik onayı yok.

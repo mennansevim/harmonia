@@ -9,6 +9,7 @@ import '../../domain/audio/audio_capture.dart';
 import '../../domain/audio/clap_onset_detector.dart';
 import '../../domain/audio/event_rhythm_analyzer.dart';
 import '../../domain/audio/rhythm_analyzer.dart';
+import '../../domain/audio/rhythm_imitation.dart';
 import '../../domain/content/rhythm_patterns.dart';
 import '../../domain/lang.dart';
 import '../../infrastructure/audio/just_audio_clip_player.dart';
@@ -86,10 +87,11 @@ ClapRhythm pickClapRhythm(math.Random random, {String? after}) {
 
 /// Easy to hard by what makes a clap rhythm hard to echo: syncopations
 /// (off-beat claps with no clap on their beat), then off-beat claps, then the
-/// shortest gap (faster is harder), then the number of claps. Ties keep the
-/// catalog order.
+/// rhythm's length in time (error builds up over a long rhythm even after
+/// tempo normalisation), then the shortest gap (faster is harder), then the
+/// number of claps. Ties keep the catalog order.
 List<ClapRhythm> get clapRhythmsEasyToHard {
-  (int, int, double, int) key(ClapRhythm r) {
+  (int, int, int, double, int) key(ClapRhythm r) {
     final onBeat = {
       for (final b in r.beats)
         if (b == b.floorToDouble()) b,
@@ -102,6 +104,7 @@ List<ClapRhythm> get clapRhythmsEasyToHard {
     return (
       off.where((b) => !onBeat.contains(b.floorToDouble())).length,
       off.length,
+      r.onsetsMs.last,
       -gap,
       r.beats.length,
     );
@@ -115,6 +118,7 @@ List<ClapRhythm> get clapRhythmsEasyToHard {
       ka.$2.compareTo(kb.$2),
       ka.$3.compareTo(kb.$3),
       ka.$4.compareTo(kb.$4),
+      ka.$5.compareTo(kb.$5),
       a.$1.compareTo(b.$1),
     ]) {
       if (c != 0) return c;
@@ -122,6 +126,48 @@ List<ClapRhythm> get clapRhythmsEasyToHard {
     return 0;
   });
   return [for (final e in all) e.$2];
+}
+
+/// Free-tempo claps (no metronome in the learner's turn) drift, so the first
+/// clap is the anchor and, when the learner clapped exactly as many times as
+/// the rhythm has, the span first→last clap is scaled to the reference span.
+/// The ±tolerance and the zero missing / zero extra rule stay as they were.
+/// With a different number of claps nothing is scaled (missing or extra
+/// claps already fail). Returns onsets on the reference timeline.
+List<int> normalizeClapTempo(List<int> reference, List<int> claps) {
+  if (claps.isEmpty || reference.isEmpty) return const [];
+  final first = claps.first;
+  final span = claps.last - first;
+  final refSpan = reference.last - reference.first;
+  final scale = claps.length == reference.length && span > 0 && refSpan > 0
+      ? refSpan / span
+      : 1.0;
+  return [
+    for (final c in claps) ((c - first) * scale).round() + reference.first,
+  ];
+}
+
+/// Learner span ÷ reference span, or null when it is not meaningful (claps
+/// not equal in number to the rhythm, a single clap, or a zero span).
+double? clapSpanRatio(List<int> reference, List<int> claps) {
+  if (claps.length != reference.length || claps.length < 2) return null;
+  final span = claps.last - claps.first;
+  final refSpan = reference.last - reference.first;
+  if (span <= 0 || refSpan <= 0) return null;
+  return span / refSpan;
+}
+
+/// A tempo note is shown only when the pace was off by more than this
+/// (same hypothesis threshold as the touch rhythm echo).
+const clapTempoNoteThreshold = RhythmImitationOutcome.tempoHintThreshold;
+
+/// "Tempo ≈ %N faster/slower", or null when the pace was close enough.
+String? clapTempoNote(double? ratio) {
+  if (ratio == null || (ratio - 1).abs() <= clapTempoNoteThreshold) return null;
+  final pct = ((ratio - 1).abs() * 100).round();
+  return ratio < 1
+      ? tr('Tempo ≈ %$pct hızlıydı', 'Tempo was ≈ $pct% faster')
+      : tr('Tempo ≈ %$pct yavaştı', 'Tempo was ≈ $pct% slower');
 }
 
 /// One synthesised hand clap (no recorded samples), modelled on how a real
@@ -268,7 +314,17 @@ enum _Step { ready, listening, countIn, yourTurn, result, denied }
 /// count. A clean echo opens the next, harder rhythm. Practice progress
 /// only: nothing reaches XP, mastery or history.
 class ClapRhythmScreen extends StatefulWidget {
-  const ClapRhythmScreen({super.key, this.player, this.listener, this.random});
+  const ClapRhythmScreen({
+    super.key,
+    this.player,
+    this.listener,
+    this.random,
+    this.onRoundFinished,
+  });
+
+  /// Called once when a round ends with claps heard (a round was done, not
+  /// necessarily passed). Used by the exam route's echo step.
+  final VoidCallback? onRoundFinished;
   final ReferenceClipPlayer? player;
   final ClapListener? listener;
   final math.Random? random;
@@ -295,6 +351,7 @@ class _ClapRhythmScreenState extends State<ClapRhythmScreen>
   final List<int> _claps = [];
   Timer? _finish;
   RhythmAnalysisResult? _result;
+  double? _spanRatio;
   int _run = 0;
   int _cheers = 0;
 
@@ -458,19 +515,20 @@ class _ClapRhythmScreenState extends State<ClapRhythmScreen>
     await _ear?.stop();
     if (!mounted || run != _run) return;
     final reference = _rhythm.onsetsMs;
-    final first = _claps.isEmpty ? 0 : _claps.first;
     final result = _claps.isEmpty
         ? null
         : await EventRhythmAnalyzer().analyze(
             RhythmAnalysisRequest(
               expectedOnsetsMs: reference,
-              userOnsetsMs: [
-                for (final c in _claps.take(256)) c - first + reference.first,
-              ],
+              userOnsetsMs: normalizeClapTempo(
+                reference,
+                _claps.take(256).toList(),
+              ),
             ),
           );
     if (!mounted || run != _run) return;
     final passed = _passed(result);
+    if (result != null) widget.onRoundFinished?.call();
     if (passed) {
       final store = TrainerScope.read(context).store;
       if (_level + 1 > store.clapLevel && _level + 1 < _ladder.length) {
@@ -480,6 +538,7 @@ class _ClapRhythmScreenState extends State<ClapRhythmScreen>
     }
     setState(() {
       _result = result;
+      _spanRatio = clapSpanRatio(reference, _claps.take(256).toList());
       _step = _Step.result;
       if (passed) _cheers++;
     });
@@ -620,6 +679,12 @@ class _ClapRhythmScreenState extends State<ClapRhythmScreen>
   };
 
   String _hint(RhythmAnalysisResult? result) {
+    final base = _baseHint(result);
+    final note = _step == _Step.result ? clapTempoNote(_spanRatio) : null;
+    return note == null ? base : '$base $note.';
+  }
+
+  String _baseHint(RhythmAnalysisResult? result) {
     switch (_step) {
       case _Step.ready:
         return tr(

@@ -52,7 +52,7 @@ List<int> onsetsMs(Rhythm r) => [
 
 /// Same ordering key as `clapRhythmsEasyToHard`.
 List<Rhythm> easyToHard(List<Rhythm> all) {
-  (int, int, double, int) key(Rhythm r) {
+  (int, int, int, double, int) key(Rhythm r) {
     final onBeat = {
       for (final b in r.beats)
         if (b == b.floorToDouble()) b,
@@ -65,6 +65,7 @@ List<Rhythm> easyToHard(List<Rhythm> all) {
     return (
       off.where((b) => !onBeat.contains(b.floorToDouble())).length,
       off.length,
+      onsetsMs(r).last,
       -gap,
       r.beats.length,
     );
@@ -78,6 +79,7 @@ List<Rhythm> easyToHard(List<Rhythm> all) {
         ka.$2.compareTo(kb.$2),
         ka.$3.compareTo(kb.$3),
         ka.$4.compareTo(kb.$4),
+        ka.$5.compareTo(kb.$5),
         a.$1.compareTo(b.$1),
       ]) {
         if (c != 0) return c;
@@ -260,7 +262,7 @@ Future<void> performerSection(List<Rhythm> ladder) async {
 
   final levels = [for (var i = 1; i <= ladder.length; i++) i.toDouble()];
   w(
-    '\nWhat predicts failure for the typical performer: corr(pass %, app level) = ${f(corr(typicalPass, levels), 2)}, corr(pass %, rhythm span) = ${f(corr(typicalPass, spans), 2)}. The app orders levels by syncopation, off-beats, shortest gap and clap count — not by span.',
+    '\nWhat predicts failure for the typical performer: corr(pass %, app level) = ${f(corr(typicalPass, levels), 2)}, corr(pass %, rhythm span) = ${f(corr(typicalPass, spans), 2)}. The app orders levels by syncopation, off-beats, span, shortest gap and clap count.',
   );
 
   w(

@@ -96,9 +96,14 @@ class _LessonFlowState extends State<LessonFlow> with WidgetsBindingObserver {
     super.dispose();
   }
 
-  void _finishNode(double accuracy) {
+  void _finishNode(double accuracy, {QuizSummary? summary}) {
     final store = TrainerScope.of(context).store;
-    _passed = store.completeNode(node, accuracy);
+    _passed = store.completeNode(
+      node,
+      accuracy,
+      correct: summary?.correct,
+      total: summary?.total,
+    );
     // Reading the intro alone is not a finished practice session.
     if (!_intro) store.recordSession();
   }
@@ -117,6 +122,27 @@ class _LessonFlowState extends State<LessonFlow> with WidgetsBindingObserver {
         ),
       ),
       result: _passed,
+    );
+  }
+
+  /// A failed gate: the lesson right before it, or the gate again.
+  LessonNode? get _previousLesson {
+    final i = path.indexOf(node.id);
+    if (i <= 0) return null;
+    final prev = path.nodes[i - 1];
+    return prev.kind == NodeKind.lesson ? prev : null;
+  }
+
+  void _openReplacing(LessonNode target) {
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute<bool>(
+        builder: (_) => LessonFlow(
+          node: target,
+          random: widget.random,
+          pitchSingSessionFactory: widget.pitchSingSessionFactory,
+        ),
+      ),
+      result: false,
     );
   }
 
@@ -251,7 +277,7 @@ class _LessonFlowState extends State<LessonFlow> with WidgetsBindingObserver {
       onExit: () => Navigator.of(context).pop(false),
       onFinished: (summary) {
         _summary = summary;
-        _finishNode(summary.accuracy);
+        _finishNode(summary.accuracy, summary: summary);
         setState(() => _step = _Step.result);
       },
     ),
@@ -262,6 +288,10 @@ class _LessonFlowState extends State<LessonFlow> with WidgetsBindingObserver {
       retryConfig: _gen.config,
       onDone: () => Navigator.of(context).pop(_passed),
       onContinue: _continue,
+      onReviewPrevious: _previousLesson == null
+          ? null
+          : () => _openReplacing(_previousLesson!),
+      onRetryGate: node.isGate ? () => _openReplacing(node) : null,
     ),
     _ => _frame(),
   };

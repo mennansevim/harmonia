@@ -42,7 +42,12 @@ class _PlacementFlowState extends State<PlacementFlow> {
     final wrong = summary.total - correct;
     final passed = stop.verdict(correct, wrong) ?? false;
     final store = TrainerScope.read(context).store;
-    store.completeNode(gate, stop.accuracy(correct));
+    store.completeNode(
+      gate,
+      stop.accuracy(correct),
+      correct: correct,
+      total: summary.total,
+    );
     _run.record(passed);
     _lastGate = gate;
     _lastPassed = passed;

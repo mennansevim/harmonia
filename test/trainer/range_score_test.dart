@@ -26,15 +26,16 @@ RangeLadder _run(List<List<double?>> takes) {
 }
 
 void main() {
-  test('width weighs most, then accuracy, then first try', () {
+  storeVersionTests();
+  test('the score is accuracy and first try only; width is descriptive', () {
     expect(
-      rangeScoreWidthWeight +
-          rangeScoreAccuracyWeight +
-          rangeScoreFirstTryWeight,
+      rangeScoreAccuracyWeight + rangeScoreFirstTryWeight,
       closeTo(1, 1e-9),
     );
-    expect(rangeScoreWidthWeight, greaterThan(rangeScoreAccuracyWeight));
-    expect(rangeScoreAccuracyWeight, greaterThan(rangeScoreFirstTryWeight));
+    // The old .25 : .15 ratio, normalised.
+    expect(rangeScoreAccuracyWeight, closeTo(0.625, 1e-12));
+    expect(rangeScoreFirstTryWeight, closeTo(0.375, 1e-12));
+    expect(rangeScoreModelVersion, 'match-1');
   });
 
   test('a clean run scores its parts', () {
@@ -53,7 +54,7 @@ void main() {
     expect(s.width, closeTo(5 / 36 * 100, 1e-9));
     expect(s.accuracy, closeTo(100, 1e-9));
     expect(s.firstTry, 100);
-    expect(s.points, (0.6 * 5 / 36 * 100 + 25 + 15).round());
+    expect(s.points, 100, reason: 'width 5 does not lower a clean match');
     expect(s.band, RangeBand.narrow);
   });
 
@@ -87,7 +88,8 @@ void main() {
       ]),
     )!;
     expect(loose.semitones, tight.semitones);
-    expect(loose.accuracy, closeTo(70, 1e-9));
+    // closeness 70 → (70−60)/40·100
+    expect(loose.accuracy, closeTo(25, 1e-9));
     expect(loose.points, lessThan(tight.points));
   });
 
@@ -103,13 +105,65 @@ void main() {
     );
   });
 
-  test('width is capped at three octaves', () {
-    const s = RangeScore(semitones: 48, width: 100, accuracy: 0, firstTry: 0);
-    expect(s.points, 60);
+  test('width never changes the points', () {
+    const narrow = RangeScore(
+      semitones: 6,
+      width: 17,
+      accuracy: 80,
+      firstTry: 50,
+    );
+    const wide = RangeScore(
+      semitones: 48,
+      width: 100,
+      accuracy: 80,
+      firstTry: 50,
+    );
+    expect(wide.points, narrow.points);
+    expect(wide.total, closeTo(0.625 * 80 + 0.375 * 50, 1e-9));
+  });
+
+  test('a wide loose run no longer beats a narrow clean one', () {
+    const loose = RangeScore(
+      semitones: 36,
+      width: 100,
+      accuracy: 0,
+      firstTry: 0,
+    );
+    const clean = RangeScore(
+      semitones: 14,
+      width: 14 / 36 * 100,
+      accuracy: 100,
+      firstTry: 100,
+    );
+    expect(loose.points, 0);
+    expect(clean.points, 100);
+    expect(loose.points, lessThan(clean.points));
+  });
+
+  test('accuracy spreads over 0–100 from the 40-cent edge to exact', () {
+    RangeScore at(double cents) => RangeScore.of(
+      _run([
+        [cents],
+        [cents],
+        [double.nan, double.nan],
+        [double.nan, double.nan],
+      ]),
+    )!;
+    expect(at(0).accuracy, closeTo(100, 1e-9));
+    expect(at(20).accuracy, closeTo(50, 1e-6));
+    expect(at(39).accuracy, closeTo(2.5, 1e-6));
+  });
+
+  test('an octave-off, missed or unmeasured take still never counts', () {
+    // Only unmeasured / missed takes: no range, no score.
     expect(
-      math.min(1, 48 / rangeScoreFullWidth) * 100,
-      100,
-      reason: 'wider adds nothing',
+      RangeScore.of(
+        _run([
+          [null, null],
+          [double.nan, double.nan],
+        ]),
+      ),
+      isNull,
     );
   });
 
@@ -144,4 +198,43 @@ void main() {
     await again.load();
     expect(again.rangeScores, store.rangeScores);
   });
+}
+
+void storeVersionTests() {
+  test(
+    'scores of another formula version are dropped, the rest kept',
+    () async {
+      final p = MemoryTrainerPersistence({
+        'onboardingDone': true,
+        'xp': 90,
+        'koroRange': '53-69',
+        'rangeScores': [62, 80],
+      });
+      final old = TrainerStore(p);
+      await old.load();
+      expect(
+        old.rangeScores,
+        isEmpty,
+        reason: 'no rangeScoreModel → old scale',
+      );
+      expect(old.xp, 90);
+      expect(old.koroRange, '53-69');
+      final wrong = TrainerStore(
+        MemoryTrainerPersistence({
+          'rangeScoreModel': 'width-weighted',
+          'rangeScores': [62],
+        }),
+      );
+      await wrong.load();
+      expect(wrong.rangeScores, isEmpty);
+      final current = TrainerStore(
+        MemoryTrainerPersistence({
+          'rangeScoreModel': rangeScoreModelVersion,
+          'rangeScores': [62, 80],
+        }),
+      );
+      await current.load();
+      expect(current.rangeScores, [62, 80]);
+    },
+  );
 }

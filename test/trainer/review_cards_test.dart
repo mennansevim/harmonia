@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:resonia/trainer/domain/review_memory.dart';
@@ -33,6 +35,65 @@ void main() {
       expect(massed.halfLifeDays, 2);
       expect(massed.reps, 0);
       expect(mem(60, daysAgo: 40).answered(true, t0).halfLifeDays, 60);
+    });
+
+    test('an answer at the due moment doubles; an earlier one does not', () {
+      final due = mem(4, daysAgo: 4 * dueFraction + 0.01).answered(true, t0);
+      expect(due.halfLifeDays, 8);
+      expect(due.reps, 1);
+      final early = mem(4, daysAgo: 4 * 0.05).answered(true, t0);
+      expect(early.halfLifeDays, 4);
+      expect(early.reps, 0);
+      // between "due" and the old half-of-half-life rule: now grows
+      expect(mem(10, daysAgo: 2.5).isDue(t0), isTrue);
+      expect(mem(10, daysAgo: 2.5).answered(true, t0).halfLifeDays, 20);
+    });
+
+    test('dueFraction follows reviewTarget', () {
+      expect(dueFraction, closeTo(0.2345, 1e-3));
+      expect(math.pow(2, -dueFraction), closeTo(reviewTarget, 1e-12));
+    });
+
+    test('a wrong answer still halves (floor 0.5)', () {
+      expect(mem(4, daysAgo: 1).answered(false, t0).halfLifeDays, 2);
+      expect(mem(0.5).answered(false, t0).halfLifeDays, minHalfLifeDays);
+    });
+
+    group('check-in simulation', () {
+      // Visits every [every] days; answers a due card; returns reviews.
+      ({int reviews, double h}) simulate(
+        int every, {
+        double accuracy = 1,
+        int seed = 7,
+      }) {
+        final rng = math.Random(seed);
+        var m = ItemMemory.first(true, t0);
+        var n = 0;
+        for (var d = every; d <= 90; d += every) {
+          final now = t0.add(Duration(days: d));
+          if (!m.isDue(now)) continue;
+          m = m.answered(rng.nextDouble() < accuracy, now);
+          n++;
+        }
+        return (reviews: n, h: m.halfLifeDays);
+      }
+
+      test(
+        'daily visitor, always right: few reviews, half-life reaches 60',
+        () {
+          final r = simulate(1);
+          expect(r.reviews, lessThanOrEqualTo(12));
+          expect(r.h, 60);
+        },
+      );
+
+      test('weekly visitor: at most 8 reviews in 90 days', () {
+        expect(simulate(7).reviews, lessThanOrEqualTo(8));
+      });
+
+      test('daily visitor at 85% accuracy: under 40 reviews in 90 days', () {
+        expect(simulate(1, accuracy: 0.85).reviews, lessThan(40));
+      });
     });
 
     test('a wrong answer halves, never below the floor', () {
@@ -113,6 +174,24 @@ void main() {
         expect(s.memory, isEmpty);
       },
     );
+
+    test('memory of the previous model version resets, rest is kept', () async {
+      final p = MemoryTrainerPersistence({
+        'onboardingDone': true,
+        'xp': 120,
+        'memoryModel': 'hlr-lite-1',
+        'memory': {
+          'interval': {
+            'M3': [5, t0.millisecondsSinceEpoch, 1, 0],
+          },
+        },
+      });
+      final s = make(p, () => t0);
+      await s.load();
+      expect(s.memory, isEmpty);
+      expect(s.xp, 120);
+      expect(memoryModelVersion, 'hlr-lite-2');
+    });
 
     test('a finished round ticks today and resets with my data', () async {
       final s = make(MemoryTrainerPersistence(), () => t0);

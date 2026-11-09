@@ -68,6 +68,8 @@ void main() {
     test('an early pass is not scored as a perfect round', () {
       const s = GateStop(12);
       expect(TrainerStore.starsFor(s.accuracy(10)), 2);
+      // With the 90% three-star cut: 10/12 = 0.83 stays 2 stars, 11/12 = 3.
+      expect(TrainerStore.starsFor(s.accuracy(11)), 3);
     });
   });
 

@@ -2,17 +2,30 @@ import 'dart:math' as math;
 
 import 'range_ladder.dart';
 
-/// RANGE-04: deterministic 0–100 score of one range test, from the ladder's
-/// own judgements. Width weighs most, so a wide range counts more, but a wide
-/// range sung loosely cannot beat a narrower clean one. Not a voice type and
-/// not a teacher's assessment; octave-off, missed and unmeasured takes never
-/// count as reached.
+/// RANGE-04: deterministic 0–100 match score of one range test, from the
+/// ladder's own judgements. The reached range (width) is DESCRIPTIVE only and
+/// is not part of the score: a wider range is not a better voice, and a
+/// loosely sung wide range must not outscore a clean narrower one. The score
+/// is how precisely the notes that were reached were matched (accuracy, first
+/// try). Not a voice type, not a skill grade and not a teacher's assessment;
+/// octave-off, missed and unmeasured takes never count as reached.
 
-/// 36 semitones (three octaves) fills the width part; wider adds nothing.
+/// 36 semitones (three octaves) is the full scale of the descriptive [width]
+/// bar; wider adds nothing. Not scored.
 const rangeScoreFullWidth = 36;
-const rangeScoreWidthWeight = 0.60;
-const rangeScoreAccuracyWeight = 0.25;
-const rangeScoreFirstTryWeight = 0.15;
+
+/// Weights of the match score (the earlier .25 : .15 accuracy : first-try
+/// ratio, normalised to 1).
+const rangeScoreAccuracyWeight = 0.625;
+const rangeScoreFirstTryWeight = 0.375;
+
+/// A matched take has closeness 60–100 (within [rangeToleranceCents]·0.4 =
+/// 40 cents); accuracy rescales that band to 0–100 so it can spread.
+const rangeScoreClosenessFloor = rangePassMark;
+
+/// Stored scores follow this formula; a different version's scores are
+/// dropped, not mixed (see TrainerStore).
+const rangeScoreModelVersion = 'match-1';
 
 /// Published reference spans (semitones), not a ranking against users:
 /// untrained adults commonly sing 12–18 (voicescience.org summary), non-singers
@@ -80,20 +93,26 @@ class RangeScore {
     return RangeScore(
       semitones: bounds.semitones,
       width: math.min(1, bounds.semitones / rangeScoreFullWidth) * 100,
-      accuracy: closeness / matched.length,
+      accuracy: math.max(
+        0,
+        math.min(
+          100,
+          (closeness / matched.length - rangeScoreClosenessFloor) /
+              (100 - rangeScoreClosenessFloor) *
+              100,
+        ),
+      ),
       firstTry: clean / matched.length * 100,
     );
   }
 
   final int semitones;
 
-  /// Each part 0–100.
+  /// Each part 0–100. [width] is descriptive and not in [total].
   final double width, accuracy, firstTry;
 
   double get total =>
-      rangeScoreWidthWeight * width +
-      rangeScoreAccuracyWeight * accuracy +
-      rangeScoreFirstTryWeight * firstTry;
+      rangeScoreAccuracyWeight * accuracy + rangeScoreFirstTryWeight * firstTry;
 
   int get points => total.round();
 

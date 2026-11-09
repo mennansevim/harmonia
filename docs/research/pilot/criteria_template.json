@@ -1,0 +1,13 @@
+{
+  "_help": "TASLAK ölçüt dosyası — frozen=false iken analiz aracı hüküm (PASS/FAIL) üretmez. Değerler başlangıç önerisidir; kullanıcı ve eğitimci, VERİYE BAKMADAN onaylayıp 'frozen': true, 'frozenOn' ve 'frozenBy' alanlarını doldurur ve dosyayı değişmez saklar. Kural: min → Wilson %95 alt sınırı eşiği geçmeli; max → üst sınır eşiğin altında olmalı. Eşik sonuca bakarak gevşetilmez.",
+  "frozen": false,
+  "frozenOn": null,
+  "frozenBy": null,
+  "criteria": [
+    {"id": "hit50-app-yin", "algorithm": "app-yin", "metric": "hit50", "classes": ["correct_note"], "direction": "min", "threshold": 0.85},
+    {"id": "octave-app-yin", "algorithm": "app-yin", "metric": "octaveError", "classes": ["correct_note"], "direction": "max", "threshold": 0.05},
+    {"id": "false-success-app-yin", "algorithm": "app-yin", "metric": "falseSuccess", "classes": ["wrong_note", "octave_up", "octave_down"], "direction": "max", "threshold": 0.10},
+    {"id": "claim-unvoiced-app-yin", "algorithm": "app-yin", "metric": "claim", "classes": ["silence", "speech_noise", "short_buffer", "clipped"], "direction": "max", "threshold": 0.10},
+    {"id": "abstain-app-yin", "algorithm": "app-yin", "metric": "abstain", "classes": ["correct_note"], "direction": "max", "threshold": 0.15}
+  ]
+}
