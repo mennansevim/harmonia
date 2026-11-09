@@ -109,21 +109,13 @@ void main() {
       try {
         await audit('karsilama');
         await tap('get_started');
-        await audit('rol');
-        await tap('opt_singer');
-        await tap('ob_continue');
-        await audit('mikrofon');
-        await tap('ob_continue');
-        await audit('aralik');
-        await tap('ob_continue');
-        await audit('odak');
-        await tap('opt_voice');
+        await audit('hedef');
+        await tap('goal_choir');
+        await audit('hedef-secili');
         await tap('ob_continue');
         await audit('sure');
         await tap('minutes_10');
         await tap('ob_continue');
-        await audit('hatirlatma');
-        await tap('reminder_skip');
         await audit('hazir');
         await tester.ensureVisible(find.text('Ana sayfaya git'));
         await tester.pump();

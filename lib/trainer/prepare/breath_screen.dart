@@ -1,10 +1,10 @@
 import 'dart:async';
-import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../app/scope.dart';
+import '../ui/breath_flow.dart';
 import '../ui/kit.dart';
 import '../../domain/lang.dart';
 
@@ -16,12 +16,14 @@ class BreathPhase {
     this.seconds,
     this._labelEn,
     this._verbEn,
+    this.kind,
   );
   final String _label;
   final String _verb;
   final String _labelEn;
   final String _verbEn;
   final int seconds;
+  final BreathKind kind;
   String get label => tr(_label, _labelEn);
   String get verb => tr(_verb, _verbEn);
 }
@@ -29,9 +31,20 @@ class BreathPhase {
 /// Draft layout pattern (in 4 · hold 2 · out 6). Not an educator-approved
 /// prescription; replace when EDU-01 content arrives.
 const breathPattern = [
-  BreathPhase('Al', 'Nefes al', 4, 'In', 'Breathe in'),
-  BreathPhase('Tut', 'Tut', 2, 'Hold', 'Hold'),
-  BreathPhase('Ver', 'Yavaşça ver', 6, 'Out', 'Breathe out slowly'),
+  BreathPhase('Al', 'Nefes al', 4, 'In', 'Breathe in', BreathKind.inhale),
+  BreathPhase('Tut', 'Tut', 2, 'Hold', 'Hold', BreathKind.hold),
+  BreathPhase(
+    'Ver',
+    'Yavaşça ver',
+    6,
+    'Out',
+    'Breathe out slowly',
+    BreathKind.exhale,
+  ),
+];
+
+final _flowSteps = [
+  for (final p in breathPattern) (kind: p.kind, seconds: p.seconds.toDouble()),
 ];
 
 int get _cycleSeconds => breathPattern.fold(0, (s, p) => s + p.seconds);
@@ -40,7 +53,16 @@ int get _cycleSeconds => breathPattern.fold(0, (s, p) => s + p.seconds);
 /// microphone stays off and nothing is measured or scored; finishing only
 /// ticks today's route step. Pops `true` to continue the route, `null` on back.
 class BreathScreen extends StatefulWidget {
-  const BreathScreen({super.key, this.totalSeconds = 120, this.stepLabel});
+  const BreathScreen({
+    super.key,
+    this.totalSeconds = 120,
+    this.stepLabel,
+    this.lessonNext = true,
+  });
+
+  /// Whether an ear lesson follows in today's route; false when the route
+  /// has no ready lesson (speech/stage goal), so the exits say "finish".
+  final bool lessonNext;
 
   final int totalSeconds;
   final String? stepLabel;
@@ -189,45 +211,42 @@ class _BreathScreenState extends State<BreathScreen>
                             '${phase.verb}, $left seconds',
                           ),
                     excludeSemantics: true,
-                    child: SizedBox(
-                      width: 168,
-                      height: 168,
-                      child: CustomPaint(
-                        painter: _RingPainter(_done ? 1 : intoPhase / phaseMs),
-                        child: Center(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              _done
-                                  ? const Icon(
-                                      Ic.check,
-                                      size: 52,
-                                      color: TC.green,
-                                    )
-                                  : Text(
-                                      '$left',
-                                      style: const TextStyle(
-                                        fontSize: 48,
-                                        fontWeight: FontWeight.w800,
-                                        color: TC.ink,
-                                        height: 1,
-                                        fontFeatures: [
-                                          FontFeature.tabularFigures(),
-                                        ],
-                                      ),
-                                    ),
-                              const SizedBox(height: 5),
-                              Text(
-                                _done
-                                    ? tr('Tamamlandı', 'Complete')
-                                    : _paused
-                                    ? tr('Duraklatıldı', 'Paused')
-                                    : phase.verb,
-                                style: TT.small,
-                              ),
-                            ],
+                    child: BreathFlow(
+                      steps: _flowSteps,
+                      elapsedMs: _elapsedMs,
+                      running: !_paused && !_done,
+                      done: _done,
+                      // Larger on tall phones; short ones keep the controls
+                      // in view.
+                      size: (MediaQuery.sizeOf(context).height * 0.32 - 24)
+                          .clamp(168.0, 220.0),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          _done
+                              ? const Icon(Ic.check, size: 52, color: TC.green)
+                              : Text(
+                                  '$left',
+                                  style: const TextStyle(
+                                    fontSize: 48,
+                                    fontWeight: FontWeight.w800,
+                                    color: TC.ink,
+                                    height: 1,
+                                    fontFeatures: [
+                                      FontFeature.tabularFigures(),
+                                    ],
+                                  ),
+                                ),
+                          const SizedBox(height: 5),
+                          Text(
+                            _done
+                                ? tr('Tamamlandı', 'Complete')
+                                : _paused
+                                ? tr('Duraklatıldı', 'Paused')
+                                : phase.verb,
+                            style: TT.small,
                           ),
-                        ),
+                        ],
                       ),
                     ),
                   ),
@@ -305,7 +324,9 @@ class _BreathScreenState extends State<BreathScreen>
             if (_done)
               BigButton(
                 key: const Key('breath_continue'),
-                label: tr('Derse geç', 'On to the lesson'),
+                label: widget.lessonNext
+                    ? tr('Derse geç', 'On to the lesson')
+                    : tr('Bitir', 'Finish'),
                 icon: Ic.arrowRight,
                 onPressed: () => Navigator.of(context).pop(true),
               )
@@ -321,10 +342,12 @@ class _BreathScreenState extends State<BreathScreen>
               const SizedBox(height: 8),
               SoftButton(
                 key: const Key('breath_skip'),
-                label: tr(
-                  'Nefesi atla, derse geç',
-                  'Skip breathing, go to the lesson',
-                ),
+                label: widget.lessonNext
+                    ? tr(
+                        'Nefesi atla, derse geç',
+                        'Skip breathing, go to the lesson',
+                      )
+                    : tr('Şimdilik bitir', 'Stop for now'),
                 onPressed: () => Navigator.of(context).pop(true),
               ),
             ],
@@ -367,40 +390,4 @@ class _MiniCard extends StatelessWidget {
       ],
     ),
   );
-}
-
-class _RingPainter extends CustomPainter {
-  _RingPainter(this.progress);
-  final double progress;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    const stroke = 14.0;
-    final rect = Offset.zero & size;
-    final ring = rect.deflate(stroke / 2);
-    canvas.drawCircle(
-      rect.center,
-      size.shortestSide / 2,
-      Paint()..color = TC.primarySoft,
-    );
-    canvas.drawCircle(
-      rect.center,
-      size.shortestSide / 2 - stroke,
-      Paint()..color = Colors.white,
-    );
-    canvas.drawArc(
-      ring,
-      -math.pi / 2,
-      2 * math.pi * progress.clamp(0.0, 1.0),
-      false,
-      Paint()
-        ..color = TC.primary
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = stroke
-        ..strokeCap = StrokeCap.round,
-    );
-  }
-
-  @override
-  bool shouldRepaint(_RingPainter old) => old.progress != progress;
 }

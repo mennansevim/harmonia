@@ -4,17 +4,15 @@ import '../app/scope.dart';
 import '../domain/music.dart';
 import '../domain/trainers.dart';
 import '../home/daily_route.dart';
-import '../koro/range_test.dart';
-import '../prepare/mic_check_screen.dart';
-import '../../domain/audio/mic_check.dart';
-import '../settings/settings_tab.dart';
 import '../state/trainer_store.dart';
 import '../ui/kit.dart';
 import '../../domain/lang.dart';
 
-/// Vocalart's short first run: how you use Vocalart, your vocal range
-/// (optional), what to train and how often. Personal practice is the same
-/// for every role; the choir module is separate (ADR-035). The current step is persisted so a killed app resumes there.
+/// Vocalart's short first run (WIDE-01): goal → daily minutes → first
+/// session. Microphone check, range measurement and the reminder come later,
+/// when they are first useful (Settings, Exercises, Today). Choir membership
+/// is a context next to the goal, not a goal of its own (ADR-035). The
+/// current step is persisted so a killed app resumes there.
 class OnboardingFlow extends StatefulWidget {
   const OnboardingFlow({super.key, required this.onFinished});
 
@@ -24,15 +22,21 @@ class OnboardingFlow extends StatefulWidget {
   State<OnboardingFlow> createState() => _OnboardingFlowState();
 }
 
-enum Ob { welcome, role, mic, part, focus, minutes, reminder, ready }
+enum Ob { welcome, goal, minutes, ready }
+
+/// Where a run saved by an older build resumes. Earlier answers (role,
+/// focus, range) are kept; only the position maps onto the shorter flow.
+Ob resumeStep(String saved) => switch (saved) {
+  'role' || 'mic' || 'part' || 'focus' => Ob.goal,
+  'notation' || 'minutes' => Ob.minutes,
+  'reminder' => Ob.ready,
+  _ => Ob.values.asNameMap()[saved] ?? Ob.welcome,
+};
 
 class _OnboardingFlowState extends State<OnboardingFlow> {
   Ob _step = Ob.welcome;
   bool _forward = true;
   bool _ready = false;
-
-  /// Last mic check of this run; not persisted, so it never goes stale.
-  MicCheckStatus? _micStatus;
 
   Map<String, Object?> get _answers => TrainerScope.of(context).store.answers;
 
@@ -42,12 +46,7 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
     if (_ready) return;
     _ready = true;
     final saved = _answers['obStep'];
-    // 'notation' was a step until DESIGN-08; resume just after it.
-    if (saved is String) {
-      _step = saved == 'notation'
-          ? Ob.minutes
-          : Ob.values.asNameMap()[saved] ?? Ob.welcome;
-    }
+    if (saved is String) _step = resumeStep(saved);
   }
 
   void _go(Ob next, {bool forward = true}) {
@@ -68,33 +67,53 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
   List<String> _list(String key) =>
       (_answers[key] as List?)?.whereType<String>().toList() ?? <String>[];
 
-  void _toggle(String key, String value) {
-    final list = _list(key);
-    if (!list.remove(value)) list.add(value);
+  void _pickGoal(PracticeGoal goal) {
     final store = TrainerScope.of(context).store;
-    store.answers[key] = list;
+    store.answers['goal'] = goal.id;
+    // Rehearsal prep implies a choir; the box stays visible and can be
+    // cleared.
+    if (goal == PracticeGoal.choir && !store.inChoir) _setChoir(store, true);
+    store.save();
+    setState(() {});
+  }
+
+  /// Choir context, independent of the goal: shows the Koro tab.
+  void _setChoir(TrainerStore store, bool on) {
+    // Legacy saves hold one string; normalise to a list first.
+    final roles = store.roles.toList();
+    if (on) {
+      roles.add('singer');
+    } else {
+      roles.removeWhere((r) => r == 'singer' || r == 'conductor');
+    }
+    store.answers['role'] = roles;
     store.save();
     setState(() {});
   }
 
   void _finish(bool begin) {
     final store = TrainerScope.of(context).store;
-    final first = TrainerKind.values
-        .where((k) => _list('focus').contains(k.id))
-        .firstOrNull;
-    store.lastTrainer ??= (first ?? TrainerKind.interval).id;
+    final goal = PracticeGoalInfo.fromId(store.answers['goal']);
+    if (goal == null) {
+      // A run resumed from an older build: its focus answer decides, as
+      // before.
+      final first = TrainerKind.values
+          .where((k) => _list('focus').contains(k.id))
+          .firstOrNull;
+      store.lastTrainer ??= (first ?? TrainerKind.interval).id;
+    } else if (goal.lesson != null) {
+      // The goal's own lesson; a goal without a ready lesson gets none
+      // rather than a silent interval fallback.
+      store.lastTrainer ??= goal.lesson!.id;
+      if (_list('focus').isEmpty) store.answers['focus'] = [goal.lesson!.id];
+    }
+    // The reminder is offered on Today after the first session (WIDE-01).
+    if (!store.notifications) store.answers['reminderAsked'] = false;
     store.onboardingDone = true;
     store.setupDone = true;
     store.answers.remove('obStep');
     store.save();
     widget.onFinished(begin);
-  }
-
-  String? _measuredRange(TrainerStore store) {
-    final r = store.koroRange?.split('-').map(int.tryParse).toList();
-    if (r == null || r.length != 2 || r.contains(null)) return null;
-    return '${PitchClass.midiName(r[0]!, store.notation)} – '
-        '${PitchClass.midiName(r[1]!, store.notation)}';
   }
 
   @override
@@ -126,107 +145,14 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
           _next();
         },
       ),
-      Ob.role => _choices(
-        tr('Vocalart\'ı nasıl kullanacaksın?', 'How will you use Vocalart?'),
-        tr(
-          'Ses, nefes ve kulak çalışması herkes için aynı. '
-              'Koro ödevleri ayrı bir sekmede açılır.',
-          'Voice, breath and ear work is the same for everyone. '
-              'Choir assignments open in a separate tab.',
-        ),
-        [
-          (
-            'solo',
-            Ic.userRound,
-            tr(
-              'Sesimi ve kulağımı geliştirmek istiyorum',
-              'I want to improve my voice and ear',
-            ),
-          ),
-          (
-            'musician',
-            Ic.piano,
-            tr('Enstrüman çalıyorum', 'I play an instrument'),
-          ),
-          ('singer', Ic.mic, tr('Bir koroda söylüyorum', 'I sing in a choir')),
-          (
-            'conductor',
-            Ic.users,
-            tr('Koro şefi / eğitmeniyim', 'I am a conductor / teacher'),
-          ),
-        ],
-        selected: [if (_answers['role'] is String) _answers['role'] as String],
-        onTap: (id) {
-          store.answers['role'] = id;
-          store.save();
-          setState(() {});
-        },
-      ),
-      // MIC-01: optional; the microphone opens only from the check screen.
-      Ob.mic => _Frame(
+      Ob.goal => _GoalStep(
         step: _step,
+        goal: PracticeGoalInfo.fromId(store.answers['goal']),
+        inChoir: store.inChoir,
         onBack: _back,
         onNext: _next,
-        button: _micStatus == null
-            ? tr('Atla', 'Skip')
-            : tr('Devam', 'Continue'),
-        title: tr('Mikrofonunu deneyelim', 'Let us try your microphone'),
-        subtitle: tr(
-          'Ses egzersizlerinden önce sesinin net alınıp alınmadığını ve '
-              'ortamda gürültü olup olmadığını gör. Ayarlar\'dan sonra da '
-              'açabilirsin.',
-          'Before voice exercises, see whether your voice comes through '
-              'clearly and whether the room is noisy. You can also open it '
-              'later in Settings.',
-        ),
-        child: _MicStep(
-          status: _micStatus,
-          onCheck: () async {
-            final status = await Navigator.of(context).push<MicCheckStatus?>(
-              MaterialPageRoute(builder: (_) => const MicCheckScreen()),
-            );
-            if (mounted && status != null) setState(() => _micStatus = status);
-          },
-        ),
-      ),
-      // No voice-group question: the range is measured, or skipped (ADR-040).
-      Ob.part => _Frame(
-        step: _step,
-        onBack: _back,
-        onNext: _next,
-        button: store.koroRange == null
-            ? tr('Atla', 'Skip')
-            : tr('Devam', 'Continue'),
-        title: tr('Ses aralığını ölçelim', 'Let us measure your range'),
-        subtitle: tr(
-          'Piyano bir nota çalar, sen tekrar edersin; birkaç dakika sürer. '
-              'Dersler ölçülen aralıkta çalar. İstersen atla, Egzersizler sekmesinden '
-              'sonra ölçersin.',
-          'The piano plays a note and you repeat it; it takes a few minutes. '
-              'Lessons then play in the measured range. Skip it if you like '
-              'and measure later in the Exercises tab.',
-        ),
-        child: _RangeStep(
-          measured: _measuredRange(store),
-          onMeasure: () => Navigator.of(context).push(
-            MaterialPageRoute<void>(builder: (_) => const RangeTestScreen()),
-          ),
-        ),
-      ),
-      Ob.focus => _choices(
-        tr('Önce neye odaklanalım?', 'What should we focus on first?'),
-        tr('Birden fazla seçebilirsin.', 'You can pick more than one.'),
-        [
-          (
-            'voice',
-            Ic.audioLines,
-            tr('Ses: aralık, ritim, ezgi', 'Voice: range, rhythm, melody'),
-          ),
-          for (final k in TrainerKind.values) (k.id, trainerIcon(k), k.title),
-        ],
-        selected: _list('focus'),
-        multi: true,
-        onTap: (id) => _toggle('focus', id),
+        onGoal: _pickGoal,
+        onChoir: (on) => _setChoir(store, on),
       ),
       Ob.minutes => _Frame(
         step: _step,
@@ -244,7 +170,7 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
           spacing: 10,
           runSpacing: 10,
           children: [
-            for (final m in const [3, 5, 10, 15, 20])
+            for (final m in dailyMinuteChoices)
               ChoiceChip(
                 key: Key('minutes_$m'),
                 label: Text(tr('$m dk', '$m min')),
@@ -271,148 +197,12 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
           ],
         ),
       ),
-      Ob.reminder => _Reminder(step: _step, onBack: _back, onNext: _next),
       Ob.ready => _Ready(
         onBegin: () => _finish(true),
         onLater: () => _finish(false),
       ),
     };
   }
-
-  Widget _choices(
-    String title,
-    String subtitle,
-    List<(String, IconData, String)> options, {
-    required List<String> selected,
-    required ValueChanged<String> onTap,
-    bool multi = false,
-    bool optional = false,
-  }) => _Frame(
-    step: _step,
-    onBack: _back,
-    onNext: selected.isEmpty && !optional ? null : _next,
-    button: selected.isEmpty && optional
-        ? tr('Atla', 'Skip')
-        : tr('Devam', 'Continue'),
-    title: title,
-    subtitle: subtitle,
-    child: Column(
-      children: [
-        for (final (id, icon, label) in options)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 10),
-            child: AppCard(
-              key: Key('opt_$id'),
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-              border: selected.contains(id) ? TC.primary : null,
-              color: selected.contains(id) ? TC.primarySoft : Colors.white,
-              onTap: () => onTap(id),
-              child: Row(
-                children: [
-                  Icon(icon, color: TC.primary),
-                  const SizedBox(width: 12),
-                  Expanded(child: Text(label, style: TT.title)),
-                  Icon(
-                    selected.contains(id)
-                        ? (multi ? Ic.squareCheck : Ic.circleDot)
-                        : (multi ? Ic.square : Ic.circle),
-                    color: selected.contains(id) ? TC.primary : TC.faint,
-                  ),
-                ],
-              ),
-            ),
-          ),
-      ],
-    ),
-  );
-}
-
-class _MicStep extends StatelessWidget {
-  const _MicStep({required this.status, required this.onCheck});
-  final MicCheckStatus? status;
-  final VoidCallback onCheck;
-  @override
-  Widget build(BuildContext context) => AppCard(
-    key: const Key('ob_mic_check'),
-    padding: const EdgeInsets.all(16),
-    border: status == MicCheckStatus.ready ? TC.primary : null,
-    color: status == MicCheckStatus.ready ? TC.primarySoft : Colors.white,
-    onTap: onCheck,
-    child: Row(
-      children: [
-        const Icon(Ic.mic, color: TC.primary),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                status == null
-                    ? tr('Mikrofonu test et', 'Check the microphone')
-                    : micCheckStatusLabel(status!),
-                style: TT.title,
-              ),
-              const SizedBox(height: 2),
-              Text(
-                status == null
-                    ? tr(
-                        'Sessizlik ve rahat bir "aaa" · yaklaşık 10 sn',
-                        'Silence and an easy "aaa" · about 10 s',
-                      )
-                    : tr('Tekrar denemek için dokun', 'Tap to try again'),
-                style: TT.small,
-              ),
-            ],
-          ),
-        ),
-        const Icon(Ic.chevronRight, color: TC.muted),
-      ],
-    ),
-  );
-}
-
-class _RangeStep extends StatelessWidget {
-  const _RangeStep({required this.measured, required this.onMeasure});
-  final String? measured;
-  final VoidCallback onMeasure;
-  @override
-  Widget build(BuildContext context) => AppCard(
-    key: const Key('ob_measure_range'),
-    padding: const EdgeInsets.all(16),
-    border: measured == null ? null : TC.primary,
-    color: measured == null ? Colors.white : TC.primarySoft,
-    onTap: onMeasure,
-    child: Row(
-      children: [
-        const Icon(Ic.mic, color: TC.primary),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                measured == null
-                    ? tr('Şimdi ölç', 'Measure now')
-                    : tr('Ölçüldü: $measured', 'Measured: $measured'),
-                style: TT.title,
-              ),
-              const SizedBox(height: 2),
-              Text(
-                measured == null
-                    ? tr(
-                        'Dinle ve tekrar et · mikrofon',
-                        'Listen and repeat · microphone',
-                      )
-                    : tr('Tekrar ölçmek için dokun', 'Tap to measure again'),
-                style: TT.small,
-              ),
-            ],
-          ),
-        ),
-        const Icon(Ic.chevronRight, color: TC.muted),
-      ],
-    ),
-  );
 }
 
 /// Shared page frame: step counter, title, scrollable body, continue button.
@@ -424,8 +214,6 @@ class _Frame extends StatelessWidget {
     required this.child,
     this.subtitle,
     this.onNext,
-    this.button,
-    this.showButton = true,
   });
   final Ob step;
   final VoidCallback onBack;
@@ -433,11 +221,9 @@ class _Frame extends StatelessWidget {
   final String? subtitle;
   final Widget child;
   final VoidCallback? onNext;
-  final String? button;
-  final bool showButton;
 
-  /// Steps between welcome and ready.
-  static const _count = 6;
+  /// Steps between welcome and ready: goal and minutes.
+  static const _count = 2;
 
   @override
   Widget build(BuildContext context) => Column(
@@ -479,15 +265,14 @@ class _Frame extends StatelessWidget {
           ],
         ),
       ),
-      if (showButton)
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
-          child: BigButton(
-            key: const Key('ob_continue'),
-            label: button ?? tr('Devam', 'Continue'),
-            onPressed: onNext,
-          ),
+      Padding(
+        padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+        child: BigButton(
+          key: const Key('ob_continue'),
+          label: tr('Devam', 'Continue'),
+          onPressed: onNext,
         ),
+      ),
     ],
   );
 }
@@ -596,56 +381,124 @@ class _Welcome extends StatelessWidget {
   );
 }
 
-class _Reminder extends StatefulWidget {
-  const _Reminder({
+class _GoalStep extends StatelessWidget {
+  const _GoalStep({
     required this.step,
+    required this.goal,
+    required this.inChoir,
     required this.onBack,
     required this.onNext,
+    required this.onGoal,
+    required this.onChoir,
   });
   final Ob step;
+  final PracticeGoal? goal;
+  final bool inChoir;
   final VoidCallback onBack;
   final VoidCallback onNext;
-  @override
-  State<_Reminder> createState() => _ReminderState();
-}
+  final ValueChanged<PracticeGoal> onGoal;
+  final ValueChanged<bool> onChoir;
 
-class _ReminderState extends State<_Reminder> {
-  bool _busy = false;
-
-  Future<void> _allow() async {
-    setState(() => _busy = true);
-    await setReminder(context, true);
-    if (mounted) widget.onNext();
-  }
+  static IconData _icon(PracticeGoal g) => switch (g) {
+    PracticeGoal.beginner => Ic.sprout,
+    PracticeGoal.ear => Ic.ear,
+    PracticeGoal.voice => Ic.mic,
+    PracticeGoal.choir => Ic.users,
+    PracticeGoal.stage => Ic.speech,
+    PracticeGoal.exam => Ic.graduationCap,
+  };
 
   @override
   Widget build(BuildContext context) => _Frame(
-    step: widget.step,
-    onBack: widget.onBack,
-    title: tr(
-      'Günlük hatırlatma ister misin?',
-      'Would you like a daily reminder?',
-    ),
+    step: step,
+    onBack: onBack,
+    onNext: goal == null ? null : onNext,
+    title: tr('Ne için çalışıyorsun?', 'What are you practising for?'),
     subtitle: tr(
-      'Her akşam 19:00\'da tek bir bildirim. Ayarlar\'dan kapatabilirsin.',
-      'One notification at 19:00 each evening. You can turn it off in Settings.',
+      'Birini seç; bugünkü çalışman buna göre kurulur. Ayarlar\'dan '
+          'istediğin zaman değiştirebilirsin.',
+      'Pick one; today\'s session is built around it. You can change it '
+          'any time in Settings.',
     ),
-    showButton: false,
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        BigButton(
-          key: const Key('reminder_allow'),
-          label: tr('Hatırlat', 'Remind me'),
-          icon: Ic.bellRing,
-          busy: _busy,
-          onPressed: _allow,
-        ),
+        for (final g in PracticeGoal.values)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 10),
+            child: AppCard(
+              key: Key('goal_${g.id}'),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              border: g == goal ? TC.primary : null,
+              color: g == goal ? TC.primarySoft : Colors.white,
+              onTap: () => onGoal(g),
+              // Merged into the card's node, so screen readers say which
+              // goal is selected.
+              child: Semantics(
+                selected: g == goal,
+                inMutuallyExclusiveGroup: true,
+                child: Row(
+                  children: [
+                    Icon(_icon(g), color: TC.primary),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(g.title, style: TT.title),
+                          const SizedBox(height: 2),
+                          Text(g.subtitle, style: TT.small),
+                        ],
+                      ),
+                    ),
+                    Icon(
+                      g == goal ? Ic.circleDot : Ic.circle,
+                      color: g == goal ? TC.primary : TC.faint,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
         const SizedBox(height: 6),
-        TextLink(
-          tr('Şimdilik hayır', 'Not now'),
-          key: const Key('reminder_skip'),
-          onTap: _busy ? () {} : widget.onNext,
+        AppCard(
+          key: const Key('ob_choir'),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          onTap: () => onChoir(!inChoir),
+          child: Semantics(
+            checked: inChoir,
+            child: Row(
+              children: [
+                Icon(
+                  inChoir ? Ic.squareCheck : Ic.square,
+                  color: inChoir ? TC.primary : TC.faint,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        tr(
+                          'Bir korodayım ya da koro yönetiyorum',
+                          'I sing in or lead a choir',
+                        ),
+                        style: TT.title,
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        tr(
+                          'Koro ödevleri için ayrı bir sekme açılır',
+                          'A separate tab opens for choir assignments',
+                        ),
+                        style: TT.small,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ],
     ),
@@ -659,31 +512,35 @@ class _Ready extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final store = TrainerScope.of(context).store;
+    final route = routeFor(store.answers, store.dailyMinutes);
+    final goal = route.goal;
     final focus =
         (store.answers['focus'] as List?)?.whereType<String>().toList() ??
         const <String>[];
-    final trainer =
-        TrainerKind.values.where((k) => focus.contains(k.id)).firstOrNull ??
-        TrainerKind.interval;
-    final role = store.answers['role'];
+    final trainer = goal != null
+        ? goal.lesson
+        : TrainerKind.values.where((k) => focus.contains(k.id)).firstOrNull ??
+              TrainerKind.interval;
     final rows = [
-      (
-        Ic.mic,
-        tr('Aralık', 'Range'),
-        store.part?.title ??
-            tr(
-              'Ölçülmedi · Egzersizler sekmesinde ölç',
-              'Not measured · measure it in the Exercises tab',
-            ),
-      ),
-      (trainerIcon(trainer), tr('İlk ders', 'First lesson'), trainer.title),
-      if (DailyRoute.forMinutes(store.dailyMinutes).voiceStep)
+      if (goal != null) (Ic.target, tr('Hedef', 'Goal'), goal.title),
+      if (route.breath)
+        (
+          Ic.wind,
+          tr('İlk adım', 'First step'),
+          tr(
+            'Nefes rehberi · ${route.breathSeconds ~/ 60} dk, mikrofonsuz',
+            'Breath guide · ${route.breathSeconds ~/ 60} min, no microphone',
+          ),
+        ),
+      if (trainer != null)
+        (trainerIcon(trainer), tr('Ders', 'Lesson'), trainer.title),
+      if (route.voiceStep)
         (
           Ic.audioLines,
           tr('Ses', 'Voice'),
           tr(
-            'Rotanın sonunda bir ses adımı',
-            'A voice step at the end of the route',
+            'Rotanın sonunda isteğe bağlı bir ses adımı',
+            'An optional voice step at the end of the route',
           ),
         ),
       (
@@ -691,7 +548,7 @@ class _Ready extends StatelessWidget {
         tr('Günlük', 'Daily'),
         tr('${store.dailyMinutes} dakika', '${store.dailyMinutes} minutes'),
       ),
-      if (role == 'singer' || role == 'conductor')
+      if (store.inChoir)
         (
           Ic.users,
           tr('Koro', 'Choir'),
@@ -701,6 +558,7 @@ class _Ready extends StatelessWidget {
           ),
         ),
     ];
+    final pending = goal?.pendingContent;
     return FitOrScroll(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
@@ -732,10 +590,23 @@ class _Ready extends StatelessWidget {
                 ],
               ),
             ),
+            if (pending != null) ...[
+              const SizedBox(height: 10),
+              Text(pending, key: const Key('ob_pending'), style: TT.small),
+            ],
+            const SizedBox(height: 10),
+            Text(
+              tr(
+                'Mikrofon izni yalnız sesli bir adımı açınca istenir.',
+                'Microphone access is asked only when you open a voice step.',
+              ),
+              style: TT.small,
+            ),
+            const SizedBox(height: 16),
             const Spacer(),
             BigButton(
               key: const Key('today_session_begin'),
-              label: tr('İlk derse başla', 'Start the first lesson'),
+              label: tr('İlk çalışmaya başla', 'Start the first session'),
               icon: Ic.play,
               onPressed: onBegin,
             ),

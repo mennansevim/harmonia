@@ -90,22 +90,12 @@ void main() {
 
     expectEnglish(visibleWording(tester), 'welcome');
     await tapKey(tester, 'get_started');
-    expectEnglish(visibleWording(tester), 'role');
-    await tapKey(tester, 'opt_singer');
-    await tapKey(tester, 'ob_continue');
-    expectEnglish(visibleWording(tester), 'mic');
-    await tapKey(tester, 'ob_continue');
-    expectEnglish(visibleWording(tester), 'range');
-    await tapKey(tester, 'ob_continue');
-    expectEnglish(visibleWording(tester), 'focus');
-    await tapKey(tester, 'opt_voice');
-    await tapKey(tester, 'opt_interval');
+    expectEnglish(visibleWording(tester), 'goal');
+    await tapKey(tester, 'goal_choir');
     await tapKey(tester, 'ob_continue');
     expectEnglish(visibleWording(tester), 'minutes');
     await tapKey(tester, 'minutes_10');
     await tapKey(tester, 'ob_continue');
-    expectEnglish(visibleWording(tester), 'reminder');
-    await tapKey(tester, 'reminder_skip');
     expectEnglish(visibleWording(tester), 'ready');
     expect(find.text('Your plan is ready'), findsOneWidget);
     await tester.tap(find.text('Go to home'));

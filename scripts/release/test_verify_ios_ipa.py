@@ -53,9 +53,44 @@ class VerifyIosIpaTest(unittest.TestCase):
                 "com.apple.developer.team-identifier": "L3Z9U2B39K",
                 "get-task-allow": False,
             },
+            "architectures": {
+                ".": ["arm64"],
+                "Frameworks/App.framework": ["arm64"],
+            },
+            "platforms": {
+                ".": {"platform": "IOS", "minimumOS": "15.0"},
+                "Frameworks/App.framework": {
+                    "platform": "IOS",
+                    "minimumOS": "13.0",
+                },
+            },
         }
 
-    def _write_ipa(self, *, app_id="com.mennansevim.vocalart", encryption=False):
+    def _privacy_manifest(self):
+        return {
+            "NSPrivacyTracking": False,
+            "NSPrivacyTrackingDomains": [],
+            "NSPrivacyCollectedDataTypes": [],
+            "NSPrivacyAccessedAPITypes": [
+                {
+                    "NSPrivacyAccessedAPIType": (
+                        "NSPrivacyAccessedAPICategoryFileTimestamp"
+                    ),
+                    "NSPrivacyAccessedAPITypeReasons": ["C617.1"],
+                }
+            ],
+        }
+
+    def _write_ipa(
+        self,
+        *,
+        app_id="com.mennansevim.vocalart",
+        encryption=False,
+        privacy_manifest="default",
+        embedded_privacy_manifest=None,
+        info_overrides=None,
+        include_localizations=True,
+    ):
         root = "Payload/Runner.app"
         info = {
             "CFBundleIdentifier": app_id,
@@ -65,12 +100,43 @@ class VerifyIosIpaTest(unittest.TestCase):
             "CFBundleExecutable": "Runner",
             "MinimumOSVersion": "15.0",
             "ITSAppUsesNonExemptEncryption": encryption,
+            "CFBundleSupportedPlatforms": ["iPhoneOS"],
+            "DTPlatformName": "iphoneos",
+            "DTSDKName": "iphoneos27.0",
+            "LSRequiresIPhoneOS": True,
+            "UIRequiredDeviceCapabilities": ["arm64"],
+            "CFBundleLocalizations": ["en", "tr"],
+            "NSMicrophoneUsageDescription": MODULE.MICROPHONE_DESCRIPTIONS["tr"],
         }
+        if info_overrides:
+            info.update(info_overrides)
         with zipfile.ZipFile(self.ipa, "w") as archive:
             archive.writestr(f"{root}/Info.plist", plistlib.dumps(info))
             archive.writestr(f"{root}/Runner", b"binary")
             archive.writestr(f"{root}/_CodeSignature/CodeResources", b"signed")
             archive.writestr(f"{root}/embedded.mobileprovision", b"profile")
+            if privacy_manifest is not None:
+                value = (
+                    self._privacy_manifest()
+                    if privacy_manifest == "default"
+                    else privacy_manifest
+                )
+                archive.writestr(
+                    f"{root}/PrivacyInfo.xcprivacy", plistlib.dumps(value)
+                )
+            if embedded_privacy_manifest is not None:
+                archive.writestr(
+                    f"{root}/Example.bundle/PrivacyInfo.xcprivacy",
+                    plistlib.dumps(embedded_privacy_manifest),
+                )
+            if include_localizations:
+                for language, description in MODULE.MICROPHONE_DESCRIPTIONS.items():
+                    archive.writestr(
+                        f"{root}/{language}.lproj/InfoPlist.strings",
+                        plistlib.dumps(
+                            {"NSMicrophoneUsageDescription": description}
+                        ),
+                    )
 
     def test_accepts_expected_app_store_artifact(self):
         self._write_ipa()
@@ -86,6 +152,237 @@ class VerifyIosIpaTest(unittest.TestCase):
         )
         self.assertEqual(result["status"], "passed")
         self.assertEqual(result["build"], "2")
+        self.assertTrue(result["privacyManifestVerified"])
+        self.assertTrue(result["deviceArchitecturesVerified"])
+        self.assertEqual(result["verifiedMachOBundles"], 2)
+        self.assertTrue(result["devicePlatformsVerified"])
+        self.assertEqual(result["verifiedPrivacyManifests"], 1)
+        self.assertTrue(result["permissionDeclarationsVerified"])
+
+    def test_rejects_simulator_platform_or_unexpected_background_mode(self):
+        self._write_ipa(info_overrides={"DTPlatformName": "iphonesimulator"})
+        with self.assertRaisesRegex(MODULE.VerificationError, "SDK platformu"):
+            MODULE.verify_ipa(
+                self.ipa,
+                expected_app_id="com.mennansevim.vocalart",
+                expected_name="Vocalart",
+                expected_version="1.0.0",
+                expected_build="2",
+                expected_team_id="L3Z9U2B39K",
+                provision_decoder=lambda _: self._profile(),
+                signature_verifier=lambda *_: self._signature(),
+            )
+
+        self._write_ipa(info_overrides={"UIBackgroundModes": ["audio"]})
+        with self.assertRaisesRegex(MODULE.VerificationError, "background mode"):
+            MODULE.verify_ipa(
+                self.ipa,
+                expected_app_id="com.mennansevim.vocalart",
+                expected_name="Vocalart",
+                expected_version="1.0.0",
+                expected_build="2",
+                expected_team_id="L3Z9U2B39K",
+                provision_decoder=lambda _: self._profile(),
+                signature_verifier=lambda *_: self._signature(),
+            )
+
+    def test_rejects_missing_or_changed_localized_microphone_description(self):
+        self._write_ipa(include_localizations=False)
+        with self.assertRaisesRegex(MODULE.VerificationError, "localized mikrofon"):
+            MODULE.verify_ipa(
+                self.ipa,
+                expected_app_id="com.mennansevim.vocalart",
+                expected_name="Vocalart",
+                expected_version="1.0.0",
+                expected_build="2",
+                expected_team_id="L3Z9U2B39K",
+                provision_decoder=lambda _: self._profile(),
+                signature_verifier=lambda *_: self._signature(),
+            )
+
+        self._write_ipa(
+            info_overrides={"NSMicrophoneUsageDescription": "Microphone required"}
+        )
+        with self.assertRaisesRegex(MODULE.VerificationError, "varsayilan mikrofon"):
+            MODULE.verify_ipa(
+                self.ipa,
+                expected_app_id="com.mennansevim.vocalart",
+                expected_name="Vocalart",
+                expected_version="1.0.0",
+                expected_build="2",
+                expected_team_id="L3Z9U2B39K",
+                provision_decoder=lambda _: self._profile(),
+                signature_verifier=lambda *_: self._signature(),
+            )
+
+    def test_rejects_embedded_tracking_or_malformed_required_reason_manifest(self):
+        tracking = self._privacy_manifest() | {"NSPrivacyTracking": True}
+        self._write_ipa(embedded_privacy_manifest=tracking)
+        with self.assertRaisesRegex(MODULE.VerificationError, "tracking iceriyor"):
+            MODULE.verify_ipa(
+                self.ipa,
+                expected_app_id="com.mennansevim.vocalart",
+                expected_name="Vocalart",
+                expected_version="1.0.0",
+                expected_build="2",
+                expected_team_id="L3Z9U2B39K",
+                provision_decoder=lambda _: self._profile(),
+                signature_verifier=lambda *_: self._signature(),
+            )
+
+        malformed = self._privacy_manifest() | {
+            "NSPrivacyAccessedAPITypes": [
+                {"NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryUserDefaults"}
+            ]
+        }
+        self._write_ipa(embedded_privacy_manifest=malformed)
+        with self.assertRaisesRegex(MODULE.VerificationError, "beyanı eksik"):
+            MODULE.verify_ipa(
+                self.ipa,
+                expected_app_id="com.mennansevim.vocalart",
+                expected_name="Vocalart",
+                expected_version="1.0.0",
+                expected_build="2",
+                expected_team_id="L3Z9U2B39K",
+                provision_decoder=lambda _: self._profile(),
+                signature_verifier=lambda *_: self._signature(),
+            )
+
+    def test_rejects_missing_or_simulator_architecture_evidence(self):
+        self._write_ipa()
+        missing = self._signature() | {"architectures": {}}
+        with self.assertRaisesRegex(MODULE.VerificationError, "mimari bilgisi"):
+            MODULE.verify_ipa(
+                self.ipa,
+                expected_app_id="com.mennansevim.vocalart",
+                expected_name="Vocalart",
+                expected_version="1.0.0",
+                expected_build="2",
+                expected_team_id="L3Z9U2B39K",
+                provision_decoder=lambda _: self._profile(),
+                signature_verifier=lambda *_: missing,
+            )
+
+        simulator = self._signature() | {
+            "architectures": {".": ["arm64", "x86_64"]}
+        }
+        with self.assertRaisesRegex(MODULE.VerificationError, "device-only arm64"):
+            MODULE.verify_ipa(
+                self.ipa,
+                expected_app_id="com.mennansevim.vocalart",
+                expected_name="Vocalart",
+                expected_version="1.0.0",
+                expected_build="2",
+                expected_team_id="L3Z9U2B39K",
+                provision_decoder=lambda _: self._profile(),
+                signature_verifier=lambda *_: simulator,
+            )
+
+    def test_rejects_simulator_or_incompatible_macho_platform(self):
+        self._write_ipa()
+        simulator = self._signature()
+        simulator["platforms"] = {
+            ".": {"platform": "IOSSIMULATOR", "minimumOS": "15.0"},
+            "Frameworks/App.framework": {
+                "platform": "IOS",
+                "minimumOS": "13.0",
+            },
+        }
+        with self.assertRaisesRegex(MODULE.VerificationError, "device IOS"):
+            MODULE.verify_ipa(
+                self.ipa,
+                expected_app_id="com.mennansevim.vocalart",
+                expected_name="Vocalart",
+                expected_version="1.0.0",
+                expected_build="2",
+                expected_team_id="L3Z9U2B39K",
+                provision_decoder=lambda _: self._profile(),
+                signature_verifier=lambda *_: simulator,
+            )
+
+        incompatible = self._signature()
+        incompatible["platforms"] = {
+            ".": {"platform": "IOS", "minimumOS": "15.0"},
+            "Frameworks/App.framework": {
+                "platform": "IOS",
+                "minimumOS": "16.0",
+            },
+        }
+        with self.assertRaisesRegex(MODULE.VerificationError, "daha yeni OS"):
+            MODULE.verify_ipa(
+                self.ipa,
+                expected_app_id="com.mennansevim.vocalart",
+                expected_name="Vocalart",
+                expected_version="1.0.0",
+                expected_build="2",
+                expected_team_id="L3Z9U2B39K",
+                provision_decoder=lambda _: self._profile(),
+                signature_verifier=lambda *_: incompatible,
+            )
+
+    def test_rejects_missing_or_tracking_privacy_manifest(self):
+        self._write_ipa(privacy_manifest=None)
+        with self.assertRaisesRegex(MODULE.VerificationError, "PrivacyInfo"):
+            MODULE.verify_ipa(
+                self.ipa,
+                expected_app_id="com.mennansevim.vocalart",
+                expected_name="Vocalart",
+                expected_version="1.0.0",
+                expected_build="2",
+                expected_team_id="L3Z9U2B39K",
+                provision_decoder=lambda _: self._profile(),
+                signature_verifier=lambda *_: self._signature(),
+            )
+
+        tracking = self._privacy_manifest() | {"NSPrivacyTracking": True}
+        self._write_ipa(privacy_manifest=tracking)
+        with self.assertRaisesRegex(MODULE.VerificationError, "tracking=false"):
+            MODULE.verify_ipa(
+                self.ipa,
+                expected_app_id="com.mennansevim.vocalart",
+                expected_name="Vocalart",
+                expected_version="1.0.0",
+                expected_build="2",
+                expected_team_id="L3Z9U2B39K",
+                provision_decoder=lambda _: self._profile(),
+                signature_verifier=lambda *_: self._signature(),
+            )
+
+    def test_rejects_collected_data_or_wrong_required_reason(self):
+        collected = self._privacy_manifest() | {
+            "NSPrivacyCollectedDataTypes": [
+                {"NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypeName"}
+            ]
+        }
+        self._write_ipa(privacy_manifest=collected)
+        with self.assertRaisesRegex(MODULE.VerificationError, "veri toplama"):
+            MODULE.verify_ipa(
+                self.ipa,
+                expected_app_id="com.mennansevim.vocalart",
+                expected_name="Vocalart",
+                expected_version="1.0.0",
+                expected_build="2",
+                expected_team_id="L3Z9U2B39K",
+                provision_decoder=lambda _: self._profile(),
+                signature_verifier=lambda *_: self._signature(),
+            )
+
+        wrong_reason = self._privacy_manifest()
+        wrong_reason["NSPrivacyAccessedAPITypes"][0][
+            "NSPrivacyAccessedAPITypeReasons"
+        ] = ["CA92.1"]
+        self._write_ipa(privacy_manifest=wrong_reason)
+        with self.assertRaisesRegex(MODULE.VerificationError, "C617.1"):
+            MODULE.verify_ipa(
+                self.ipa,
+                expected_app_id="com.mennansevim.vocalart",
+                expected_name="Vocalart",
+                expected_version="1.0.0",
+                expected_build="2",
+                expected_team_id="L3Z9U2B39K",
+                provision_decoder=lambda _: self._profile(),
+                signature_verifier=lambda *_: self._signature(),
+            )
 
     def test_rejects_wrong_bundle_or_encryption_declaration(self):
         self._write_ipa(app_id="com.example.wrong")

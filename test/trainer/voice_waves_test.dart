@@ -59,6 +59,35 @@ void main() {
       expect(mid.cents, inExclusiveRange(0, 100));
       expect(t.at(5), isNull);
     });
+
+    test(
+      'a sample keeps its id and ages evenly as the window drops old ones',
+      () {
+        final t = WaveTrack(seconds: 1);
+        for (var i = 0; i < 30; i++) {
+          t.add(
+            1 / 60,
+            WaveSample(cents: i.toDouble(), amp: 0.5, voiced: true),
+          );
+        }
+        final id = t.newestId;
+        final pinned = t.byId(id)!;
+        final before = t.ageOf(id);
+        // Well past the 1 s window: the oldest samples are dropped meanwhile.
+        for (var i = 0; i < 30; i++) {
+          t.add(1 / 60, const WaveSample(cents: 0, amp: 0.5, voiced: true));
+        }
+        expect(t.byId(id), same(pinned), reason: 'ids never shift');
+        expect(t.ageOf(id) - before, closeTo(0.5, 1e-9));
+        for (var i = 0; i < 60; i++) {
+          t.add(1 / 60, const WaveSample(cents: 0, amp: 0.5, voiced: true));
+        }
+        expect(t.byId(id), isNull, reason: 'left the history');
+        expect(t.byId(t.newestId + 1), isNull);
+        t.clear();
+        expect(t.newestId, -1);
+      },
+    );
   });
 
   test('"on the note" follows the ladder pass rule', () {

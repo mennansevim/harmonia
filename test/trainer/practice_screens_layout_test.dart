@@ -178,7 +178,7 @@ void main() {
     store.recordAnswer(TrainerKind.pitch, 'do', true);
     await settle(tester);
 
-    expect(find.textContaining('SEVİYE 1 · 10 XP'), findsOneWidget);
+    expect(find.textContaining('PRATİK SEVİYESİ 1 · 10 XP'), findsOneWidget);
     await tester.pumpWidget(const SizedBox());
     await tester.pump(const Duration(seconds: 2));
   });

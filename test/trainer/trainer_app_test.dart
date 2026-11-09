@@ -10,7 +10,6 @@ import 'package:resonia/infrastructure/audio/orphan_audio_cleaner.dart';
 import 'package:resonia/trainer/app/trainer_app.dart';
 import 'package:resonia/trainer/audio/trainer_audio.dart';
 import 'package:resonia/trainer/domain/curriculum.dart';
-import 'package:resonia/trainer/domain/music.dart';
 import 'package:resonia/trainer/domain/trainers.dart';
 import 'package:resonia/trainer/state/trainer_store.dart';
 
@@ -126,103 +125,7 @@ void main() {
     binding.platformDispatcher.views.first.devicePixelRatio = 3;
   });
 
-  testWidgets('first run walks the whole onboarding into the home tabs', (
-    tester,
-  ) async {
-    final store = memoryStore();
-    await store.load();
-    await tester.pumpWidget(app(store));
-    await settle(tester);
-
-    expect(find.text('Sesini ve kulağını\nher gün geliştir'), findsOneWidget);
-    await tapKey(tester, 'get_started');
-    expect(find.text('Vocalart\'ı nasıl kullanacaksın?'), findsOneWidget);
-    await tapKey(tester, 'opt_singer');
-    await tapKey(tester, 'ob_continue');
-    // MIC-01: the optional microphone check comes before the range.
-    expect(find.text('Mikrofonunu deneyelim'), findsOneWidget);
-    expect(find.byKey(const Key('ob_mic_check')), findsOneWidget);
-    await tapKey(tester, 'ob_continue');
-    // No voice-group question: the range step offers a measurement or a skip.
-    expect(find.text('Ses aralığını ölçelim'), findsOneWidget);
-    expect(find.text('Sesin hangi aralığa yakın?'), findsNothing);
-    await tapKey(tester, 'ob_continue');
-    expect(store.part, isNull);
-    await tapKey(tester, 'opt_voice');
-    await tapKey(tester, 'opt_chord');
-    await tapKey(tester, 'ob_continue');
-    await tapKey(tester, 'minutes_10');
-    await tapKey(tester, 'ob_continue');
-    await tapKey(tester, 'reminder_skip');
-    expect(find.text('Planın kuruldu'), findsOneWidget);
-    expect(find.text('Ölçülmedi · Egzersizler sekmesinde ölç'), findsOneWidget);
-    // A 10-minute day ends with a voice step; choir members are told where
-    // their assignments live.
-    expect(find.text('Rotanın sonunda bir ses adımı'), findsOneWidget);
-    expect(find.text('Ödevlerin Koro sekmesinde'), findsOneWidget);
-
-    // Persisted step: the flow position is saved while onboarding.
-    expect(store.answers['obStep'], 'ready');
-    await tester.tap(find.text('Ana sayfaya git'));
-    await settle(tester);
-
-    expect(store.onboardingDone, isTrue);
-    expect(store.setupDone, isTrue);
-    expect(store.dailyMinutes, 10);
-    // No notation step: Turkish defaults to solfège.
-    expect(store.notation, NoteNotation.solfege);
-    expect(store.lastTrainer, TrainerKind.chord.id);
-    expect(find.text('Bugün'), findsWidgets);
-    expect(find.byKey(const Key('daily_plan')), findsOneWidget);
-    // The voice workshop is a tab for everyone; a choir singer also gets the
-    // choir tab (the old check passed only because tests ran in English).
-    expect(find.text('Koro'), findsOneWidget);
-    await tapKey(tester, 'tab_1');
-    expect(find.text('Egzersizler'), findsWidgets);
-  });
-
-  testWidgets('a solo learner can skip the vocal range step', (tester) async {
-    final store = memoryStore();
-    await store.load();
-    await tester.pumpWidget(app(store));
-    await settle(tester);
-    await tapKey(tester, 'get_started');
-    await tapKey(tester, 'opt_solo');
-    await tapKey(tester, 'ob_continue');
-    await tapKey(tester, 'ob_continue');
-    expect(find.text('Ses aralığını ölçelim'), findsOneWidget);
-    expect(find.byKey(const Key('ob_measure_range')), findsOneWidget);
-    expect(find.text('Atla'), findsOneWidget);
-    await tapKey(tester, 'ob_continue');
-    expect(find.text('Önce neye odaklanalım?'), findsOneWidget);
-    expect(store.answers['role'], 'solo');
-    expect(store.voicePart, isNull);
-  });
-
-  testWidgets('onboarding mic step opens the check and can be skipped', (
-    tester,
-  ) async {
-    final store = memoryStore();
-    await store.load();
-    await tester.pumpWidget(app(store));
-    await settle(tester);
-    await tapKey(tester, 'get_started');
-    await tapKey(tester, 'opt_solo');
-    await tapKey(tester, 'ob_continue');
-    expect(find.text('2/6'), findsOneWidget);
-    expect(find.text('Atla'), findsOneWidget);
-    await tapKey(tester, 'ob_mic_check');
-    expect(find.text('Sesin net geliyor mu?'), findsOneWidget);
-    // Widget tests have no live audio: neutral, never a failed check.
-    await tapKey(tester, 'mic_check_start');
-    expect(find.text('Bu cihazda başlatılamadı'), findsOneWidget);
-    await tapKey(tester, 'mic_check_secondary');
-    expect(find.text('Mikrofonunu deneyelim'), findsOneWidget);
-    expect(find.text('Mikrofonu test et'), findsOneWidget);
-    await tapKey(tester, 'ob_continue');
-    expect(find.text('Ses aralığını ölçelim'), findsOneWidget);
-  });
-
+  // Onboarding journeys: goal_onboarding_test.dart (WIDE-01).
   testWidgets('settings reopens the microphone check', (tester) async {
     final store = memoryStore({'onboardingDone': true, 'setupDone': true});
     await store.load();
@@ -235,44 +138,6 @@ void main() {
     await tester.tap(find.byTooltip('Geri').last);
     await settle(tester);
     expect(find.byKey(const Key('settings_mic_check')), findsOneWidget);
-  });
-
-  testWidgets('a measured range turns the skip into continue', (tester) async {
-    final store = memoryStore({'koroRange': '48-67'});
-    await store.load();
-    await tester.pumpWidget(app(store));
-    await settle(tester);
-    await tapKey(tester, 'get_started');
-    await tapKey(tester, 'opt_solo');
-    await tapKey(tester, 'ob_continue');
-    await tapKey(tester, 'ob_continue');
-    expect(find.text('Ölçüldü: Do3 – Sol4'), findsOneWidget);
-    expect(find.text('Devam'), findsOneWidget);
-  });
-
-  testWidgets('a run saved on the old notation step resumes at minutes', (
-    tester,
-  ) async {
-    final store = memoryStore({
-      'answers': {'obStep': 'notation'},
-    });
-    await store.load();
-    await tester.pumpWidget(app(store));
-    await settle(tester);
-    expect(find.text('Günde kaç dakika ayırabilirsin?'), findsOneWidget);
-    expect(find.text('5/6'), findsOneWidget);
-  });
-
-  testWidgets('resumes onboarding at the saved step after a restart', (
-    tester,
-  ) async {
-    final store = memoryStore({
-      'answers': {'obStep': 'minutes'},
-    });
-    await store.load();
-    await tester.pumpWidget(app(store));
-    await settle(tester);
-    expect(find.textContaining('Günde kaç dakika'), findsOneWidget);
   });
 
   testWidgets('trainer sheet opens the learn path and practice setup', (

@@ -1,6 +1,6 @@
 # Vocalart — Yayın hazırlığı (canlıya çıkış açıkları)
 
-**Güncelleme:** 2026-11-04 · Kaynaklar: CURRENT_ROADMAP, IMPLEMENTATION_ROADMAP §5–§11.
+**Güncelleme:** 2026-11-06 · Kaynaklar: CURRENT_ROADMAP, IMPLEMENTATION_ROADMAP §5–§11.
 Durum sözlüğü roadmap ile aynı; kod-test geçmesi cihaz/pilot/yayın kabulü değildir.
 
 Tür: **K** = kodla kapatılabilir, **Ka** = kullanıcı kararı, **D** = dış kaynak
@@ -20,12 +20,13 @@ Tür: **K** = kodla kapatılabilir, **Ka** = kullanıcı kararı, **D** = dış 
 
 | Açık | Tür | Durum / gereken |
 |---|---|---|
-| Android derleme ortamı | D | Debug APK derlendi (2026-10-14; Gradle CMake 3.22.1'i kendisi kurdu). cmdline-tools eksik, `flutter doctor --android-licenses` onaylanmadı; gerçek Android cihaz/emülatörde çalıştırılmadı |
-| Release imzalama | Ka/D | Android release görevi geçerli dört alanlı `key.properties` + var olan keystore olmadan fail-closed; yalnız yerel derleme kanıtı için açık `-PallowDebugReleaseSigning=true` istisnası var ve mağazaya yüklenemez. Keystore üretimi/saklanması kullanıcıda. iOS App Store IPA, Apple Distribution sertifikası ve `com.mennansevim.vocalart` App Store profiliyle üretildi; profil 2027-09-25'e kadar geçerli |
-| TestFlight yüklemesi (REL-10–13) | D | Güncel imzalı `Vocalart.ipa` 1.0.0 build 4. Yerel doğrulayıcı bundle/ad/sürüm, executable, CodeResources, şifreleme beyanı, exact Apple Team/Profile kimliği, imzalı production entitlement zinciri ve `codesign --verify --deep --strict` kapılarını geçti. Upload yapılmadı; kullanıcı yetkisi gerekir. Dış test için gizlilik politikası URL'si + Beta App Review gerekir |
+| Android derleme ortamı | D | `RESONIA_CHANNEL=beta` 1.0.0+12 yerel APK ve Play teslim formatı AAB üretildi. REL-21/22 doğrulayıcıları artifact sözleşmesini denetliyor; REL-23 AAB'den geçici universal APK üretip identity/version/SDK/izin/imza/launch parity'sini doğruluyor. Kurulum yok; gerçek Android cihaz/emülatör kabulü açık |
+| Release imzalama | Ka/D | Android release görevi geçerli dört alanlı `key.properties` + var olan keystore olmadan fail-closed. REL-21/22 yalnız explicit yerel override ve `--allow-debug-signing` ile `Android Debug` sertifikalıdır; mağazaya yüklenemez. Production doğrulaması beklenen sertifika SHA-256 ister; gerçek keystore kullanıcıda. iOS App Store IPA, Apple Distribution sertifikası ve `com.mennansevim.vocalart` App Store profiliyle üretildi; profil 2027-09-25'e kadar geçerli |
+| TestFlight yüklemesi (REL-10–20) | D | Güncel imzalı `Vocalart.ipa` 1.0.0 build 12. Yerel doğrulayıcı bundle/ad/sürüm, executable, CodeResources, şifreleme, Apple Team/Profile + entitlement, tüm privacy manifestleri, device arm64/IOS/minimum OS ve paketlenmiş izin/ürün beyanı kapılarını geçti; codesign deep/strict temiz. Upload yapılmadı; kullanıcı yetkisi gerekir. Gerçek ses ve güncel ikon/açılış yüzeyi fiziksel cihazda değerlendirilmedi; dış test için gizlilik politikası URL'si + Beta App Review gerekir |
 | Uygulama kimliği | K/D | `com.mennansevim.vocalart` iOS ve Android'de uygulandı; platform tutarlılığı otomatik testli. İlk mağaza kaydı/Team ID ve imzalı arşiv dış kapı |
-| Uygulama ikonu / açılış ekranı | K/D | Koddan üretilen marka ikonu; iOS tek-boyut varsayılan/koyu/renklendirilmiş kaynakları asset-testli ve Xcode 27 actool uyarısız, Android uyarlanabilir + tek renk; tema renginde açılış ekranı. Fiziksel görünüm, profesyonel tasarım kabulü ve mağaza ekran görüntüleri açık |
-| Sürüm numarası | K | Pubspec ve güncel imzalı IPA `1.0.0+4`; REL-11b doğrulayıcı artifact sürümünü pubspec ile exact-match denetler. Her yeni yüklemede pubspec build numarası önce artırılmalı |
+| Uygulama ikonu / açılış ekranı | K/D | Fotogerçekçi marka ikonu iOS varsayılan/koyu/renklendirilmiş ve Android uyarlanabilir/tek renk kaynaklarda paketli. iOS native storyboard krem/patlıcan/lime Vocalart açılışını; Android legacy ve 12+ markalı splash'i kullanıyor. Güncel IPA, yerel APK ve AAB +12 bu kaynakları içeriyor; fiziksel açık/koyu görünüm, profesyonel tasarım kabulü ve mağaza ekran görüntüleri açık |
+| Sürüm numarası | K | Pubspec, güncel imzalı IPA ve yerel Android beta APK/AAB `1.0.0+12`; iOS ve Android doğrulayıcıları artifact sürümünü pubspec ile exact-match denetler |
+| Android izin sözleşmesi | K/D | REL-21/22 beta APK ve AAB yalnız `RECORD_AUDIO`, `RECEIVE_BOOT_COMPLETED`, `VIBRATE`, `POST_NOTIFICATIONS` ve signature receiver izni taşıyor; exact allow-list otomatik artifact kapısıdır. Plugin kaynaklı READ_EXTERNAL/READ_MEDIA_* ve ACCESS_NETWORK_STATE merge'de fail-closed kaldırıldı. Fiziksel dosya seç/aç, bildirim, reboot ve mikrofon akışı açık |
 | Gerçek cihazda gezinti | D | Simulator build başarılı, elle gezinti/gerçek iPhone/Android testi yok |
 | Mikrofon izni kalıcı ret → Ayarlar | D | SHELL-02 kod/build tamam (`permission_handler` 12.0.3); fiziksel iOS/Android ret, ayar açma ve uygulamaya dönüş QA bekliyor |
 | Gizlilik politikası URL'si | D | Mağaza zorunlu; metin + barındırma + hukuk incelemesi (LAUNCH-01) |
@@ -76,6 +77,13 @@ CURRENT_ROADMAP › "Kalan işler — 2026-10-15".
 dart tool/quality_check.dart
 python3 -I scripts/release/test_verify_ios_ipa.py
 python3 -I scripts/release/verify_ios_ipa.py build/ios/ipa/Vocalart.ipa
+python3 -I scripts/release/test_verify_android_apk.py
+# Yalnız yerel debug-imzalı beta kanıtı:
+python3 -I scripts/release/verify_android_apk.py build/app/outputs/flutter-apk/app-release.apk --pubspec pubspec.yaml --allow-debug-signing
+python3 -I scripts/release/test_verify_android_aab.py
+python3 -I scripts/release/verify_android_aab.py build/app/outputs/bundle/release/app-release.aab --pubspec pubspec.yaml --allow-debug-signing
+python3 -I scripts/release/test_verify_android_delivery.py
+python3 -I scripts/release/verify_android_delivery.py build/app/outputs/bundle/release/app-release.aab --pubspec pubspec.yaml --allow-debug-signing
 flutter build ios --simulator --debug --dart-define=RESONIA_CHANNEL=beta
 flutter build apk --release --dart-define=RESONIA_CHANNEL=beta   # geçerli key.properties yoksa bilerek durur
 # Yalnız yerel release derleme kanıtı; oluşan debug-imzalı çıktı mağazaya yüklenmez:

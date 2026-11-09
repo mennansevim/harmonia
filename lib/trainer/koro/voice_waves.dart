@@ -81,11 +81,25 @@ class WaveTrack {
   final double rate, seconds;
   final _samples = <WaveSample>[];
   double _acc = 0;
+  int _total = 0;
   WaveSample? _prev;
   WaveSample _current = const WaveSample.silent();
 
   WaveSample get current => _current;
   int get length => _samples.length;
+
+  /// Id of the newest sample; ids never shift when old samples drop off, so
+  /// a drawing can pin itself to the same moments frame after frame.
+  int get newestId => _total - 1;
+
+  /// The sample with [id], or null once it has left the history.
+  WaveSample? byId(int id) {
+    final i = id - (_total - _samples.length);
+    return i < 0 || i >= _samples.length ? null : _samples[i];
+  }
+
+  /// Seconds between the sample with [id] and now.
+  double ageOf(int id) => (newestId - id) / rate + _acc;
 
   void add(double dt, WaveSample now) {
     final prev = _prev ?? now;
@@ -95,6 +109,7 @@ class WaveTrack {
       _acc -= step;
       final k = dt > 0 ? (1 - _acc / dt).clamp(0.0, 1.0) : 1.0;
       _samples.add(WaveSample.lerp(prev, now, k));
+      _total++;
     }
     _prev = now;
     _current = now;
@@ -115,6 +130,7 @@ class WaveTrack {
   void clear() {
     _samples.clear();
     _acc = 0;
+    _total = 0;
     _prev = null;
     _current = const WaveSample.silent();
   }
@@ -385,6 +401,9 @@ class _WavesPainter extends CustomPainter {
   final TextStyle base;
 
   static const _left = 40.0, _speed = 62.0, _dx = 4.0;
+
+  /// At 120 Hz and 62 px/s, every 6th sample is about 3 px apart.
+  static const _stride = 6;
   static const _layers = [
     TC.primaryFill,
     TC.coral,
@@ -437,12 +456,30 @@ class _WavesPainter extends CustomPainter {
     }
 
     // Phrases: silence splits the line so a new note never draws a jump.
+    // The past is pinned to every [_stride]th sample by id, so each point
+    // slides left with its own moment instead of being re-sampled at fixed
+    // screen positions (that re-sampling made the trail and its edges crawl).
+    final track = m.track;
+    final points = <(double, WaveSample?)>[];
+    final newest = track.newestId;
+    if (newest >= 0) {
+      var id = newest - newest % _stride;
+      while (id >= 0 && nx - track.ageOf(id) * _speed >= _left - _dx * 2) {
+        id -= _stride;
+      }
+      for (id += _stride; id <= newest; id += _stride) {
+        points.add((nx - track.ageOf(id) * _speed, track.byId(id)));
+      }
+      if (newest % _stride != 0) {
+        points.add((nx - track.ageOf(newest) * _speed, track.byId(newest)));
+      }
+    }
+    for (var x = nx + _dx; x <= w + _dx; x += _dx) {
+      points.add((x, cur.voiced ? cur : null));
+    }
     final runs = <List<_Pt>>[];
     var run = <_Pt>[];
-    for (var x = _left; x <= w + _dx; x += _dx) {
-      final s = x <= nx
-          ? m.track.at((nx - x) / _speed)
-          : (cur.voiced ? cur : null);
+    for (final (x, s) in points) {
       if (s != null && s.voiced && s.amp > 0.04) {
         // The piano's phrase and the singer's are drawn apart, never joined.
         if (run.isNotEmpty && run.last.s.piano != s.piano) {
@@ -456,9 +493,9 @@ class _WavesPainter extends CustomPainter {
       }
     }
     if (run.isNotEmpty) runs.add(run);
-    // A blip shorter than ~0.1 s is noise, not a sung phrase: drawing it
-    // would stack the layers into stray dashes.
-    runs.removeWhere((r) => r.length < 7);
+    // A blip shorter than ~0.4 s of trail is noise, not a sung phrase:
+    // drawing it would stack the layers into stray dashes.
+    runs.removeWhere((r) => r.length < 3 || r.last.x - r.first.x < 24);
 
     Color tone(WaveSample s, {bool fill = false}) =>
         s.piano ? _piano : waveColor(s.cents, fill: fill);
@@ -534,13 +571,14 @@ class _WavesPainter extends CustomPainter {
       );
     }
 
-    // Six layers, back to front: each flows at its own speed and depth,
-    // its phase and height drifting slowly so the motion never repeats.
+    // Six layers, back to front: all flow right to left with the trail, each
+    // a little faster or slower (parallax), phase and height drifting slowly
+    // so the motion never repeats. Same direction everywhere keeps it calm.
     final scale = h / 420;
     for (var i = 0; i < _layers.length; i++) {
       final off = (i - 2.5) * 14 * scale;
       final kx = 0.014 * (1 + i * 0.17) / scale.clamp(0.5, 1.0);
-      final speed = (1.6 + i * 0.55) * (i.isOdd ? 1 : -1);
+      final speed = kx * _speed * (0.85 + i * 0.09);
       final am = (64 - i * 6.5) * scale;
       final drift = 1.2 * math.sin(motion * 0.37 + i * 1.3);
       final fill = Paint()
@@ -570,7 +608,9 @@ class _WavesPainter extends CustomPainter {
                           0.3 * m.pulse) *
                       (0.75 +
                           0.25 *
-                              math.sin(p.x * 0.006 + motion * 0.5 + i * 1.7)) *
+                              math.sin(
+                                0.006 * (p.x + motion * _speed) + i * 1.7,
+                              )) *
                       math.sin(kx * p.x + motion * speed + drift + i),
             ),
         ];

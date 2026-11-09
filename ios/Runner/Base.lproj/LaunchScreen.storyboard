@@ -16,13 +16,25 @@
                     <view key="view" contentMode="scaleToFill" id="Ze5-6b-2t3">
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" image="LaunchImage" translatesAutoresizingMaskIntoConstraints="NO" id="YRO-k0-Ey4">
-                            </imageView>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Vocalart" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="NO" translatesAutoresizingMaskIntoConstraints="NO" id="BRD-VO-CAL">
+                                <fontDescription key="fontDescription" type="system" weight="bold" pointSize="34"/>
+                                <color key="textColor" name="LaunchBrand"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="BRD-AC-CNT">
+                                <color key="backgroundColor" name="LaunchAccent"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="5" id="BRD-AC-HGT"/>
+                                    <constraint firstAttribute="width" constant="56" id="BRD-AC-WID"/>
+                                </constraints>
+                            </view>
                         </subviews>
                         <color key="backgroundColor" name="LaunchBackground"/>
                         <constraints>
-                            <constraint firstItem="YRO-k0-Ey4" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="1a2-6s-vTC"/>
-                            <constraint firstItem="YRO-k0-Ey4" firstAttribute="centerY" secondItem="Ze5-6b-2t3" secondAttribute="centerY" id="4X2-HB-R7a"/>
+                            <constraint firstItem="BRD-VO-CAL" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="BRD-TX-CTX"/>
+                            <constraint firstItem="BRD-VO-CAL" firstAttribute="centerY" secondItem="Ze5-6b-2t3" secondAttribute="centerY" constant="-16" id="BRD-TX-CTY"/>
+                            <constraint firstItem="BRD-AC-CNT" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="BRD-AC-CTX"/>
+                            <constraint firstItem="BRD-AC-CNT" firstAttribute="top" secondItem="BRD-VO-CAL" secondAttribute="bottom" constant="12" id="BRD-AC-TOP"/>
                         </constraints>
                     </view>
                 </viewController>
@@ -32,9 +44,14 @@
         </scene>
     </scenes>
     <resources>
-        <image name="LaunchImage" width="168" height="185"/>
+        <namedColor name="LaunchAccent">
+            <color red="0.8509803921568627" green="0.9607843137254902" blue="0.4549019607843137" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
         <namedColor name="LaunchBackground">
-            <color red="0.96862745098039216" green="0.96862745098039216" blue="0.9882352941176471" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.9725490196078431" green="0.9607843137254902" blue="0.9372549019607843" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="LaunchBrand">
+            <color red="0.2627450980392157" green="0.16470588235294117" blue="0.4470588235294118" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
     </resources>
 </document>

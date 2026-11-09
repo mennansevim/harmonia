@@ -445,6 +445,10 @@ class _ResultCard extends StatelessWidget {
               key: const Key('mic_check_details'),
               style: TT.small,
             ),
+            if (_diagnostics(result) case final d?) ...[
+              const SizedBox(height: 4),
+              Text(d, key: const Key('mic_check_diagnostics'), style: TT.small),
+            ],
           ],
         ],
       ),
@@ -452,6 +456,28 @@ class _ResultCard extends StatelessWidget {
   }
 
   static String _db(double v) => v.toStringAsFixed(0).replaceAll('-', '−');
+
+  /// Raw troubleshooting values for a floor that reads unexpectedly loud:
+  /// constant offset, loudest sample, floor without the offset, route.
+  static String? _diagnostics(MicCheckResult r) {
+    final f = r.floor;
+    final dc = f?.dcOffset;
+    final peak = f?.peakDb;
+    final centred = f?.centredFloorDb;
+    if (f == null || dc == null || peak == null || centred == null) {
+      return null;
+    }
+    final route = f.stamp.route;
+    final dcText = dc.toStringAsFixed(3).replaceAll('-', '−');
+    return tr(
+      'Tanı: DC $dcText · tepe ${_db(peak)} dBFS · DC\'siz taban '
+          '${_db(centred)} dBFS · giriş ${route.input.name} › çıkış '
+          '${route.output.name}',
+      'Diagnostics: DC $dcText · peak ${_db(peak)} dBFS · floor without DC '
+          '${_db(centred)} dBFS · input ${route.input.name} › output '
+          '${route.output.name}',
+    );
+  }
 
   static String _details(MicCheckResult r) {
     final floor = _db(r.noiseFloorDb!);

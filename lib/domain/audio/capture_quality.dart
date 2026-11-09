@@ -151,6 +151,9 @@ class NoiseFloorCalibration {
     required this.stamp,
     this.noiseFloorDb,
     this.burstDb,
+    this.dcOffset,
+    this.peakDb,
+    this.centredFloorDb,
   });
 
   final NoiseFloorStatus status;
@@ -162,6 +165,16 @@ class NoiseFloorCalibration {
   /// 90th-percentile frame RMS; a large gap to the median means someone
   /// spoke/moved during calibration, so the floor is not trusted.
   final double? burstDb;
+
+  /// Diagnostics only; they never change [status]. Mean sample value: a
+  /// large one means a constant offset, not room sound, raises the floor.
+  final double? dcOffset;
+
+  /// Loudest single sample in dBFS.
+  final double? peakDb;
+
+  /// [noiseFloorDb] measured after removing [dcOffset].
+  final double? centredFloorDb;
 
   bool get isUsable => status == NoiseFloorStatus.calibrated;
 
@@ -183,6 +196,9 @@ class NoiseFloorCalibration {
     'status': status.name,
     'noiseFloorDb': noiseFloorDb,
     'burstDb': burstDb,
+    'dcOffset': dcOffset,
+    'peakDb': peakDb,
+    'centredFloorDb': centredFloorDb,
     'sampleRateHz': stamp.sampleRateHz,
     'route': stamp.route.toJson(),
     'measuredAt': stamp.measuredAt.toUtc().toIso8601String(),
@@ -212,6 +228,7 @@ class NoiseFloorCalibrator {
       sampleRateHz: sampleRateHz,
       measuredAt: measuredAt,
     );
+    _FloorDiagnostics? diag;
     NoiseFloorCalibration result(
       NoiseFloorStatus status, [
       double? floor,
@@ -221,6 +238,9 @@ class NoiseFloorCalibrator {
       stamp: stamp,
       noiseFloorDb: floor,
       burstDb: burst,
+      dcOffset: diag?.dc,
+      peakDb: diag?.peakDb,
+      centredFloorDb: diag?.centredFloorDb,
     );
     if (samples.length > sampleRateHz * maxSeconds) {
       return result(NoiseFloorStatus.invalidInput);
@@ -235,6 +255,7 @@ class NoiseFloorCalibrator {
     final levels = _frameLevelsDb(samples, sampleRateHz)..sort();
     final floor = _percentile(levels, 0.5);
     final burst = _percentile(levels, 0.9);
+    diag = _FloorDiagnostics.of(samples, sampleRateHz);
     if (burst - floor > maxBurstSpreadDb) {
       return result(NoiseFloorStatus.activityDetected, floor, burst);
     }
@@ -554,3 +575,28 @@ List<double> _frameLevelsDb(List<double> samples, int sampleRateHz) {
 
 double _percentile(List<double> sorted, double q) =>
     sorted[((sorted.length - 1) * q).floor()];
+
+double _toDb(double amplitude) =>
+    amplitude <= 1e-6 ? -120.0 : 20 * math.log(amplitude) / math.ln10;
+
+/// Why a silent room can read loud: constant offset vs. real sound.
+class _FloorDiagnostics {
+  const _FloorDiagnostics(this.dc, this.peakDb, this.centredFloorDb);
+
+  factory _FloorDiagnostics.of(List<double> samples, int sampleRateHz) {
+    var sum = 0.0;
+    var peak = 0.0;
+    for (final s in samples) {
+      sum += s;
+      peak = math.max(peak, s.abs());
+    }
+    final dc = sum / samples.length;
+    final centred = [for (final s in samples) s - dc];
+    final levels = _frameLevelsDb(centred, sampleRateHz)..sort();
+    return _FloorDiagnostics(dc, _toDb(peak), _percentile(levels, 0.5));
+  }
+
+  final double dc;
+  final double peakDb;
+  final double centredFloorDb;
+}

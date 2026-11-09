@@ -40,9 +40,22 @@ Future<ui.Image> decodeImage(Uint8List bytes) async {
   return (await codec.getNextFrame()).image;
 }
 
+/// Builds an image from straight-alpha RGBA (what [keyMaster] and
+/// `rawStraightRgba` produce). The engine reads rgba8888 pixels as
+/// premultiplied, so colour is multiplied by alpha here; passing straight
+/// values through brightens and discolours soft edges.
 Future<ui.Image> imageFromPixels(Uint8List rgba, int w, int h) {
+  final pre = Uint8List(rgba.length);
+  for (var i = 0; i < rgba.length; i += 4) {
+    final a = rgba[i + 3];
+    pre
+      ..[i] = (rgba[i] * a / 255).round()
+      ..[i + 1] = (rgba[i + 1] * a / 255).round()
+      ..[i + 2] = (rgba[i + 2] * a / 255).round()
+      ..[i + 3] = a;
+  }
   final done = Completer<ui.Image>();
-  ui.decodeImageFromPixels(rgba, w, h, ui.PixelFormat.rgba8888, done.complete);
+  ui.decodeImageFromPixels(pre, w, h, ui.PixelFormat.rgba8888, done.complete);
   return done.future;
 }
 

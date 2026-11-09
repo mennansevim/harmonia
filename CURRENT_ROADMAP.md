@@ -1,9 +1,288 @@
 # Resonia — Current Roadmap
 
-**Tarih:** 2026-11-05 (son güncelleme: FX-02 alkış kutlaması)
+**2026-11-09 — WIDE-03 sade sonuç (kod + test):** Ders sonu artık
+“tamamlandı” ile doğruluğu ayırır; yanıt yoksa “ölçülmedi” der, puan
+göstermez. XP başlıktan çıktı ve “pratik puanı, beceri ölçümü değil” diye
+etiketlendi; Gelişim'de “Pratik seviyesi” aynı açıklamayı taşır. Tek
+“Sonraki adım” kartı: karışanların kaydedilmeyen kısa tekrarı ya da sıradaki
+ders. Skor/eşik/XP formülü değişmedi. Kalite kapısı format 424/0, analyze
+temiz, **1402 test + 2 opt-in skip**; ses kapsamı hash ile aynı. Mikrofonlu
+egzersiz sonuçları bu dilimde ele alınmadı. Sonraki dilim: WIDE-04 insan ve
+erişilebilirlik pilotu (gerçek katılımcı/cihaz gerekir) veya WIDE-05.
+
+**2026-11-09 — WIDE-01/02 ilk dilim (kod + test):** Onboarding
+`karşılama → hedef → süre → hazır` oldu; mikrofon, aralık ve hatırlatma ilk
+ihtiyaç anına taşındı. Altı hedef (`PracticeGoal`) günlük rotayı yalnız hazır
+içerikten kurar; konuşma/sahne sessizce aralık dersine düşmez, hazır olmayan
+içerik “Hazırlanıyor” notuyla görünür. Hedefi olmayan eski kayıtların rotası
+birebir korunur; yarım kurulum yeni adıma eşlenir. Ayarlar'da hedef ve günlük
+süre değiştirilebilir. Tam kalite kapısı format 423/0, analyze temiz,
+**1395 test geçti, 2 opt-in skip**; ses kapsamı hash ile değişmedi. Açık:
+Maestro/simülatör ve cihaz turu, VoiceOver/TalkBack, 18–29/30–44/45–59/60+
+insan turu (`not_run`), eğitimci onaylı ses hazırlığı/konuşma içeriği.
+Sonraki dilim: WIDE-03 sade sonuç ve sonraki adım.
+
+**2026-11-09 — WIDE-AUDIT-01 ürün incelemesi (yalnız belge):** Kullanıcının
+geniş kitle hedefi için güncel aktif TrainerApp akışı incelendi. Hedef bazlı
+kısa onboarding/günlük rota, eğitimci onaylı ses hazırlığı, porte ve
+konuşma/sahne içerikleri önceliklendirildi. Ayrıntılar:
+[ürün incelemesi](docs/product/VOCALART_GROWTH_AUDIT_2026-11-09.md),
+[yaş grupları ve otomasyon protokolü](docs/product/VOCALART_USABILITY_PROTOCOL_2026-11-09.md),
+[uygulama promptu](docs/product/VOCALART_IMPLEMENTATION_PROMPT_2026-11-09.md).
+WIDE-01–11 öneridir; uygulama veya yeni otomasyon geliştirilmiş sayılmaz.
+Bu oturumda `dart tool/quality_check.dart`: format 420/0, analyze temiz,
+1381 test geçti, 2 opt-in skip. İnceleme sırasında alınan lib/test/tool
+hash envanteriyle son karşılaştırmada fark yok; ses algoritması değiştirilmedi.
+Gerçek yaş grubu/cihaz/eğitimci pilotu yapılmadı; mevcut kullanıcı değişiklikleri
+korundu. Sonraki önerilen dilim WIDE-01/02; mevcut dış kabul kapıları açık.
+
+**Tarih:** 2026-11-09 (son güncelleme: HUM-06a güvenli hizmet operasyonları sözleşmesi)
 **Durum:** Faz 1 — güvenilirlik sözleşmeleri, yerel kayıt laboratuvarı, deneysel DSP/worker, kalibrasyon/kalite kapısı ve misafir uygulama kabuğu kod-test seviyesinde. Tek ses skor ekranı hâlâ simülasyon; fiziksel cihaz, insan sesi benchmark'ı, eğitimci içerik onayı ve öğretim pilotu kapıları açık. **Hiçbir modül cihazda/pilotta doğrulanmış veya yayında değil.**
 **Sahip:** Mennan Sevim  
 **Platform:** Flutter mobil uygulama; ileride web ve öğretmen paneli
+
+**2026-11-09 — HUM-06a güvenli hizmet operasyonları sözleşmesi:** İlk 20
+kabul edilmiş pilot kaydı için bağımsız QA gereksinimini yalnız politika bayrağı
+olarak taşıyan; atama, yeniden kayıt, eğitimci değişimi, bekleme, ileri tarihli
+gecikme, erişim geri çekme, iptal ve teslim geçişlerini UTC kronolojiyle
+sınırlayan saf domain çekirdeği eklendi. Yeniden kayıt eski eğitimci erişimini
+ve deadline'ı temizler; yeni kayıt revision artırarak triage'a döner. QA kaydı
+teslimden sonra, izin referansıyla ve teslim eğitimcisinden farklı reviewer ile
+kurulur. İtiraz yalnız teslim sonrası süre içinde açılır ve bir kez çözülür;
+ikinci değerlendirme veya hizmet hakkı yalnız önerilir, ledger/ödeme/iade
+değiştirilmez. 11 adversarial test ve HUM-02a–05a regresyonları geçti. Gateway
+backend yokken fail-closed. Tam kalite kapısı format 420/0, analyze temiz,
+**1381 test geçti ve 2 opt-in test skip edildi**. Bu kod gerçek erişim iptali,
+silme, QA, bildirim, hak iadesi veya finansal iade değildir.
+
+**2026-11-09 — HUM-05a güvenli öğrenci teslim sözleşmesi:** Eğitimci yorumu
+ile AI koçunu aynı içerik türü gibi göstermeyen öğrenci domain sınırı eklendi.
+Eğitimci teslimi authored/delivered kronolojisini korur; AI kartında eğitimci
+kimliği, atama ve kanıt alanları yoktur. Dahil tek açıklama sorusu yalnız
+`available → submitted → answered → closed` ilerler; tekrar soru, adım atlama,
+yanlış eğitimci, süresi geçmiş pencere ve geriye giden zaman reddedilir. Push
+payload exact schema/event/opaque-token dışında soru, cevap, ses, skor veya
+eğitimci içeriği taşıyamaz. Öğrenci yalnız teslimdeki benzersiz ödevleri
+seçebilir; bu seçim mastery değildir. Gateway canlı backend yokken fail-closed.
+9 adversarial test geçti; tam kalite kapısı format 418/0, analyze temiz,
+**1370 test geçti ve 2 opt-in test skip edildi**. Bu kod gerçek yorum, push,
+bildirim izni, günlük plan yazımı veya açıklama teslimi değildir.
+
+**2026-11-08 — HUM-04a eğitimci atama/yorum domain sözleşmesi:** Gerçek
+eğitimci paneli veya teslim varmış gibi davranmadan önce güvenli saf domain
+sınırı eklendi. Atama; request, eğitimci ve qualification token'larını UTC
+erişim aralığı ve iptal zamanı ile sınırlar. Yazılı geri bildirim yalnız aktif
+atamadaki eğitimci token'ıyla kurulabilir; kayıt süresini aşmayan zaman kanıtı,
+gözlemden ayrı olası açıklama, 1–3 güçlü yön, en fazla 2 öncelik, tam 3 benzersiz
+katalog ödevi ve takip hedefi zorunludur. Koleksiyonlar immutable; teslim
+gateway'i backend kimlik/audit yokken fail-closed. 8 adversarial test geçti;
+tam kalite kapısı format 416/0, analyze temiz, **1361 test geçti ve 2 opt-in
+test skip edildi**. Token eşleşmesi insan kimliğini, uzmanlığı veya yorumun
+gerçekten insan tarafından yazıldığını kanıtlamaz; bunlar backend ve pilot dış
+kapılarıdır.
+
+**2026-11-08 — HUM-03a idempotent yerel hak ledger çekirdeği:** Plus insan
+hizmeti için ödeme/entitlement iddiası taşımayan saf domain aggregate eklendi.
+Süreli ve sınırlı grant'ler en erken sona eren aktif haktan rezervasyon yapar;
+reserve/consume/restore geçişleri explicit UTC zaman, request token ve
+idempotency key ister. Aynı isteğin ya da ağ tekrarının ikinci hak tüketmesi,
+idempotency key'in başka komutta kullanılması, restore sonrası tüketim, çift
+restore, süresi geçmiş ve tükenmiş grant fail-closed reddedilir. Audit event
+ve snapshot'lar dışarıya değiştirilemez görünümle verilir. 8 adversarial domain
+testi geçti. Tam kalite kapısı: format 414/0, analyze temiz, **1353 test geçti
+ve 2 opt-in test skip edildi**. Bu in-memory sözleşme gerçek abonelik, ödeme,
+sunucu transaction'ı, kalıcı ledger veya kullanıcı hakkı değildir.
+
+**2026-11-07 — HUM-02a güvenli yerel eğitimci yorumu önizlemesi:** Plus
+üyelik kartındaki akış önizlemesi artık hedef, tek soru ve paylaşılacak gelişim
+özeti seçimlerini gösteriyor. `HumanReviewDraft`, kayıt seçimi ve sürümlü amaç
+onayını bounded/fail-closed doğruluyor; `HumanReviewGateway` kapalı adapter'ı
+backend, yetki, kapasite, hukuk, hak ve kayıt kapılarını açıkça bildiriyor.
+Kayıt seçme, onay ve gönderim kasıtlı olarak kapalı: seçimler saklanmıyor,
+dosya alınmıyor, hak tüketilmiyor ve dışarı veri gönderilmiyor. Gerçek
+eğitimcinin kendi yazdığı yorum ile AI koçu ayrıştıran metin korundu. 5 domain
++ 3 widget testi ve ilgili rota regresyonları geçti; 320×720 ve 1,6× metin
+ölçeği kapsandı. Tam kalite kapısı: format 412/0, analyze temiz, **1345 test
+geçti ve 2 opt-in test skip edildi**. Bu servis/pilot/yükleme/ödeme kanıtı
+değildir.
+
+**2026-11-07 — REL-23 AAB→universal APK teslimat parity kapısı:**
+`scripts/release/verify_android_delivery.py`, doğrulanmış AAB'den bundletool
+ile geçici universal APK üretip bu APK'yı bağımsız REL-21 kapısından geçiriyor;
+kimlik, sürüm/build, SDK, exact izinler, sertifika ve launch kaynaklarının AAB
+ile birebir eşleşmesini zorunlu tutuyor. APKS arşivi bounded/path-safe okunuyor,
+yalnız `universal.apk` çıkarılıyor; geçici dizin işlem sonunda siliniyor. Beş
+adversarial test geçti. Güncel 1.0.0+12 AAB'den 76.817.611 byte universal APK
+üretildi ve parity geçti. Sonuç açıkça `installed:false`, `uploaded:false`;
+bu Play'in cihaz split üretimi, kurulum veya fiziksel çalışma kanıtı değildir.
+
+**2026-11-07 — REL-22 Android AAB fail-closed doğrulama kapısı:** Play
+teslim formatı için `scripts/release/verify_android_aab.py` eklendi. Bounded
+ZIP/JAR yapısı, Google bundletool doğrulaması, pubspec sürüm/build exact-match,
+kimlik, min24/target36, exact izin kümesi, Flutter `libapp.so`, markalı launch
+renk/stil/ikon kaynakları ve tek imza sertifikası birlikte denetleniyor.
+Bundletool 1.18.3 SHA-256 ile pinli; debug sertifikası yalnız explicit yerel
+flag ile, üretim sertifikası yalnız beklenen SHA-256 ile kabul ediliyor. Beş
+adversarial test geçti. Eski 1.0.0+1 AAB güncel +12 kaynakta reddedildi;
+yeniden üretilen 1.0.0+12 yerel beta AAB (73.853.941 byte, SHA-256
+`41a4ca46461021e32a36e39adaa6edb77c866ff8748dfc89eb4a0ae9b77b51ee`)
+kapıdan geçti. İmza `Android Debug`; Play yüklemesi, gerçek keystore ve
+fiziksel Android kabulü yapılmadı.
+
+**2026-11-07 — REL-21 Android APK fail-closed doğrulama kapısı:**
+`scripts/release/verify_android_apk.py`, APK'yı bounded ZIP olarak denetliyor;
+pubspec sürüm/build exact-match, `com.mennansevim.vocalart`, min 24/target 36,
+exact izin kümesi, Flutter `libapp.so`, Android 11-/12+ markalı launch
+kaynakları ve imza sertifikası birlikte doğrulanıyor. Debug sertifikası yalnız
+`--allow-debug-signing` ile yerel kanıt olarak kabul ediliyor; üretim imzası
+beklenen SHA-256 verilmeden kabul edilmiyor. Beş adversarial Python testi
+geçti. Eski 1.0.0+9 APK güncel pubspec 1.0.0+12 karşısında doğru biçimde
+reddedildi; yeniden üretilen 1.0.0+12 yerel beta APK (76.780.216 byte,
+SHA-256 `43b2a698733ca606d7dd7f2285b2db8c5f4a6366fec76e2a32cb8592fbc8363d`)
+kapıdan geçti. Sertifika hâlâ `Android Debug`; mağaza AAB'si, Play kabulü ve
+fiziksel Android QA yapılmadı. Proje kalite kapısı temiz: format 408/0,
+analyze 0 sorun, **1337 test geçti ve 2 opt-in test skip edildi**.
+
+**2026-11-06 — FX-10 noktalı nefes halkaları:** Kullanıcı isteğiyle
+`BreathFlow` parçacıklı küreden, ses analizindeki halka efektine benzer
+noktalı halkalara geçti (Apple Watch kadranı tarzı). Dışta 60 noktalı kadran
+adım süresini doldurur (öndeki nokta en parlak, her 5'te bir büyük nokta);
+içte 4 nokta halkası ortadaki boş alan ile nefes erişimi arasında akar. Al:
+halkalar açılır ve içe akar; tut: neredeyse durur, küçük titreşimle
+parıldar; ver: kapanır ve dışa akıp söner. Hız/dönüş EMA ile değişir,
+duraklatınca halkalar süzülerek durur, ticker durur; azaltılmış harekette
+halkalar sabit, yalnız açılıp kapanır. `breathAt`, rehber saati, renk geçişi
+ve ekran mantığı değişmedi; mikrofon yok, ölçüm yok. Tam test **1337 geçti,
+2 skip**; `lib`/`test` format temiz; analyze'da yalnız bu işe ait olmayan
+`tool/brand/render_icons_test.dart` bilgisi. Al/tut/ver kareleri test
+ortamında render edilip incelendi; **cihazda gerçek kare hızında
+görülmedi.**
+
+**2026-11-06 — REL-20 IPA 1.0.0+10:** FX-09 nefes akışını içeren çalışma
+ağacından imzalı App Store IPA üretildi (`build/ios/ipa/Vocalart.ipa`,
+SHA-256 `0df00194785cc05043c89b64da6cac5ff7f6c9f3875001473185fe8b023db607`);
+yerel doğrulayıcı passed. Upload, TestFlight ve cihaz kabulü yok.
+
+**2026-11-06 — FX-09 nefes akışı (Hazırla · nefes egzersizi):** Nefes
+ekranındaki düz ilerleme halkası, parçacık akışıyla aynı görsel dile sahip
+çekirdek efekt `BreathFlow` (`lib/trainer/ui/breath_flow.dart`) ile
+değiştirildi. Al: ince parçacıklar kenardan içe süzülür, küre sinüs eğrisiyle
+dolar (mor). Tut: küre dolu kalır, parçacıklar yüzeyde küçük doğal titreşimle
+durur (mavi-yeşil). Ver: küre yavaşça boşalır, parçacıklar dışa süzülüp söner
+(yumuşak yeşil). Renk EMA ile geçer, keskin değişmez; ince halka adımın
+süresini doldurur. Efekt yalnız rehber saatini izler, mikrofon kapalı ve hiçbir
+şey ölçülmez. Duraklatınca küre durur, havadaki parçacıklar söner, ticker
+durur; azaltılmış harekette yalnız küre + halka. Sabit 512'lik parçacık havuzu
+ve tek `drawVertices`. Küre boyu ekran yüksekliğine göre 168–220. 6 yeni test;
+tam test **1337 geçti, 2 skip**, `lib`/`test` format temiz. `quality_check`
+format/analyze adımı bu değişiklik dışındaki commit edilmemiş
+`tool/brand/render_icons_test.dart` yüzünden kırmızı. Al/tut/ver kareleri test
+ortamında render edilip incelendi; **cihazda ve eğitimci onaylı nefes
+içeriğiyle görülmedi** (4·2·6 desen hâlâ taslak, EDU-01).
+
+**2026-11-06 — REL-19 yerel Android beta release APK + izin daraltma:**
+`RESONIA_CHANNEL=beta` release varyantı, yalnız yerel kanıt için explicit
+debug-signing override ile üretildi (`app-release.apk`, 76.452.708 byte,
+SHA-256 `cd937d250d113b26a52df1747016e8ed0a3daa0bc7ceb377b8629204108ead12`).
+Artifact `com.mennansevim.vocalart`, `1.0.0+9`, min 24 / target 36 ve APK
+Signature Scheme v2 doğrulamasından geçti; sertifika açıkça `Android Debug`.
+Bağımlılıkların eklediği gereksiz READ_EXTERNAL/READ_MEDIA_* ve
+ACCESS_NETWORK_STATE izinleri merge'de kaldırıldı; artifact yalnız mikrofon,
+reboot, titreşim, bildirim ve Android'in signature receiver iznini taşıyor.
+Tam kapı **1331 geçti, 2 opt-in skip**. Bu APK mağazaya yüklenemez; gerçek
+keystore, imzalı AAB, Play kabulü ve fiziksel Android QA açık.
+
+**2026-11-06 — UI-01d Android markalı açılış ekranı + iOS koyu tema:**
+Android 11 ve öncesindeki launch drawable artık merkezlenmiş Vocalart marka
+simgesini, Android 12+ sistem splash'i explicit simge + marka arka planını
+kullanıyor; açık zemin iOS ile aynı krem `#F8F5EF`. iOS metin/vurgu renkleri
+named dynamic asset'e taşındı; koyu temada patlıcan metnin koyu zeminde
+kaybolması engellendi. Kaynak sözleşmesi 5/5, `ibtool`, analyze, debug APK ve
+paketlenmiş `aapt2` kaynak tablosu temiz; tam kapı **1331 geçti, 2 opt-in
+skip**. Fiziksel Android/iOS görsel kabulü ve imzalı release artifact açık.
+
+**2026-11-06 — UI-01c markalı iOS açılış ekranı:** Varsayılan Flutter
+`LaunchImage` referansı kaldırıldı; native storyboard artık krem zemin üzerinde
+patlıcan `Vocalart` yazısı ve lime vurgu çizgisi gösteriyor. Storyboard `ibtool`
+ile derlendi, iOS simülatör debug derlemesi başarılı ve tam kalite kapısı
+**1330 geçti, 2 opt-in skip**. Fiziksel cihazda görsel kabul yapılmadı; mevcut
+imzalı 1.0.0+9 IPA bu değişiklikten önce üretildi ve UI-01c'yi içermez.
+
+**2026-11-06 — REL-11j iOS izin/ürün beyanı kapısı:** İmzalı IPA Info.plist
+artık exact device platform/SDK, arm64 capability, iPhoneOS gereksinimi,
+en+tr localization, beklenmeyen background-mode ve arbitrary-network-load
+yokluğu açısından doğrulanıyor. Türkçe varsayılan ile paketlenmiş Türkçe ve
+İngilizce `NSMicrophoneUsageDescription` metinleri ürünün yalnız kullanıcı
+başlatınca yerel kayıt sözleşmesine exact bağlı. Python paketi **16 test**;
+güncel 1.0.0 build 8 IPA geçti. Fiziksel izin diyaloğu/ayar dönüşü ayrı kapı.
+
+**2026-11-05 — REL-11i tüm privacy manifest zinciri:** App-owned manifest
+kapısına ek olarak IPA içindeki framework ve plugin bundle'larındaki bütün
+`PrivacyInfo.xcprivacy` dosyaları bounded okunuyor. Her beyan tracking kapalı,
+tracking domain ve collected-data listeleri boş olmalı; required-reason API
+girdileri eksiksiz tip + en az bir neden taşımalı. Python paketi **14 test**;
+güncel 1.0.0 build 8 IPA'daki **8 manifest** geçti. Bu kontrol bağımlılık
+güncellemesinin gizlilik sözleşmesini sessizce değiştirmesini engeller; mağaza
+formu/hukuk incelemesi değildir.
+
+**2026-11-05 — REL-11h device platform/minimum OS kapısı:** Arm64 tek başına
+device kanıtı olmadığı için IPA doğrulayıcı artık ana app ve her embedded
+framework'ün Mach-O `LC_BUILD_VERSION` bilgisini `vtool` ile okuyor. Platform
+exact `IOS` olmalı; arm64 `IOSSIMULATOR` reddedilir. Ana executable minimum OS
+Info.plist'teki 15.0 ile eşleşmeli, hiçbir framework uygulamadan daha yeni OS
+istememeli. Python paketi **13 test**; güncel 1.0.0 build 6 IPA'da 4 bundle
+device IOS olarak geçti (ana 15.0, framework'ler 13.0). Upload/cihaz yok.
+
+**2026-11-05 — REL-11g device mimarisi kapısı:** IPA doğrulayıcı ana
+uygulama ve gömülü `.framework` bundle'larının executable dosyalarını
+`lipo` ile kontrol ediyor; her biri yalnız `arm64` olmalı. Simulator
+`x86_64`, karışık universal veya okunamayan Mach-O artifact fail-closed
+reddediliyor. Python paketi **12 test**; güncel 1.0.0 build 6 IPA'da ana
+uygulama + App/Flutter/objective_c olmak üzere **4 Mach-O bundle** arm64
+olarak geçti. Bu App Store sunucu kabulü veya fiziksel cihaz çalışması değil.
+
+**2026-11-05 — REL-11f paketlenmiş privacy manifest kapısı:** IPA
+doğrulayıcı artık kaynak dosyanın varlığına güvenmek yerine imzalı ana app
+içindeki `PrivacyInfo.xcprivacy` dosyasını bounded plist olarak okuyor.
+Ürün sözleşmesi exact doğrulanıyor: tracking kapalı, tracking domain ve
+toplanan veri listeleri boş, kullanılan FileTimestamp API nedeni yalnız
+`C617.1`. Eksik/bozuk veya veri topladığını belirten artifact fail-closed
+reddediliyor. Python paketi **11 test**; güncel 1.0.0 build 5 IPA geçti.
+Mağaza gizlilik formu/hukuk incelemesi ve upload hâlâ dış kapı.
+
+**2026-11-06 — REL-15 IPA 1.0.0+6:** FX-02…06 (alkış kutlaması, dinleme
+küresi, ses dalgaları, nabız dizisi, "sıra sende" sahnesi) commit 915049b
+üstünden imzalı App Store IPA: `build/ios/ipa/Vocalart.ipa` 33,2 MB,
+1.0.0 build 6 (`pubspec.yaml` +5 → +6, commit edilmedi). Önceki build 5
+`build/ios/ipa-1.0.0+5/`. Güncel doğrulayıcı 14/14 test; gerçek IPA `passed`
+(Apple Distribution L3Z9U2B39K, imza, entitlement, privacy manifest ve
+cihaz mimarisi/platformu ve 8 privacy manifest kapısı, profile 2027-09-25).
+Açılış görseli hâlâ Flutter
+varsayılanı. Yükleme yok; cihazda çalıştırılmadı.
+
+**2026-11-06 — REL-18 IPA 1.0.0+9:** FX-08 parçacık akışını içeren imzalı
+IPA (`build/ios/ipa/Vocalart.ipa`, 33,2 MB) üretildi ve yerel doğrulayıcıdan
+geçti (imza, entitlement, izin beyanı, 8 privacy manifest, cihaz mimarisi).
+Önceki artifact `build/ios/ipa-1.0.0+8/`. Upload/TestFlight yok.
+
+**2026-11-06 — FX-08 parçacık akışı (aralık testi):** Ses aralığı ekranındaki
+katmanlı ses dalgası yerini `ParticleFlow`'a bıraktı; nota çizgileri, hedef
+bandı, sahne büyümesi ve test akışı aynı. Sabit yatay konumdaki küçük işaretçi
+yalnız algılanan perdeyle yukarı/aşağı gider; arkasında bıraktığı ince
+parçacıklar sola akıp sönerek perde geçmişini çizer. Ses şiddeti yalnız
+yoğunluk ve akış kalınlığını değiştirir. Hedef dışında mor, ±40 sent geçme
+penceresinde (merdiven kuralı) yumuşak yeşil; renk ton üzerinden yumuşak
+geçer. Tek tahminlik ≥150 sent sıçramalar 3 ardışık tahminle doğrulanmadan
+alınmaz (~40–60 ms), 1€ filtresi korunur. İşaretçi halkası hedefte geçen süreyi
+3 sn'lik kayda göre doldurur ama başarı değildir; ✓ yalnız tüm kayıt gerçek
+yargıda eşleşince (`flash`) görünür. Ses yokken parçacık üretilmez, akış
+söner, ticker durur; azaltılmış harekette yalnız sade işaretçi. Demo
+(`particle_flow_demo.dart`, `@Preview`, "DEMO · ÖRNEK VERİ" etiketi) hedefin
+2,6 yarım ton altından A3'e yaklaşıp 3 sn kalır; uygulama bu dosyayı içe
+aktarmaz. Eski `VoiceWaves` dosyası filtre/kural kaynağı olarak duruyor, ekranda
+kullanılmıyor. 8 yeni test; tam kapı **1329 geçti, 2 skip**, analyze/format
+temiz. Demo kareleri test ortamında render edilip incelendi; **gerçek ses,
+mikrofon ve cihazla görülmedi.**
 
 **2026-11-06 — FX-06 "sıra sende" sahnesi (aralık testi):** Kullanıcı
 "Şimdi sen söyle" anının anlaşılmadığını söyledi; 5 canlı akış taslağı
@@ -246,6 +525,30 @@ olmalı; suffix veya başka team imzası reddediliyor. Python paketi **9 test**;
 güncel gerçek 1.0.0 build 3 IPA bu kapıların tümünden geçti. Upload veya Apple
 sunucu kabulü değildir. Tam kalite kapısı **1259 test + 2 opt-in skip**,
 analyze/format temiz geçti.
+
+**2026-11-05 — ONB-ROLE-02 çoklu rol seçimi:** Tanışmadaki "Vocalart'ı nasıl
+kullanacaksın?" adımı çoklu seçim oldu (kare işaret, "Birden fazla
+seçebilirsin"). `answers['role']` artık liste; eski tek-string kayıtlar
+`TrainerStore.roles` ile okunur. Rol yalnız Koro sekmesinin görünürlüğünü
+(`inChoir`: koroda söylüyorum / şef-eğitmen) ve "Planın kuruldu" özetindeki Koro
+satırını etkiler; ders paketi, rota, aralık ve odak trainer'ı değişmez.
+Tam kalite kapısı **1309 test + 2 opt-in skip**, analyze/format temiz.
+
+**2026-11-05 — RANGE-04 aralık puanı:** Aralık sonucunda 0–100 puan
+(%60 genişlik, %25 isabet, %15 ilk denemede), bu telefondaki kendi testlerine
+göre sıra ve araştırma referans bandı; ⓘ butonu hesaplamayı popup'ta açıklar.
+Başka kullanıcılarla sıralama yok. Ağırlıklar ürün kararı, benchmark değil;
+cihazda görülmedi. Tam kapı **1321 test + 2 skip**.
+
+**2026-11-05 — FX-07 dalga kararlılığı:** Ses dalgasının geçmiş kısmı artık
+örnek id'lerine sabit (yeniden örnekleme yok), tüm katmanlar sağdan sola akar.
+Cihazda akıcılık doğrulanmadı. Aralık puanı/sıralaması araştırıldı; rubrik ve
+karşılaştırma tabanı kullanıcı kararı bekliyor. Tam kapı **1312 test + 2 skip**.
+
+**2026-11-05 — MIC-02 tanı değerleri:** Gerçek cihazda sessiz odada −18 dBFS
+"ortam gürültülü" görüldü. Sonuç kartı artık DC ofset, tepe, DC'siz taban ve
+route gösterir (yalnız tanı; status/eşik değişmedi). Kök neden cihazda yeniden
+ölçümle belirlenecek. Tam kapı **1311 test + 2 skip**, analyze/format temiz.
 
 **2026-11-04 — MIC-01 mikrofon testi:** Tanışma akışına isteğe bağlı
 "Mikrofonunu deneyelim" adımı (rol ile aralık arasında, `Ob.mic`, 6 adım) ve
@@ -916,7 +1219,7 @@ Durum sözlüğü: **Planlandı → Geliştiriliyor → Kod-test tamamlandı →
 | J. Sonuçlar / gelişim | Geliştiriliyor | Sonuç v2 + katı `fromJson`; **yerel geçmiş (CORE-05): attempt ID tekilleştirme, çakışmada üzerine yazmama, açık kapasite, seri atomik yazma, bozuk dosyayı koruma; geçmiş ekranı (aynı cohort'ta ≥3 geçerli deneme yoksa “bilinmiyor”), tek/toplu silme**; ritim sonuçları `touch` kaynağıyla kaydediliyor | Upload/consent kısmı (DATA-03, backend) | — |
 | K. Offline / hesap / backend | Geliştiriliyor | Atomik yerel JSON store + misafir profil + yerel sonuç geçmişi; DATA-03b tek-commit toplu import, attempt-id dedup/conflict ve kapasite raporu (tamamen offline) | Backend ADR (DATA-01), sync/outbox (DATA-02), sunucu consent/upload | Backend hesabı/maliyet onayı |
 | L. AI koç | Geliştiriliyor | **Girdi/çıktı sözleşmesi, katı doğrulayıcı, zaman aşımı + yedek, 12 yerel eval (AI-02a); canlı çağrı yok** | AI-01 sunucu gateway, AI-03 gerçek model eval, UI bağlantısı | Ücretli API onayı, gateway |
-| M. Plus eğitimci | Planlandı | HUMAN_REVIEW tasarımı | HUM-01–07 | Gerçek eğitimci kapasitesi, hukuk |
+| M. Plus eğitimci | Geliştiriliyor | HUMAN_REVIEW tasarımı; HUM-02a yerel draft/önizleme; HUM-03a in-memory hak ledger; HUM-04a atama/yorum; HUM-05a öğrenci teslim/açıklama/push; HUM-06a hizmet operasyonları/QA/itiraz sözleşmesi | HUM-01, HUM-02b, HUM-03b, HUM-04b, HUM-05b, HUM-06b, HUM-07 | Backend kimlik/yetki/audit, gerçek eğitimci kapasitesi ve QA, kayıt/silme, hukuk, notification transport, kalıcı transaction/ödeme |
 | N. İleri konservatuvar | Planlandı | — | CONS-03–05 | Güncel resmî kaynak, eğitimci rubriği |
 | O. Koro | Planlandı | Route politikası: hoparlörde rehberli parti desteklenmez | CHOIR-01–05 | Kulaklıklı cihaz spike, eğitimci |
 | P. Abonelik / haklar | Planlandı | Ayarlarda “satın alma yok” bilgisi | PAY-01–03 | Mağaza hesabı, sandbox, canlı ödeme onayı |

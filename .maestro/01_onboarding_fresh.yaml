@@ -14,28 +14,19 @@ tags: [smoke, critical]
     direction: DOWN
 - takeScreenshot: onboarding_01_welcome
 - tapOn: "Başlayalım"
-- assertVisible: "Vocalart'ı nasıl kullanacaksın?"
-- takeScreenshot: onboarding_02_role_empty
-- tapOn: "Bir koroda söylüyorum"
-- takeScreenshot: onboarding_03_role_selected
-- tapOn: "Devam"
-- assertVisible: "Mikrofonunu deneyelim"
-- takeScreenshot: onboarding_04a_mic
-- tapOn: "Atla"
-- assertVisible: "Ses aralığını ölçelim"
-- takeScreenshot: onboarding_04_range
-- tapOn: "Atla"
-- assertVisible: "Önce neye odaklanalım?"
-- takeScreenshot: onboarding_05_focus
-- tapOn: "Ses: aralık, ritim, ezgi"
+# WIDE-01: goal → minutes → ready; no microphone, range or reminder step.
+- assertVisible: "Ne için çalışıyorsun?"
+- takeScreenshot: onboarding_02_goal_empty
+- tapOn: "Koro provasına hazırlanmak"
+- takeScreenshot: onboarding_03_goal_selected
 - tapOn: "Devam"
 - assertVisible: "Günde kaç dakika ayırabilirsin?"
+- assertNotVisible: "Mikrofonunu deneyelim"
 - takeScreenshot: onboarding_07_minutes
 - tapOn: "Devam"
-- assertVisible: "Günlük hatırlatma ister misin?"
-- takeScreenshot: onboarding_08_reminder
-- tapOn: "Şimdilik hayır"
 - assertVisible: "Planın kuruldu"
+- assertVisible: "Koro provasına hazırlanmak"
+- assertNotVisible: "Günlük hatırlatma ister misin?"
 - assertVisible: ".*10 dakika.*"
 - takeScreenshot: onboarding_09_ready
 - scrollUntilVisible:

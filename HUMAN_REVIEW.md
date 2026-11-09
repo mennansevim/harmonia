@@ -1,7 +1,88 @@
 # Resonia Plus — Gerçek eğitimciden yazılı kayıt değerlendirmesi
 
-**Tarih:** 2026-10-11  
-**Durum:** Kullanıcının istediği özellik ürün kapsamına eklendi; servis, eğitimci havuzu, ödeme ve kayıt yükleme henüz uygulanmadı. Kota/fiyat/teslim süresi pilot hipotezidir, canlı teklif değildir.
+**Tarih:** 2026-11-09
+**Durum:** Güvenli yerel öğrenci draft/önizleme, in-memory hak ledger, atama/yapılandırılmış yorum, öğrenci teslim/açıklama/push ve hizmet operasyonları domain sözleşmeleri uygulandı. Servis, eğitimci havuzu, panel, push transport, ödeme, gerçek entitlement, kalıcı hak ve kayıt yükleme uygulanmadı. Kota/fiyat/teslim süresi pilot hipotezidir, canlı teklif değildir.
+
+## Uygulanan güvenli önizleme
+
+- Plus kartından hedef, tek soru ve seçilecek gelişim özeti adımları görülebilir.
+- Kayıt, amaç bazlı onay ve gönderim disabled; seçimler saklanmaz, dosya alınmaz,
+  hak tüketilmez ve dışarı veri gönderilmez.
+- Domain sözleşmesi kayıt belirteci/süre/boyut, soru, UTC zaman ve sürümlü onayı
+  bounded doğrular. Yerel tamlık servis kabulü değildir.
+- Kapalı gateway; backend, kimlik/yetki, storage, kapasite, hukuk/onay ve hak
+  kapılarının tümünü açıkça raporlar ve başvuru göndermez.
+- Gerçek eğitimci teslimi ile AI koçu ayrı tutulur; AI eğitimci yorumunu yazmış
+  gibi sunulmaz.
+
+Bu dilim HUM-02'nin güvenli yerel başlangıcıdır. Gerçek kayıt seçimi/upload,
+persist edilen taslak, consent metni, entitlement, kalıcı credit ledger ve eğitimci
+ataması dış kapılar tamamlanmadan açılmaz.
+
+## Uygulanan hak sözleşmesi çekirdeği
+
+- Süreli/sınırlı grant'ler, aktif haklar arasından en erken sona erecek olanı
+  rezervasyona ayırır.
+- Reserve/consume/restore komutları idempotenttir; exact tekrar event veya
+  ikinci tüketim üretmez. Aynı key farklı komutta ve aynı request ikinci kez
+  kullanılamaz.
+- Tükenmiş/süresi geçmiş hak, geçersiz zaman ve durum geçişleri fail-closed;
+  servis sorunu restore ile unit'i tam bir kez geri bırakabilir.
+- Aggregate yalnız bellektedir. Gerçek bakiye, abonelik, ödeme, mağaza iadesi
+  veya sunucu transaction'ı olduğu iddia edilmez.
+
+HUM-03b; auth/entitlement kaynağı, atomik kalıcı transaction, mağaza olayları,
+kapasite, iptal/iade ve backend audit'i olmadan UI'ya bağlanmaz.
+
+## Uygulanan atama ve yorum sözleşmesi
+
+- Atama request/eğitimci/qualification token'ı ile UTC erişim aralığına bağlı;
+  expiry ve revocation sonrasında yorum kurulamaz.
+- Zaman damgalı gözlem, olası açıklamadan ayrı tutulur ve kayıt süresini aşamaz.
+  En az bir güçlü yön, en fazla iki öncelik zorunludur.
+- Tam üç benzersiz katalog egzersizi; hedef, yönerge, başarı koşulu, bounded
+  tekrar/süre ve sonraki kayıt hedefi taşır.
+- Koleksiyonlar immutable; backend kimlik, RBAC ve audit yokken gateway teslimi
+  reddeder. AI author veya auto-fill yolu yoktur.
+
+Bu model token eşleşmesini doğrular; eğitimcinin gerçek kimliğini/uzmanlığını
+ve metni bizzat yazdığını doğrulamaz. HUM-04b authenticated panel, private
+playback, storage authorization, teslim audit'i ve gerçek eğitimci pilotudur.
+
+## Uygulanan öğrenci teslim sözleşmesi
+
+- Eğitimci yorumu ve AI koçu farklı content kind'dır. AI kartı eğitimci kimliği,
+  ataması, uzmanlığı veya zaman kanıtı taşıyamaz.
+- Tek açıklama sorusu available→submitted→answered→closed ilerler; tekrar soru,
+  yanlış eğitimci, expiry ve geriye giden zaman reddedilir.
+- Push payload yalnız sabit schema/event ve opak token taşır. Yorum, soru, cevap,
+  ses, skor veya eğitimci bilgisi bildirime konmaz.
+- Öğrenci sadece teslimdeki benzersiz ödevleri seçebilir; seçim çalışma planına
+  niyet bilgisidir, completion/mastery/başarı kanıtı değildir.
+- Backend yokken delivery/clarification gateway'i kapalıdır.
+
+HUM-05b authenticated öğrenci delivery endpoint'i, push izin ve transport'u,
+deep-link yetkilendirmesi, plan persistence, outbox/idempotency ve gerçek pilot
+olmadan canlı akış olarak açılmaz.
+
+## Uygulanan hizmet operasyonları sözleşmesi
+
+- İlk 20 kabul edilmiş pilot kaydı QA gerektirir işareti taşır; bu işaret QA'nın
+  yapıldığını, kabul sırasının güvenilir olduğunu veya eğitimci onayını kanıtlamaz.
+- Atama/review/delivery educator token kapsamlıdır. Yeniden atama eski educator
+  eşleşmesini ve farklı yeni educator'ı zorunlu tutar.
+- Gürültülü/anlaşılmayan kayıt için yeniden kayıt isteği aktif erişim ve deadline'ı
+  temizler; yeni kayıt revision artırarak triage'a döner, yeni hak tüketmez.
+- Gecikme yalnız aktif atamada deadline'ı ileri taşır. Paylaşım geri çekme ve
+  iptal terminaldir; gerçek storage erişimi veya dosya silme yapmaz.
+- QA kaydı teslim sonrası, izin referanslı ve teslim eğitimcisinden farklı reviewer
+  ile kurulur. İtiraz süre içinde bir kez çözülür; ikinci değerlendirme ve hizmet
+  hakkı yalnız yetkili sistem için öneridir, ledger veya ödeme iadesi değildir.
+- Backend yokken operasyon/itiraz gateway'i kapalıdır.
+
+HUM-06b authenticated workflow, gerçek storage revoke/delete, kalıcı audit ve
+outbox, credit ledger transaction'ı, hukukça onaylı itiraz/iade politikası ve
+ilk 20 izinli başvurunun gerçek ikinci eğitimci QA'sı olmadan canlı sayılamaz.
 
 ## Değer önerisi ve değişmez sınır
 

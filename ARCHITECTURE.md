@@ -25,7 +25,7 @@ değildir.
 değeri okuyup `CFBundleShortVersionString` ve `CFBundleVersion` ile exact-match
 karşılaştırır; Xcode export'un sessiz build artırması veya eski artifact artık
 kapıdan geçmez. REL-13 sonrasında güncel imzalı artifact ile kaynak
-`1.0.0+4` olarak hizalıdır.
+`1.0.0+6` olarak hizalıdır.
 
 **REL-11d Apple sahiplik zinciri (2026-11-04):** Beklenen Team ID
 `L3Z9U2B39K` profile `TeamIdentifier`, profile entitlement team kimliği ve
@@ -41,6 +41,44 @@ beklenen Team ID ile exact-match olmalı ve `get-task-allow` kesin olarak
 `false` olmalıdır. Böylece profile doğru olsa bile debug veya başka kimlikle
 imzalanmış app yerel artifact kapısından geçemez. Bu yine Apple sunucu veya
 cihaz çalışma kanıtı değildir.
+
+**REL-11f paketlenmiş privacy manifest kapısı (2026-11-05):** Yayın
+doğrulaması app-owned `PrivacyInfo.xcprivacy` dosyasını doğrudan bounded IPA
+içinden okur. Tracking kesin olarak kapalı, tracking domain ve collected-data
+listeleri boş, accessed API listesi yalnız FileTimestamp / `C617.1` olmalıdır.
+Bu ürünün mevcut yerel/no-collection sözleşmesini artifact seviyesinde bağlar;
+mağaza gizlilik formu veya hukuk incelemesinin yerine geçmez.
+
+**REL-11g device mimarisi kapısı (2026-11-05):** Bounded extraction ve
+codesign doğrulamasından sonra ana app ile doğrudan gömülü `.framework`
+bundle'larının `CFBundleExecutable` dosyaları `lipo -archs` ile okunur. Yayın
+artifact'ı her bundle için exact `arm64` ister; simulator/universal slice,
+eksik executable ve okunamayan Mach-O reddedilir. Bu, uygulamanın gerçek
+telefonda açıldığı veya performanslı çalıştığı anlamına gelmez.
+
+**REL-11h device platform/minimum OS kapısı (2026-11-05):** Arm64 hem cihaz
+hem Apple Silicon simulator slice'ı olabildiği için her doğrulanmış executable
+üzerinde `vtool -show-build` çalıştırılır. `LC_BUILD_VERSION.platform` exact
+`IOS` olmalı; ana Mach-O minimum OS değeri app Info.plist ile aynı, embedded
+framework minimumları ise bundan büyük olmamalıdır. Bu kapı arm64 simulator ve
+iOS 15'te yüklenemeyecek framework artifact'larını reddeder; cihazda çalışma
+kanıtı değildir.
+
+**REL-11i tüm privacy manifest zinciri (2026-11-05):** App-owned exact ürün
+beyanına ek olarak ana app altında paketlenmiş tüm framework/plugin
+`PrivacyInfo.xcprivacy` dosyaları bounded plist olarak okunur. Her manifest
+no-tracking/no-collection sözleşmesine uymalı; required-reason API girdileri
+string kategori ve en az bir non-empty reason taşımalıdır. Böylece dependency
+manifest değişikliği artifact kapısında görünür olur; Apple formu/hukuk kabulü
+ayrı kalır.
+
+**REL-11j iOS izin/ürün beyanı kapısı (2026-11-06):** Paketlenmiş ana
+Info.plist; `iPhoneOS`/`iphoneos` device sözleşmesi, arm64 capability,
+LSRequiresIPhoneOS, exact en+tr localizations ve beklenmeyen background mode /
+arbitrary network load yokluğu açısından doğrulanır. Root, `en.lproj` ve
+`tr.lproj` mikrofon açıklamaları yalnız açık kullanıcı eylemiyle yerel kayıt
+ürün metnine exact bağlıdır. Bu statik beyan kapısı fiziksel izin akışı testi
+değildir.
 
 ## Mimari prensipler
 
@@ -258,7 +296,7 @@ User
 
 Ham kayıtlar `ExerciseAttempt` içine gömülmemeli; ayrı storage kaydı olmalı. Silme talebinde kullanıcıya ait tüm ölçüm ve kayıt ilişkileri birlikte temizlenebilmeli.
 
-## Plus gerçek eğitimci servisi — önerilen, henüz uygulanmadı
+## Plus gerçek eğitimci servisi — güvenli yerel önizleme var; servis uygulanmadı
 
 ```text
 Flutter: seçilmiş kayıt + seçilmiş gelişim özeti + paylaşım onayı
@@ -274,6 +312,92 @@ Bu akış AI gateway üzerinden geçmez; kayıt AI'ye otomatik gönderilmez. İn
 Kabul + hak rezervasyonu atomik/idempotent; teslimde consume, iptal/hizmet sorunu durumunda restore. Payment refund ayrı sağlayıcı olayıdır. Atama bazlı yetki, kısa süreli imzalı kayıt URL'si, erişim revocation, amaç/saklama süresi, kapasite/deadline ve minimal bildirim outbox'ı gerekir. Sınıf rolü bütün Plus kayıtlarına erişmez. Öğrencinin yalnız seçtiği progress snapshot paylaşılır; düşük güvenli veri etiketlenir.
 
 Faz 3 küçük yönetilen pilot; Faz 4 hizmet kapılarından sonra ücretli Plus. Faz 5 tam Teacher paneli bu özelliğin önkoşulu değildir. [Hizmet/operasyon/gizlilik ayrıntıları](./HUMAN_REVIEW.md).
+
+### HUM-02a yerel sınırı (2026-11-07)
+
+`HumanReviewDraft` hedefi, tek soruyu, yalnız kullanıcının seçtiği gelişim
+özetini, yerel kayıt belirtecini ve sürümlü amaç onayını ayrı alanlarda taşır.
+Süre/boyut/metin sınırları constructor seviyesinde fail-closed; yerel taslağın
+tam olması servis tarafından kabul, upload veya hak rezervasyonu anlamına
+gelmez. `HumanReviewGateway` dış porttur;
+`UnavailableHumanReviewGateway` backend, auth/entitlement, storage, kapasite,
+consent/legal ve credit kapılarından herhangi biri yokken gönderimi reddeder.
+
+Flutter önizlemesi gateway çağırmaz: hedef/soru/özet seçimleri yalnız widget
+state'idir; persist edilmez. Kayıt seçme, onay ve gönderim kontrolleri disabled;
+ağ, storage, mikrofon, hak ledger, ödeme veya AI çağrısı yoktur. Bu sınır dış
+servisin güvenliymiş gibi taklit edilmesini önler; gerçek adapter ancak hukuk,
+operasyon, backend ve pilot kabul kapılarıyla eklenebilir.
+
+### HUM-03a hak ledger domain sınırı (2026-11-08)
+
+`HumanReviewCreditLedger` yalnız deterministik aggregate davranışını tanımlar.
+Grant geçerlilik aralığı ve unit sayısı bounded; rezervasyon en erken sona eren
+aktif grant'i seçer. Her reserve/consume/restore komutu request/reservation
+kimliği, idempotency key ve UTC zaman taşır. Exact ağ tekrarı aynı sonucu
+event eklemeden döndürür; aynı key başka komuta taşınamaz ve bir request ikinci
+unit ayıramaz. Restore rezervasyonu tekrar kullanılabilir bakiyeye bırakır ama
+aynı request'i yeniden açmaz; yeni hizmet denemesi yeni request kimliği ister.
+
+Bu aggregate in-memory'dir ve ödeme, abonelik veya entitlement kaynağı değildir.
+Gerçek adapter atomik sunucu transaction'ı, kalıcı idempotency kaydı, auth,
+mağaza purchase/refund olayları, kapasite ve audit erişim politikasını ayrıca
+uygulamalıdır. İstemci tarafından üretilen bakiye güvenilir kabul edilmez.
+
+### HUM-04a atama ve geri bildirim domain sınırı (2026-11-08)
+
+`HumanReviewAssignment`, tek request/educator/qualification token kapsamını
+başlangıç, bitiş ve optional revocation ile sınırlar. `permits` yalnız token ve
+UTC zaman sözleşmesini kontrol eder; kimlik doğrulama veya uzmanlık doğrulaması
+değildir. `HumanReviewWrittenFeedback` bu aktif atamaya bağlanır. Güçlü yön ve
+öncelik notları recording offset + observation taşır; olası açıklama ayrı ve
+optional alandır. Kayıt süresi dışındaki kanıt reddedilir. Üç benzersiz katalog
+ödevi objective/instruction/success condition ve bounded tekrar/süre taşır;
+follow-up goal ve rubric version zorunludur.
+
+Modelde AI author/auto-fill yolu yoktur; fakat istemci token'ı da gerçek insan
+yazarlığını kanıtlamaz. `UnavailableHumanReviewFeedbackGateway` authenticated
+backend assignment, RBAC, private playback ve audit oluşana kadar teslimi
+reddeder. Gerçek sistemde yetki API ve storage katmanında uygulanmalı; UI'da
+düğme saklamak veya bu modelin kurulabilmesi güvenlik kanıtı değildir.
+
+### HUM-05a öğrenci teslim sınırı (2026-11-09)
+
+`HumanReviewEducatorDelivery` yapılandırılmış feedback'i delivery token ve UTC
+teslim zamanı ile taşır; teslim, authored zamandan önce olamaz. Kaynak türü
+zorunlu `educatorReview`'dür. `HumanReviewAiCoachCard` ayrı `aiCoach` türüdür ve
+educator identity, assignment, qualification ya da evidence alanı içermez.
+Etiket ayrımı AI metninin eğitimci teslimi gibi sunulmasını önleyen UI öncesi
+sözleşmedir; gerçek insan yazarlığını tek başına kanıtlamaz.
+
+`HumanReviewClarificationThread` bir delivery/eğitimciye bağlı tek soruluk
+immutable durum zinciridir. Submit penceresi expiry'de kapanır; yalnız bağlı
+eğitimci yanıtlayabilir ve kronoloji geriye gidemez. Bildirim envelope'u exact
+`schema/event/token` payload'ı üretir; ayrıntı uygulama açıldıktan sonra yetkili
+API'den çekilmelidir. `HumanReviewTaskSelection`, sadece feedback'in üç katalog
+ödevinden benzersiz bir subset seçer ve skill/mastery/history yazmaz.
+
+`UnavailableHumanReviewStudentGateway` delivery ve clarification işlemlerini
+authenticated backend oluşana kadar reddeder. Push sağlayıcı, bildirim izni,
+deep-link yetkilendirmesi, plan persistence, outbox/idempotency ve pilot kabulü
+bu yerel sözleşmenin dışındadır.
+
+### HUM-06a hizmet operasyonları sınırı (2026-11-09)
+
+`HumanReviewServiceCase`, triage'dan atama/review/delivery'ye giden ve yeniden
+kayıt, farklı eğitimciye yeniden atama, bekleme, deadline uzatma, erişim geri
+çekme ve iptal yan yollarını immutable UTC geçişlerle sınırlar. Yeniden kayıt
+aktif educator/due bilgisini temizler; revision artışı yeni hak tüketimi değildir.
+İlk 20 bayrağı caller-supplied pilot sırasına dayalı politika bilgisidir; güvenilir
+sunucu sırası veya QA kanıtı değildir.
+
+`HumanReviewQualityCheck`, teslim sonrası izin referansı ve farklı reviewer
+zorunluluğu taşır. `HumanReviewAppeal` yalnız teslim sonrası pencere içinde açılır
+ve bir kez çözülür. Replacement review veya service-credit sonucu yalnız öneri
+üretir; `HumanReviewCreditLedger` ya da finansal ödeme sistemini değiştirmez.
+`UnavailableHumanReviewOperationsGateway` gerçek auth/RBAC/storage/audit yokken
+fail-closed kalır. Storage revoke/delete, outbox, kredi/iade transaction'ı ve
+gerçek ikinci eğitimci QA'sı HUM-06b dış kapılarıdır.
 
 ## Test sınırları
 
@@ -1471,3 +1595,95 @@ The refresh callback can only replace a local read future. It cannot navigate,
 record history, resume an exercise, start playback or open the microphone.
 Process death, physical-device lifecycle ordering and offline acceptance remain
 external gates; this package only closes the widget/state isolation boundary.
+
+## UI-01c — Native iOS launch identity (2026-11-06)
+
+The iOS launch storyboard is a static, native identity surface and must not
+depend on Flutter startup, networking, user state or generated runtime assets.
+It uses the named `LaunchBackground` color plus system-rendered `Vocalart` text
+and a simple accent view; the obsolete default `LaunchImage` is not referenced.
+This keeps startup deterministic and lets Interface Builder validate the scene.
+
+The launch screen carries no progress, authentication or readiness meaning.
+Source tests, `ibtool` and a simulator build establish package validity only;
+physical rendering and inclusion in a newly signed IPA remain separate release
+gates.
+
+## UI-01d — Cross-platform launch identity (2026-11-06)
+
+Android launch identity stays inside platform resources: legacy releases use a
+static layer-list with the density-aware launcher foreground centered over the
+launch color, while Android 12+ names that same safe-zone foreground and its
+icon background through system splash attributes. No Flutter frame, animation,
+network request or user state is required before launch dismissal.
+
+iOS launch text and accent now resolve through named color assets rather than
+fixed storyboard colors. The brand text changes from aubergine on cream to
+cream on the existing dark background; the lime accent remains stable. Resource
+tests and package inspection establish configuration integrity only. OEM masks,
+system splash timing, dark-mode transitions and perceived contrast still need
+physical-device review.
+
+## REL-09c — Android least-privilege release boundary (2026-11-06)
+
+Choir imports enter through the system picker and `ChoirStore.addMedia` copies
+the selected file into app-owned storage before playback or `OpenFilex` use.
+The product therefore does not need broad library access. The app manifest
+removes `READ_EXTERNAL_STORAGE`, all three `READ_MEDIA_*` permissions and
+`ACCESS_NETWORK_STATE` contributed by transitive plugins. Microphone, scheduled
+reminder reboot, notification and vibration permissions remain explicit.
+
+The local release build may use debug signing only when the existing Gradle
+override is explicitly set. Its valid v2 signature proves package integrity,
+not store identity. A production keystore, signed AAB, Play Console acceptance
+and physical picker/open/reboot/notification flows are separate gates. Every
+plugin update must re-check the merged artifact permission set.
+
+## REL-09d — Android APK artifact verification boundary (2026-11-07)
+
+`scripts/release/verify_android_apk.py` treats the APK as untrusted input. It
+rejects oversized, encrypted, symlinked, traversal or exact-duplicate ZIP
+entries before asking Android build tools for metadata. The resulting contract
+requires the pubspec version/build, package id, minimum/target SDK, exact
+permission allow-list, Flutter release library and both legacy and Android 12+
+launch resources to match the product source.
+
+Signing modes are intentionally separate. A debug certificate is accepted only
+with the explicit local-evidence flag. A production certificate is accepted
+only when its SHA-256 digest matches a caller-supplied expected value. Neither
+mode proves Play Console acceptance or runtime behavior. The verifier therefore
+closes stale/wrong artifact regressions without converting a locally signed APK
+into release evidence.
+
+## REL-09e — Android App Bundle verification boundary (2026-11-07)
+
+`scripts/release/verify_android_aab.py` applies the same trust boundary to the
+Google Play delivery format. It first bounds and validates ZIP/JAR structure,
+requires one signature block, then runs a SHA-256-pinned bundletool binary for
+bundle validation and decoded manifest/resource inspection. The manifest must
+match pubspec version/build, package id, SDK levels and the exact permission
+allow-list. The bundle must also contain Flutter release code and the expected
+day/night launch colors, launch style and launcher foreground resources.
+
+JAR verification and certificate extraction are separate checks. Debug signing
+requires an explicit local-evidence flag; a non-debug signer requires an exact
+caller-supplied certificate digest. A passing local bundle proves structural
+and source-contract consistency only. Release-key ownership, Play App Signing,
+server-side acceptance, generated device APK behavior and physical-device QA
+remain external gates.
+
+## REL-09f — AAB materialization parity boundary (2026-11-07)
+
+`scripts/release/verify_android_delivery.py` checks the local handoff between
+the source bundle and an installable shape without installing it. A pinned
+bundletool materializes a debug-signed universal APK into a temporary APKS
+archive. The archive is bounded, path-safe and streamed; only the exact
+`universal.apk` member is accepted. The existing APK verifier then independently
+checks the materialized result.
+
+The AAB and APK results must match on package, version/build, SDK levels,
+permission set, signer identity/digest/mode and launch-resource outcome. All
+temporary artifacts are deleted on exit, and the report explicitly records
+that no install or upload occurred. Universal APK parity does not model Play's
+device-specific split selection, Play App Signing, server processing or
+runtime behavior, so those remain separate release gates.

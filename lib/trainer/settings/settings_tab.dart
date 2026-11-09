@@ -10,6 +10,7 @@ import '../app/scope.dart';
 import '../audio/synth.dart';
 import '../domain/music.dart';
 import '../home/home_shell.dart';
+import '../home/daily_route.dart';
 import '../state/trainer_store.dart';
 import '../stats/stats_tab.dart';
 import '../ui/kit.dart';
@@ -253,6 +254,45 @@ class SettingsTab extends StatelessWidget {
                 ]),
                 _Caption(tr('TERCİHLER', 'PREFERENCES')),
                 _Group([
+                  // WIDE-01: the goal and minutes picked in onboarding stay
+                  // editable; changing them re-plans today's route only.
+                  _Item(
+                    key: const Key('settings_goal'),
+                    icon: Ic.target,
+                    title: tr('Çalışma hedefi', 'Practice goal'),
+                    value:
+                        PracticeGoalInfo.fromId(store.answers['goal'])?.title ??
+                        tr('Seçilmedi', 'Not chosen'),
+                    onTap: () => _pick<PracticeGoal?>(
+                      context,
+                      tr('Çalışma hedefi', 'Practice goal'),
+                      PracticeGoal.values,
+                      PracticeGoalInfo.fromId(store.answers['goal']),
+                      (g) => g!.title,
+                      (g) => store
+                        ..answers['goal'] = g!.id
+                        ..save(),
+                    ),
+                  ),
+                  _Item(
+                    key: const Key('settings_minutes'),
+                    icon: Ic.timer,
+                    title: tr('Günlük süre', 'Daily time'),
+                    value: tr(
+                      '${store.dailyMinutes} dk',
+                      '${store.dailyMinutes} min',
+                    ),
+                    onTap: () => _pick<int>(
+                      context,
+                      tr('Günlük süre', 'Daily time'),
+                      dailyMinuteChoices,
+                      store.dailyMinutes,
+                      (m) => tr('$m dk', '$m min'),
+                      (m) => store
+                        ..dailyMinutes = m
+                        ..save(),
+                    ),
+                  ),
                   _Item(
                     key: const Key('settings_language'),
                     icon: Ic.languages,

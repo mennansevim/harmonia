@@ -1,9 +1,154 @@
 # Resonia — Model devir ve genel işleyiş notu
 
+**2026-11-09 HUM-06a:**
+`domain/human_review/human_review_operations.dart`, gerçek servis workflow'u
+değil; rerecord/reassign/waitlist/delay/withdraw/cancel/deliver geçişleri ile
+ilk-20 QA, izinli bağımsız quality check ve tek çözümlü appeal sözleşmesidir.
+Rerecord educator/due erişimini temizler ve revision artırır. QA bayrağı caller
+ordinal'ına bağlıdır, QA yapıldığını kanıtlamaz. Appeal replacement review veya
+service credit yalnız önerir; ledger/payment/refund değişmez. Gateway fail-closed.
+11 yeni adversarial test ve HUM-02a–05a regresyonları geçti; tam kalite format
+420/0, analyze temiz, 1381 test + 2 opt-in skip. Sonraki model gerçek auth/RBAC/
+storage revoke-delete, persistent workflow/audit/outbox, ledger transaction,
+hukuk politikası ve izinli ilk-20 pilot QA olmadan bunu canlı servis olarak
+açmasın.
+
+**2026-11-09 HUM-05a:**
+`domain/human_review/human_review_delivery.dart`, canlı öğrenci ekranı değil;
+teslim/clarification/push/task-selection domain sözleşmesidir. Educator delivery
+ve AI coach ayrı content kind; AI kartında educator assignment/evidence yok.
+Clarification tek sorudur ve available→submitted→answered→closed dışında
+ilerlemez. Notification payload yalnız schema/event/opaque token; hassas yorum,
+soru, cevap, ses, skor ve eğitimci alanı taşımaz. Task selection yalnız teslimde
+sunulan benzersiz exercise id'leri kabul eder, mastery yazmaz. 9 adversarial
+test geçti; gateway fail-closed. Tam kalite kapısı format 418/0, analyze temiz,
+1370 test geçti ve 2 opt-in test skip edildi. Sonraki model authenticated
+delivery API, push izin/transport, plan persistence ve gerçek pilot olmadan
+UI'yı canlı hizmet gibi açmasın.
+
+**2026-11-08 HUM-04a:**
+`domain/human_review/human_review_feedback.dart`, gerçek panel değil; güvenli
+atama ve eğitimci yorumunun saf domain sözleşmesidir. Assignment request,
+educator ve qualification token'larını UTC erişim/revocation ile sınırlar.
+Feedback aktif atama eşleşmesi, kayıt içi zaman kanıtı, ayrı observation /
+possible explanation, 1–3 strength, en fazla 2 priority, tam 3 benzersiz
+katalog task ve follow-up goal ister. Koleksiyonlar immutable; unavailable
+gateway teslim etmez. 8 adversarial test geçti; tam kalite format 416/0,
+analyze temiz, 1361 test + 2 opt-in skip. Token'lar kimlik, qualification ve
+insan yazarlığını kanıtlamaz; sonraki model authenticated backend RBAC/audit,
+private playback ve gerçek eğitimci pilotu olmadan panel/teslim açmasın.
+
+**2026-11-08 HUM-03a:**
+`domain/human_review/human_review_credit_ledger.dart`, ödeme veya entitlement
+olmayan saf in-memory hak aggregate'ıdır. Bounded süreli grant'ler, en erken
+sona eren aktif hakkı reserve eder; consume/restore ve audit event'leri explicit
+UTC zamanla ilerler. Request token ikinci rezervasyonu, idempotency key farklı
+komutta yeniden kullanımı, geçersiz durum geçişi, expiry/exhaustion fail-closed.
+8 adversarial test geçti; tam kalite kapısı format 414/0, analyze temiz, 1353
+test + 2 opt-in skip. Sonraki model bunu kullanıcıya hak varmış gibi bağlamasın
+veya dosyaya finansal gerçek olarak yazmasın: HUM-03b için gerçek
+backend transaction/idempotency storage, auth/entitlement, mağaza olayı ve
+iptal/iade politikası gerekir.
+
+**2026-11-07 HUM-02a:** Plus kartındaki “Akışı incele”,
+`HumanReviewPreviewScreen` açar. Bu yalnız yerel ve gönderimsiz bir ürün
+önizlemesidir: hedef, tek soru ve paylaşılacak özet seçilebilir; kayıt, onay ve
+gönderim kapalıdır. `domain/human_review/human_review_draft.dart` bounded
+kayıt/draft/onay sözleşmesini ve tüm dış kapıları fail-closed gösteren
+`UnavailableHumanReviewGateway` adapter'ını içerir. UI seçimleri persist etmez,
+dosya almaz, hak tüketmez ve ağ çağrısı yapmaz. Gerçek yorum eğitimcinin kendi
+yazısıdır; AI insan teslimi yerine geçmez. 5 domain + 3 widget testi ve ilgili
+rota testleri geçti; tam kalite kapısı format 412/0, analyze temiz, 1345 test +
+2 opt-in skip. Sonraki model backend/upload/entitlement/consent/credit
+bağlamasın: önce hukuk metni, gerçek eğitimci kapasitesi, pilot ve açık kullanıcı
+yetkisi gerekir.
+
+**2026-11-07 REL-23:** `scripts/release/verify_android_delivery.py`, güncel
+AAB'yi bundletool ile geçici universal APK'ya materialize eder; APKS arşivini
+bounded/path-safe açar, APK'yı REL-21 ile bağımsız doğrular ve AAB↔APK
+kimlik/sürüm/SDK/izin/imza/launch parity'sini exact karşılaştırır. 5
+adversarial test geçti. +12 AAB'den 76.817.611 byte universal APK üretildi,
+parity passed; çıktı kurulmadı/yüklenmedi ve geçici dizin silindi. Bu Play
+splitleri, App Signing veya fiziksel cihaz kabulü değildir.
+
+**2026-11-07 REL-22:** Play teslim formatı AAB için
+`scripts/release/verify_android_aab.py` ve 5 adversarial test eklendi. Kapı
+bounded ZIP/JAR yapısı, SHA-256 pinli bundletool 1.18.3 validate, pubspec
+exact-match, kimlik/SDK/izinler, Flutter `libapp.so`, markalı launch kaynakları
+ve tek signer sertifikasını denetler. Eski +1 AAB +12 kaynakta reddedildi.
+Güncel `app-release.aab` 1.0.0+12, 73.853.941 byte, SHA-256
+`41a4ca46461021e32a36e39adaa6edb77c866ff8748dfc89eb4a0ae9b77b51ee` ve
+yerel-debug modunda geçti. Gerçek keystore/digest, Play upload/sunucu kabulü ve
+fiziksel cihaz hâlâ dış kapıdır; bu artifact'ı mağazaya hazır sayma.
+
+**2026-11-07 REL-21:** Android artifact kontrolü artık tekrar edilebilir ve
+fail-closed: `scripts/release/verify_android_apk.py` + 5 adversarial test.
+Pubspec exact version/build, app id, min/target SDK, exact izinler, ZIP
+güvenliği, Flutter `libapp.so`, legacy/Android 12+ launch kaynakları ve imza
+sertifikası denetlenir. Debug imza yalnız `--allow-debug-signing` ile kabul
+edilir; üretim için beklenen sertifika SHA-256 zorunludur. Eski +9 APK güncel
++12 kaynakta reddedildi. Yeniden üretilen `app-release.apk` 1.0.0+12,
+76.780.216 byte, SHA-256
+`43b2a698733ca606d7dd7f2285b2db8c5f4a6366fec76e2a32cb8592fbc8363d` ve
+yerel-debug modunda geçti. Bunu mağaza/cihaz kanıtı sayma; gerçek keystore,
+AAB, Play ve fiziksel Android QA hâlâ açık.
+
+**2026-11-06 REL-19:** Yerel Android beta release APK üretildi:
+`build/app/outputs/flutter-apk/app-release.apk`, 1.0.0+9, 76.452.708 byte,
+SHA-256 `cd937d250d113b26a52df1747016e8ed0a3daa0bc7ceb377b8629204108ead12`.
+`aapt` kimlik/min24/target36 ve exact izinleri; `apksigner` v2 imzayı doğruladı.
+Sertifika `CN=Android Debug`: mağazaya uygun değil. Main manifest, app-owned
+dosya akışı nedeniyle plugin kaynaklı READ_EXTERNAL/READ_MEDIA_* ve
+ACCESS_NETWORK_STATE izinlerini `tools:node="remove"` ile çıkarır. Tam kapı
+1331 + 2 skip temiz. Gerçek keystore/AAB, Play ve fiziksel Android QA açık.
+
+**2026-11-06 UI-01d:** Android legacy launch drawable merkezde
+`ic_launcher_foreground`, Android 12+ `LaunchTheme` explicit splash icon ve
+icon background kullanır; açık zemin `#F8F5EF`, gece zemini mevcut koyu marka
+rengidir. iOS launch metin/vurgu renkleri named dynamic assets'e taşındı;
+koyu tema metni krem olur. Kaynak testi 5/5, `ibtool`, analyze, debug APK,
+`aapt2` artifact kontrolü ve tam kapı 1331 + 2 skip temiz. İlk Android build
+disk doluluğunda durdu; yalnız yeniden üretilebilir Flutter/test/Android
+intermediate cache'leri temizlenip tekrarlandı, IPA'lar korundu. Fiziksel
+görünüm ve imzalı release Android artifact yok.
+
+**2026-11-06 REL-11j:** Paketlenmiş iOS Info.plist device/SDK/capability,
+localization, background/ağ ve exact TR/EN mikrofon açıklaması sözleşmeleri
+fail-closed. Python 16/16; güncel 1.0.0+8 IPA geçti. Fiziksel izin/ayar dönüşü
+ayrı kapı.
+
+**2026-11-06 UI-01c:** `ios/Runner/Base.lproj/LaunchScreen.storyboard`
+varsayılan Flutter `LaunchImage` yerine native sistem yazısıyla `Vocalart`,
+krem `LaunchBackground` ve lime vurgu kullanır. Kaynak sözleşmesi testi,
+`ibtool`, iOS simülatör derlemesi ve tam kalite kapısı (1330 + 2 skip) temiz.
+Mevcut imzalı 1.0.0+9 IPA değişiklikten önce üretildi; yeni artifact üretmeden
+ve fiziksel cihazda görmeden tamamlandı/yayına hazır sayma.
+
+**2026-11-05 REL-11i:** IPA'daki app/framework/plugin privacy manifestlerinin
+tamamı no-tracking/no-collection ve required-reason şekliyle doğrulanır.
+Python 14/14; güncel 1.0.0+6 artifact'ta 8 manifest geçti. Mağaza formu ve
+hukuk kabulü değildir.
+
+**2026-11-05 REL-11h:** Arm64 simulator belirsizliği Mach-O
+`LC_BUILD_VERSION` kapısıyla kapatıldı: exact IOS platformu, ana plist/minimum
+OS eşleşmesi ve framework minimum OS ≤ app. Python 13/13; güncel 1.0.0+6 IPA'da
+4 bundle geçti. Upload/cihaz kabulü yok.
+
+**2026-11-05 REL-11g:** IPA doğrulayıcı ana app ve embedded framework
+executable'larını `lipo` ile exact device-only arm64 kapısından geçirir.
+Python 12/12; güncel 1.0.0+5 IPA'da 4 Mach-O bundle geçti. App Store/cihaz
+kabulü değildir.
+
+**2026-11-05 REL-11f:** IPA doğrulayıcı app-owned paketlenmiş
+`PrivacyInfo.xcprivacy` dosyasını zorunlu tutar; no tracking, boş domain/veri
+listeleri ve FileTimestamp `C617.1` exact sözleşmesi fail-closed. Python 11/11;
+güncel 1.0.0+5 IPA geçti. Mağaza formu/hukuk/upload dış kapı.
+
 **2026-11-04 REL-11e:** IPA doğrulayıcı ana app'in imzalı entitlement plist'ini
 `codesign` ile okur; application identifier profile ile, Team ID beklenen
 `L3Z9U2B39K` ile eşleşmeli ve `get-task-allow=false` olmalı. Python 9/9;
-güncel 1.0.0+4 IPA geçti. Upload/App Store/cihaz kanıtı yok.
+güncel 1.0.0+4 IPA geçti (güncel REL-17 artifact 1.0.0+8).
+Upload/App Store/cihaz kanıtı yok.
 
 **2026-11-04 DESIGN-14:** Güncel görsel dil yeni Figma Make şablonu: krem
 zemin, sert gölgeli kartlar, `#432A72` hero, lime `BigButton` varsayılanı,
@@ -24,7 +169,7 @@ bounded/symlinksiz archive'ı temp'e açıp `codesign --verify --deep --strict`
 upload veya fiziksel cihaz kanıtı değildir. Tam kalite 1236 + 2 skip temiz.
 
 **2026-11-04 REL-11b:** Yayın sürümünün tek kaynağı strict
-`pubspec.yaml` `semver+build`; güncel REL-13 değeri 1.0.0+4. IPA doğrulayıcı marketing
+`pubspec.yaml` `semver+build`; güncel REL-17 değeri 1.0.0+8. IPA doğrulayıcı marketing
 ve build sürümünü exact-match ister. Xcode export'un build'i sessiz artırdığı
 1.0.0+1 kaynak / 1.0.0+2 artifact ayrışması kapatıldı. Python testleri 5/5,
 gerçek IPA ve tam 1235 + 2 skip kalite kapısı geçti; upload yok.

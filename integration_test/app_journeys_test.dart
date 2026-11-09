@@ -79,17 +79,11 @@ void main() {
     await launch(tester);
     expect(find.byKey(const Key('get_started')), findsOneWidget);
     await tapKey(tester, 'get_started');
-    await tapKey(tester, 'opt_singer');
-    await tapKey(tester, 'ob_continue');
-    await tapKey(tester, 'ob_continue');
-    await tapKey(tester, 'ob_continue');
-    await tapKey(tester, 'opt_voice');
-    await tapKey(tester, 'opt_interval');
+    await tapKey(tester, 'goal_choir');
     await tapKey(tester, 'ob_continue');
     await tapKey(tester, 'minutes_10');
     await tapKey(tester, 'ob_continue');
-    // No notification permission dialog: the system sheet is outside Flutter.
-    await tapKey(tester, 'reminder_skip');
+    // No microphone or notification prompt during onboarding (WIDE-01).
     expect(find.text('Planın kuruldu'), findsOneWidget);
     await tester.tap(find.text('Ana sayfaya git'));
     await settle(tester, 1000);

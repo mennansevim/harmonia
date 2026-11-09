@@ -104,7 +104,10 @@ class _LevelCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      tr('SEVİYE ${i + 1} · $xp XP', 'LEVEL ${i + 1} · $xp XP'),
+                      tr(
+                        'PRATİK SEVİYESİ ${i + 1} · $xp XP',
+                        'PRACTICE LEVEL ${i + 1} · $xp XP',
+                      ),
                       style: TT.heroCaps,
                     ),
                     const SizedBox(height: 10),
@@ -149,6 +152,21 @@ class _LevelCard extends StatelessWidget {
                     '${next.$2} için ${next.$1 - xp} XP · bu hafta ${store.weeklyXp()} XP',
                     '${next.$1 - xp} XP to ${next.$2} · ${store.weeklyXp()} XP this week',
                   ),
+            style: const TextStyle(
+              color: TC.heroMuted,
+              fontSize: 12,
+              height: 1.5,
+            ),
+          ),
+          // WIDE-03: the ladder counts practice, not ability.
+          Text(
+            tr(
+              'Ne kadar çalıştığını gösterir; ses ya da kulak becerisi '
+                  'ölçümü değildir.',
+              'Shows how much you practised; it does not measure voice or '
+                  'ear skill.',
+            ),
+            key: const Key('level_scope'),
             style: const TextStyle(
               color: TC.heroMuted,
               fontSize: 12,
@@ -512,7 +530,13 @@ class _Unlocked extends StatelessWidget {
         const SizedBox(height: 20),
         Row(
           children: [
-            Expanded(child: Text(tr('Beceriler', 'Skills'), style: TT.section)),
+            // Tap answers in listening lessons; not a voice measure.
+            Expanded(
+              child: Text(
+                tr('Dinleme çalışmaları', 'Listening practice'),
+                style: TT.section,
+              ),
+            ),
             Text(
               tr('İlk deneme doğruluğu', 'First-try accuracy'),
               style: TT.small,

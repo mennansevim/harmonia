@@ -85,6 +85,17 @@ class TrainerStore extends ChangeNotifier {
   bool onboardingDone = false;
   bool setupDone = false;
   final Map<String, Object?> answers = {};
+
+  /// How the learner uses Vocalart (onboarding, multi-select). Older saves
+  /// kept a single string under the same key.
+  Set<String> get roles => switch (answers['role']) {
+    final String r => {r},
+    final List l => l.whereType<String>().toSet(),
+    _ => const {},
+  };
+
+  /// Said they sing in or lead a choir.
+  bool get inChoir => roles.contains('singer') || roles.contains('conductor');
   int dailyMinutes = 10;
   String? accountLabel;
   String username = '';
@@ -128,6 +139,17 @@ class TrainerStore extends ChangeNotifier {
   final Set<String> seenTrainerSheets = {};
   String? lastStreakCelebrated;
   String? koroRange;
+
+  /// RANGE-04 range test scores (0–100), oldest first, last [maxRangeScores].
+  final List<int> rangeScores = [];
+  static const maxRangeScores = 50;
+
+  void addRangeScore(int points) {
+    rangeScores.add(points.clamp(0, 100));
+    if (rangeScores.length > maxRangeScores) {
+      rangeScores.removeRange(0, rangeScores.length - maxRangeScores);
+    }
+  }
 
   /// Melody echo level reached (0-based). Practice progress only: it never
   /// feeds XP, streak, mastery or history.
@@ -217,6 +239,7 @@ class TrainerStore extends ChangeNotifier {
     seenTrainerSheets.clear();
     lastStreakCelebrated = null;
     koroRange = null;
+    rangeScores.clear();
     melodyEchoLevel = 0;
     clapLevel = 0;
     breathDay = null;
@@ -448,6 +471,7 @@ class TrainerStore extends ChangeNotifier {
     'seenSheets': seenTrainerSheets.toList(),
     'lastStreakCelebrated': lastStreakCelebrated,
     'koroRange': koroRange,
+    'rangeScores': rangeScores,
     'melodyEchoLevel': melodyEchoLevel,
     'clapLevel': clapLevel,
     'breathDay': breathDay,
@@ -538,6 +562,14 @@ class TrainerStore extends ChangeNotifier {
       );
     lastStreakCelebrated = get<String>(doc, 'lastStreakCelebrated');
     koroRange = get<String>(doc, 'koroRange');
+    rangeScores
+      ..clear()
+      ..addAll(
+        (get<List<Object?>>(doc, 'rangeScores') ?? const [])
+            .whereType<int>()
+            .where((p) => p >= 0 && p <= 100)
+            .take(maxRangeScores),
+      );
     melodyEchoLevel = (get<int>(doc, 'melodyEchoLevel') ?? 0).clamp(0, 99);
     clapLevel = (get<int>(doc, 'clapLevel') ?? 0).clamp(0, 99);
     breathDay = get<String>(doc, 'breathDay');

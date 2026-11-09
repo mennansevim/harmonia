@@ -39,10 +39,7 @@ class _HomeShellState extends State<HomeShell> {
   bool _showsChoir(TrainerStore store) {
     final choir = ChoirScope.maybeOf(context);
     if (choir == null) return false;
-    final role = store.answers['role'];
-    return role == 'singer' ||
-        role == 'conductor' ||
-        choir.store.choirs.isNotEmpty;
+    return store.inChoir || choir.store.choirs.isNotEmpty;
   }
 
   @override
@@ -255,29 +252,32 @@ class PlayTab extends StatefulWidget {
   State<PlayTab> createState() => _PlayTabState();
 }
 
-class _PlayTabState extends State<PlayTab> {
-  /// Walks today's route: the breathing guide first (unless done or not in
-  /// today's route), then the ear lesson.
-  Future<void> _beginToday() async {
-    final store = TrainerScope.of(context).store;
-    final nav = Navigator.of(context);
-    final route = DailyRoute.forMinutes(store.dailyMinutes);
-    if (route.breath && !store.breathedToday) {
-      final go = await nav.push<bool>(
-        MaterialPageRoute(
-          builder: (_) => BreathScreen(
-            totalSeconds: route.breathSeconds,
-            stepLabel: tr(
-              'ADIM 1 / ${route.stepCount}',
-              'STEP 1 / ${route.stepCount}',
-            ),
+/// Walks today's route: the breathing guide first (unless done or not in
+/// today's route), then the ear lesson when the route has one. Nothing here
+/// opens the microphone; voice steps start only from their own card.
+Future<void> beginTodayRoute(TrainerStore store, NavigatorState nav) async {
+  final route = routeFor(store.answers, store.dailyMinutes);
+  if (route.breath && !store.breathedToday) {
+    final go = await nav.push<bool>(
+      MaterialPageRoute(
+        builder: (_) => BreathScreen(
+          totalSeconds: route.breathSeconds,
+          lessonNext: route.lesson,
+          stepLabel: tr(
+            'ADIM 1 / ${route.stepCount}',
+            'STEP 1 / ${route.stepCount}',
           ),
         ),
-      );
-      if (go != true) return;
-    }
-    await startTodaySession(store, nav);
+      ),
+    );
+    if (go != true) return;
   }
+  if (route.lesson) await startTodaySession(store, nav);
+}
+
+class _PlayTabState extends State<PlayTab> {
+  Future<void> _beginToday() =>
+      beginTodayRoute(TrainerScope.of(context).store, Navigator.of(context));
 
   @override
   Widget build(BuildContext context) {
@@ -372,6 +372,7 @@ class _PlayTabState extends State<PlayTab> {
                 next: next,
                 onBegin: _beginToday,
               ),
+              if (reminderNudgeDue(store)) const _ReminderNudge(),
               const SizedBox(height: 18),
               _SectionHeading(
                 tr('Hızlı egzersizler', 'Quick exercises'),
@@ -409,6 +410,97 @@ class _PlayTabState extends State<PlayTab> {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// The daily reminder is offered once, after the learner's first real
+/// session or breath guide (WIDE-01), never during onboarding. Saves from
+/// before WIDE-01 have no pending flag and are not asked again.
+bool reminderNudgeDue(TrainerStore store) =>
+    store.answers['reminderAsked'] == false &&
+    !store.notifications &&
+    (store.activeDayCount > 0 || store.breathDay != null);
+
+class _ReminderNudge extends StatefulWidget {
+  const _ReminderNudge();
+  @override
+  State<_ReminderNudge> createState() => _ReminderNudgeState();
+}
+
+class _ReminderNudgeState extends State<_ReminderNudge> {
+  bool _busy = false;
+
+  void _close(TrainerStore store) => store
+    ..answers['reminderAsked'] = true
+    ..save();
+
+  Future<void> _allow() async {
+    final store = TrainerScope.of(context).store;
+    setState(() => _busy = true);
+    final error = await setReminder(context, true);
+    if (!mounted) return;
+    setState(() => _busy = false);
+    if (error != null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error)));
+    }
+    _close(store);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final store = TrainerScope.of(context).store;
+    return Padding(
+      padding: const EdgeInsets.only(top: 14),
+      child: AppCard(
+        key: const Key('reminder_nudge'),
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                const Icon(Ic.bellRing, color: TC.primary),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    tr(
+                      'Günlük hatırlatma ister misin?',
+                      'Would you like a daily reminder?',
+                    ),
+                    style: TT.title,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Text(
+              tr(
+                'Günde tek bir bildirim. Ayarlar\'dan istediğin zaman '
+                    'kapatabilirsin.',
+                'One notification a day. You can turn it off in Settings '
+                    'any time.',
+              ),
+              style: TT.small,
+            ),
+            const SizedBox(height: 12),
+            // Secondary on purpose: the route above keeps the one primary
+            // action on Today.
+            SoftButton(
+              key: const Key('reminder_allow'),
+              label: tr('Hatırlat', 'Remind me'),
+              onPressed: _busy ? null : _allow,
+            ),
+            TextLink(
+              tr('Şimdilik hayır', 'Not now'),
+              key: const Key('reminder_skip'),
+              onTap: _busy ? () {} : () => _close(store),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -818,9 +910,11 @@ class _DailyRoute extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final route = DailyRoute.forMinutes(store.dailyMinutes);
-    final lessonDone = store.sessionToday;
+    final route = routeFor(store.answers, store.dailyMinutes);
     final breathDone = store.breathedToday;
+    // A route without a ready lesson is done once the guide is done.
+    final lessonDone = route.lesson ? store.sessionToday : breathDone;
+    final pending = route.goal?.pendingContent;
     final hasRange = store.koroRange != null;
     final due = store.dueReview;
     final lesson = next;
@@ -854,26 +948,27 @@ class _DailyRoute extends StatelessWidget {
           done: due.isEmpty,
           onTap: due.isEmpty ? null : () => startReview(context),
         ),
-      _StepData(
-        key: 'route_lesson',
-        short: tr('Ders', 'Lesson'),
-        title: lesson == null
-            ? tr('${trainer.title} tamam', '${trainer.title} done')
-            : lesson.title,
-        subtitle: lesson == null
-            ? tr('Serbest pratikle devam et', 'Keep going with free practice')
-            : lesson.kind == NodeKind.intro
-            ? tr(
-                '${trainer.shortTitle} · kısa tanıtım',
-                '${trainer.shortTitle} · short introduction',
-              )
-            : tr(
-                '${trainer.shortTitle} · dinle, söyle, ayırt et',
-                '${trainer.shortTitle} · listen, sing, tell apart',
-              ),
-        icon: trainerIcon(trainer),
-        done: lessonDone,
-      ),
+      if (route.lesson)
+        _StepData(
+          key: 'route_lesson',
+          short: tr('Ders', 'Lesson'),
+          title: lesson == null
+              ? tr('${trainer.title} tamam', '${trainer.title} done')
+              : lesson.title,
+          subtitle: lesson == null
+              ? tr('Serbest pratikle devam et', 'Keep going with free practice')
+              : lesson.kind == NodeKind.intro
+              ? tr(
+                  '${trainer.shortTitle} · kısa tanıtım',
+                  '${trainer.shortTitle} · short introduction',
+                )
+              : tr(
+                  '${trainer.shortTitle} · dinle, söyle, ayırt et',
+                  '${trainer.shortTitle} · listen, sing, tell apart',
+                ),
+          icon: trainerIcon(trainer),
+          done: lessonDone,
+        ),
       if (route.voiceStep)
         _StepData(
           key: 'route_voice',
@@ -901,7 +996,11 @@ class _DailyRoute extends StatelessWidget {
         ),
     ];
     final String action;
-    if (lessonDone) {
+    if (!route.lesson) {
+      action = breathDone
+          ? tr('Bugünlük hazırlık tamam', 'Today\'s preparation is done')
+          : tr('Hazırlığa başla', 'Start preparing');
+    } else if (lessonDone) {
       action = tr('Bugünlük ders tamam', 'Today\'s lesson is done');
     } else if (lesson == null) {
       action = tr('Pratik yap', 'Practise');
@@ -1017,7 +1116,7 @@ class _DailyRoute extends StatelessWidget {
                 icon: Ic.play,
                 onPressed: lessonDone
                     ? null
-                    : lesson == null
+                    : route.lesson && lesson == null
                     ? () => Navigator.of(context).push(
                         MaterialPageRoute<void>(
                           builder: (_) => PracticeSetupScreen(trainer: trainer),
@@ -1036,6 +1135,7 @@ class _DailyRoute extends StatelessWidget {
               _RouteStep(data: steps[i], current: i == current && !lessonDone),
           ],
         ),
+        if (pending != null) _PendingContent(text: pending),
         const SizedBox(height: 2),
         Text(
           tr(
@@ -1048,6 +1148,38 @@ class _DailyRoute extends StatelessWidget {
       ],
     );
   }
+}
+
+/// Content the learner's goal needs but that is not ready yet: said plainly,
+/// never offered as a step.
+class _PendingContent extends StatelessWidget {
+  const _PendingContent({required this.text});
+  final String text;
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(bottom: 10),
+    child: AppCard(
+      key: const Key('route_pending'),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(Ic.hourglass, color: TC.muted),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(tr('Hazırlanıyor', 'In preparation'), style: TT.title),
+                const SizedBox(height: 2),
+                Text(text, style: TT.small),
+              ],
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
 }
 
 /// One labelled segment per route step; as many as the route has today.

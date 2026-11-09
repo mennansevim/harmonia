@@ -16,9 +16,10 @@ import '../domain/music.dart';
 import '../ui/audio_reactive_orb.dart';
 import '../ui/kit.dart';
 import 'range_ladder.dart';
+import 'range_score.dart';
 import 'range_visuals.dart';
 import 'pulse_chain.dart';
-import 'voice_waves.dart';
+import 'particle_flow.dart';
 import '../../domain/lang.dart';
 
 /// One sung take reduced to a single representative pitch, or a reason why
@@ -235,6 +236,10 @@ class _RangeTestScreenState extends State<RangeTestScreen>
   _Stage _stage = _Stage.intro;
   RangeLadder? _ladder;
   RangeAttempt? _last;
+
+  /// This run's score and its place among the learner's saved tests.
+  RangeScore? _score;
+  int? _rank, _tests;
   String? _failure;
   double _level = -60;
   StreamSubscription<double>? _levels;
@@ -401,6 +406,12 @@ class _RangeTestScreenState extends State<RangeTestScreen>
       // for a voice group. Settings can still change it.
       final part = suggestPart(bounds.lowMidi, bounds.highMidi);
       if (part != null) store.voicePart = part.name;
+      final score = _score = RangeScore.of(_ladder!);
+      if (score != null) {
+        store.addRangeScore(score.points);
+        _rank = personalRank(score.points, store.rangeScores);
+        _tests = store.rangeScores.length;
+      }
       store.save();
     }
     setState(() => _stage = _Stage.result);
@@ -411,6 +422,8 @@ class _RangeTestScreenState extends State<RangeTestScreen>
     setState(() {
       _ladder = null;
       _last = null;
+      _score = null;
+      _rank = _tests = null;
       _stage = _Stage.comfort;
     });
   }
@@ -584,6 +597,10 @@ class _RangeTestScreenState extends State<RangeTestScreen>
               textAlign: TextAlign.center,
               style: TT.body,
             ),
+            if (_score case final score?) ...[
+              const SizedBox(height: 16),
+              _ScoreCard(score: score, rank: _rank, tests: _tests),
+            ],
             const SizedBox(height: 20),
             KeyboardMap(
               low: (low - 3).clamp(rangeLadderNotes.first, low),
@@ -627,6 +644,205 @@ class _RangeTestScreenState extends State<RangeTestScreen>
         );
     }
   }
+}
+
+/// RANGE-04: the run's score, its personal place and the published
+/// reference band, with the calculation one tap away.
+class _ScoreCard extends StatelessWidget {
+  const _ScoreCard({required this.score, this.rank, this.tests});
+  final RangeScore score;
+  final int? rank, tests;
+
+  static String _pct(double v) => '${v.round()}';
+
+  @override
+  Widget build(BuildContext context) {
+    final band = switch (score.band) {
+      RangeBand.narrow => tr(
+        'Eğitimsiz yetişkinlerin tipik aralığından ($rangeTypicalLow–$rangeTypicalHigh yarım ses) dar',
+        'Narrower than the typical untrained adult range ($rangeTypicalLow–$rangeTypicalHigh semitones)',
+      ),
+      RangeBand.typical => tr(
+        'Eğitimsiz yetişkinler için tipik ($rangeTypicalLow–$rangeTypicalHigh yarım ses)',
+        'Typical for untrained adults ($rangeTypicalLow–$rangeTypicalHigh semitones)',
+      ),
+      RangeBand.wide => tr(
+        'Tipik aralıktan geniş, şarkıcı ortalamasının ($rangeSingerAverage yarım ses) altında',
+        'Wider than typical, below the singers\' average ($rangeSingerAverage semitones)',
+      ),
+      RangeBand.singer => tr(
+        'Araştırmadaki şarkıcı ortalaması ($rangeSingerAverage yarım ses) veya üstü',
+        'At or above the singers\' average in research ($rangeSingerAverage semitones)',
+      ),
+    };
+    final parts = [
+      (tr('Genişlik', 'Width'), score.width),
+      (tr('İsabet', 'Accuracy'), score.accuracy),
+      (tr('İlk denemede', 'First try'), score.firstTry),
+    ];
+    return AppCard(
+      key: const Key('range_score'),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(tr('ARALIK PUANI', 'RANGE SCORE'), style: TT.caps),
+              ),
+              IconButton(
+                key: const Key('range_score_info'),
+                tooltip: tr('Nasıl hesaplanır?', 'How is it calculated?'),
+                icon: const Icon(Ic.info, size: 20, color: TC.muted),
+                visualDensity: VisualDensity.compact,
+                onPressed: () => _explain(context),
+              ),
+            ],
+          ),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
+            children: [
+              Text(
+                '${score.points}',
+                key: const Key('range_score_points'),
+                style: TT.h1,
+              ),
+              Text(' / 100', style: TT.body),
+              const Spacer(),
+              if (rank != null && tests != null)
+                Text(
+                  tests == 1
+                      ? tr('İlk testin', 'Your first test')
+                      : tr(
+                          'Kendi $tests testin içinde $rank.',
+                          'No. $rank of your $tests tests',
+                        ),
+                  key: const Key('range_score_rank'),
+                  style: TT.small.copyWith(
+                    fontWeight: FontWeight.w800,
+                    color: rank == 1 && tests! > 1 ? TC.limeDeep : TC.ink,
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          for (final (label, value) in parts)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 3),
+              child: Row(
+                children: [
+                  SizedBox(width: 92, child: Text(label, style: TT.small)),
+                  Expanded(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: LinearProgressIndicator(
+                        value: value / 100,
+                        minHeight: 6,
+                        color: TC.primary,
+                        backgroundColor: TC.line,
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    width: 36,
+                    child: Text(
+                      _pct(value),
+                      textAlign: TextAlign.right,
+                      style: TT.small,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          const SizedBox(height: 8),
+          Text(band, key: const Key('range_score_band'), style: TT.small),
+        ],
+      ),
+    );
+  }
+
+  void _explain(BuildContext context) => showDialog<void>(
+    context: context,
+    builder: (context) => AlertDialog(
+      key: const Key('range_score_explain'),
+      backgroundColor: TC.card,
+      title: Text(tr('Puan nasıl hesaplanır?', 'How is the score calculated?')),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            for (final line in [
+              tr(
+                'Puan = %60 genişlik + %25 isabet + %15 ilk denemede tutma.',
+                'Score = 60% width + 25% accuracy + 15% first try.',
+              ),
+              tr(
+                'Genişlik: tutturduğun en pes ve en tiz nota arası yarım ses, '
+                    '$rangeScoreFullWidth yarım ses (3 oktav) = 100. Bu testte '
+                    '${score.semitones} yarım ses → ${_pct(score.width)}.',
+                'Width: semitones between your lowest and highest matched '
+                    'note; $rangeScoreFullWidth semitones (3 octaves) = 100. '
+                    'This test: ${score.semitones} semitones → '
+                    '${_pct(score.width)}.',
+              ),
+              tr(
+                'İsabet: tutturulan notaların çalınan notaya ortalama '
+                    'yakınlığı (40 cent içi tutturma sayılır) → '
+                    '${_pct(score.accuracy)}.',
+                'Accuracy: average closeness of matched notes to the played '
+                    'note (within 40 cents counts as matched) → '
+                    '${_pct(score.accuracy)}.',
+              ),
+              tr(
+                'İlk denemede: ölçülmüş bir ıskalama olmadan tutturulan '
+                    'notaların oranı → ${_pct(score.firstTry)}. Ölçülemeyen '
+                    'kayıt aleyhine sayılmaz.',
+                'First try: share of matched notes with no measured miss '
+                    'before → ${_pct(score.firstTry)}. An unmeasured take does '
+                    'not count against you.',
+              ),
+              tr(
+                'Yanlış oktav, ıskalanan veya ölçülemeyen nota asla '
+                    'tutturulmuş sayılmaz.',
+                'A note in the wrong octave, missed or unmeasured never '
+                    'counts as matched.',
+              ),
+              tr(
+                'Sıralama yalnız bu telefondaki kendi testlerinle '
+                    'karşılaştırır; başka kullanıcılarla değil.',
+                'The ranking compares only your own tests on this phone, '
+                    'not other users.',
+              ),
+              tr(
+                'Referans bant araştırmadan gelir: eğitimsiz yetişkinler '
+                    'genelde $rangeTypicalLow–$rangeTypicalHigh yarım ses '
+                    'söyler; küçük bir çalışmada (1972) şarkıcı olmayanlar '
+                    '≈18, şarkıcılar ≈$rangeSingerAverage yarım ses. Bir '
+                    'sıralama, ses tipi veya eğitmen değerlendirmesi değildir.',
+                'The reference band comes from research: untrained adults '
+                    'commonly sing $rangeTypicalLow–$rangeTypicalHigh '
+                    'semitones; in a small 1972 study non-singers averaged '
+                    '≈18 and singers ≈$rangeSingerAverage. It is not a ranking, '
+                    'a voice type or a teacher\'s assessment.',
+              ),
+            ])
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Text(line, style: TT.body),
+              ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(tr('Tamam', 'OK')),
+        ),
+      ],
+    ),
+  );
 }
 
 /// The running ladder: what to do now, the note, and the staircase.
@@ -793,12 +1009,14 @@ class _LadderView extends StatelessWidget {
                             : ladder.currentMidi;
                         return Column(
                           children: [
-                            VoiceWaves(
+                            ParticleFlow(
                               target: judged,
                               notation: notation,
                               pitchMidi: stage == _Stage.listening
                                   ? trace.lastOrNull
                                   : null,
+                              pitchSerial: trace.length,
+                              holdSeconds: _takeLength.inMilliseconds / 1000,
                               levelDb: level,
                               listening: stage == _Stage.listening,
                               reference: stage == _Stage.playing,

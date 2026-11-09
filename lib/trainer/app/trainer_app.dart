@@ -136,7 +136,7 @@ class _TrainerAppState extends State<TrainerApp> with WidgetsBindingObserver {
     if (!begin) return;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final nav = _navigator.currentState;
-      if (nav != null) startTodaySession(_store, nav);
+      if (nav != null) beginTodayRoute(_store, nav);
     });
   }
 

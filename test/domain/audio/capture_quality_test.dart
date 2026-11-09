@@ -62,6 +62,28 @@ CaptureQualityReport _assess(
 );
 
 void main() {
+  group('NoiseFloorCalibration diagnostics', () {
+    test('a constant offset shows up without changing the status', () {
+      final quiet = _noise(3, 0.001);
+      final offset = [for (final s in quiet) s + 0.125];
+      final c = _calibrate(offset);
+      expect(c.status, NoiseFloorStatus.tooNoisy);
+      expect(c.noiseFloorDb, closeTo(-18, 0.5));
+      expect(c.dcOffset, closeTo(0.125, 0.001));
+      expect(c.centredFloorDb, closeTo(-60, 1));
+      expect(c.peakDb, closeTo(-18, 0.5));
+      expect(c.toJson()['dcOffset'], c.dcOffset);
+    });
+
+    test('no diagnostics when the input was never analyzed', () {
+      final c = _calibrate(_noise(0.5, 0.001));
+      expect(c.status, NoiseFloorStatus.tooShort);
+      expect(c.dcOffset, isNull);
+      expect(c.peakDb, isNull);
+      expect(c.centredFloorDb, isNull);
+    });
+  });
+
   group('RoutePolicy', () {
     test('unknown or inferred routes are unverified, never allowed', () {
       expect(

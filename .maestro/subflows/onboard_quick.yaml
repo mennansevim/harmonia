@@ -1,4 +1,5 @@
-# Clean install → Today tab, as a choir singer (so the Koro tab exists).
+# Clean install → Today tab with the choir rehearsal goal (WIDE-01), which
+# ticks the choir box so the Koro tab exists. No mic or reminder prompt.
 appId: com.mennansevim.vocalart
 ---
 - launchApp:
@@ -10,14 +11,9 @@ appId: com.mennansevim.vocalart
     element: "Başlayalım"
     direction: DOWN
 - tapOn: "Başlayalım"
-- tapOn: "Bir koroda söylüyorum"
-- tapOn: "Devam"
-- tapOn: "Atla"
-- tapOn: "Ses: aralık, ritim, ezgi"
+- tapOn: "Koro provasına hazırlanmak"
 - tapOn: "Devam"
 - tapOn: "Devam"
-- tapOn: "Devam"
-- tapOn: "Şimdilik hayır"
 - scrollUntilVisible:
     element: "Ana sayfaya git"
     direction: DOWN

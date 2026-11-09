@@ -137,6 +137,8 @@ void main() {
     expect(find.byKey(const Key('mic_check_not_counted')), findsNothing);
     expect(find.byKey(const Key('mic_check_details')), findsOneWidget);
     expect(find.textContaining('ayrışma:'), findsOneWidget);
+    expect(find.byKey(const Key('mic_check_diagnostics')), findsOneWidget);
+    expect(find.textContaining('DC\'siz taban'), findsOneWidget);
     expect(find.textContaining('Puan değil'), findsOneWidget);
     // Two recordings, each read once and discarded (ADR-003).
     expect(backend.calls.where((c) => c == 'start').length, 2);

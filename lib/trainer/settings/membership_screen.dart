@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../ui/kit.dart';
 import '../../domain/lang.dart';
+import 'human_review_preview_screen.dart';
 
 enum _Plan { premium, plus, choir }
 
@@ -21,6 +22,7 @@ class _MembershipScreenState extends State<MembershipScreen> {
   @override
   Widget build(BuildContext context) {
     final premium = _plan == _Plan.premium;
+    final plus = _plan == _Plan.plus;
     final choir = _plan == _Plan.choir;
     return Scaffold(
       backgroundColor: TC.canvas,
@@ -160,8 +162,17 @@ class _MembershipScreenState extends State<MembershipScreen> {
                         const SizedBox(height: 6),
                         BigButton(
                           key: Key('membership_cta'),
-                          label: tr('Henüz satışta değil', 'Not on sale yet'),
-                          onPressed: null,
+                          label: plus
+                              ? tr('Akışı incele', 'Preview the flow')
+                              : tr('Henüz satışta değil', 'Not on sale yet'),
+                          onPressed: plus
+                              ? () => Navigator.of(context).push(
+                                  MaterialPageRoute<void>(
+                                    builder: (_) =>
+                                        const HumanReviewPreviewScreen(),
+                                  ),
+                                )
+                              : null,
                         ),
                         const SizedBox(height: 10),
                         Text(

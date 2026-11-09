@@ -12,15 +12,10 @@ appId: com.mennansevim.vocalart
     element: "Get started"
     direction: DOWN
 - tapOn: "Get started"
-- takeScreenshot: qa/artifacts/evidence/en/02_role
-- tapOn: "I sing in a choir"
-- tapOn: "Continue"
-- tapOn: "Skip"
-- tapOn: "Voice: range, rhythm, melody"
+- takeScreenshot: qa/artifacts/evidence/en/02_goal
+- tapOn: "Get ready for choir rehearsal"
 - tapOn: "Continue"
 - tapOn: "Continue"
-- takeScreenshot: qa/artifacts/evidence/en/04_reminder
-- tapOn: "Not now"
 - takeScreenshot: qa/artifacts/evidence/en/05_ready
 - scrollUntilVisible:
     element: "Go to home"

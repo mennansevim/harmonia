@@ -3016,6 +3016,33 @@ yetki yüzünden okuyamadı, ekranlar tarayıcıda gezildi) → inceleme ve plan
 - Önceki 1.0.0 (2) IPA `build/ios/ipa-1.0.0+2/` altına taşındı.
 - Upload, TestFlight, cihaz kurulumu yapılmadı (ayrı kullanıcı yetkisi).
 
+## 2026-11-05 — REL-11i tüm privacy manifest zinciri
+
+- `verify_all_privacy_manifests`, ana app altındaki tüm app/framework/plugin
+  `PrivacyInfo.xcprivacy` dosyalarını bounded plist olarak okuyor (en çok 100).
+- Her manifest `tracking=false`, boş tracking-domain ve collected-data listesi
+  taşımalı; required-reason API girdilerinde non-empty kategori ve neden listesi
+  zorunlu. App-owned exact FileTimestamp/C617.1 kapısı ayrıca korunuyor.
+- Embedded tracking ve bozuk required-reason beyanı testleriyle Python paketi
+  14/14; pycompile ve diff check temiz.
+- Gerçek 1.0.0 (6) IPA'da app manifesti, Flutter framework ve 6 plugin bundle
+  olmak üzere 8 privacy manifest geçti.
+- Mağaza gizlilik formu, hukuk incelemesi, upload ve cihaz kabulü yapılmadı.
+
+## 2026-11-05 — REL-11h device platform/minimum OS kapısı
+
+- `verify_device_platforms`, ana app ve embedded framework executable'larının
+  `LC_BUILD_VERSION` bilgisini `/usr/bin/xcrun vtool -show-build` ile okuyor.
+- Exact `IOS` dışında platform reddedilir; böylece `lipo`da arm64 görünen Apple
+  Silicon simulator slice'ı da geçemez.
+- Ana Mach-O minimum OS app Info.plist ile exact-match; embedded framework
+  minimum OS değeri uygulamanınkinden büyük olamaz.
+- Simulator ve uyumsuz framework senaryolarıyla Python paketi 13/13;
+  pycompile temiz. Gerçek 1.0.0 (6) IPA'da Runner 15.0, App/Flutter/objective_c
+  framework'leri IOS 13.0 — 4 bundle geçti.
+- Upload, App Store sunucu kabulü, fiziksel cihaz çalışma/performance kanıtı
+  değildir.
+
 ## 2026-11-04 — MIC-01 mikrofon testi (tanışma + Ayarlar)
 
 - `lib/domain/audio/mic_check.dart`: `MicCheckStatus` (ready, noisyRoom,
@@ -3479,6 +3506,35 @@ Commit yok.
   mikrofonu sessiz olduğundan tutturma görünümü test içi PNG ile kontrol
   edildi. Gerçek cihaz ve sesle doğrulanmadı.
 
+## 2026-11-05 — REL-11f paketlenmiş privacy manifest kapısı
+
+- `verify_app_privacy_manifest`, ana app'in `PrivacyInfo.xcprivacy` dosyasını
+  bounded IPA girdisinden plist olarak okuyor; eksik/bozuk dosya reddediliyor.
+- Ürün sözleşmesi artifact seviyesinde exact: `NSPrivacyTracking=false`, boş
+  tracking-domain ve collected-data listeleri, yalnız FileTimestamp /
+  `C617.1` required-reason API beyanı.
+- Eksik manifest, tracking, toplanan veri ve yanlış reason senaryoları eklendi;
+  Python doğrulayıcı paketi 11/11 ve pycompile temiz. Tam kalite kapısı 1308
+  test + 2 opt-in skip, analyze/format temiz geçti.
+- Gerçek `build/ios/ipa/Vocalart.ipa` geçti: 1.0.0 (5), App Store imzası,
+  entitlement zinciri ve paketlenmiş privacy manifest doğrulandı.
+- Bu kapı mağaza gizlilik formunu, hukuk incelemesini, upload'ı veya cihaz
+  kabulünü tamamlamaz.
+
+## 2026-11-05 — REL-11g device mimarisi kapısı
+
+- `verify_device_architectures`, bounded extraction sonrasında ana app ve
+  doğrudan gömülü `.framework` bundle'larının Info.plist/executable bağını
+  doğrulayıp `lipo -archs` çalıştırıyor.
+- Her executable exact `arm64` olmalı; eksik/bozuk bundle, x86_64 simulator
+  slice veya universal/karışık architecture fail-closed.
+- Eksik ve simulator architecture kanıtı testleriyle Python paketi 12/12;
+  pycompile ve `git diff --check` temiz.
+- Gerçek 1.0.0 (5) IPA geçti: Runner, App.framework, Flutter.framework ve
+  objective_c.framework — toplam 4 Mach-O bundle yalnız arm64.
+- Bu yerel artifact kapısı App Store sunucu kabulü, upload veya fiziksel cihaz
+  çalışma/performance kanıtı değildir.
+
 ## 2026-11-06 — FX-06 "sıra sende" sahnesi, aralık testi
 
 **Kullanıcı isteği:** "Şimdi sen söyle" anlaşılır değil; ekran büyüsün,
@@ -3503,3 +3559,672 @@ Commit yok.
 - Analyze ve format temiz; tam test **1309 geçti, 2 skip**.
 - Simülatörde piyano, sıra sende ve geri sayım görüldü. Gerçek ses ve
   cihazla doğrulanmadı.
+
+## 2026-11-06 — REL-15 IPA 1.0.0+6
+
+- Kaynak: commit 915049b (FX-06 dahil). Çalışma ağacında başka oturumun
+  commit edilmemiş doğrulayıcı/belge değişiklikleri vardı; uygulama kodu
+  commit ile aynı.
+- `pubspec.yaml` 1.0.0+5 → 1.0.0+6; önceki IPA `build/ios/ipa-1.0.0+5/`.
+- `flutter build ipa --release --dart-define=RESONIA_CHANNEL=beta
+  --export-options-plist=build/ios/ipa-1.0.0+5/ExportOptions.plist` exit 0;
+  `build/ios/ipa/Vocalart.ipa` 33,2 MB. Uyarı: açılış görseli varsayılan.
+- `python3 -I scripts/release/test_verify_ios_ipa.py`: 12/12.
+  `verify_ios_ipa.py --pubspec pubspec.yaml`: passed — 1.0.0 (6), iOS 15.0,
+  imza, imzalı entitlement, privacy manifest, cihaz mimarisi; Apple
+  Distribution L3Z9U2B39K, profile 2027-09-25.
+- Upload, TestFlight, cihaz kurulumu yapılmadı (ayrı kullanıcı yetkisi).
+
+## 2026-11-05 — ONB-ROLE-02 çoklu rol seçimi
+
+- Onboarding rol adımı `multi: true`; seçimler `answers['role']` listesinde.
+- `TrainerStore.roles` eski tek-string kaydı da okur; `inChoir` Koro sekmesi
+  (`home_shell.dart`) ve Hazır özetinde kullanılır.
+- Rol eğitim paketini/rotayı değiştirmez; odak (`focus`) ilk trainer'ı seçer.
+- `dart tool/quality_check.dart`: format/analyze temiz, 1309 test geçti, 2 skip.
+- Açık: cihazda MIC-01 sessiz odada −18 dBFS "ortam gürültülü" raporu
+  (kullanıcı gözlemi); eşik değiştirilmedi.
+
+## 2026-11-05 — MIC-02 gürültü tabanı tanı değerleri
+
+- Kullanıcı gerçek iPhone'da sessiz odada "Ortam gürültülü, −18 dBFS" gördü.
+  WAV okuma (`Pcm16Wav.decode`) ve 20 ms RMS yolu incelendi, hata bulunmadı.
+- `NoiseFloorCalibration` artık yalnız tanı amaçlı `dcOffset`, `peakDb`,
+  `centredFloorDb` (DC çıkarılmış medyan) taşır; `toJson`'a eklendi. Status,
+  eşikler (−45 dBFS, 12 dB burst) ve skor **değişmedi**.
+- Mikrofon testi sonuç kartında ikinci satır: DC · tepe · DC'siz taban ·
+  giriş › çıkış route.
+- Testler: sabit ofsetli sentetik sessizlik tooNoisy kalır ama DC'siz taban
+  ≈ −60 dBFS görünür; analiz edilmeyen girdide tanı null. Tam kapı 1311 test
+  geçti, 2 skip; format/analyze temiz.
+- Açık: kök neden cihazda tekrar ölçümle belirlenecek (DC mi, hoparlörden çalan
+  ses mi, gerçek gürültü mü). Sentetik test cihaz kapısını geçmez.
+
+## 2026-11-05 — REL-16 IPA 1.0.0+7
+
+- Kaynak: commit 915049b + commit edilmemiş ONB-ROLE-02 (çoklu rol) ve MIC-02
+  (mikrofon testi tanı satırı). Commit oluşturulmadı.
+- `pubspec.yaml` 1.0.0+6 → 1.0.0+7; önceki IPA `build/ios/ipa-1.0.0+6/`.
+- `flutter build ipa --release --dart-define=RESONIA_CHANNEL=beta
+  --export-options-plist=build/ios/ipa-1.0.0+6/ExportOptions.plist` exit 0;
+  `build/ios/ipa/Vocalart.ipa` 33,5 MB. Uyarı: açılış görseli varsayılan.
+- `python3 -I scripts/release/test_verify_ios_ipa.py`: 14/14.
+  `verify_ios_ipa.py --pubspec pubspec.yaml`: passed — 1.0.0 (7), iOS 15.0,
+  imza, entitlement, privacy manifest, cihaz mimarisi; Apple Distribution
+  L3Z9U2B39K, profile 2027-09-25.
+- Yüklenmedi; TestFlight/cihaz kurulumu kullanıcıda. Yerel artifact kapısı
+  cihaz veya mikrofon kanıtı değildir.
+
+## 2026-11-05 — FX-07 ses dalgası kararlılığı + aralık sıralaması araştırması
+
+- Sorun (kullanıcı, cihaz): ses verilince dalganın sol (geçmiş) tarafı
+  titriyor. Neden: painter geçmişi her karede sabit 4 px ekran adımlarında
+  yeniden örnekliyordu; şekil ve cümle kenarları ±4 px "sürünüyordu".
+- `WaveTrack` artık örneklere kaymayan id verir (`newestId`, `byId`,
+  `ageOf`); painter geçmişi her 6. örneğe (id ile, ≈3 px) sabitler, her nokta
+  kendi anıyla sola kayar. Kısa cümle eşiği nokta sayısı yerine 24 px iz.
+- Altı dalga katmanı artık hep sağdan sola, izin hızına yakın (0,85–1,30×
+  parallax) akar; önceden tek/çift katmanlar ters yönlere gidiyordu.
+- Test: id'ler pencere düşerken kaymaz, yaş düzenli artar. Tam kapı 1312
+  test + 2 skip, analyze/format temiz. Akıcılık cihazda görülmedi.
+- Sıralama/puan: araştırma yapıldı, kod yok. Rubrik ve "sıralama"
+  karşılaştırma tabanı kullanıcı kararı bekliyor (kişisel geçmiş / literatür
+  bandı / gerçek kullanıcılar — sonuncusu sunucu + izin gerektirir).
+  Referans: eğitimsiz yetişkin şarkı aralığı ≈12–18 yarım ton; 1972 ASHA
+  çalışmasında şarkıcı olmayanlar ≈18, şarkıcılar ≈23 yarım ton (modal).
+
+## 2026-11-05 — RANGE-04 aralık puanı, kişisel sıralama, bilgi penceresi
+
+- Kullanıcı kararı: "optimum şekilde hesapla" + nasıl hesaplandığı bilgi
+  butonuyla popup'ta. Seçilen: puan + kişisel sıralama + araştırma bandı;
+  başka kullanıcılarla sıralama yok (sunucu/izin yok).
+- `lib/trainer/koro/range_score.dart`: puan = 0,60·genişlik + 0,25·isabet +
+  0,15·ilk deneme (her biri 0–100). Genişlik = yarım ses / 36 (3 oktavda
+  tavan). İsabet = eşleşen alımların ortalama `closeness` değeri. İlk deneme =
+  öncesinde ölçülmüş ıskalama olmadan eşleşen nota oranı; `unmeasured` aleyhe
+  sayılmaz. Octave-off/missed/unmeasured hiç eşleşme sayılmaz. Merdiven eşiği
+  ve toleranslar değişmedi.
+- Araştırma bandı (sıralama değil): <12 dar, 12–18 eğitimsiz yetişkin için
+  tipik, 19–22 tipikten geniş, ≥23 şarkıcı ortalaması (JSHR 1972: şarkıcı
+  olmayan ≈18, şarkıcı ≈23; örneklem küçük).
+- `TrainerStore.rangeScores` (son 50, 0–100, kalıcı); `personalRank` eşitlikte
+  daha iyi sırayı verir.
+- Sonuç ekranı: "ARALIK PUANI" kartı (puan/100, üç çubuk, kişisel sıra, bant)
+  ve ⓘ butonu → hesaplamayı bu testin sayılarıyla açıklayan AlertDialog.
+- Testler: `range_score_test.dart` (ağırlıklar, parçalar, unmeasured, sıra,
+  kalıcılık) + akış testinde puan 62, popup açılıp kapanıyor. Tam kapı 1321
+  test + 2 skip, format/analyze temiz.
+- Sınırlar: ağırlıklar ve 36 yarım ton tavanı benchmark değil, ürün kararı;
+  insan/eğitmen holdout ile doğrulanmadı. Cihazda görülmedi.
+
+## 2026-11-05 — REL-17 IPA 1.0.0+8
+
+- Kaynak: commit 915049b + commit edilmemiş ONB-ROLE-02, MIC-02, FX-07
+  (dalga kararlılığı) ve RANGE-04 (aralık puanı/sıra/bilgi penceresi).
+- `pubspec.yaml` 1.0.0+7 → 1.0.0+8; önceki IPA `build/ios/ipa-1.0.0+7/`.
+- `flutter build ipa --release --dart-define=RESONIA_CHANNEL=beta
+  --export-options-plist=build/ios/ipa-1.0.0+7/ExportOptions.plist` exit 0;
+  `build/ios/ipa/Vocalart.ipa` 33,5 MB.
+- `test_verify_ios_ipa.py` OK; `verify_ios_ipa.py --pubspec pubspec.yaml`:
+  passed — 1.0.0 (8), iOS 15.0, imza, entitlement, privacy manifest, cihaz
+  mimarisi; Apple Distribution L3Z9U2B39K, profile 2027-09-25.
+- Yüklenmedi; cihaz/mikrofon kanıtı değildir.
+
+## 2026-11-06 — REL-11j iOS izin/ürün beyanı kapısı
+
+- `verify_ios_product_contract`, paketlenmiş ana Info.plist'i iPhoneOS device
+  platformu/SDK, `LSRequiresIPhoneOS`, arm64 capability ve exact en+tr
+  localization sözleşmesine bağlıyor.
+- Beklenmeyen `UIBackgroundModes` ve `NSAllowsArbitraryLoads=true` reddedilir.
+- Root, `en.lproj` ve `tr.lproj` InfoPlist metinlerindeki mikrofon açıklaması
+  yalnız kullanıcı kayıt başlatınca cihazda kayıt/dinletme ürün beyanıyla exact
+  eşleşir; eksik veya generic metin fail-closed.
+- Simulator platformu, background audio, eksik localization ve değişmiş izin
+  metni testleriyle Python paketi 16/16; pycompile temiz.
+- Gerçek 1.0.0 (8) IPA izin/ürün kapısından geçti. Fiziksel izin diyaloğu,
+  kalıcı ret → Ayarlar dönüşü, upload ve App Store kabulü yapılmadı.
+
+## 2026-11-06 — FX-08 parçacık akışı, aralık testi
+
+**Kullanıcı isteği:** Ses aralığı ekranındaki ses dalgasını sakin bir
+"Parçacık akışı" ile değiştir; ekran düzeni, nota çizgileri, hedef bandı ve
+test akışı korunsun; önizlemede hedefin altından A3'e yaklaşıp 3 sn kalan
+demo, gerçek mikrofon verisinden ayrı. Commit yok.
+
+### Uygulananlar
+
+- `lib/trainer/koro/particle_flow.dart`: `ParticleFlow` (VoiceWaves ile aynı
+  girdiler + `pitchSerial`, `holdSeconds`). 1024'lük sabit havuz, tek
+  `drawVertices` çağrısı (yumuşak kenarlı altıgen parçacık), kare başına
+  ayırma yok. `PitchSpikeGate` (≥150 sent sıçrama 3 tahminle onaylanır),
+  1€ filtresi, `waveLock` ve `voiceWavesOnNoteCents` `voice_waves.dart`'tan
+  paylaşılır. `flowColor`: mor → yumuşak yeşil (TC.teal) ton rampası.
+  Ses şiddeti yalnız yayım hızı/yayılma; dikey konum yalnız perde. Ses yokken
+  yayım yok, filtre 0,15 sn sonra sıfırlanır, her şey söndüğünde ticker durur.
+  ✓ yalnız `flash` (kaydın gerçek yargısı) ile; halka hedefteki süreyi
+  gösterir, başarı değildir. Azaltılmış harekette parçacık/hale çizilmez.
+- `lib/trainer/koro/range_test.dart`: `VoiceWaves` → `ParticleFlow`;
+  `pitchSerial: trace.length`, `holdSeconds` = `_takeLength`.
+- `lib/trainer/koro/particle_flow_demo.dart`: `ParticleFlowDemoScript`
+  (0,4 sn sessizlik, 1,8 sn A3'ün 2,6 yarım ton altından yükseliş, 3 sn
+  tutuş, 1,6 sn dinlenme; döngü), `ParticleFlowDemo` ("DEMO · ÖRNEK VERİ"),
+  `@Preview`. Uygulama tarafından içe aktarılmaz.
+- `test/trainer/particle_flow_test.dart`: sıçrama kapısı, renk uçları, demo
+  senaryosu (3 sn pencere içinde, ✓ tutuş bitmeden yok), widget çizimi ve
+  sessizlikte ticker'ın durması, azaltılmış hareket, demo önizlemesi.
+
+### Doğrulama ve sınırlar
+
+- `dart tool/quality_check.dart`: format/analyze temiz, **1329 geçti, 2 skip**.
+- Demo kareleri (1,7 / 4,0 / 5,4 sn) test ortamında PNG olarak render edilip
+  incelendi: mor başlangıç, A3'te yeşil dengelenme, ✓ yalnız tutuş sonrası.
+- Gerçek ses, mikrofon, cihaz performansı ve ekran okuyucu ile
+  doğrulanmadı. Sıçrama kapısı eşikleri insan sesi benchmark'ı değildir.
+- `voice_waves.dart` içindeki `VoiceWaves` widget'ı artık ekranda
+  kullanılmıyor; filtre/kural kaynağı ve mevcut testleri için yerinde
+  bırakıldı.
+
+## 2026-11-06 — REL-18 IPA 1.0.0+9
+
+- Kaynak: commit 915049b + commit edilmemiş çalışma ağacı (FX-08 parçacık
+  akışı dahil). Öncesinde tam kalite kapısı 1329 geçti, 2 skip.
+- `pubspec.yaml` 1.0.0+8 → 1.0.0+9; önceki IPA `build/ios/ipa-1.0.0+8/`.
+- `flutter build ipa --release --dart-define=RESONIA_CHANNEL=beta
+  --export-options-plist=build/ios/ipa-1.0.0+8/ExportOptions.plist` başarılı;
+  `build/ios/ipa/Vocalart.ipa` 33,2 MB. Uyarı: açılış görseli varsayılan.
+- `test_verify_ios_ipa.py` 16/16; `verify_ios_ipa.py --pubspec pubspec.yaml`:
+  passed — 1.0.0 (9), iOS 15.0, imza, entitlement, izin beyanı, 8 privacy
+  manifest, 4 Mach-O bundle; Apple Distribution L3Z9U2B39K, profile
+  2027-09-25.
+- Aynı kaynak release olarak iPhone'a (kablosuz) kurulup açıldı; parçacık
+  akışı gerçek sesle henüz değerlendirilmedi. Yüklenmedi, TestFlight yok.
+
+## 2026-11-06 — UI-01c markalı iOS açılış ekranı
+
+- `ios/Runner/Base.lproj/LaunchScreen.storyboard`: varsayılan Flutter
+  `LaunchImage` kaldırıldı; native, ortalanmış sistem yazısıyla patlıcan
+  `Vocalart`, lime vurgu çizgisi ve krem `LaunchBackground` eklendi.
+- `LaunchBackground.colorset` açık tema rengi `#F8F5EF` olarak marka
+  paletiyle eşlendi. Kullanılmayan eski LaunchImage asset dosyaları silinmedi;
+  storyboard artık onları referanslamıyor.
+- `release_identity_test.dart` marka metnini, renkleri, named background'u ve
+  `LaunchImage` referansı bulunmadığını fail-closed denetliyor.
+- Doğrulama: `ibtool` hata/uyarı/notices vermeden derledi; `flutter build ios
+  --simulator --debug --no-codesign --no-pub` başarılı; `flutter analyze
+  --no-pub` temiz; hedef test 4/4. Tam `dart tool/quality_check.dart`: **1330
+  geçti, 2 opt-in skip**, format/analyze temiz.
+- Fiziksel cihazda yeni launch görünümü izlenmedi. REL-18 imzalı 1.0.0+9 IPA
+  bu değişiklikten önce üretildi; UI-01c'yi içermez. Yeni imzalı artifact,
+  upload veya TestFlight yapılmadı.
+
+## 2026-11-06 — UI-01d Android launch eşitliği ve iOS koyu tema kontrastı
+
+- Android 11 ve öncesi `launch_background.xml` dosyaları artık marka
+  foreground simgesini yoğunluğa duyarlı olarak merkezliyor; Android 12+
+  açık/koyu `LaunchTheme`, `windowSplashScreenAnimatedIcon` ve icon background
+  rengini explicit tanımlıyor. Açık launch rengi `#F8F5EF` ile iOS krem
+  yüzeyine eşlendi; gece rengi mevcut `#0F1022` olarak kaldı.
+- iOS storyboard sabit metin/vurgu RGB'leri yerine `LaunchBrand` ve
+  `LaunchAccent` named color asset'lerini kullanıyor. `LaunchBrand` koyu
+  görünümde krem olduğundan patlıcan metin koyu zeminde kaybolmuyor.
+- `release_identity_test.dart` iOS dynamic renk sözleşmesini, Android legacy
+  simge katmanlarını ve Android 12+ explicit splash özniteliklerini doğruluyor:
+  5/5 hedef test geçti. `ibtool` hata/uyarı/notices yok; analyze temiz.
+- İlk debug APK denemesi kaynak hatası olmadan disk doluluğunda durdu. İmzalı
+  IPA klasörlerine dokunulmadan yalnız yeniden üretilebilir
+  `.dart_tool/flutter_build`, `build/test_cache` ve Android intermediates
+  temizlendi; ikinci derleme başarılı: `build/app/outputs/flutter-apk/app-debug.apk`.
+  `aapt2 dump resources`, krem/koyu launch renklerini, foreground kaynaklarını
+  ve v31/v31-night splash özniteliklerini paket içinde doğruladı.
+- Tam `dart tool/quality_check.dart`: format/analyze temiz, **1331 geçti,
+  2 opt-in skip**. Fiziksel Android/iOS açık-koyu görünümü, imzalı release
+  APK/AAB, UI-01c/d içeren yeni IPA ve mağaza kabulü yapılmadı.
+
+## 2026-11-06 — REL-19 yerel Android beta release APK ve izin daraltma
+
+- `ORG_GRADLE_PROJECT_allowDebugReleaseSigning=true flutter build apk
+  --release --dart-define=RESONIA_CHANNEL=beta --no-pub` ile yerel release
+  varyantı üretildi. Bu explicit istisna olmadan gerçek keystore yoksa Gradle
+  fail-closed kalıyor.
+- İlk artifact denetimi, ana manifestte istenmeyen fakat `open_filex` ve
+  Media3'ten birleşen READ_EXTERNAL_STORAGE, READ_MEDIA_IMAGES/VIDEO/AUDIO ve
+  ACCESS_NETWORK_STATE izinlerini buldu. Koro dosya seçimi seçilen girdiyi
+  `ChoirStore.addMedia` ile app-owned alana kopyaladığı, oynatma/açma bu kopyayı
+  kullandığı için geniş medya izinleri gerekmiyor. Main manifest bunları
+  `tools:node="remove"` ile çıkarıyor; mikrofon, reboot, titreşim ve bildirim
+  izinleri korunuyor.
+- Yeniden üretilen `build/app/outputs/flutter-apk/app-release.apk`:
+  76.452.708 byte; SHA-256
+  `cd937d250d113b26a52df1747016e8ed0a3daa0bc7ceb377b8629204108ead12`.
+  `aapt`: `com.mennansevim.vocalart`, 1.0.0+9, minSdk24/targetSdk36 ve exact
+  izin listesi. `apksigner`: tek signer, v2 doğrulandı, sertifika
+  `C=US, O=Android, CN=Android Debug`. `aapt2`: UI-01d açık/koyu splash
+  renkleri ve v31 icon öznitelikleri artifact içinde.
+- Kaynak sözleşmesi 5/5, analyze temiz; tam `quality_check`: **1331 geçti,
+  2 opt-in skip**, format/analyze temiz. Debug sertifikalı APK mağazaya
+  yüklenemez. Gerçek keystore ile AAB, Play kabulü, fiziksel dosya seç/aç,
+  bildirim/reboot/mikrofon ve launch QA yapılmadı.
+
+## 2026-11-06 — FX-09 nefes akışı, nefes egzersizi
+
+**Kullanıcı isteği:** Nefes egzersizi için derin nefes al · tut · bırak
+animasyonu; aralık testindeki parçacık akışı kalitesinde ve uygulamanın
+çekirdek efektlerinden biri olsun. Commit yok.
+
+### Uygulananlar
+
+- `lib/trainer/ui/breath_flow.dart`: `BreathKind`, `BreathStep`, saf
+  `breathAt` (adım, adım içi ilerleme, sinüs eğrili doluluk; tut önceki
+  adımın doluluğunu korur) ve `BreathFlow` widget'ı. Rehberin 100 ms'lik
+  saati ile arasında ≤0,12 sn önde akan pürüzsüz iç saat; 0,3 sn'den büyük
+  farkta senkron. Al/tut/ver için ayrı parçacık davranışı, `flowColor` ile
+  mor → mavi-yeşil → yumuşak yeşil, ince adım halkası, `@Preview`.
+- `lib/trainer/prepare/breath_screen.dart`: `BreathPhase.kind`; `_RingPainter`
+  yerine `BreathFlow` (sayı ve fiil kürenin ortasında, semantik etiket aynı).
+  Zamanlayıcı, haptik, duraklatma ve tamamlama mantığı değişmedi.
+- `test/trainer/breath_flow_test.dart`: doluluk eğrisi, sıçramasızlık, döngü,
+  boş tutma; çalışırken animasyon, duraklat/bitti/azaltılmış harekette
+  ticker'ın durması.
+
+### Doğrulama ve sınırlar
+
+- `dart format --output=none --set-exit-if-changed lib test` temiz; tam test
+  **1337 geçti, 2 skip**. `flutter analyze` ve `quality_check` format adımı
+  yalnız bu işe ait olmayan commit edilmemiş
+  `tool/brand/render_icons_test.dart` için uyarı veriyor; dokunulmadı.
+- Al/tut/ver kareleri test ortamında render edilip incelendi. Cihazda,
+  gerçek kare hızında ve eğitimci onaylı nefes deseniyle görülmedi.
+
+
+## 2026-11-06 — FX-10 noktalı nefes halkaları
+
+**Kullanıcı isteği:** Nefes egzersizi animasyonu, ses analizindeki halka
+efekti kalitesinde yuvarlak halkalar kullansın; Apple Watch tarzı noktalardan
+oluşan halka olabilir. Commit yok.
+
+### Uygulananlar
+
+- `lib/trainer/ui/breath_flow.dart`: parçacık havuzu ve `drawVertices`
+  kaldırıldı. Yeni çizim: yumuşak parıltı, sayının okunduğu açık orta disk,
+  60 noktalı adım kadranı (ilerleme noktaları renge döner, öndeki büyür),
+  her biri 44 noktalı 4 akan halka (yolun ortasında en parlak, uçlarda
+  söner; komşu halkalar ters yönde yavaş döner, nokta boyunda dalga).
+  Akış hızı al −0,32, tut 0,03, ver 0,26 (yol payı/sn), EMA ile değişir;
+  `motion` duraklatınca 0'a iner, `settled` ile ticker durur. Kamu API'si
+  (`BreathFlow`, `breathAt`, `BreathKind`, `BreathStep`) aynı.
+- `test/trainer/breath_flow_test.dart`: duraklatma testinin adı yeni
+  davranışa göre güncellendi; 6 test geçti.
+
+### Doğrulama ve sınırlar
+
+- Format temiz; tam test **1337 geçti, 2 skip**. `flutter analyze` yalnız
+  bu işe ait olmayan `tool/brand/render_icons_test.dart` bilgisini veriyor.
+- 2,0 / 3,9 / 5,0 / 8,0 / 11,5 sn kareleri test ortamında render edilip
+  incelendi. Cihazda, gerçek kare hızında görülmedi.
+
+## 2026-11-06 — REL-20 IPA 1.0.0+10
+
+- Kaynak: commit 915049b + commit edilmemiş çalışma ağacı (FX-09 nefes akışı
+  dahil). `breath_flow.dart` ve testi derleme sırasında başka bir el
+  tarafından güncellendi; IPA güncel kaynaktan (19:27 dosyası) yeniden
+  üretildi. Öncesinde analyze (ilgili dosyalar) temiz, tam test 1337 geçti,
+  2 skip.
+- `pubspec.yaml` 1.0.0+9 → 1.0.0+10; önceki IPA `build/ios/ipa-1.0.0+9/`.
+- `flutter build ipa --release --dart-define=RESONIA_CHANNEL=beta
+  --export-options-plist=build/ios/ipa-1.0.0+9/ExportOptions.plist` başarılı;
+  `build/ios/ipa/Vocalart.ipa` 33.737.813 byte, SHA-256
+  `0df00194785cc05043c89b64da6cac5ff7f6c9f3875001473185fe8b023db607`.
+  Uyarı: Flutter launch image uyarısı (native storyboard UI-01c ile değişti).
+- `test_verify_ios_ipa.py` 16/16; `verify_ios_ipa.py --pubspec pubspec.yaml`:
+  passed — 1.0.0 (10), iOS 15.0, imza, entitlement, izin beyanı, 8 privacy
+  manifest, 4 Mach-O bundle; Apple Distribution L3Z9U2B39K, profile
+  2027-09-25.
+- Yüklenmedi, TestFlight ve cihaz kurulumu yok.
+
+
+## 2026-11-06 — IPA 1.0.0+11 (FX-10 noktalı nefes halkaları)
+
+- Kaynak: commit edilmemiş çalışma ağacı (FX-10 dahil).
+- `pubspec.yaml` 1.0.0+10 → 1.0.0+11; 19:32'de üretilmiş önceki IPA
+  `build/ios/ipa-1.0.0+10/` altına taşındı.
+- `flutter build ipa --release --dart-define=RESONIA_CHANNEL=beta
+  --export-options-plist=<aynı ExportOptions, manageAppVersionAndBuildNumber=false>`
+  exit 0; `build/ios/ipa/Vocalart.ipa` 34,0 MB. Uyarı: açılış görseli
+  Flutter varsayılanı.
+- `verify_ios_ipa.py --pubspec pubspec.yaml`: passed — 1.0.0 (11), iOS 15.0,
+  codesign doğrulandı, Apple Distribution L3Z9U2B39K, profile 2027-09-25.
+- Upload, TestFlight, cihaz kurulumu yapılmadı (ayrı kullanıcı yetkisi).
+
+## 2026-11-06 — BRAND-02 fotogerçekçi uygulama ikonu + IPA 1.0.0+12
+
+- İkon kaynağı vektör çizimden kullanıcının fotogerçekçi render'ına geçti
+  (`tool/brand/source/logo_master.webp`, "krem orta" kırpım). Commit
+  `0a4b796`: iOS normal (alfasız RGB PNG), koyu ve tinted; Android legacy,
+  adaptive ön katman, monochrome; adaptive arka plan `#F7E8D8`.
+  Üretim: `flutter test tool/brand/render_icons_test.dart`.
+- Kalite kapısı: `dart tool/quality_check.dart` temiz (1337 geçti, 2 skip).
+- `pubspec.yaml` 1.0.0+11 → 1.0.0+12; önceki IPA `build/ios/ipa-1.0.0+11/`.
+  `flutter build ipa --release --dart-define=RESONIA_CHANNEL=beta
+  --export-options-plist=<REL-12 ExportOptions>` exit 0, 35,9 MB.
+  `verify_ios_ipa.py`: passed — 1.0.0 (12), Apple Distribution
+  L3Z9U2B39K. Pakette 120 px ikon alfasız ve yeni logo.
+- Sınır: koyu iOS görünümünde nota alt kenarında hafif krem iz; upload,
+  TestFlight ve fiziksel cihaz görünümü yapılmadı.
+
+## 2026-11-07 — REL-21 Android APK fail-closed doğrulama kapısı
+
+- `scripts/release/verify_android_apk.py`: bounded ZIP güvenliği, pubspec
+  sürüm/build exact-match, uygulama kimliği, min/target SDK, exact izin kümesi,
+  Flutter `libapp.so`, legacy/Android 12+ launch kaynakları ve imza sertifikası
+  doğrulaması eklendi. Debug imza yalnız explicit `--allow-debug-signing` ile;
+  production imza yalnız beklenen SHA-256 digest ile kabul edilir.
+- `scripts/release/test_verify_android_apk.py`: geçerli yerel debug paketi,
+  stale sürüm/ek izin, debug flag/production digest, güvensiz ZIP/eksik launch
+  ve strict pubspec için 5 adversarial test geçti.
+- Önceki 1.0.0+9 APK, güncel 1.0.0+12 pubspec karşısında doğru biçimde
+  reddedildi. `RESONIA_CHANNEL=beta` ve explicit yerel debug-signing override
+  ile güncel APK yeniden üretildi: 76.780.216 byte, SHA-256
+  `43b2a698733ca606d7dd7f2285b2db8c5f4a6366fec76e2a32cb8592fbc8363d`.
+  Doğrulayıcı passed: `com.mennansevim.vocalart`, 1.0.0+12, min24/target36,
+  exact 5 izin, launch kaynakları ve `Android Debug` sertifikası.
+- Proje kalite kapısı temiz: format 408 dosya/0 değişiklik, analyze 0 sorun,
+  1337 test geçti ve 2 opt-in test skip edildi.
+- Sınır: bu yerel-debug imzalı APK mağaza artifact'ı değildir. Gerçek
+  keystore/AAB, Play sunucu kabulü ve fiziksel Android kabul testleri yapılmadı.
+
+## 2026-11-07 — REL-22 Android AAB fail-closed doğrulama kapısı
+
+- `scripts/release/verify_android_aab.py`: AAB bounded ZIP/JAR yapısı,
+  bundletool validate, pubspec sürüm/build exact-match, app id, min/target SDK,
+  exact izinler, Flutter `libapp.so`, launch renk/stil/ikon kaynakları ve tek
+  signer sertifikası için fail-closed kapı eklendi. Bundletool 1.18.3 binary
+  SHA-256 ile pinlidir; debug imza explicit yerel flag, production imza ise
+  beklenen sertifika SHA-256 gerektirir.
+- `scripts/release/test_verify_android_aab.py`: geçerli yerel-debug bundle,
+  stale sürüm/ek izin, debug flag/production digest, güvensiz ZIP/eksik launch
+  ve bundletool binary bütünlüğü için 5 adversarial test geçti; `py_compile`
+  temiz.
+- Önceki 1.0.0+1 AAB güncel 1.0.0+12 pubspec karşısında reddedildi. Explicit
+  yerel debug-signing override ile güncel AAB üretildi: 73.853.941 byte,
+  SHA-256
+  `41a4ca46461021e32a36e39adaa6edb77c866ff8748dfc89eb4a0ae9b77b51ee`.
+  Bundletool ve doğrulayıcı passed: 1.0.0+12, min24/target36, exact 5 izin,
+  markalı launch kaynakları, tek `Android Debug` sertifikası.
+- Sınır: yükleme yapılmadı. Gerçek release keystore/digest, Play Console
+  sunucu kabulü ve fiziksel Android akışları ayrı kapıdır.
+
+## 2026-11-07 — REL-23 AAB→universal APK teslimat parity kapısı
+
+- `scripts/release/verify_android_delivery.py`: doğrulanmış AAB'den pinli
+  bundletool ile geçici, yerel-debug universal APK üretir. APKS ZIP yapısını
+  bounded/path-safe doğrular, yalnız `universal.apk` girdisini stream ederek
+  geçici dizine çıkarır ve REL-21 APK doğrulayıcısını çalıştırır.
+- AAB ve materialize APK arasında app id, version/build, min/target SDK, exact
+  izin kümesi, signer DN/digest/modu ve launch kaynak sonucu birebir eşleşmek
+  zorundadır. Sonuç `installed:false`, `uploaded:false` taşır; temp çıktılar
+  işlem sonunda silinir.
+- `scripts/release/test_verify_android_delivery.py`: bounded extraction,
+  traversal/eksik arşiv, exact parity, permission/certificate drift ve başarısız
+  alt kapılar için 5 adversarial test geçti; `py_compile` temiz.
+- Gerçek 1.0.0+12 AAB'den APKS 76.817.920 byte ve universal APK 76.817.611
+  byte üretildi; kimlik, +12 sürüm, min24/target36, exact 5 izin, Android Debug
+  sertifikası ve launch kaynakları parity kapısından geçti.
+- Sınır: Play'e yükleme, Play App Signing, cihaz-özel split, kurulum ve fiziksel
+  Android davranışı doğrulanmadı.
+
+## 2026-11-07 — HUM-02a güvenli yerel eğitimci yorumu önizlemesi
+
+- `HumanReviewDraft` hedef, tek soru, seçili gelişim özeti, yerel kayıt belirteci
+  ve sürümlü amaç onayını bounded/fail-closed doğruluyor. Yerel tamlık backend
+  kabulü veya hak rezervasyonu değildir.
+- `HumanReviewGateway` dış portu ve `UnavailableHumanReviewGateway`, backend,
+  auth/entitlement, storage, kapasite, hukuk/onay ve credit kapıları hazır değilken
+  gönderimi reddediyor.
+- Üyelikte Plus “Akışı incele” ile yerel önizlemeyi açıyor. Hedef/soru/özet
+  seçimleri çalışıyor; kayıt, onay ve gönderim kapalı. Persist, upload, ağ, hak,
+  ödeme, mikrofon ve AI çağrısı yok. Ekran gerçek eğitimcinin kendi yazdığı
+  yorum ile AI koçunu açıkça ayırıyor.
+- Doğrulama: 5 domain + 3 widget testi; ilgili üyelik/rota regresyonları geçti.
+  Tam kalite kapısı format 412/0, analyze temiz, 1345 test geçti ve 2 opt-in
+  test skip edildi. 320×720, 1,6× metin ölçeği widget testiyle kapsandı.
+- Açık kapılar: hukukça onaylı amaç/saklama/alıcı metni, gerçek eğitimci havuzu
+  ve kapasitesi, backend/auth/entitlement, private upload/storage, idempotent
+  hak ledger, ödeme ve izinli pilot. Gerçek cihaz/pilot yapılmadı; Agora
+  kaynakları değiştirilmedi, commit/push/deploy yok.
+
+## 2026-11-08 — HUM-03a idempotent yerel hak ledger çekirdeği
+
+- `HumanReviewCreditGrant` bounded unit ve UTC geçerlilik aralığı taşır.
+  `HumanReviewCreditLedger`, aktif ve en erken sona erecek grant'ten reserve;
+  ardından consume veya restore geçişlerini uygular.
+- Request token ikinci rezervasyonu engeller. Idempotency key exact komut
+  tekrarında aynı sonucu event eklemeden döndürür; başka komutta kullanılırsa
+  reddedilir. Süresi geçmiş/tükenmiş grant, geriye giden zaman, restore sonrası
+  consume ve çift restore fail-closed.
+- Audit event ve reservation snapshot listeleri dışarıdan değiştirilemez.
+  Restore unit'i tam bir kez bakiyeye döndürür; aynı request yeniden açılamaz.
+- 8 adversarial domain testi ve HUM-02a regresyonları geçti. Tam kalite kapısı
+  format 414/0, analyze temiz, 1353 test geçti ve 2 opt-in test skip edildi.
+  Bu in-memory aggregate canlı entitlement, ödeme, mağaza iadesi, persist
+  edilmiş finansal ledger veya kullanıcıya verilmiş gerçek hak değildir.
+- HUM-03b açık: atomik backend transaction/idempotency storage, auth,
+  entitlement/purchase/refund kaynağı, kapasite ve hukuk/pilot. Agora
+  kaynakları değiştirilmedi; ödeme/API/commit/push/deploy yok.
+
+## 2026-11-08 — HUM-04a eğitimci atama/yorum domain sözleşmesi
+
+- `HumanReviewAssignment`, request/eğitimci/qualification token kapsamını UTC
+  access başlangıç-bitişi ve optional revocation ile sınırlar. Yanlış eğitimci,
+  expired veya revoked atama feedback kuramaz.
+- `HumanReviewWrittenFeedback`: kayıt süresi içindeki evidence offset'leri,
+  observation'dan ayrı possible explanation, 1–3 strength, en fazla 2 priority,
+  tam 3 benzersiz katalog practice task, follow-up goal ve rubric version.
+  Task tekrar/süre ve tüm metin/token alanları bounded; listeler immutable.
+- `UnavailableHumanReviewFeedbackGateway`, authenticated backend assignment,
+  RBAC/private playback/audit yokken teslimi fail-closed reddeder. AI author veya
+  auto-fill alanı yoktur; token eşleşmesi insan yazarlığı/uzmanlık kanıtı değildir.
+- 8 adversarial domain testi; HUM-02a/HUM-03a regresyonları geçti. Tam kalite
+  format 416/0, analyze temiz, 1361 test geçti ve 2 opt-in test skip edildi.
+  Gerçek eğitimci, panel, playback, backend, upload veya pilot yok.
+- HUM-04b dış kapıları: kimlik ve uzmanlık doğrulama, atama bazlı API/storage
+  yetkisi, kısa ömürlü recording erişimi, teslim idempotency/audit ve gerçek
+  eğitimci QA. Agora kaynakları değiştirilmedi; API/ödeme/commit/push/deploy yok.
+
+## 2026-11-09 — HUM-05a güvenli öğrenci teslim sözleşmesi
+
+- `HumanReviewEducatorDelivery` ile `HumanReviewAiCoachCard` ayrı content kind;
+  AI kartında educator assignment/qualification/evidence alanı yok. Delivery
+  authored zamandan önce kurulamaz.
+- `HumanReviewClarificationThread` tek soru için immutable
+  available→submitted→answered→closed zinciri. İkinci soru, adım atlama, yanlış
+  educator, expired submit penceresi ve geriye giden zaman fail-closed.
+- `HumanReviewNotificationEnvelope` exact schema/event/opaque-token payload'ı
+  üretir; yorum/soru/cevap/ses/skor/eğitimci içeriği için alan yok.
+  `HumanReviewTaskSelection` yalnız feedback'te sunulan benzersiz task subset'ini
+  kabul eder ve mastery/history yazmaz.
+- `UnavailableHumanReviewStudentGateway` backend yokken teslim veya açıklama
+  göndermez. 9 adversarial domain testi; HUM-02a/03a/04a regresyonları ve
+  hedefli analiz temiz. Tam kalite kapısı format 418/0, analyze temiz, 1370 test
+  geçti ve 2 opt-in test skip edildi.
+- Açık kapılar: authenticated delivery API, push provider ve izin, deep-link
+  authorization, plan persistence, outbox/idempotency, gerçek eğitimci/öğrenci
+  pilotu. Agora kaynakları değiştirilmedi; dış bildirim/API/ödeme/commit/push/
+  deploy yok.
+
+## 2026-11-09 — HUM-06a güvenli hizmet operasyonları sözleşmesi
+
+- `HumanReviewServiceCase`; triage/assigned/reviewing/delivered ana yolunu,
+  rerecord/reassign/waitlist/delay/withdraw/cancel yan yollarını immutable UTC
+  geçişlerle sınırlar. Yanlış educator, geriye zaman, aynı educator'a reassign ve
+  geriye deadline fail-closed.
+- Rerecord aktif educator/due bilgisini temizler; yeni recording token'ı doğrulanıp
+  revision artırılarak triage'a döner. Bu işlem yeni hak tüketmez.
+- İlk 20 kabul edilmiş pilot ordinal'ı `qaRequired` politika bayrağı üretir; güvenilir
+  backend sırası veya QA tamamlanma kanıtı değildir. `HumanReviewQualityCheck`
+  teslim sonrası permission reference ve farklı reviewer zorunlu tutar.
+- `HumanReviewAppeal` yalnız teslim sonrası pencere içinde açılır ve bir kez
+  çözülür. Replacement review/service-credit yalnız öneridir; hak ledger veya
+  finansal iade değişmez. Operations gateway backend yokken fail-closed.
+- 11 yeni adversarial test ve HUM-02a/03a/04a/05a regresyonları geçti. Tam kalite
+  kapısı format 420/0, analyze temiz, 1381 test geçti ve 2 opt-in test skip edildi.
+- Açık kapılar: authenticated workflow/RBAC, gerçek storage revoke/delete,
+  persistent audit/outbox, credit transaction, hukukça onaylı itiraz/iade
+  politikası ve ilk 20 izinli gerçek ikinci eğitimci QA'sı. Agora değiştirilmedi;
+  dış bildirim/API/ödeme/commit/push/deploy yok.
+
+
+## 2026-11-09 — WIDE-AUDIT-01 geniş kitle ürün incelemesi (yalnız belge)
+
+- Kullanıcı talebi: müzik meraklıları, koristler, ses/tiyatro sanatçıları,
+  konuşmacılar ve konservatuvar adayları için eksikler, kullanılabilirlik,
+  farklı yaşlarla test edilebilir otomasyon hedefi ve ayrıntılı prompt.
+- Aktif main → TrainerApp → HomeShell, onboarding, DailyRoute, katalog,
+  nefes, aralık/live görsel bağlantısı, gelişim, analitik ve mevcut QA incelendi.
+  Tarihsel belgeler güncel kodla karşılaştırıldı; canlı görsel iz ile puan ve
+  sentez akor quiz'i ile kayıt temelli 2/3/4 tekrar ayrımı korundu.
+- docs/product/VOCALART_GROWTH_AUDIT_2026-11-09.md: kanıtlı envanter,
+  hedef kitle rotaları, WIDE-01–11 backlog, bağımlılık/kabul, 12 haftalık
+  öneri ve korunan ses kapsamı. EarMaster/Vocal Tools resmî sayfalarıyla
+  sınırlı rekabet taraması; pazar liderliği iddiası yok.
+- docs/product/VOCALART_USABILITY_PROTOCOL_2026-11-09.md: iki yetişkin
+  turu, dört yaş dilimi, görevler/paydalı hedefler, çocuk/ergen için ayrı
+  hazırlık kapısı; kod/simülatör/cihaz/insan/eğitimci kanıtlarını ayıran
+  otomasyon tasarımı. Yeni runner veya gerçek katılımcı testi yapılmadı.
+- docs/product/VOCALART_IMPLEMENTATION_PROMPT_2026-11-09.md: ilk dar
+  WIDE-01/02 uygulama dilimi, kullanıcı değişikliklerini koruma, ses motoru
+  dondurma, veri uyumu, test ve teslim talimatları. Bu oturumda yürütülmedi.
+- Güncel doğrulama: dart tool/quality_check.dart exit 0; 420 dosya format
+  kontrolü/0 değişiklik, analyze 0 sorun, 1381 test geçti, 2 opt-in skip.
+  İnceleme sırasında lib/test/tool hash envanteri alındı; son karşılaştırma
+  sıfır fark. Uygulama/ses/test kodu değiştirilmedi.
+- Sınırlar: yalnız analiz ve belge. Gerçek cihaz, mikrofon benchmark,
+  yaş grubu testi, eğitimci içerik onayı, yeni otomasyon/hosted CI, dış mesaj,
+  upload, ödeme, commit, push veya deployment yok. Bu kayıt ürün geliştirmesi
+  ya da kabul kapılarının tamamlandığı anlamına gelmez.
+
+## 2026-11-09 — BRAND-02 logo renk ve desen varyantları
+
+- tool/brand/logo_variants_test.dart: logo_master.webp'den 30 keşif ikonu
+  (10 nota rengi düz zeminde, sarı nota 10 desende, 10 renk+desen karışımı)
+  ve dört karşılaştırma tablosu; çıktı yalnız build/logo_variants/. Nota HSV
+  ton kaydırmasıyla boyanır, parlama ve bant korunur; alt kenardaki krem
+  yansıma da notanın rengine çekilir.
+- Bulgu: decodeImageFromPixels rgba8888'i premultiplied okuyor, photo_key
+  düz alfa üretiyor; yarı saydam kenar yeşilimsi/açık çıkıyor. Yeni betikte
+  premultiply ile giderildi; ardından düzeltme photo_key.imageFromPixels'e
+  taşındı (girdi düz alfa, içeride premultiply), tüm betikler yararlanıyor.
+- İkonlar yeniden üretildi: iOS koyu + renklendirilmiş 1024 ve Android
+  ic_launcher_foreground (5 yoğunluk) değişti; mağaza ikonu, eski launcher,
+  monokrom ve adaptive arka plan rengi bayt düzeyinde aynı kaldı. Koyu
+  ikonun alt kenarındaki açık/yeşilimsi saçak gitti (9x yakın çekimle bakıldı).
+- tool/brand/phone_preview_test.dart: 393x852 pt telefon ana ekranı çizimi;
+  iOS açık/koyu/renklendirilmiş ve Android dairesel maske (modlar.png),
+  varyantların ana ekranda yan yana görünümü (varyantlar.png), koyu ikon
+  yakın çekimi. Çıktı build/phone_preview/. Bu bir çizimdir; iOS'un gerçek
+  koyu/tint işleme mantığı yaklaşık, simülatör veya cihaz görüntüsü değil.
+- Doğrulama: tool/brand analyze temiz. dart tool/quality_check.dart:
+  format/analyze geçti, 1394 test geçti, 2 opt-in skip, 1 başarısız
+  (test/choir/take_controller_test.dart "the piece ending stops the take");
+  tek başına 3/3 geçti, ilgili koda dokunulmadı, tam paket yükünde zamanlama
+  oynaklığı olarak not edildi, çözülmedi. Simülatör/cihazda ikon
+  görülmedi; commit yok.
+
+## 2026-11-09 — WIDE-01/02 ilk dilim: hedef → süre → ilk çalışma
+
+**Kullanıcı isteği:** WIDE-AUDIT-01 promptunun ilk dar dilimi (hedef seçimi,
+hedefe ve hazır içeriğe göre günlük rota, eski veri uyumu, izin/geri dönüş/
+erişilebilirlik regresyonları, ses motoru koruma kontrolü).
+
+### Değişen davranış
+
+- `lib/trainer/home/daily_route.dart`: `PracticeGoal` (yeni başlayan, kulak,
+  ses hazırlığı, koro provası, konuşma/sahne, konservatuvar) ve
+  `DailyRoute.plan`. Hedef yoksa rota `forMinutes` ile birebir aynı (eski
+  kayıtlar). Dinleme hedefleri mikrofon adımı içermez; ses/koro hedefleri
+  her zaman nefesle başlar, 5 dk+ isteğe bağlı ses adımı ekler. Konuşma/sahne
+  için hazır ders olmadığından ders adımı yok; sessiz aralık-dersi fallback'i
+  kaldırıldı. Hazır olmayan içerik (artikülasyon/metin, porte/dikte, onaylı
+  ses ısınma) adım olarak değil “Hazırlanıyor” notu olarak gösterilir.
+  Yaş sorulmaz; hedef ses tipi, tolerans veya kolay mod türetmez.
+- `onboarding_flow.dart`: 8 durumlu akış `karşılama → hedef → süre → hazır`
+  oldu (ilk çalışmaya 3 karar). Koro üyeliği hedeften bağımsız bir onay
+  kutusu; “Koro provası” seçilince işaretlenir, kaldırılabilir. Mikrofon
+  testi, aralık ölçümü ve hatırlatma onboarding'den çıktı (Ayarlar/
+  Egzersizler/Bugün'de ilk ihtiyaçta). Eski `obStep` değerleri
+  `resumeStep` ile en yakın yeni adıma eşlenir; rol/odak/aralık/süre korunur.
+  Hedef kartları seçili/tekli grup, koro kutusu checked semantics taşır.
+- “İlk çalışmaya başla” artık `beginTodayRoute` ile Bugün rotasını izler
+  (nefes rehberi → hedef dersi). Nefes ekranı ders yoksa “Bitir / Şimdilik
+  bitir” der. Atlamak nefes adımını tamamlanmış saymaz; XP/seri yazmaz.
+- Bugün: hatırlatma, ilk nefes/ders sonrasında tek seferlik ikincil kart
+  (`reminderAsked=false` yalnız yeni kurulumda yazılır; eski kullanıcılara
+  tekrar sorulmaz). Ana eylem rotanın tek butonu olarak kalır.
+- Ayarlar: “Çalışma hedefi” ve “Günlük süre” sonradan değiştirilebilir
+  (daha önce günlük süre onboarding sonrası değiştirilemiyordu).
+- Testler: yeni `test/trainer/goal_onboarding_test.dart` (rota birim
+  testleri, yeni akış, geri dönüş, koro kutusu, konuşma rotası, eski kayıt
+  ve yarım kurulum devamı, hatırlatma, ayarlar). Eski adımları izleyen
+  trainer/English/a11y/screenshot/integration testleri ve Maestro 01,
+  subflows/onboard_quick, 11 yeni akışa uyarlandı. Ses testlerinin beklenen
+  sonuçlarına dokunulmadı.
+
+### Doğrulama ve sınırlar
+
+- `dart tool/quality_check.dart`: format 423/0, analyze temiz,
+  **1395 test geçti, 2 opt-in skip**.
+- Başlangıç lib/test/tool hash envanteriyle karşılaştırma: değişen yalnız
+  trainer_app, daily_route, home_shell, onboarding_flow, breath_screen
+  (yalnız çıkış etiketleri), settings_tab ve dört test dosyası + yeni test.
+  `lib/domain/audio`, `domain/scoring`, `infrastructure/audio`,
+  `trainer/audio`, `trainer/sing`, `range_*`, mic check/capture dosyaları ve
+  native izin ayarları değişmedi. Aynı sürede başka bir oturumun
+  `tool/brand/*` ve ikon PNG değişiklikleri görüldü; bu işe ait değil.
+- Maestro akışları güncellendi ama çalıştırılmadı (simülatör/cihaz turu
+  yok). VoiceOver/TalkBack elle denenmedi; yaş grubu kullanılabilirlik
+  testi, eğitimci içerik onayı yapılmadı: ilgili kapılar `not_run`.
+  Integration test dosyası güncellendi, cihazda koşulmadı; dosyadaki
+  `tab_3`/“Ses Atölyesi” beklentileri bu işten önce de güncel değildi.
+- Commit, push, upload, ödeme, dış mesaj yok.
+
+## 2026-11-09 — WIDE-03 sade sonuç ve tek sonraki adım
+
+**Kullanıcı isteği:** WIDE-01/02'den sonra WIDE-03: “ölçülmedi ≠ yanlış”,
+“tamamlandı ≠ beceri gelişti”, XP ≠ beceri; skor/eşik değişmeden.
+
+### Değişen davranış
+
+- `lib/trainer/learn/session_end.dart` (ders/ara durak/serbest çalışma sonu):
+  - Başlık olgu söyler: her biten ders “Ders tamamlandı” (kayıt zaten her
+    durumda tamamlanıyordu); düşük doğrulukta eski “Bu ders bir tur daha
+    istiyor” yerine not “Sıradaki ders açıldı. Bu turda karışan sesler oldu;
+    önce kısa bir tekrar iyi gelebilir.” Ara durak %80 metni aynı.
+  - Yanıt yoksa (`total == 0`): “Bu turda yanıt kaydedilmedi”, puan halkası
+    yok, kanıt kartı ÖLÇÜLMEDİ ve “doğru ya da yanlış sayılmadı”; sonraki adım
+    önerilmez.
+  - Başlık kartındaki XP, soru sayısıyla değişti; XP yalnız ayrıntıda
+    “+N XP · pratik puanı, beceri ölçümü değil”.
+  - Tek “SONRAKİ ADIM” kartı: karışan varsa kaydedilmeyen kısa tekrar
+    (`retry_missed`), yoksa sıradaki ders; başarısız ara durakta öneri yok.
+    Ekranda tek ana buton (Bitti) kalır.
+  - İstatistik satırı `Wrap` oldu (tam doğrulukta dar genişlikte 6.8 px
+    taşma görüldü ve giderildi).
+- `lib/trainer/stats/stats_tab.dart`: “SEVİYE” → “PRATİK SEVİYESİ”; kartta
+  “Ne kadar çalıştığını gösterir; ses ya da kulak becerisi ölçümü değildir.”
+  “Beceriler” başlığı “Dinleme çalışmaları” oldu. Seviye adları ve XP
+  formülü değişmedi (adların algısı insan testinde ölçülecek).
+- Testler: yeni `test/trainer/result_language_test.dart` (7 test);
+  `practice_screens_layout_test` metin beklentisi güncellendi. Mevcut
+  `retry_missed` kaydedilmeyen tekrar testi değişmeden geçti.
+
+### Doğrulama ve sınırlar
+
+- `dart tool/quality_check.dart`: format 424/0, analyze temiz,
+  **1402 test geçti, 2 opt-in skip**.
+- Hash: WIDE-03 başlangıcına göre yalnız session_end, stats_tab, bir test
+  ve yeni test değişti; ses kapsamı oturum başındaki envanterle aynı.
+  Skor, doğruluk, yıldız, %80/%70 eşikleri ve XP hesabı değişmedi.
+- Kapsam dışı kaldı: mikrofonlu egzersiz sonuçları (range test, ezgi
+  tekrarı, alkış, dinle-söyle) ses dosyalarıyla iç içe; bu dilimde
+  dokunulmadı. Gelişim başlığındaki “Sesinin haritası” ifadesi aynı kaldı.
+- Gerçek cihaz, VoiceOver/TalkBack, yaş grubu ve eğitimci değerlendirmesi
+  yapılmadı (`not_run`). Commit, push, upload yok.

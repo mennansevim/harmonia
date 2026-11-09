@@ -256,7 +256,24 @@ void main() {
     expect(store.voicePart, isNotNull);
     // Octave-off answers above A4 were played but never reached.
     expect(singer.played, contains(71));
+    // RANGE-04: 16 of 36 semitones (44), 17 cents sharp (accuracy 83),
+    // all on the first try: 0.6·44 + 0.25·83 + 0.15·100 = 62.
+    expect(store.rangeScores, [62]);
+    expect(find.text('62'), findsOneWidget);
+    expect(find.text('İlk testin'), findsOneWidget);
+    expect(
+      find.textContaining('Eğitimsiz yetişkinler için tipik'),
+      findsOneWidget,
+    );
+    await tester.ensureVisible(find.byKey(const Key('range_score_info')));
+    await tester.tap(find.byKey(const Key('range_score_info')));
     await tester.pumpAndSettle();
+    expect(find.byKey(const Key('range_score_explain')), findsOneWidget);
+    expect(find.textContaining('%60 genişlik'), findsOneWidget);
+    expect(find.textContaining('16 yarım ses → 44'), findsOneWidget);
+    await tester.tap(find.text('Tamam'));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('range_score_explain')), findsNothing);
   });
 
   testWidgets('the skip ends going up and the run can finish', (tester) async {
