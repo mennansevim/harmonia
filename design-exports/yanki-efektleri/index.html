@@ -1,0 +1,665 @@
+<title>Yankı Laboratuvarı</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap">
+<style>
+/* Layout: one reading column; each design is a wide stage (dark studio scope) beside its spec sheet, stacking on phones. */
+:root{
+  --bg:#F8F5EF; --surface:#FFFEFA; --ink:#292238; --body:#5F5867; --muted:#6F6877;
+  --line:#E5DEE7; --shadow:#ECE6E7; --accent:#6849CC; --accent-soft:#EEE7FF;
+  --lime:#D9F574; --lime-ink:#477719; --coral-ink:#B63E38; --amber-ink:#8E5A1F;
+  --stage:#1C1330; --btn:#292238; --on-btn:#FFFEFA;
+  --f-display:"Manrope",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-body:"Manrope",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#130D1D; --surface:#1D1529; --ink:#F4EFF8; --body:#CBC2D4; --muted:#A99FB4;
+  --line:#33284A; --shadow:#0B0712; --accent:#C3B3FF; --accent-soft:#2C2142;
+  --lime-ink:#D9F574; --coral-ink:#FF8F86; --amber-ink:#FFC861;
+  --btn:#D9F574; --on-btn:#292238; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#130D1D; --surface:#1D1529; --ink:#F4EFF8; --body:#CBC2D4; --muted:#A99FB4;
+  --line:#33284A; --shadow:#0B0712; --accent:#C3B3FF; --accent-soft:#2C2142;
+  --lime-ink:#D9F574; --coral-ink:#FF8F86; --amber-ink:#FFC861;
+  --btn:#D9F574; --on-btn:#292238; color-scheme:dark}
+
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.55}
+.wrap{max-width:1160px;margin:0 auto;padding-block:40px 64px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  display:flex;flex-direction:column;gap:72px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;color:var(--ink)}
+h1{font-size:clamp(34px,6vw,58px);font-weight:800;letter-spacing:-.03em;line-height:1.02}
+h2{font-size:clamp(24px,3.2vw,32px);font-weight:800;letter-spacing:-.02em}
+h3{font-size:20px;font-weight:800;letter-spacing:-.01em}
+p{margin:0;color:var(--body);max-width:68ch}
+.eyebrow{font-family:var(--f-mono);font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--accent);font-weight:600}
+.lead{font-size:17px}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+
+.hero{display:flex;flex-direction:column;gap:18px}
+.flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:4px}
+.flow span{display:inline-flex;align-items:center;gap:7px;font-family:var(--f-mono);font-size:12px;font-weight:600;
+  padding:6px 11px;border-radius:999px;background:var(--surface);border:1px solid var(--line);color:var(--ink)}
+.flow i{width:8px;height:8px;border-radius:50%;display:inline-block}
+.flow b{color:var(--muted);font-weight:500}
+
+.sec-head{display:flex;flex-direction:column;gap:10px;margin-bottom:24px}
+
+.comp-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+.comp{background:var(--surface);border:1px solid var(--line);border-radius:18px;box-shadow:0 4px 0 var(--shadow);
+  padding:12px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.comp canvas{width:100%;aspect-ratio:4/3;border-radius:12px;display:block;background:var(--stage)}
+.comp h3{font-size:16px}
+.comp .where{font-family:var(--f-mono);font-size:11.5px;color:var(--muted)}
+.comp dl{margin:0;display:grid;gap:6px;font-size:13.5px}
+.comp dt{font-weight:700;color:var(--ink);font-size:12px}
+.comp dd{margin:0;color:var(--body)}
+
+.gaps{margin-top:20px;background:var(--accent-soft);border-radius:18px;padding:20px 22px;display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));gap:18px}
+.gaps h4{margin:0 0 4px;font-size:14px;font-weight:800;color:var(--ink)}
+.gaps p{font-size:13.5px}
+
+.designs{display:flex;flex-direction:column;gap:44px}
+.design{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:28px;align-items:start}
+.stagebox{display:flex;flex-direction:column;gap:10px;min-width:0}
+.stage{width:100%;aspect-ratio:16/10;border-radius:20px;display:block;background:var(--stage);
+  box-shadow:0 6px 0 var(--shadow)}
+.controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.btn{font-family:var(--f-body);font-weight:700;font-size:13.5px;border-radius:999px;padding:9px 16px;cursor:pointer;
+  border:1px solid var(--btn);background:var(--btn);color:var(--on-btn);display:inline-flex;align-items:center;gap:8px}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.btn svg{width:14px;height:14px}
+.hint{font-size:12.5px;color:var(--muted)}
+.copy{display:flex;flex-direction:column;gap:14px;min-width:0}
+.tags{display:flex;gap:6px;flex-wrap:wrap}
+.tag{font-family:var(--f-mono);font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;
+  padding:4px 9px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}
+.tag.m{color:var(--accent);border-color:var(--accent)}
+.tag.r{color:var(--coral-ink);border-color:var(--coral-ink)}
+.copy h3{font-size:24px}
+.copy h3 small{font-family:var(--f-mono);font-size:13px;color:var(--muted);font-weight:600;margin-right:8px}
+.spec{margin:0;display:grid;gap:10px;border-top:1px solid var(--line);padding-top:12px}
+.spec div{display:grid;grid-template-columns:110px minmax(0,1fr);gap:12px}
+.spec dt{font-family:var(--f-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding-top:3px}
+.spec dd{margin:0;font-size:14px;color:var(--body)}
+.spec code{font-family:var(--f-mono);font-size:12.5px;color:var(--ink);background:var(--accent-soft);padding:1px 5px;border-radius:5px}
+
+.tablebox{overflow-x:auto;border:1px solid var(--line);border-radius:16px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:720px;font-size:14px}
+th,td{text-align:left;padding:12px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--f-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600}
+tr:last-child td{border-bottom:0}
+td b{color:var(--ink)}
+.pick{display:inline-block;font-family:var(--f-mono);font-size:11px;font-weight:600;padding:2px 8px;border-radius:999px;background:var(--lime);color:#292238}
+.reco{margin-top:20px;display:grid;gap:10px}
+.reco p{color:var(--ink)}
+
+footer{display:grid;gap:12px;border-top:1px solid var(--line);padding-top:24px}
+footer p,footer li{font-size:13px;color:var(--muted)}
+footer ul{margin:0;padding-left:18px;display:grid;gap:4px}
+footer a{color:var(--accent)}
+
+@media (max-width:980px){.comp-grid,.gaps{grid-template-columns:repeat(2,minmax(0,1fr))}.design{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:560px){.comp-grid,.gaps{grid-template-columns:minmax(0,1fr)}.stage{aspect-ratio:4/5}
+  .spec div{grid-template-columns:minmax(0,1fr);gap:2px}.wrap{gap:56px}}
+</style>
+
+<main class="wrap">
+  <header class="hero">
+    <span class="eyebrow">Vocalart · ritim ve ezgi tekrarı · tasarım keşfi</span>
+    <h1>Yankı Laboratuvarı</h1>
+    <p class="lead">Öğrenci bir kalıbı dinler, sonra tekrar eder. Rakiplerin bu anı nasıl gösterdiğini inceledim, ardından ölçümle birebir örtüşen beş efekt tasarladım. Her sahne aynı döngüyü oynar; <b>Sesli dinle</b> ile modeli ve simüle edilmiş öğrenci yankısını duyabilirsin.</p>
+    <div class="flow" aria-label="Her animasyonun döngüsü">
+      <span><i style="background:#B9A6FF"></i>Dinle</span><b>→</b>
+      <span><i style="background:#FFC861"></i>Sayım (4 vuruş)</span><b>→</b>
+      <span><i style="background:#D9F574"></i>Tekrarla</span><b>→</b>
+      <span><i style="background:#FFFFFF;border:1px solid #A9A2B0"></i>Sonuç</span>
+    </div>
+  </header>
+
+  <section id="rakipler">
+    <div class="sec-head">
+      <span class="eyebrow">Araştırma</span>
+      <h2>Rakipler bugün nasıl yapıyor</h2>
+      <p>Mağaza ekran görüntüleri (Simply Sing, Sing Sharp, Learn to Sing, Vocalista, Erol Singer's Studio) ve ürünlerin kendi yayınladığı açıklamalardan çıkan dört yaygın desen. Animasyonlar markaların kopyası değil, desenin sade bir canlandırması.</p>
+    </div>
+    <div class="comp-grid">
+      <article class="comp">
+        <canvas id="cA" aria-label="Kayan nota blokları deseni"></canvas>
+        <h3>Kayan nota blokları</h3>
+        <span class="where">Simply Sing, Yousician</span>
+        <dl><div><dt>Güçlü</dt><dd>Oyun hissi, şarkı akışı. Bloğa denk gelen ses yeşile döner.</dd></div>
+        <div><dt>Eksik</dt><dd>Kaç cent saptığını söylemez. Dinle-tekrar et ayrımı yok, hep birlikte söyleme.</dd></div></dl>
+      </article>
+      <article class="comp">
+        <canvas id="cB" aria-label="Hedef çizgi ve canlı perde izi deseni"></canvas>
+        <h3>Hedef çizgi + canlı iz</h3>
+        <span class="where">Singing Carrots, Erol Singer's Studio</span>
+        <dl><div><dt>Güçlü</dt><dd>Gerçek zamanlı perde eğrisi, mühendislik açısından doğru. Uyumda renk değişir.</dd></div>
+        <div><dt>Eksik</dt><dd>Tolerans bandı görünmez; iyi ile kötü arası sadece renk. Sonuç ekranı zayıf.</dd></div></dl>
+      </article>
+      <article class="comp">
+        <canvas id="cC" aria-label="Hece balonları deseni"></canvas>
+        <h3>Hece balonları</h3>
+        <span class="where">Vocalista</span>
+        <dl><div><dt>Güçlü</dt><dd>Sade ve sıcak. Hece ile perde aynı nesnede.</dd></div>
+        <div><dt>Eksik</dt><dd>Sapmanın yönü ve büyüklüğü yok; ritim hatası hiç görünmüyor.</dd></div></dl>
+      </article>
+      <article class="comp">
+        <canvas id="cD" aria-label="Erken, tam, geç renk kodu deseni"></canvas>
+        <h3>Erken / tam / geç rengi</h3>
+        <span class="where">Melodics (ritim)</span>
+        <dl><div><dt>Güçlü</dt><dd>Her vuruşa net etiket, 100 üzerinden puan. Zamanlama dili oturmuş.</dd></div>
+        <div><dt>Eksik</dt><dd>"Hep geç" eğilimi ile "dağınık" tutarsızlık ayrı gösterilmiyor. Sese değil pada odaklı.</dd></div></dl>
+      </article>
+    </div>
+    <div class="gaps">
+      <div><h4>Sayı renge eziliyor</h4><p>Sapma neredeyse hep yeşil/sarı/kırmızıya indirgenmiş. Cent ve milisaniye kayboluyor.</p></div>
+      <div><h4>Tolerans görünmüyor</h4><p>Öğrenci "ne kadar yaklaşmalıyım" sorusunun cevabını ekranda göremiyor.</p></div>
+      <div><h4>Model ile yankı ayrı</h4><p>Dinlenen kalıp ile söylenen tekrar aynı zaman ekseninde üst üste konmuyor.</p></div>
+      <div><h4>Eğilim ile dağılım karışık</h4><p>Ritimde sabit gecikme (kalibrasyon sorunu olabilir) ile tutarsızlık aynı renkle gösteriliyor.</p></div>
+    </div>
+  </section>
+
+  <section id="tasarimlar">
+    <div class="sec-head">
+      <span class="eyebrow">Öneri</span>
+      <h2>Beş tasarım</h2>
+      <p>Her biri yukarıdaki boşluklardan en az ikisini kapatıyor ve ekranda gördüğün her şekil gerçek bir ölçüme karşılık geliyor. Öğrenci sesi simüle edildi; gösterilen eşikler örnektir, mevcut rubrik ve toleranslar değişmiyor.</p>
+    </div>
+    <div class="designs">
+
+      <article class="design" id="d1-box">
+        <div class="stagebox">
+          <canvas class="stage" id="d1" aria-label="Hayalet Şerit animasyonu"></canvas>
+          <div class="controls"><button class="btn play" data-id="d1" type="button" id="p-d1"></button><button class="btn ghost restart" data-id="d1" type="button" id="r-d1">Baştan</button></div>
+        </div>
+        <div class="copy">
+          <div class="tags"><span class="tag m">Ezgi tekrarı</span><span class="tag">Varsayılan adayı</span></div>
+          <h3><small>1</small>Hayalet Şerit</h3>
+          <p>Model melodi piyano rulosunda parlar, sonra hayalete dönüşür ve etrafında ±25 ve ±50 cent bantları belirir. Sen söylerken sesin bu bantların içinden geçen, kalınlığı ses düzeyini taşıyan bir şerit çizer.</p>
+          <dl class="spec">
+            <div><dt>Ölçülen</dt><dd>f0, <code>cent = 1200·log₂(f/f_hedef)</code>, RMS düzey</dd></div>
+            <div><dt>Ses müh.</dt><dd>Dikey eksen logaritmik: her oktavda aynı cent aynı mesafe. Nota sonucu ilk 100 ms'lik atak ve kayışı dışarıda bırakan medyandan; vibrato cezalanmaz. Sessiz kareler boşluk kalır, sıfıra çizilmez.</dd></div>
+            <div><dt>Etkisi</dt><dd>Tolerans görünür olduğu için "neden kırmızı" sorusu ortadan kalkar. Şeridin banda oturduğu an kendi başına ödül.</dd></div>
+            <div><dt>Flutter</dt><dd>Tek <code>CustomPainter</code> + <code>Ticker</code>; noktalar mevcut perde akışından gelir.</dd></div>
+          </dl>
+        </div>
+      </article>
+
+      <article class="design" id="d2-box">
+        <div class="stagebox">
+          <canvas class="stage" id="d2" aria-label="Faz Kilidi animasyonu"></canvas>
+          <div class="controls"><button class="btn play" data-id="d2" type="button" id="p-d2"></button><button class="btn ghost restart" data-id="d2" type="button" id="r-d2">Baştan</button></div>
+        </div>
+        <div class="copy">
+          <div class="tags"><span class="tag m">Ezgi tekrarı</span><span class="tag">Uzun notalar</span></div>
+          <h3><small>2</small>Faz Kilidi</h3>
+          <p>Hedef ton X eksenine, senin sesin Y eksenine verilir: bir osiloskop Lissajous şekli. Aynı frekanstaysanız şekil donar ve halka yanar. Uzaklaştıkça şekil döner; dönüş hızı tam olarak duyduğun vuru frekansıdır.</p>
+          <dl class="spec">
+            <div><dt>Ölçülen</dt><dd><code>Δf = f_ses − f_hedef</code>, faz <code>φ = 2π∫Δf dt</code>, vuru zarfı <code>|cos(φ/2)|</code></dd></div>
+            <div><dt>Ses müh.</dt><dd>Koro şefinin "vuruyu yok et" dediği şeyin kendisi. Do4'te 10 cent ≈ 1,5 Hz vuru, göz rahatça izler. Kilit eşiği burada örnek olarak ±12 cent.</dd></div>
+            <div><dt>Etkisi</dt><dd>Doğru tonu bulmak bir "oturma" anına dönüşür. Hızlı pasajda anlamsızlaşır, bu yüzden uzun nota ve akor tutma için.</dd></div>
+            <div><dt>Flutter</dt><dd>120 noktalı <code>Path</code>, son 6 karenin izi. Shader gerekmez.</dd></div>
+          </dl>
+        </div>
+      </article>
+
+      <article class="design" id="d3-box">
+        <div class="stagebox">
+          <canvas class="stage" id="d3" aria-label="Groove Çemberi animasyonu"></canvas>
+          <div class="controls"><button class="btn play" data-id="d3" type="button" id="p-d3"></button><button class="btn ghost restart" data-id="d3" type="button" id="r-d3">Baştan</button></div>
+        </div>
+        <div class="copy">
+          <div class="tags"><span class="tag r">Ritim tekrarı</span><span class="tag">Sonuç ekranı adayı</span></div>
+          <h3><small>3</small>Groove Çemberi</h3>
+          <p>İki ölçü bir tura sığar ve radar gibi taranır. Model vuruşları dış halkada, seninkiler iç halkada; aradaki yay, erken ya da geç kaldığın milisaniyenin açısıdır. Sonunda eğilim ve dağılım ayrı ayrı gösterilir.</p>
+          <dl class="spec">
+            <div><dt>Ölçülen</dt><dd>Onset zamanı, <code>e = t_sen − t_model</code> (ms), ortalama (eğilim) ve standart sapma (tutarlılık)</dd></div>
+            <div><dt>Ses müh.</dt><dd>Gecikme kalibrasyonu doğrulanmadan ortalama, öğrenciden çok cihazı ölçer. Mevcut <code>rhythm-imitation-1</code> ilk vuruşu çapa aldığı için eğilim kartı yalnızca kalibrasyon sonrası açılmalı.</dd></div>
+            <div><dt>Etkisi</dt><dd>"Hep geç kalıyorum" ile "dağınığım" ilk kez ayrı görünür. Histogram, öğretmenin söyleyeceği cümleyi kendisi kurar.</dd></div>
+            <div><dt>Flutter</dt><dd><code>CustomPainter</code> + <code>SweepGradient</code> tarama izi.</dd></div>
+          </dl>
+        </div>
+      </article>
+
+      <article class="design" id="d4-box">
+        <div class="stagebox">
+          <canvas class="stage" id="d4" aria-label="Transient Hizalama animasyonu"></canvas>
+          <div class="controls"><button class="btn play" data-id="d4" type="button" id="p-d4"></button><button class="btn ghost restart" data-id="d4" type="button" id="r-d4">Baştan</button></div>
+        </div>
+        <div class="copy">
+          <div class="tags"><span class="tag r">Ritim tekrarı</span><span class="tag">Varsayılan adayı</span></div>
+          <h3><small>4</small>Transient Hizalama</h3>
+          <p>Bir DAW'daki gibi iki şerit: üstte modelin dalga formu, altta senin kaydın. Her vuruş çifti bir bağla birleşir; eğik bağ kaymayı gösterir. Sonuçta vuruşlar ızgaraya kayar, en büyük hata bir merceğin altına alınır.</p>
+          <dl class="spec">
+            <div><dt>Ölçülen</dt><dd>Genlik zarfı (min/max kovaları), onset işaretleri, ms hata ve 1/16 notaya oranı</dd></div>
+            <div><dt>Ses müh.</dt><dd>Vokal hizalama araçlarının diliyle aynı, ses mühendisine tanıdık. Hata 1/16'ya oranlanınca tempodan bağımsız okunur. Gürültü tabanı görünür; eşik altı vuruş algılanmış sayılmaz.</dd></div>
+            <div><dt>Etkisi</dt><dd>Öğrenci kendi sesini görür. Izgaraya kayma animasyonu doğru hâlini anında gösterir.</dd></div>
+            <div><dt>Flutter</dt><dd>Kayıt bitince zarf kovalara indirgenir; painter yalnızca çizer.</dd></div>
+          </dl>
+        </div>
+      </article>
+
+      <article class="design" id="d5-box">
+        <div class="stagebox">
+          <canvas class="stage" id="d5" aria-label="Spektral Ayna animasyonu"></canvas>
+          <div class="controls"><button class="btn play" data-id="d5" type="button" id="p-d5"></button><button class="btn ghost restart" data-id="d5" type="button" id="r-d5">Baştan</button></div>
+        </div>
+        <div class="copy">
+          <div class="tags"><span class="tag m">Ezgi</span><span class="tag r">Ritim</span><span class="tag">İleri seviye</span></div>
+          <h3><small>5</small>Spektral Ayna</h3>
+          <p>Üst yarıda piyanonun spektrogramı, alt yarıda senin sesin aynı eksene ayna gibi yansır. Doğru söylediğinde harmonik çizgileri merkezde buluşur; detone olunca bütün çizgiler birlikte kayar. Ayna eksenindeki çentikler ritmi gösterir.</p>
+          <dl class="spec">
+            <div><dt>Ölçülen</dt><dd>STFT (öneri: 2048 örnek pencere, 256 adım), log-frekans 100–1600 Hz, f0 ve onset</dd></div>
+            <div><dt>Ses müh.</dt><dd>Log eksende bir cent sapması bütün harmoniklerde aynı mesafedir; kayma paralel görünür. Formant gölgesi (ses rengi) görünür ama puanlanmaz.</dd></div>
+            <div><dt>Etkisi</dt><dd>En "stüdyo" görünen ekran. Plus ve eğitimci incelemesi için analiz görünümü.</dd></div>
+            <div><dt>Flutter</dt><dd>FFT isolate'te, sütunlar <code>ui.Image</code>'a yazılır.</dd></div>
+          </dl>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section id="karsilastirma">
+    <div class="sec-head">
+      <span class="eyebrow">Karar</span>
+      <h2>Hangisi nerede</h2>
+    </div>
+    <div class="tablebox">
+      <table>
+        <thead><tr><th>Tasarım</th><th>Tür</th><th>Kapattığı boşluk</th><th>Gereken sinyal</th><th>Efor</th><th>Önerilen yer</th></tr></thead>
+        <tbody>
+          <tr><td><b>1 · Hayalet Şerit</b> <span class="pick">öneri</span></td><td>Ezgi</td><td>Sayı, tolerans, model–yankı</td><td>f0 akışı, RMS</td><td>Orta</td><td>Ezgi tekrarının ana ekranı</td></tr>
+          <tr><td><b>2 · Faz Kilidi</b></td><td>Ezgi</td><td>Sayı (Hz/cent), tolerans</td><td>f0 akışı</td><td>Düşük</td><td>Uzun nota ve akor tutma anı</td></tr>
+          <tr><td><b>3 · Groove Çemberi</b></td><td>Ritim</td><td>Eğilim / dağılım</td><td>Onset + doğrulanmış gecikme</td><td>Orta</td><td>Ritim sonuç ekranı</td></tr>
+          <tr><td><b>4 · Transient Hizalama</b> <span class="pick">öneri</span></td><td>Ritim</td><td>Sayı (ms), model–yankı</td><td>Onset, genlik zarfı</td><td>Orta</td><td>Ritim tekrarının ana ekranı</td></tr>
+          <tr><td><b>5 · Spektral Ayna</b></td><td>İkisi</td><td>Model–yankı, ses rengi</td><td>STFT, f0, onset</td><td>Yüksek</td><td>Plus analiz görünümü</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="reco">
+      <p><b>Önerim:</b> Ezgi tekrarında 1, ritim tekrarında 4 ana ekran olsun. 2 uzun notalarda 1'in içinde kısa bir "kilit" anı olarak belirsin, 3 ritmin sonuç kartı olsun. 5 ayrı bir analiz görünümü olarak sonraya kalsın.</p>
+      <p class="hint">Sınır: Öğrenci verisi simüle edildi. Hiçbir efekt gerçek cihaz ve mikrofonla denenmedi; eşikler örnek, mevcut rubriğin yerine geçmez.</p>
+    </div>
+  </section>
+
+  <footer>
+    <p>Kaynaklar: yereldeki <span class="mono">design-exports/rakip-vokal-kocu</span> mağaza görselleri ve aşağıdaki sayfalar.</p>
+    <ul>
+      <li><a href="https://www.melodics.com/support-articles/support-scoring" target="_blank" rel="noopener">Melodics: puanlama ve nota renkleri</a></li>
+      <li><a href="https://singingcarrots.com/docs/singing-carrots-pitch-training" target="_blank" rel="noopener">Singing Carrots: perde eğitimi arayüzü</a></li>
+      <li><a href="https://singingcarrots.com/blog/best-learn-to-sing-apps-2026/" target="_blank" rel="noopener">Singing Carrots: şarkı uygulamaları karşılaştırması (rakip kaynağı, taraflı)</a></li>
+      <li><a href="https://yousician.com/voice" target="_blank" rel="noopener">Yousician: şan</a></li>
+      <li><a href="https://splice.com/blog/?p=6823" target="_blank" rel="noopener">Splice: Melodics'ten öğrenilen pratik alışkanlıkları</a></li>
+    </ul>
+  </footer>
+</main>
+
+<script>
+(()=>{
+const TAU=Math.PI*2;
+const clamp=(v,a,b)=>v<a?a:v>b?b:v;
+const ease=x=>1-Math.pow(1-clamp(x,0,1),3);
+const m2f=m=>440*Math.pow(2,(m-69)/12);
+const SOL=['Do','Do♯','Re','Re♯','Mi','Fa','Fa♯','Sol','Sol♯','La','La♯','Si'];
+const nn=m=>SOL[((m%12)+12)%12]+(Math.floor(m/12)-1);
+const hash=x=>{const s=Math.sin(x*127.1+311.7)*43758.5453;return s-Math.floor(s)};
+const dec=(v,d=1)=>v.toFixed(d).replace('.',',');
+const sgn=v=>v>0.5?'+':v<-0.5?'−':'±';
+const fmtC=c=>sgn(c)+Math.abs(Math.round(c))+'¢';
+const fmtMs=e=>sgn(e)+Math.abs(Math.round(e))+' ms';
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+const C={bg:'#1C1330',bg2:'#2A1D48',grid:'rgba(255,255,255,.06)',grid2:'rgba(255,255,255,.13)',
+  text:'rgba(255,255,255,.9)',dim:'rgba(255,255,255,.52)',faint:'rgba(255,255,255,.3)',
+  lime:'#D9F574',coral:'#FF6259',amber:'#FFC861',lav:'#B9A6FF',sky:'#7CC4FF',white:'#FFFFFF',green:'#8DE07A'};
+const SANS='Manrope, ui-sans-serif, system-ui, sans-serif', MONO='"JetBrains Mono", ui-monospace, Menlo, monospace';
+const centsCol=c=>{const a=Math.abs(c);return a<=25?C.lime:a<=50?C.amber:C.coral};
+const msCol=e=>{const a=Math.abs(e);return a<=30?C.lime:a<=70?C.amber:C.coral};
+const rgba=(hex,a)=>{const n=parseInt(hex.slice(1),16);return `rgba(${n>>16},${(n>>8)&255},${n&255},${a})`};
+
+function rr(ctx,x,y,w,h,r){r=Math.min(r,w/2,h/2);ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath()}
+function pill(ctx,x,y,text,fg,bg,size=11,align='left'){ctx.font=`700 ${size}px ${MONO}`;const tw=ctx.measureText(text).width,pw=tw+16,ph=size+9;
+  if(align==='center')x-=pw/2;else if(align==='right')x-=pw;rr(ctx,x,y,pw,ph,ph/2);ctx.fillStyle=bg;ctx.fill();ctx.fillStyle=fg;ctx.textBaseline='middle';ctx.textAlign='left';ctx.fillText(text,x+8,y+ph/2+.5);return pw}
+function txt(ctx,s,x,y,{size=12,w=600,col=C.text,font=SANS,align='left',base='alphabetic'}={}){ctx.font=`${w} ${size}px ${font}`;ctx.fillStyle=col;ctx.textAlign=align;ctx.textBaseline=base;ctx.fillText(s,x,y)}
+function bg(ctx,w,h){ctx.fillStyle=C.bg;ctx.fillRect(0,0,w,h);const g=ctx.createRadialGradient(w*.5,h*.35,0,w*.5,h*.35,Math.max(w,h)*.75);g.addColorStop(0,'rgba(116,85,219,.20)');g.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=g;ctx.fillRect(0,0,w,h)}
+function glow(ctx,col,b){ctx.shadowColor=col;ctx.shadowBlur=b}
+function noglow(ctx){ctx.shadowBlur=0;ctx.shadowColor='transparent'}
+
+/* ---------- phase model: listen → count-in → echo → result ---------- */
+function mkP(len,beat,res=3.8){const a=len+.35,b=a+4*beat,c=b+len+.35;return{len,beat,L:[0,a],C:[a,b],E:[b,c],R:[c,c+res],T:c+res}}
+function ph(P,t){if(t<P.C[0])return{n:'L',lt:t};if(t<P.E[0])return{n:'C',lt:t-P.C[0]};if(t<P.R[0])return{n:'E',lt:t-P.E[0]};return{n:'R',lt:t-P.R[0]}}
+const PH_LBL={L:'DİNLE',C:'SAYIM',E:'TEKRARLA',R:'SONUÇ'}, PH_COL={L:C.lav,C:C.amber,E:C.lime,R:C.white};
+function hud(ctx,w,h,P,t){const p=ph(P,t);let l=PH_LBL[p.n];if(p.n==='C')l+=' '+(1+Math.floor(p.lt/P.beat));
+  pill(ctx,12,12,l,'#1C1330',PH_COL[p.n],10.5);
+  if(p.n==='E'||p.n==='R')txt(ctx,'simüle öğrenci verisi',w-12,25,{size:10,col:C.faint,font:MONO,align:'right',w:500});
+  const segs=[P.L,P.C,P.E,P.R],gap=4,W=w-24-gap*3;let x=12;
+  segs.forEach((s,i)=>{const sw=W*(s[1]-s[0])/P.T;ctx.fillStyle='rgba(255,255,255,.1)';ctx.fillRect(x,h-7,sw,3);
+    const f=clamp((t-s[0])/(s[1]-s[0]),0,1);ctx.fillStyle=PH_COL['LCER'[i]];ctx.fillRect(x,h-7,sw*f,3);x+=sw+gap});return p}
+function countOverlay(ctx,w,h,P,p,cx=w/2,cy=h/2){if(p.n!=='C')return;const k=Math.floor(p.lt/P.beat),f=(p.lt%P.beat)/P.beat;
+  ctx.save();ctx.globalAlpha=1-f*.75;const s=1+.35*(1-ease(f*3));ctx.translate(cx,cy);ctx.scale(s,s);
+  txt(ctx,String(k+1),0,0,{size:64,w:800,col:C.amber,align:'center',base:'middle'});ctx.restore();
+  txt(ctx,'sıra sende',cx,cy+46,{size:12,col:C.dim,align:'center',font:MONO,w:500})}
+
+/* ---------- melody data (shared by designs 1, 2, 5) ---------- */
+const M_BEAT=60/96;
+const MEL=[{m:60,d:1,b:6,dl:.035},{m:62,d:1,b:-14,dl:.02},{m:64,d:1,b:9,dl:-.015},{m:67,d:1.5,b:-34,dl:.06},{m:65,d:.5,b:62,dl:.01},{m:64,d:2,b:4,dl:.025}];
+{let a=0;MEL.forEach(n=>{n.on=a*M_BEAT;n.dur=n.d*M_BEAT;a+=n.d});}
+const M_LEN=MEL.reduce((s,n)=>s+n.dur,0);
+const PM=mkP(M_LEN,M_BEAT);
+function sing(t){for(let i=MEL.length-1;i>=0;i--){const n=MEL[i],on=n.on+n.dl;if(t>=on){const nx=MEL[i+1];
+  const end=nx?nx.on+nx.dl-.07:n.on+n.dur+n.dl-.02;if(t>end)return null;const dt=t-on,tgt=n.m+n.b/100;
+  const prev=i?MEL[i-1].m+MEL[i-1].b/100:n.m-.8;let p=tgt+(prev-tgt)*Math.exp(-dt/.045)*Math.cos(dt*22);
+  if(n.d>=1.5)p+=clamp((dt-.25)/.3,0,1)*.17*Math.sin(TAU*5.4*dt);
+  p+=.04*Math.sin(TAU*7.3*t)+.03*Math.sin(TAU*3.1*t+1);
+  const amp=Math.min(1,dt/.05)*clamp((end-t)/.06,0,1)*(.78+.22*Math.sin(dt*3));return{p,amp,i,dt}}}return null}
+const SR=240, SPAN_M=M_LEN+.35, NS=Math.ceil(SPAN_M*SR);
+const S=[];{let phi=0;for(let k=0;k<=NS;k++){const t=k/SR,s=sing(t);if(s){const df=m2f(s.p)-m2f(MEL[s.i].m);phi+=TAU*df/SR;S.push({t,p:s.p,amp:s.amp,i:s.i,dt:s.dt,c:(s.p-MEL[s.i].m)*100,df,phi})}else S.push(null)}}
+const MSTAT=MEL.map((n,i)=>{const a=S.filter(s=>s&&s.i===i&&s.dt>.1).map(s=>s.c).sort((x,y)=>x-y);
+  const mean=a.reduce((x,y)=>x+y,0)/a.length;return{med:a[a.length>>1],sd:Math.sqrt(a.reduce((x,y)=>x+(y-mean)**2,0)/a.length),lock:a.filter(c=>Math.abs(c)<=12).length/a.length}});
+const sampleAt=t=>S[clamp(Math.round(t*SR),0,NS)];
+
+/* ---------- rhythm data (designs 3, 4) ---------- */
+const R_BEAT=60/112;
+const RB=[0,1,1.5,2,3,4,4.5,5,6,6.75,7], RV=[1,.55,.6,.85,.7,1,.55,.6,.85,.5,.8], RE=[8,-12,34,6,-48,15,-5,22,-18,86,4];
+const HITS=RB.map((b,i)=>({b,t:b*R_BEAT,v:RV[i],e:RE[i]/1000,ems:RE[i],sv:clamp(RV[i]*(.8+.4*hash(i+3)),.3,1)}));
+const R_LEN=8*R_BEAT, PR=mkP(R_LEN,R_BEAT);
+const RSTAT=(()=>{const m=RE.reduce((a,b)=>a+b,0)/RE.length,sd=Math.sqrt(RE.reduce((a,b)=>a+(b-m)**2,0)/RE.length);
+  return{mean:m,sd,good:RE.filter(e=>Math.abs(e)<=30).length,near:RE.filter(e=>Math.abs(e)>30&&Math.abs(e)<=70).length,miss:RE.filter(e=>Math.abs(e)>70).length}})();
+const SIXTEENTH=R_BEAT/4*1000;
+
+/* =========== DESIGN 1 · Hayalet Şerit =========== */
+function draw1(ctx,w,h,t){bg(ctx,w,h);const P=PM,p=ph(P,t),narrow=w<520;
+  const x0=narrow?40:56,x1=w-18,y0=50,y1=h-(narrow?96:46),span=SPAN_M;
+  const X=s=>x0+s/span*(x1-x0),lo=58.5,hi=68.5,Y=m=>y1-(m-lo)/(hi-lo)*(y1-y0),semi=(y1-y0)/(hi-lo);
+  const used=new Set(MEL.map(n=>n.m));
+  for(let m=59;m<=68;m++){const y=Y(m);ctx.fillStyle=[1,3,6,8,10].includes(m%12)?'rgba(0,0,0,.18)':'rgba(255,255,255,.025)';ctx.fillRect(x0,y-semi/2,x1-x0,semi);
+    if(used.has(m))txt(ctx,nn(m),x0-8,y,{size:10.5,col:C.dim,font:MONO,align:'right',base:'middle',w:500})}
+  for(let b=0;b<=7;b++){ctx.fillStyle=b%4===0?C.grid2:C.grid;ctx.fillRect(X(b*M_BEAT),y0-semi/2,1,y1-y0+semi)}
+  const echo=p.n!=='L',gk=p.n==='C'?ease(p.lt/.7):echo?1:0;
+  MEL.forEach((n,i)=>{const xa=X(n.on)+1,xb=X(n.on+n.dur)-2,y=Y(n.m);
+    if(gk>0){ctx.fillStyle=rgba(C.lime,.05*gk);ctx.fillRect(xa,y-semi*.5,xb-xa,semi);ctx.fillStyle=rgba(C.lime,.09*gk);ctx.fillRect(xa,y-semi*.25,xb-xa,semi*.5);
+      ctx.fillStyle=rgba(C.lime,.35*gk);ctx.fillRect(xa,y-semi*.5,xb-xa,1);ctx.fillRect(xa,y+semi*.5-1,xb-xa,1)}
+    const bh=semi*.42;
+    if(!echo){const pr=clamp((t-n.on)/n.dur,0,1);rr(ctx,xa,y-bh/2,xb-xa,bh,bh/2);ctx.fillStyle=rgba(C.lav,.16);ctx.fill();
+      if(pr>0){ctx.save();rr(ctx,xa,y-bh/2,(xb-xa)*pr,bh,bh/2);glow(ctx,C.lav,16);ctx.fillStyle=C.lav;ctx.fill();ctx.restore()}}
+    else{ctx.save();ctx.setLineDash([4,4]);rr(ctx,xa,y-bh/2,xb-xa,bh,bh/2);ctx.strokeStyle=rgba(C.lav,.25+.35*(1-gk)+.2);ctx.lineWidth=1.2;ctx.stroke();ctx.restore()}});
+  if(gk>0&&!narrow){txt(ctx,'±50¢',x1,Y(MEL[5].m)-semi*.5-5,{size:9.5,col:rgba(C.lime,.6*gk),font:MONO,align:'right',w:500})}
+  if(p.n==='L'){const tt=Math.min(t,P.len),x=X(tt);ctx.fillStyle=rgba(C.lav,.6);ctx.fillRect(x,y0-semi,1.5,y1-y0+semi*2);
+    const n=MEL.find(n=>t>=n.on&&t<n.on+n.dur);if(n){const y=Y(n.m),k=(t-n.on);ctx.save();glow(ctx,C.white,20);ctx.fillStyle=C.white;ctx.beginPath();ctx.arc(x,y,5,0,TAU);ctx.fill();ctx.restore();
+      ctx.strokeStyle=rgba(C.lav,clamp(1-k/.6,0,1));ctx.lineWidth=2;ctx.beginPath();ctx.arc(X(n.on),y,6+k*70,0,TAU);ctx.stroke();
+      pill(ctx,x+10,y-semi-14,nn(n.m)+' · '+dec(m2f(n.m),1)+' Hz','#1C1330',C.lav,10)}}
+  if(p.n==='E'||p.n==='R'){const tEnd=p.n==='E'?p.lt:span,kEnd=Math.min(NS,Math.floor(tEnd*SR));
+    for(let k=0;k<kEnd;k+=3){const s=S[k];if(!s)continue;ctx.fillStyle=rgba(centsCol(s.c),.16);const ya=Y(MEL[s.i].m),yb=Y(s.p);ctx.fillRect(X(s.t),Math.min(ya,yb),1.4,Math.abs(yb-ya))}
+    ctx.lineCap='round';ctx.save();glow(ctx,'rgba(217,245,116,.35)',8);
+    for(let k=1;k<kEnd;k++){const a=S[k-1],s=S[k];if(!a||!s||a.i!==s.i)continue;ctx.strokeStyle=centsCol(s.c);ctx.lineWidth=1.5+s.amp*4.5;ctx.beginPath();ctx.moveTo(X(a.t),Y(a.p));ctx.lineTo(X(s.t),Y(s.p));ctx.stroke()}
+    ctx.restore();
+    if(p.n==='E'){const x=X(tEnd);ctx.fillStyle=rgba(C.lime,.5);ctx.fillRect(x,y0-semi,1.5,y1-y0+semi*2);
+      let hs=null;for(let k=kEnd;k>=Math.max(0,kEnd-6);k--)if(S[k]){hs=S[k];break}
+      if(hs){const y=Y(hs.p),col=centsCol(hs.c);ctx.save();glow(ctx,col,22);ctx.fillStyle=col;ctx.beginPath();ctx.arc(x,y,4+hs.amp*3,0,TAU);ctx.fill();ctx.restore();
+        const lbl=fmtC(hs.c)+(Math.abs(hs.c)>12?(hs.c>0?' tiz':' pes'):' tam');pill(ctx,Math.min(x+10,x1-90),y-28,lbl,'#1C1330',col,10.5)}
+      MEL.forEach(n=>{const k=p.lt-(n.on+n.dl);if(k>0&&k<.5){ctx.strokeStyle=rgba(C.lime,1-k/.5);ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(X(n.on+n.dl),Y(n.m),5+k*60,0,TAU);ctx.stroke()}})}
+    if(p.n==='R'){MEL.forEach((n,i)=>{const a=clamp((p.lt-.15-i*.13)/.3,0,1);if(!a)return;const st=MSTAT[i],col=centsCol(st.med);ctx.save();ctx.globalAlpha=a;
+        const cx=(X(n.on)+X(n.on+n.dur))/2,yy=Y(n.m)-semi*.5-24-(1-ease(a))*8;pill(ctx,cx,yy,fmtC(st.med),'#1C1330',col,10,'center');ctx.restore()});
+      const a=clamp((p.lt-1.1)/.4,0,1);if(a){ctx.globalAlpha=a;const inT=MSTAT.filter(s=>Math.abs(s.med)<=50).length,mean=MSTAT.reduce((x,s)=>x+Math.abs(s.med),0)/MSTAT.length;
+        const worst=MSTAT.reduce((b,s,i)=>Math.abs(s.med)>Math.abs(MSTAT[b].med)?i:b,0);
+        const line1=`${inT}/${MEL.length} nota ±50¢ içinde · ort. |sapma| ${Math.round(mean)}¢`,line2=`en büyük: ${nn(MEL[worst].m)} ${fmtC(MSTAT[worst].med)} tiz → biraz aşağı`;
+        txt(ctx,line1,x0,h-(narrow?62:24),{size:narrow?11:12,w:700,col:C.text});if(narrow)txt(ctx,line2,x0,h-44,{size:11,col:C.coral,w:600});else txt(ctx,line2,x1,h-24,{size:12,col:C.coral,w:600,align:'right'});ctx.globalAlpha=1}}}
+  if(p.n==='C'&&!narrow)txt(ctx,'model hayalete dönüştü · bantlar: ±25¢ / ±50¢',w/2,y0-18,{size:11,col:C.dim,align:'center',font:MONO,w:500});
+  countOverlay(ctx,w,h,P,p);hud(ctx,w,h,P,t)}
+
+/* =========== DESIGN 2 · Faz Kilidi =========== */
+function draw2(ctx,w,h,t){bg(ctx,w,h);const P=PM,p=ph(P,t),narrow=w<520;
+  let R,cx,cy,lx,lw,sy,sh,sx,sw;
+  if(narrow){R=Math.min(w-48,h-200)/2;cx=w/2;cy=48+R+8;sx=16;sw=w-32;sy=cy+R+46;sh=Math.min(70,h-sy-34)}
+  else{R=(h-80)/2;cx=24+R+8;cy=h/2+4;lx=cx+R+36;lw=w-lx-18;sx=lx;sw=lw;sh=64;sy=h-sh-30}
+  ctx.strokeStyle=C.grid2;ctx.lineWidth=1;ctx.beginPath();ctx.arc(cx,cy,R,0,TAU);ctx.stroke();
+  ctx.strokeStyle=C.grid;ctx.beginPath();ctx.arc(cx,cy,R*.5,0,TAU);ctx.moveTo(cx-R,cy);ctx.lineTo(cx+R,cy);ctx.moveTo(cx,cy-R);ctx.lineTo(cx,cy+R);ctx.stroke();
+  ctx.setLineDash([3,5]);ctx.beginPath();ctx.moveTo(cx-R*.7,cy+R*.7);ctx.lineTo(cx+R*.7,cy-R*.7);ctx.moveTo(cx-R*.7,cy-R*.7);ctx.lineTo(cx+R*.7,cy+R*.7);ctx.stroke();ctx.setLineDash([]);
+  txt(ctx,'0°',cx+R*.72+4,cy-R*.72,{size:9.5,col:C.faint,font:MONO,w:500});txt(ctx,'180°',cx+R*.72+4,cy+R*.72+8,{size:9.5,col:C.faint,font:MONO,w:500});
+  const r=R*.86,ell=(phi,col,lw,a)=>{ctx.globalAlpha=a;ctx.strokeStyle=col;ctx.lineWidth=lw;ctx.beginPath();for(let k=0;k<=120;k++){const s=k/120*TAU,x=cx+r*Math.sin(s)*.707,y=cy-r*Math.sin(s+phi)*.707;
+    const rx=(x-cx)-(y-cy),ry=(x-cx)+(y-cy);k?ctx.lineTo(cx+rx*.72,cy+ry*.72):ctx.moveTo(cx+rx*.72,cy+ry*.72)}ctx.stroke();ctx.globalAlpha=1};
+  let cur=null,locked=false;
+  if(p.n==='L'||p.n==='C'){const n=p.n==='L'?MEL.find(n=>t>=n.on&&t<n.on+n.dur):null;const a=n?Math.exp(-(t-n.on)/1.4):.35;
+    ctx.save();glow(ctx,C.lav,18);ell(0,C.lav,2.5,.4+.6*a);ctx.restore();
+    if(n){txt(ctx,nn(n.m),cx,cy-R-14+(narrow?0:0),{size:13,w:800,col:C.lav,align:'center'});txt(ctx,'referans · '+dec(m2f(n.m),1)+' Hz',cx,cy+R+20,{size:10.5,col:C.dim,align:'center',font:MONO,w:500})}
+    else if(p.n==='C')txt(ctx,'hedef: bu düz çizgiye geri dön',cx,cy+R+20,{size:10.5,col:C.dim,align:'center',font:MONO,w:500})}
+  if(p.n==='E'){const k=Math.min(NS,Math.floor(p.lt*SR)),s=S[k];cur=s;
+    if(s){const col=centsCol(s.c);let ok=true;for(let j=k;j>k-36&&j>0;j--){if(!S[j]||Math.abs(S[j].c)>12){ok=false;break}}locked=ok;
+      for(let j=6;j>=1;j--){const q=S[k-j*4];if(q&&q.i===s.i)ell(q.phi,col,1.2,.07*(7-j))}
+      ctx.save();glow(ctx,col,locked?28:14);ell(s.phi,col,2.6,1);ctx.restore();
+      txt(ctx,nn(MEL[s.i].m)+' · '+dec(m2f(MEL[s.i].m),1)+' Hz',cx,cy-R-14,{size:12,w:800,col:C.text,align:'center'});
+      txt(ctx,'Δf '+(s.df>=0?'+':'−')+dec(Math.abs(s.df))+' Hz · '+fmtC(s.c),cx,cy+R+20,{size:11,col,align:'center',font:MONO,w:600})}
+    else{ctx.fillStyle=C.dim;ctx.beginPath();ctx.arc(cx,cy,3,0,TAU);ctx.fill();txt(ctx,'nefes',cx,cy+R+20,{size:10.5,col:C.faint,align:'center',font:MONO,w:500})}
+    if(locked){ctx.save();glow(ctx,C.lime,30);ctx.strokeStyle=C.lime;ctx.lineWidth=3;ctx.beginPath();ctx.arc(cx,cy,R,0,TAU);ctx.stroke();ctx.restore();pill(ctx,cx,cy-R+14,'FAZ KİLİDİ','#1C1330',C.lime,10,'center')}}
+  if(p.n==='R'){MEL.forEach((n,i)=>{const a=clamp((p.lt-i*.12)/.35,0,1);const mid=S.find(s=>s&&s.i===i&&s.dt>n.dur*.45);if(mid)ell(mid.phi,centsCol(MSTAT[i].med),1.6,.75*a)});
+    const lockAll=MSTAT.reduce((x,s)=>x+s.lock,0)/MSTAT.length,a=clamp((p.lt-.6)/.4,0,1);ctx.globalAlpha=a;
+    ctx.fillStyle='rgba(28,19,48,.72)';ctx.beginPath();ctx.arc(cx,cy,R*.36,0,TAU);ctx.fill();
+    txt(ctx,'%'+Math.round(lockAll*100),cx,cy+4,{size:Math.max(22,R*.24),w:800,col:C.lime,align:'center',base:'middle'});txt(ctx,'kilitli süre',cx,cy+R*.2,{size:10,col:C.dim,align:'center',font:MONO,w:500});ctx.globalAlpha=1}
+  // note list
+  if(!narrow){const rowH=Math.min(30,(sy-40-24)/MEL.length);txt(ctx,'NOTA',lx,46,{size:9.5,col:C.faint,font:MONO,w:600});txt(ctx,'KİLİTLİ SÜRE',lx+122,46,{size:9.5,col:C.faint,font:MONO,w:600});
+    MEL.forEach((n,i)=>{const y=58+i*rowH,active=cur&&cur.i===i&&p.n==='E',passed=p.n==='R'||(p.n==='E'&&p.lt>n.on+n.dur+n.dl);
+      if(active){rr(ctx,lx-8,y-2,lw+8,rowH-4,8);ctx.fillStyle='rgba(255,255,255,.07)';ctx.fill()}
+      txt(ctx,nn(n.m),lx,y+rowH/2-1,{size:12,w:700,col:active?C.white:C.text,base:'middle'});txt(ctx,dec(m2f(n.m),1)+' Hz',lx+52,y+rowH/2-1,{size:10.5,col:C.dim,font:MONO,base:'middle',w:500});
+      const bx=lx+122,bw=Math.max(24,lw-122-62);ctx.fillStyle='rgba(255,255,255,.08)';ctx.fillRect(bx,y+rowH/2-3,bw,5);
+      let f=0;if(passed)f=MSTAT[i].lock;else if(active){const arr=S.filter(s=>s&&s.i===i&&s.t<=p.lt&&s.dt>.1);f=arr.length?arr.filter(s=>Math.abs(s.c)<=12).length/Math.max(arr.length,1)*Math.min(1,arr.length/(n.dur*SR*.8)):0}
+      ctx.fillStyle=C.lime;ctx.fillRect(bx,y+rowH/2-3,bw*f,5);
+      if(passed)pill(ctx,lx+lw,y+rowH/2-10,fmtC(MSTAT[i].med),'#1C1330',centsCol(MSTAT[i].med),9.5,'right')})}
+  // beat envelope strip
+  if(sh>20){ctx.fillStyle='rgba(255,255,255,.04)';rr(ctx,sx,sy,sw,sh,10);ctx.fill();txt(ctx,'VURU ZARFI · iki sesin toplamı',sx+10,sy+14,{size:9.5,col:C.faint,font:MONO,w:600});
+    const mid=sy+sh/2+5,H=(sh-22)/2,win=1.6;let tt=p.n==='E'?p.lt:p.n==='R'?SPAN_M:t;
+    ctx.beginPath();for(let x=0;x<=sw;x+=2){const tau=tt-(1-x/sw)*win;let env=0;
+      if(p.n==='E'||p.n==='R'){const s=tau>=0?sampleAt(tau):null;env=s?s.amp*Math.abs(Math.cos(s.phi/2)):0}
+      else if(p.n==='L'){const n=MEL.find(n=>tau>=n.on&&tau<n.on+n.dur);env=n?Math.exp(-(tau-n.on)/1.4):0}
+      const v=env*Math.sin(x*.9)*H;x?ctx.lineTo(sx+x,mid+v):ctx.moveTo(sx+x,mid+v)}
+    ctx.strokeStyle=p.n==='L'?rgba(C.lav,.8):rgba(C.lime,.85);ctx.lineWidth=1.2;ctx.stroke()}
+  countOverlay(ctx,w,h,P,p,cx,cy);hud(ctx,w,h,P,t)}
+
+/* =========== DESIGN 3 · Groove Çemberi =========== */
+function draw3(ctx,w,h,t){bg(ctx,w,h);const P=PR,p=ph(P,t),wide=w>=600,land=!wide&&w>h;
+  const R=wide?Math.min(h/2-34,w*.3):land?h/2-40:Math.min(w/2-34,h/2-70),cx=wide?28+R+20:w/2,cy=wide?h/2+6:land?h/2+6:24+R+34;
+  const th=s=>-Math.PI/2+TAU*s/P.len,Rin=R-24;
+  for(let k=0;k<32;k++){const a=th(k*R_BEAT/4),beat=k%4===0,bar=k%16===0;ctx.strokeStyle=bar?C.grid2:beat?'rgba(255,255,255,.1)':C.grid;ctx.lineWidth=bar?2:1;
+    const r0=bar?Rin-14:beat?R-6:R-3;ctx.beginPath();ctx.moveTo(cx+Math.cos(a)*r0,cy+Math.sin(a)*r0);ctx.lineTo(cx+Math.cos(a)*(R+(beat?8:4)),cy+Math.sin(a)*(R+(beat?8:4)));ctx.stroke();
+    if(beat)txt(ctx,String((k/4)%4+1),cx+Math.cos(a)*(R+18),cy+Math.sin(a)*(R+18),{size:10,col:bar?C.text:C.dim,font:MONO,align:'center',base:'middle',w:600})}
+  ctx.strokeStyle=C.grid2;ctx.lineWidth=1;ctx.beginPath();ctx.arc(cx,cy,R,0,TAU);ctx.stroke();ctx.strokeStyle=C.grid;ctx.beginPath();ctx.arc(cx,cy,Rin,0,TAU);ctx.stroke();
+  const echo=p.n!=='L',tolA=p.n==='C'?ease(p.lt/.8):echo?1:0;
+  if(tolA)HITS.forEach(hh=>{const a=th(hh.t),w70=TAU*.07/P.len,w30=TAU*.03/P.len;ctx.lineCap='butt';
+    ctx.strokeStyle=rgba(C.amber,.13*tolA);ctx.lineWidth=12;ctx.beginPath();ctx.arc(cx,cy,(R+Rin)/2,a-w70,a+w70);ctx.stroke();
+    ctx.strokeStyle=rgba(C.lime,.25*tolA);ctx.beginPath();ctx.arc(cx,cy,(R+Rin)/2,a-w30,a+w30);ctx.stroke()});
+  const sweep=(tt,col)=>{const a=th(tt);for(let j=0;j<18;j++){ctx.fillStyle=rgba(col,.10*(1-j/18));ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,R,a-(j+1)*.035,a-j*.035);ctx.closePath();ctx.fill()}
+    ctx.strokeStyle=col;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+Math.cos(a)*(R+6),cy+Math.sin(a)*(R+6));ctx.stroke()};
+  const tL=p.n==='L'?t:1e9;
+  HITS.forEach(hh=>{if(hh.t>tL)return;const a=th(hh.t),x=cx+Math.cos(a)*R,y=cy+Math.sin(a)*R,k=tL-hh.t;
+    ctx.fillStyle=echo?rgba(C.lav,.55):C.lav;if(!echo&&k<.15){ctx.save();glow(ctx,C.lav,18)}ctx.beginPath();ctx.arc(x,y,3+hh.v*4,0,TAU);ctx.fill();noglow(ctx);
+    if(p.n==='L'&&k<.6){ctx.strokeStyle=rgba(C.lav,1-k/.6);ctx.lineWidth=2;ctx.beginPath();ctx.arc(x,y,6+k*60,0,TAU);ctx.stroke()}});
+  if(p.n==='L'&&t<P.len)sweep(t,C.lav);
+  let last=null;const tE=p.n==='E'?p.lt:p.n==='R'?1e9:-1;
+  HITS.forEach(hh=>{const ta=hh.t+hh.e;if(ta>tE)return;last=hh;const col=msCol(hh.ems),a0=th(hh.t),a1=th(ta),k=tE-ta;
+    ctx.strokeStyle=rgba(C.white,.25);ctx.setLineDash([2,3]);ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(cx+Math.cos(a0)*R,cy+Math.sin(a0)*R);ctx.lineTo(cx+Math.cos(a0)*Rin,cy+Math.sin(a0)*Rin);ctx.stroke();ctx.setLineDash([]);
+    ctx.strokeStyle=col;ctx.lineWidth=4;ctx.lineCap='round';ctx.beginPath();ctx.arc(cx,cy,Rin,Math.min(a0,a1),Math.max(a0,a1));ctx.stroke();
+    const x=cx+Math.cos(a1)*Rin,y=cy+Math.sin(a1)*Rin;ctx.save();glow(ctx,col,k<.2?24:8);ctx.fillStyle=col;ctx.beginPath();ctx.arc(x,y,3+hh.sv*4,0,TAU);ctx.fill();ctx.restore();
+    if(k<.5){ctx.strokeStyle=rgba(col,1-k/.5);ctx.lineWidth=2;ctx.beginPath();ctx.arc(x,y,6+k*50,0,TAU);ctx.stroke()}});
+  if(p.n==='E'&&p.lt<P.len+.2)sweep(p.lt,C.lime);
+  if(p.n==='C'){const k=Math.floor(p.lt/P.beat);sweep((k+(p.lt%P.beat)/P.beat)*R_BEAT,C.amber)}
+  if(p.n==='E'){if(last){const col=msCol(last.ems);txt(ctx,fmtMs(last.ems),cx,cy-4,{size:Math.max(20,R*.2),w:800,col,align:'center',base:'middle'});
+      txt(ctx,Math.abs(last.ems)<=30?'tam yerinde':last.ems>0?'geç':'erken',cx,cy+R*.16,{size:11,col:C.dim,align:'center',font:MONO,w:500})}
+    else txt(ctx,'dinliyorum…',cx,cy,{size:12,col:C.dim,align:'center',base:'middle',font:MONO,w:500})}
+  if(p.n==='L')txt(ctx,'2 ölçü = 1 tur',cx,cy,{size:11,col:C.dim,align:'center',base:'middle',font:MONO,w:500});
+  if(p.n==='R'){const a=clamp(p.lt/.5,0,1);ctx.globalAlpha=a;
+    txt(ctx,`${RSTAT.good}/${HITS.length}`,cx,cy-R*.18,{size:Math.max(22,R*.24),w:800,col:C.lime,align:'center',base:'middle'});
+    txt(ctx,'±30 ms içinde',cx,cy+R*.0,{size:10,col:C.dim,align:'center',font:MONO,w:500});
+    txt(ctx,'eğilim '+fmtMs(RSTAT.mean),cx,cy+R*.2,{size:11.5,w:700,col:C.text,align:'center',font:MONO});
+    txt(ctx,'dağılım ±'+Math.round(RSTAT.sd)+' ms',cx,cy+R*.2+16,{size:11.5,w:700,col:C.amber,align:'center',font:MONO});ctx.globalAlpha=1}
+  // histogram panel
+  const hx=wide?cx+R+56:20,hw=wide?w-hx-22:w-40,hy=wide?60:cy+R+46,hh2=wide?h-hy-110:h-hy-40;
+  if(hh2>50&&!land){txt(ctx,'ZAMANLAMA DAĞILIMI',hx,hy-12,{size:9.5,col:C.faint,font:MONO,w:600});
+    const bins=14,bw=hw/bins,maxC=4,base=hy+hh2;
+    ctx.fillStyle=rgba(C.lime,.07);ctx.fillRect(hx+hw/2-hw*(30/210),hy,hw*(60/210),hh2);
+    ctx.fillStyle=C.grid2;ctx.fillRect(hx,base,hw,1);ctx.fillRect(hx+hw/2,hy,1,hh2);
+    const cnt=new Array(bins).fill(0);HITS.forEach(hh=>{if(hh.t+hh.e>tE)return;const b=clamp(Math.floor((hh.ems+105)/15),0,bins-1);cnt[b]++});
+    cnt.forEach((c,b)=>{if(!c)return;const center=-105+b*15+7.5;ctx.fillStyle=msCol(center);for(let j=0;j<c;j++){rr(ctx,hx+b*bw+2,base-(j+1)*(hh2/maxC)+2,bw-4,hh2/maxC-4,4);ctx.fill()}});
+    txt(ctx,'erken',hx,base+16,{size:10,col:C.dim,font:MONO,w:500});txt(ctx,'0',hx+hw/2,base+16,{size:10,col:C.dim,font:MONO,align:'center',w:500});txt(ctx,'geç',hx+hw,base+16,{size:10,col:C.dim,font:MONO,align:'right',w:500});
+    if(p.n==='R'){const a=clamp((p.lt-.4)/.5,0,1),mx=hx+hw/2+hw*(RSTAT.mean/210),sdw=hw*(RSTAT.sd/210);ctx.globalAlpha=a;
+      ctx.fillStyle=rgba(C.amber,.12);ctx.fillRect(mx-sdw,hy,sdw*2,hh2);ctx.fillStyle=C.white;ctx.fillRect(mx-1,hy-4,2,hh2+4);
+      if(wide){txt(ctx,'Eğilim küçük, dağılım geniş:',hx,base+44,{size:12.5,w:700,col:C.text});txt(ctx,'tempo doğru, vuruşlar oturmuyor.',hx,base+62,{size:12.5,w:600,col:C.dim});
+        txt(ctx,'Öneri: 1/8 tıklarla yavaş tekrar.',hx,base+80,{size:12.5,w:600,col:C.lime})}ctx.globalAlpha=1}}
+  countOverlay(ctx,w,h,P,p,cx,cy);hud(ctx,w,h,P,t)}
+
+/* =========== DESIGN 4 · Transient Hizalama =========== */
+function env4(s,student){let a=student?.025+.015*hash(Math.floor(s*900)):0;for(const hh of HITS){const dt=s-(hh.t+(student?hh.e:0));if(dt>=0&&dt<.3)a+=(student?hh.sv:hh.v)*Math.exp(-dt/(student?.055:.045))*Math.min(1,dt/.003)}return Math.min(1,a)}
+function draw4(ctx,w,h,t){bg(ctx,w,h);const P=PR,p=ph(P,t),narrow=w<520;
+  const x0=narrow?14:78,x1=w-16,span=P.len+.35,X=s=>x0+s/span*(x1-x0);
+  const rY=44,gap=narrow?40:44,laneH=(h-rY-18-gap-34)/2,aT=rY+18,aB=aT+laneH,bT=aB+gap,bB=bT+laneH;
+  for(let k=0;k<=32;k++){const s=k*R_BEAT/4,x=X(s),beat=k%4===0,bar=k%16===0;ctx.fillStyle=bar?C.grid2:beat?'rgba(255,255,255,.09)':'rgba(255,255,255,.035)';ctx.fillRect(x,rY+12,1,bB-rY-12);
+    if(beat&&k<32&&(!narrow||k%8===0))txt(ctx,`${Math.floor(k/16)+1}.${(k/4)%4+1}`,x+3,rY+8,{size:9.5,col:bar?C.text:C.dim,font:MONO,w:500})}
+  [[aT,aB],[bT,bB]].forEach(([a,b])=>{ctx.fillStyle='rgba(255,255,255,.03)';ctx.fillRect(x0,a,x1-x0,b-a)});
+  const lab=(s,y,col)=>narrow?txt(ctx,s,x0+6,y+14,{size:9.5,col,font:MONO,w:700}):txt(ctx,s,x0-10,y+laneH/2,{size:10,col,font:MONO,w:700,align:'right',base:'middle'});
+  lab('MODEL',aT,C.lav);lab('SEN',bT,C.text);
+  const wave=(top,bot,student,upto,col)=>{const mid=(top+bot)/2,H=(bot-top)/2-4;ctx.fillStyle=col;const xe=Math.min(X(upto),x1);
+    for(let x=x0;x<xe;x+=2){const s=(x-x0)/(x1-x0)*span,a=env4(s,student)*(.55+.45*hash(x*.37+(student?7:0)));const hh=Math.max(1,a*H);ctx.fillRect(x,mid-hh,1.4,hh*2)}};
+  const upA=p.n==='L'?t:1e9;wave(aT,aB,false,upA,p.n==='L'?C.lav:rgba(C.lav,.75));
+  if(p.n==='L'){ctx.fillStyle=C.white;ctx.fillRect(X(t),aT-4,1.5,laneH+8)}
+  HITS.forEach(hh=>{if(hh.t>upA)return;ctx.fillStyle=rgba(C.lav,.85);ctx.fillRect(X(hh.t)-.5,aB-6,1.5,6)});
+  const upB=p.n==='E'?p.lt:p.n==='R'?1e9:-1;
+  if(upB>0){wave(bT,bB,true,upB,'rgba(255,255,255,.78)');if(p.n==='E'){ctx.fillStyle=C.lime;ctx.fillRect(X(p.lt),bT-4,1.5,laneH+8)}}
+  else{txt(ctx,p.n==='C'?'kayıt hazır…':'senin kaydın burada belirecek',(x0+x1)/2,(bT+bB)/2,{size:11,col:C.faint,align:'center',base:'middle',font:MONO,w:500})}
+  const q=p.n==='R'?ease((p.lt-1.4)/1.2):0;
+  HITS.forEach((hh,i)=>{const ta=hh.t+hh.e;if(ta+.02>upB)return;const col=msCol(hh.ems),xm=X(hh.t),xs=X(ta),xq=xs+(xm-xs)*q;
+    ctx.strokeStyle=col;ctx.lineWidth=1.6;ctx.beginPath();ctx.moveTo(xm,aB);ctx.bezierCurveTo(xm,aB+gap*.5,xq,bT-gap*.5,xq,bT);ctx.stroke();
+    ctx.fillStyle=col;ctx.fillRect(xq-1,bT,2,laneH);
+    if(q>0){ctx.fillStyle=rgba(C.lime,.6*q);ctx.fillRect(xm-.5,bT,1,laneH)}
+    if(!narrow||i%2===0){const lbl=sgn(hh.ems)+Math.abs(hh.ems);ctx.font=`600 9.5px ${MONO}`;const ly=aB+gap/2+(i%2?7:-5);txt(ctx,lbl,(xm+xq)/2+5,ly,{size:9.5,col,font:MONO,w:600})}});
+  if(p.n==='R'){const wi=HITS.reduce((b,hh,i)=>Math.abs(hh.ems)>Math.abs(HITS[b].ems)?i:b,0),hh=HITS[wi],a=clamp((p.lt-.2)/.4,0,1);
+    if(a){ctx.globalAlpha=a;const bw=narrow?Math.min(200,w-28):210,bh=Math.min(92,laneH-8),xm=X(hh.t),bx=clamp(xm-bw-22,x0+4,x1-bw-4),by=bT+(laneH-bh)/2;
+      ctx.fillStyle='rgba(20,13,36,.94)';rr(ctx,bx,by,bw,bh,12);ctx.fill();ctx.strokeStyle=C.coral;ctx.lineWidth=1.5;ctx.stroke();
+      const zs=hh.t-.03,ze=hh.t+.14,ZX=s=>bx+10+(s-zs)/(ze-zs)*(bw-20),zm=by+bh*.58,zh=bh*.26;ctx.fillStyle='rgba(255,255,255,.7)';
+      for(let x=bx+10;x<bx+bw-10;x+=1.5){const s=zs+(x-bx-10)/(bw-20)*(ze-zs),aa=env4(s,true)*(.6+.4*hash(x));ctx.fillRect(x,zm-aa*zh,1,aa*zh*2+1)}
+      ctx.fillStyle=C.lav;ctx.fillRect(ZX(hh.t),zm-zh-6,1.5,zh*2+12);ctx.fillStyle=C.coral;ctx.fillRect(ZX(hh.t+hh.e),zm-zh-6,1.5,zh*2+12);
+      ctx.strokeStyle=C.coral;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(ZX(hh.t),zm-zh-9);ctx.lineTo(ZX(hh.t+hh.e),zm-zh-9);ctx.stroke();
+      txt(ctx,`${fmtMs(hh.ems)} geç · 1/16'nın %${Math.round(hh.ems/SIXTEENTH*100)}'ü`,bx+10,by+16,{size:10.5,col:C.coral,font:MONO,w:700});
+      ctx.strokeStyle=rgba(C.coral,.6);ctx.setLineDash([3,3]);ctx.beginPath();ctx.moveTo(bx+bw,by+bh/2);ctx.lineTo(X(hh.t+hh.e),by+bh/2);ctx.stroke();ctx.setLineDash([]);ctx.globalAlpha=1}
+    const a2=clamp((p.lt-1.4)/.4,0,1);if(a2){ctx.globalAlpha=a2;txt(ctx,'ızgaraya hizalanmış hâli ↓',x1,bB+20,{size:10.5,col:C.lime,font:MONO,w:600,align:'right'});ctx.globalAlpha=1}}
+  if(p.n==='C')countOverlay(ctx,w,h,P,p,(x0+x1)/2,(bT+bB)/2-6);hud(ctx,w,h,P,t)}
+
+/* =========== DESIGN 5 · Spektral Ayna =========== */
+const CMAP=[[28,19,48],[67,42,114],[116,85,219],[255,98,89],[255,200,97],[217,245,116]];
+function cmap(v){v=clamp(v,0,1)*(CMAP.length-1);const i=Math.min(CMAP.length-2,Math.floor(v)),f=v-i,a=CMAP[i],b=CMAP[i+1];return[a[0]+(b[0]-a[0])*f,a[1]+(b[1]-a[1])*f,a[2]+(b[2]-a[2])*f]}
+const FLO=100,FOCT=4;
+function genSpec(W,H,student){const cv=document.createElement('canvas');cv.width=W;cv.height=H;const c=cv.getContext('2d'),img=c.createImageData(W,H),d=img.data;
+  const g=(x,m,s)=>Math.exp(-(((x-m)/s)**2));
+  for(let x=0;x<W;x++){const s=x/W*SPAN_M;let parts=[];
+    if(!student){MEL.forEach(n=>{if(s<n.on)return;const dt=s-n.on;let a=Math.exp(-dt/.9)*(dt<n.dur?1:Math.exp(-(dt-n.dur)/.07));if(a>.01)parts.push({f0:m2f(n.m),a,att:dt<.025,vo:false})})}
+    else{const q=sampleAt(s);if(q)parts.push({f0:m2f(q.p),a:q.amp,att:q.dt<.02,vo:true})}
+    for(let y=0;y<H;y++){const oct=(y/H)*FOCT,f=FLO*Math.pow(2,oct);let I=student?.04*hash(x*13.1+y*7.7):0;
+      for(const pt of parts){for(let k=1;k<=12;k++){const fk=pt.f0*k;if(fk>FLO*16*1.06)break;const dSemi=12*Math.log2(f/fk);if(Math.abs(dSemi)>1.6)continue;
+          const ak=pt.vo?(.7+.6*g(fk,720,200)+.45*g(fk,1150,240))*Math.pow(.8,k-1):Math.pow(.72,k-1);I+=pt.a*ak*g(dSemi,0,pt.vo?.42:.32)}
+        if(pt.att)I+=.35*pt.a}
+      const v=1-Math.exp(-1.7*I),[r,gg,b]=cmap(v),o=((H-1-y)*W+x)*4;d[o]=r;d[o+1]=gg;d[o+2]=b;d[o+3]=255}}
+  c.putImageData(img,0,0);return cv}
+const specCache={};
+function draw5(ctx,w,h,t,card){bg(ctx,w,h);const P=PM,p=ph(P,t),narrow=w<520;
+  const x0=narrow?40:56,x1=w-16,top=46,bot=h-30,mid=(top+bot)/2,half=mid-top-4,X=s=>x0+s/SPAN_M*(x1-x0);
+  const key=`${Math.round(x1-x0)}x${Math.round(half)}`;if(card.specKey!==key){const W=Math.max(60,Math.round((x1-x0)*.6)),H=Math.max(30,Math.round(half*.6));card.spec={m:genSpec(W,H,false),s:genSpec(W,H,true)};card.specKey=key}
+  ctx.imageSmoothingEnabled=true;
+  const blit=(img,clipT,flip)=>{if(clipT<=0)return;const cw=Math.min(x1-x0,X(clipT)-x0);ctx.save();ctx.beginPath();ctx.rect(x0,flip?mid+4:top,cw,half);ctx.clip();
+    if(flip){ctx.translate(0,mid+4+half);ctx.scale(1,-1);ctx.drawImage(img,x0,0,x1-x0,half)}else ctx.drawImage(img,x0,top,x1-x0,half);ctx.restore()};
+  ctx.fillStyle='rgba(0,0,0,.25)';ctx.fillRect(x0,top,x1-x0,half);ctx.fillRect(x0,mid+4,x1-x0,half);
+  blit(card.spec.m,p.n==='L'?t:SPAN_M,false);
+  if(p.n==='E')blit(card.spec.s,p.lt,true);else if(p.n==='R')blit(card.spec.s,SPAN_M,true);
+  else txt(ctx,p.n==='C'?'':'senin yansıman burada belirecek',(x0+x1)/2,mid+4+half/2,{size:11,col:C.faint,align:'center',base:'middle',font:MONO,w:500});
+  [100,200,400,800,1600].forEach((f,i)=>{const r=Math.log2(f/FLO)/FOCT*half;txt(ctx,f>=1000?dec(f/1000,1)+'k':String(f),x0-6,mid-r,{size:9,col:C.faint,font:MONO,align:'right',base:'middle',w:500});
+    txt(ctx,f>=1000?dec(f/1000,1)+'k':String(f),x0-6,mid+4+r,{size:9,col:C.faint,font:MONO,align:'right',base:'middle',w:500})});
+  ctx.fillStyle=rgba(C.white,.5);ctx.fillRect(x0,mid+1,x1-x0,2);
+  txt(ctx,'MODEL · piyano',x0+8,top+14,{size:10,col:C.text,font:MONO,w:700});txt(ctx,'SEN · ses',x0+8,bot-8,{size:10,col:C.text,font:MONO,w:700});
+  const showM=p.n==='L'?t:1e9,showS=p.n==='E'?p.lt:p.n==='R'?1e9:-1;
+  MEL.forEach(n=>{if(n.on<=showM){ctx.fillStyle=C.lav;ctx.fillRect(X(n.on)-1,mid-9,2,8)}const ts=n.on+n.dl;if(ts<=showS){const col=msCol(n.dl*1000);ctx.fillStyle=col;ctx.fillRect(X(ts)-1,mid+3,2,8);
+    ctx.strokeStyle=col;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(X(n.on),mid-1);ctx.lineTo(X(ts),mid+3);ctx.stroke()}});
+  if(p.n==='L'){ctx.fillStyle=C.white;ctx.fillRect(X(Math.min(t,SPAN_M)),top,1.5,half)}
+  if(p.n==='E'){ctx.fillStyle=C.lime;ctx.fillRect(X(p.lt),mid+4,1.5,half);ctx.fillStyle=rgba(C.lime,.35);ctx.fillRect(X(p.lt),top,1,half)}
+  if(p.n==='R'){const i=4,n=MEL[i],a=clamp((p.lt-.4)/.4,0,1),pu=.5+.5*Math.sin(p.lt*5);if(a){ctx.globalAlpha=a;const bx=X(n.on)-4,bw=X(n.on+n.dur)-X(n.on)+8;
+      ctx.strokeStyle=rgba(C.coral,.6+.4*pu);ctx.lineWidth=2;rr(ctx,bx,top+2,bw,bot-top-4,8);ctx.stroke();
+      const lbl=`${nn(n.m)} ${fmtC(MSTAT[i].med)}: bütün harmonikler birlikte kaydı`;ctx.font=`700 10.5px ${MONO}`;const tw=ctx.measureText(lbl).width;
+      const lx=clamp(bx+bw/2-tw/2-8,x0,x1-tw-16);pill(ctx,lx,top+22,lbl,'#1C1330',C.coral,10.5);ctx.globalAlpha=1}}
+  countOverlay(ctx,w,h,P,p,(x0+x1)/2,mid+4+half/2);hud(ctx,w,h,P,t)}
+
+/* =========== competitor pattern minis =========== */
+const PC={T:6};
+function miniBg(ctx,w,h,lbl){bg(ctx,w,h);txt(ctx,lbl,10,18,{size:9.5,col:C.faint,font:MONO,w:600})}
+function drawA(ctx,w,h,t){miniBg(ctx,w,h,'DESEN · kayan bloklar');const lanes=5,ly=i=>32+(h-52)*(1-(i+.5)/lanes),hitX=w*.28,v=w*.22;
+  for(let i=0;i<lanes;i++){ctx.fillStyle=i%2?'rgba(255,255,255,.03)':'rgba(255,255,255,.015)';ctx.fillRect(0,ly(i)-(h-52)/lanes/2,w,(h-52)/lanes)}
+  const bars=[[0,.8,1],[.9,.5,2],[1.5,.5,3],[2.1,1,2],[3.2,.6,0],[3.9,.6,1],[4.6,1.2,3]],ok=[1,1,0,1,1,0,1];
+  const cur=bars.find(b=>t>=b[0]&&t<b[0]+b[1]);let dotY=ly(cur?cur[2]:1)+(cur&&!ok[bars.indexOf(cur)]?-(h-52)/lanes*.6:0)+Math.sin(t*9)*2;
+  bars.forEach((b,i)=>{for(const off of[0,PC.T]){const xa=hitX+(b[0]+off-t)*v,xb=xa+b[1]*v-3;if(xb<0||xa>w)continue;const y=ly(b[2]),bh=(h-52)/lanes*.55;
+    rr(ctx,xa,y-bh/2,xb-xa,bh,5);ctx.fillStyle='rgba(255,255,255,.18)';ctx.fill();const pass=Math.min(xb,hitX)-xa;
+    if(pass>0&&off===0){rr(ctx,xa,y-bh/2,pass,bh,5);ctx.fillStyle=ok[i]?C.green:'rgba(255,255,255,.35)';ctx.fill()}}});
+  ctx.fillStyle='rgba(255,255,255,.4)';ctx.fillRect(hitX,28,1.5,h-48);ctx.save();glow(ctx,C.white,14);ctx.fillStyle=C.white;ctx.beginPath();ctx.arc(hitX,dotY,5,0,TAU);ctx.fill();ctx.restore();
+  if(cur&&ok[bars.indexOf(cur)])txt(ctx,'Harika!',hitX+10,dotY-10,{size:11,w:800,col:C.green})}
+function drawB(ctx,w,h,t){miniBg(ctx,w,h,'DESEN · hedef çizgi + iz');const segs=[[0,1.2,.35],[1.2,1.4,.6],[2.6,1,.45],[3.6,1.6,.75]],X=s=>14+s/5.4*(w-28),Y=v=>h-22-v*(h-52);
+  const tt=t%PC.T,pt=s=>{const g=segs.find(q=>s>=q[0]&&s<q[0]+q[1]);if(!g)return null;const dt=s-g[0],pr=segs[segs.indexOf(g)-1];let v=g[2]+(pr?(pr[2]-g[2])*Math.exp(-dt/.08):0)+.02*Math.sin(s*30)+(segs.indexOf(g)===2?.07:0);return v};
+  segs.forEach((g,i)=>{const done=tt>g[0]+g[1],good=i!==2;ctx.strokeStyle=done?(good?C.green:C.amber):C.sky;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(X(g[0]),Y(g[2]));ctx.lineTo(X(g[0]+g[1])-3,Y(g[2]));ctx.stroke()});
+  ctx.strokeStyle=C.coral;ctx.lineWidth=2;ctx.beginPath();let st=false;for(let s=0;s<Math.min(tt,5.4);s+=.02){const v=pt(s);if(v==null){st=false;continue}st?ctx.lineTo(X(s),Y(v)):ctx.moveTo(X(s),Y(v));st=true}ctx.stroke();
+  if(tt<5.4){ctx.fillStyle='rgba(255,255,255,.4)';ctx.fillRect(X(tt),28,1,h-48)}}
+function drawC(ctx,w,h,t){miniBg(ctx,w,h,'DESEN · hece balonları');const notes=[.3,.5,.7,.5,.35,.6,.8,.55],gap=.6,v=w*.18,hitX=w*.22,Y=q=>h-24-q*(h-56);
+  notes.forEach((q,i)=>{for(const off of[0,notes.length*gap]){const x=hitX+(i*gap+off-t)*v;if(x<-40||x>w+40)continue;ctx.save();glow(ctx,'rgba(0,0,0,.5)',10);pill(ctx,x,Y(q)-10,'la','#fff','#3A2E52',11,'center');ctx.restore()}});
+  const k=t/gap,i=Math.floor(k)%notes.length,f=k%1,a=Y(notes[i]),b=Y(notes[(i+1)%notes.length]),y=a+(b-a)*f-Math.sin(f*Math.PI)*26-16;
+  ctx.save();glow(ctx,C.amber,14);ctx.fillStyle=C.amber;ctx.beginPath();ctx.arc(hitX+f*gap*v,y,5,0,TAU);ctx.fill();ctx.restore()}
+function drawD(ctx,w,h,t){miniBg(ctx,w,h,'DESEN · erken / tam / geç');const beats=[0,.5,1,1.5,2,2.75,3,3.5,4,4.5],res=[0,1,0,0,2,0,1,0,3,0],X=s=>16+s/5*(w-32),y=h/2+6,tt=t%PC.T;
+  ctx.fillStyle='rgba(255,255,255,.06)';rr(ctx,10,y-22,w-20,44,10);ctx.fill();let score=0;
+  beats.forEach((b,i)=>{const x=X(b);ctx.fillStyle='rgba(255,255,255,.25)';rr(ctx,x-5,y-14,10,28,4);ctx.fill();
+    if(tt>b+.15){const r=res[i],col=[C.green,C.amber,C.coral,C.amber][r],dx=[0,-7,0,8][r];
+      if(r===2){ctx.strokeStyle=col;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x-5,y-5);ctx.lineTo(x+5,y+5);ctx.moveTo(x+5,y-5);ctx.lineTo(x-5,y+5);ctx.stroke()}
+      else{ctx.fillStyle=col;rr(ctx,x-4+dx,y-14,8,28,4);ctx.fill()}score+=[10,6,0,6][r]}});
+  if(tt<5)(ctx.fillStyle='rgba(255,255,255,.5)',ctx.fillRect(X(tt),y-28,1.5,56));
+  txt(ctx,'Skor '+score,w-12,18,{size:11,w:800,col:C.white,align:'right'});
+  [['erken',C.amber],['tam',C.green],['kaçtı',C.coral]].forEach(([l,c],i)=>{ctx.fillStyle=c;ctx.fillRect(14+i*58,h-20,8,8);txt(ctx,l,26+i*58,h-12,{size:9.5,col:C.dim,font:MONO,w:500})})}
+
+/* =========== audio (Web Audio, starts only from a button) =========== */
+let AC=null,live=null,noiseBuf=null;
+function ac(){if(!AC){const A=window.AudioContext||window.webkitAudioContext;if(!A)return null;AC=new A()}if(AC.state==='suspended')AC.resume();return AC}
+function noise(){if(!noiseBuf){const n=AC.sampleRate*.3|0;noiseBuf=AC.createBuffer(1,n,AC.sampleRate);const d=noiseBuf.getChannelData(0);for(let i=0;i<n;i++)d[i]=Math.random()*2-1}return noiseBuf}
+function tone(out,t0,f,dur,vol){[[1,'triangle',1],[2,'sine',.3],[3,'sine',.1]].forEach(([mul,type,g])=>{const o=AC.createOscillator();o.type=type;o.frequency.value=f*mul;const gn=AC.createGain();
+  gn.gain.setValueAtTime(0,t0);gn.gain.linearRampToValueAtTime(vol*g,t0+.006);gn.gain.exponentialRampToValueAtTime(.0001,t0+dur+.45);o.connect(gn).connect(out);o.start(t0);o.stop(t0+dur+.5)})}
+function tick(out,t0,hi){const o=AC.createOscillator();o.frequency.value=hi?1760:1320;const g=AC.createGain();g.gain.setValueAtTime(.0001,t0);g.gain.exponentialRampToValueAtTime(.22,t0+.002);g.gain.exponentialRampToValueAtTime(.0001,t0+.05);o.connect(g).connect(out);o.start(t0);o.stop(t0+.06)}
+function clap(out,t0,v,fc){const s=AC.createBufferSource();s.buffer=noise();const bp=AC.createBiquadFilter();bp.type='bandpass';bp.frequency.value=fc;bp.Q.value=1.1;const g=AC.createGain();
+  g.gain.setValueAtTime(.0001,t0);g.gain.exponentialRampToValueAtTime(.9*v,t0+.003);g.gain.exponentialRampToValueAtTime(.0001,t0+.13);s.connect(bp).connect(g).connect(out);s.start(t0);s.stop(t0+.16)}
+function voice(out,t0,dur){const N=Math.ceil(dur*200),fc=new Float32Array(N),gc=new Float32Array(N);let last=m2f(59);for(let i=0;i<N;i++){const s=sing(i/200);if(s){last=m2f(s.p);gc[i]=s.amp*.5}fc[i]=last}
+  const o=AC.createOscillator();o.type='sawtooth';o.frequency.setValueCurveAtTime(fc,t0,dur);const lp=AC.createBiquadFilter();lp.type='lowpass';lp.frequency.value=3200;
+  const f1=AC.createBiquadFilter();f1.type='bandpass';f1.frequency.value=730;f1.Q.value=4;const f2=AC.createBiquadFilter();f2.type='bandpass';f2.frequency.value=1100;f2.Q.value=5;
+  const g=AC.createGain();g.gain.value=0;g.gain.setValueCurveAtTime(gc,t0,dur);const mix=AC.createGain();mix.gain.value=1.6;
+  o.connect(lp);lp.connect(f1);lp.connect(f2);f1.connect(mix);f2.connect(mix);mix.connect(g);g.connect(out);o.start(t0);o.stop(t0+dur+.05)}
+function schedule(card,k){const P=card.P,base=live.base+k*P.T,out=live.out;
+  for(let i=0;i<4;i++)tick(out,base+P.C[0]+i*P.beat,i===0);
+  if(card.kind==='m'){MEL.forEach(n=>tone(out,base+n.on,m2f(n.m),n.dur,.2));voice(out,base+P.E[0],SPAN_M)}
+  else{HITS.forEach(hh=>{clap(out,base+hh.t,hh.v,2300);clap(out,base+P.E[0]+hh.t+hh.e,hh.sv,1400)})}}
+function stopAudio(){if(!live)return;const o=live.out;try{o.gain.setTargetAtTime(0,AC.currentTime,.03)}catch(e){}setTimeout(()=>{try{o.disconnect()}catch(e){}},400);const c=live.card;live=null;c.playing=false;setBtn(c)}
+function startAudio(card){stopAudio();if(!ac())return;const out=AC.createGain();out.gain.value=.9;out.connect(AC.destination);
+  const lead=.08;live={card,out,base:AC.currentTime+lead,next:1};card.start=performance.now()+lead*1000;card.playing=true;schedule(card,0);setBtn(card)}
+
+/* =========== registry + loop =========== */
+const cards=[];
+function reg(id,P,draw,kind){const cv=document.getElementById(id);if(!cv)return;const card={id,cv,ctx:cv.getContext('2d'),P,draw,kind,start:performance.now(),w:0,h:0,visible:true,playing:false};cards.push(card);
+  new ResizeObserver(()=>{const r=cv.getBoundingClientRect(),dpr=Math.min(2,window.devicePixelRatio||1);card.w=r.width;card.h=r.height;cv.width=Math.round(r.width*dpr);cv.height=Math.round(r.height*dpr);card.dpr=dpr;card.dirty=true}).observe(cv);
+  if('IntersectionObserver'in window)new IntersectionObserver(es=>es.forEach(e=>card.visible=e.isIntersecting),{rootMargin:'120px'}).observe(cv);
+  return card}
+reg('cA',PC,drawA);reg('cB',PC,drawB);reg('cC',PC,drawC);reg('cD',PC,drawD);
+reg('d1',PM,draw1,'m');reg('d2',PM,draw2,'m');reg('d3',PR,draw3,'r');reg('d4',PR,draw4,'r');reg('d5',PM,draw5,'m');
+const restT=c=>c.P.R?c.P.R[0]+2.4:2.5;
+function setBtn(c){const b=document.getElementById('p-'+c.id);if(!b)return;b.innerHTML=c.playing?'<svg viewBox="0 0 14 14" aria-hidden="true"><rect x="3" y="3" width="8" height="8" rx="1.5" fill="currentColor"/></svg>Durdur':'<svg viewBox="0 0 14 14" aria-hidden="true"><path d="M4 2.5v9l7.5-4.5z" fill="currentColor"/></svg>Sesli dinle'}
+cards.forEach(setBtn);
+document.querySelectorAll('.play').forEach(b=>b.addEventListener('click',()=>{const c=cards.find(c=>c.id===b.dataset.id);if(c.playing)stopAudio();else startAudio(c)}));
+document.querySelectorAll('.restart').forEach(b=>b.addEventListener('click',()=>{const c=cards.find(c=>c.id===b.dataset.id);if(c.playing)startAudio(c);else{c.start=performance.now();c.anim=true}}));
+function frame(now){for(const c of cards){if(!c.w||(!c.visible&&!c.dirty))continue;const T=c.P.T;let t,abs=(now-c.start)/1000;
+    if(reduce&&!c.playing&&!c.anim)t=restT(c);else{abs=Math.max(0,abs);t=abs%T}
+    if(reduce&&c.anim&&abs>T)c.anim=false;
+    if(live&&live.card===c){const k=Math.floor(Math.max(0,abs)/T);if(abs>(k+1)*T-1&&live.next<=k+1){schedule(c,k+1);live.next=k+2}}
+    const ctx=c.ctx;ctx.setTransform(c.dpr,0,0,c.dpr,0,0);ctx.save();try{c.draw(ctx,c.w,c.h,t,c)}catch(e){console.error(c.id,e)}ctx.restore();c.dirty=false}
+  requestAnimationFrame(frame)}
+requestAnimationFrame(frame);
+})();
+</script>

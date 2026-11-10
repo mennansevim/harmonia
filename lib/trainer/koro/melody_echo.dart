@@ -16,6 +16,8 @@ import '../../infrastructure/audio/synthetic_melody_backend.dart';
 import '../app/scope.dart';
 import '../domain/music.dart';
 import '../ui/kit.dart';
+import 'echo_end_detector.dart';
+import 'echo_trace_layout.dart';
 import 'melody_echo_levels.dart';
 import 'your_turn.dart';
 
@@ -74,13 +76,16 @@ class _MelodyEchoScreenState extends State<MelodyEchoScreen>
   /// or null. Never scored; the take is judged after it ends.
   final List<(int, double?)> _trace = [];
   StreamSubscription<List<double>>? _live;
+
+  /// Ends listening shortly after the singer stops, instead of always
+  /// waiting out the whole window. Timing only; never part of the score.
+  EchoEndDetector _end = EchoEndDetector(expectedNotes: 1);
   late final LivePitchTracker _tracker = LivePitchTracker(
     onPitch: (hz) {
-      if (!mounted ||
-          _session?.phase != SingleToneSessionPhase.responding ||
-          _trace.length > 600) {
-        return;
-      }
+      final s = _session;
+      if (!mounted || s?.phase != SingleToneSessionPhase.responding) return;
+      if (_end.add(hz == null ? null : hzToMidi(hz))) s!.finishResponse();
+      if (_trace.length > 600) return;
       setState(
         () => _trace.add((
           // One estimate per 20 ms of captured audio: time from samples,
@@ -196,6 +201,7 @@ class _MelodyEchoScreenState extends State<MelodyEchoScreen>
       if (s.phase == SingleToneSessionPhase.responding) {
         _trace.clear();
         _tracker.reset();
+        _end = EchoEndDetector(expectedNotes: _notes.length);
         HapticFeedback.heavyImpact();
       }
     }
@@ -343,8 +349,8 @@ class _MelodyEchoScreenState extends State<MelodyEchoScreen>
                           YourTurnCue(
                             action: tr('Söyle!', 'Sing!'),
                             detail: tr(
-                              'Aynı sırayla · mikrofon açık',
-                              'Same order · microphone on',
+                              'Aynı sırayla · susunca kendiliğinden biter',
+                              'Same order · ends when you stop',
                             ),
                           ),
                           const SizedBox(height: 14),
@@ -675,8 +681,8 @@ class _Verdict {
 
 /// What the melody should be and what was sung, on one graph. Each note is
 /// a band in its own slot (lit while the reference plays); the live trace is
-/// drawn over them while singing, stretched into the melody's length since
-/// only note order and pitch are compared, never timing. On the result the
+/// drawn over them while singing, each held note in its own slot
+/// ([echoTraceX]) since only note order and pitch are compared, never timing. On the result the
 /// bands take the comparison's colours. Display only.
 class _EchoGraph extends StatelessWidget {
   const _EchoGraph({
@@ -817,10 +823,14 @@ class _EchoPainter extends CustomPainter {
     }
     final first = trace.indexWhere((p) => p.$2 != null);
     if (first < 0) return;
-    final t0 = trace[first].$1;
-    final length = notes.length * _slotMs;
-    final shown = math.max(length, trace.last.$1 - t0);
-    double x(int t) => (t - t0) / shown * size.width;
+    final x = echoTraceX(
+      trace,
+      notes: notes.length,
+      width: size.width,
+      live: verdicts == null,
+      noteMs: _noteMs,
+      slotMs: _slotMs,
+    );
     int slotAt(double px) => (px / slot).floor().clamp(0, notes.length - 1);
     bool hit(double px, double m) => (m - notes[slotAt(px)]).abs() < 0.5;
     final glow = Paint()

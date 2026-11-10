@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../online/choir_backend.dart';
 import '../../trainer/domain/trainers.dart';
 import '../../trainer/koro/koro_hub.dart';
 import '../../trainer/learn/skill_screen.dart';
@@ -42,11 +43,19 @@ class _AssignmentScreenState extends State<AssignmentScreen> {
     setState(() => _sending = true);
     final origin = shareOrigin(button);
     try {
+      if (scope.store.isOnline(draft.choirId)) {
+        // Online choir: the take goes to the choir's Drive, no share sheet.
+        await scope.store.markSent(draft);
+        if (mounted) toast(context, CT.of(context).takeUploaded);
+        return;
+      }
       final sent = draft.submit(scope.store.now.toUtc());
       final path = await scope.bundles.exportSubmission(sent);
       if (await scope.files.share(path, origin: origin)) {
         await scope.store.markSent(draft);
       }
+    } on ChoirBackendException catch (e) {
+      if (mounted) toast(context, CT.of(context).backendProblem(e.problem));
     } finally {
       if (mounted) setState(() => _sending = false);
     }
@@ -200,6 +209,31 @@ class _AssignmentScreenState extends State<AssignmentScreen> {
                   '${p.withAccompaniment ? text.accompanied : text.unaccompanied}'
                   ' · ${text.statusName(store.mySubmission(a.id, p.id)?.status)}',
               onTap: () => setState(() => _chosen = p.id),
+            ),
+        ],
+        if (store.partTakes(a.id, piece.id) case final peers
+            when peers.isNotEmpty) ...[
+          Caption(text.caps(text.partTakesTitle)),
+          Text(text.partTakesHint, style: TT.small),
+          const SizedBox(height: 8),
+          for (final t in peers)
+            ChoirRow(
+              key: Key('peer_take_${t.id}'),
+              icon: Ic.headphones,
+              title:
+                  store
+                      .singersOf(a.choirId)
+                      .where((m) => m.userId == t.memberId)
+                      .firstOrNull
+                      ?.displayName ??
+                  text.partName(t.part),
+              subtitle: text.statusName(t.status),
+              onTap: store.leadsReview(t)
+                  ? () => _push(ReviewScreen(submissionId: t.id))
+                  : null,
+              trailing: store.leadsReview(t)
+                  ? null
+                  : FilePlayButton(mediaId: t.recordingId!, label: text.listen),
             ),
         ],
       ],
@@ -614,7 +648,7 @@ class _FilePlayButtonState extends State<FilePlayButton> {
       _sub = player.playingChanges.listen((p) {
         if (mounted) setState(() => _playing = p);
       });
-      await player.open(await scope.store.mediaPath(widget.mediaId));
+      await player.open(await scope.store.ensureMedia(widget.mediaId));
     }
     if (_playing) {
       await _player!.pause();

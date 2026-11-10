@@ -4922,3 +4922,225 @@ oturumuyla iş bölümü yapıldı; sayı/yıldız düzeltmeleri oradan geldi.
   ipucu, ölçüm/kayıt/sonraki adım mantığı değişmedi.
 - Kalite kapısı: format + analyze temiz, **1548 test + 2 skip**.
 - Sınır: cihazda görsel kontrol yapılmadı.
+
+### 2026-11-10 — Alkışla ritim: süre ilk alkışla başlar
+- `lib/trainer/koro/clap_rhythm.dart`: "Sıra sende" anında artık 6 sn'lik
+  bekleme sayacı kurulmaz; tur öğrencinin ilk alkışını bekler ve otomatik
+  bitirme sayacı ilk alkışla başlar (sonrası aynı: eksikte 2,5 sn, tamamda en
+  uzun aralık + ±120 ms pencere, en az 600 ms). Alkış gelmeden "Bitirdim"
+  turu yine bitirir ("Alkış duyamadım"). İlk alkış öncesi ipucu: "Hazır olunca
+  başla; süre ilk alkışınla başlar · mikrofon açık". Eşleştirme, tolerans ve
+  geçme kuralı değişmedi (ilk alkış zaten çapaydı).
+- Test: 30 sn sessizlikte tur sürer, mikrofon kapanmaz; sonra yapılan temiz
+  tekrar geçer (`clap_and_language_test.dart`).
+- Kalite kapısı (`dart tool/quality_check.dart`): format + analyze temiz,
+  **1563 test + 2 skip**.
+- Sınır: gerçek cihazda denenmedi; mikrofon ilk alkışa kadar açık kalır,
+  ortam gürültüsünün yanlışlıkla "ilk alkış" sayılması gerçek odada ölçülmedi.
+
+## 2026-11-10 — CHOIR-B1a koro sunucusu: yetki kuralı ve Supabase şeması
+
+**Kullanıcı isteği:** Koro bölümünü plan modunda konuşmak; şef koro kurar,
+koristler QR/link ile katılır, ses grupları, Drive'da repertuvar ve kayıtlar,
+ödev, kimin gönderdiği, şefin dinleyip yorum bırakması. Kararlar ADR-041.
+
+### Uygulananlar
+- `lib/choir/domain/choir.dart`: `ChoirMember.leadsPart` (partisyon şefi;
+  parti değişince düşer), `leads()`, `withLeading()`, `isConductor`. JSON'da
+  yalnız true iken yazılır; eski veriler okunur.
+- `lib/choir/domain/submission.dart`: `SubmissionStatus.forwarded`,
+  `forwardedAt`, `forward` (not isteğe bağlı), `requestRetake` (not zorunlu),
+  `markListened` partisyon şefini de kabul eder, `PartProgress.forwarded`.
+- `lib/choir/domain/choir_access.dart`: kim durum görür, kim dinler, kim geri
+  bildirim okur, kim karar verir. Sunucu RLS'si ile aynı kural.
+- `supabase/`: `config.toml` (project_id resonia), migration (choirs, members,
+  invites, join_requests, submissions, feedback; RLS okuma; tablo yazımı
+  kapalı; `create_choir`, `create_invite`, `preview_invite`, `request_join`,
+  `decide_join`, `set_member_part`, `set_section_leader`, `remove_member`,
+  `submit_take`, `mark_listened`, `leader_decide`, `conductor_review`,
+  `can_listen`, `can_read_feedback`; anonim çağrı yok).
+- Testler: `test/choir/choir_access_test.dart`, `supabase/tests/choir_isolation_test.sql`.
+
+### Doğrulama
+- `supabase test db`: 33/33 (yerel Docker veritabanı).
+- `dart tool/quality_check.dart`: format + analyze temiz, **1563 test + 2 skip**.
+
+### Sınırlar
+- Uzak Supabase projesi, Google Cloud OAuth, Drive Edge Functions, uygulamada
+  giriş/katılım ekranları, uzak depo ve `.resonia` geçişi yok. Uygulama hâlâ
+  cihazda çalışıyor; partisyon şefi yerel akışta atanamıyor.
+- Dart kuralı ile SQL kuralı ayrı testlerle kilitli; ortak test vektörü yok.
+- Gerçek cihaz, gerçek Drive hesabı ve pilot koro doğrulaması yapılmadı.
+
+## 2026-11-10 — Ezgi tekrarı: söyleyiş bitince dinleme kapanır
+
+**Kullanıcı geri bildirimi:** Ezgi bitse de mikrofon dinlemeye devam ediyor.
+Neden: cevap penceresi sabit 8 sn idi; erken bitiş yalnız "Bitirdim" ile.
+
+### Uygulananlar
+- `lib/trainer/koro/echo_end_detector.dart`: 20 ms'lik canlı perde
+  tahminlerinden ses/sessizlik ve nota parçası (≥100 ms, 0,8 yarım ton
+  sapma ya da 60 ms boşlukla ayrılır) sayar. ≥200 ms ses sonrası; tüm notalar
+  duyulduysa 700 ms, değilse 1,5 sn sessizlikte bir kez bitiş verir.
+- `melody_echo.dart`: her cevapta yeni dedektör; bitişte `finishResponse`.
+  Bant metni "Aynı sırayla · susunca kendiliğinden biter".
+- Puan/hizalama/tolerans değişmedi; karar tüm kayıt analizinde kalır.
+- Test: `test/trainer/echo_end_detector_test.dart` (5 test).
+
+### Doğrulama
+- `dart tool/quality_check.dart`: format + analyze temiz, **1568 test + 2 skip**.
+
+### Sınırlar
+- Eşikler gerçek cihaz/insan sesiyle ayarlanmadı; gürültülü ortamda YIN
+  sesli kare üretirse 8 sn yedek pencere devrede kalır.
+
+### Ek: canlı iz notalarla hizalı
+- `lib/trainer/koro/echo_trace_layout.dart`: `echoSegments` izi tutulan
+  notalara böler (dedektörle aynı kurallar); `echoTraceX` k'inci notayı
+  k'inci bandın içine yerleştirir, aradaki boşlukları band sınırına sıkıştırır.
+  Canlıyken son nota 600 ms'de bandını doldurur. Nota sayısı ezgiyi aşarsa
+  düz zaman ölçeği. `_EchoPainter` bunu kullanır; renk/isabet aynı.
+- Test: `test/trainer/echo_trace_layout_test.dart` (5 test).
+- Doğrulama: format temiz; koro/trainer analyze temiz; tam test **1575 + 2
+  skip** geçti (bir koşuda iki zamanlamaya bağlı features testi yük altında
+  düştü, tek başına ve tekrar koşuda geçti). `dart tool/quality_check.dart`
+  bu sırada eşzamanlı düzenlenen `stats_tab.dart`'taki 2 kullanılmayan alan
+  uyarısında durur; o dosyaya bu işte dokunulmadı.
+- Sınır: gürültü kısa nota parçası üretirse iz bir banda kayabilir;
+  simülatör/cihazda görsel olarak doğrulanmadı.
+
+## 2026-11-10 — Varsayılan alkış stili Ses halkası + iOS IPA 1.0.0+20
+
+- Kullanıcı isteği: varsayılan alkış görünümü "Ses halkası". Seçim yeni,
+  boş bırakılabilir `TrainerStore.clapLook` (stil adı) anahtarında; seçim
+  yoksa `ClapStyle.fallback = rings`. Build 19'un `clapStyle` int alanı
+  seçmeyenler için de 0 yazdığından okunmuyor (19'da Klasik seçenler bir kez
+  yeniden seçer). Testler: varsayılan rings, seçim + yeniden yükleme.
+- `pubspec.yaml` 1.0.0+19 → 1.0.0+20; önceki IPA `build/ios/ipa-1.0.0+19/`.
+- IPA, ana ağaçtaki commit'lenmemiş başka koro (`lib/choir/…`) işlerini
+  içermesin diye HEAD (`ded6b36`) + bu değişiklik + sürüm artışıyla ayrı
+  worktree'de üretildi. O ağaçta kalite kapısı: format/analyze temiz; iki
+  koro testi eşzamanlı ikinci test turu altında zamanlamadan düştü, tek
+  başına geçti. Ana ağaçta tam tur: 1562 test + 2 skip geçti.
+- `flutter build ipa --release --dart-define=RESONIA_CHANNEL=beta
+  --export-options-plist=<+19 ExportOptions>` exit 0.
+  `build/ios/ipa/Vocalart.ipa` 35858310 byte, SHA-256
+  `1e4674139ce51716d857db6cfff9cf60942f1639bde6fd302455ac61214f97f4`.
+- `verify_ios_ipa.py --pubspec pubspec.yaml`: passed — 1.0.0 (20), Apple
+  Distribution L3Z9U2B39K, 4 Mach-O bundle, 8 privacy manifest.
+- Upload, TestFlight ve fiziksel cihaz denemesi yapılmadı.
+
+## 2026-11-10 — Ses aralığı dairesel kadranla gösterilir
+
+- Kullanıcı isteği: ses aralığı, paylaşılan örnekteki gibi daire şeklinde.
+  Yeni `lib/trainer/ui/range_dial.dart` (`RangeDial`): 270° kadran, yarım ses
+  çentikleri, C notaları kenarda adlı; ölçülen aralık kalın yay + yarım ses
+  başına ışınlı yelpaze, iki uç nota halkanın dışında. Varsayılan açıklık
+  C2–C6, aralık dışına taşarsa tam oktavlarla genişler. Yalnız kayıtlı
+  ölçümün resmidir; yeni değerlendirme/eşik eklemez.
+- Aralık testi sonucu: HeroCard'da kadran (koyu tema), ortada aralık metni
+  (`range_result`) ve çalışma partisi. Gelişim sekmesi `stats_range` kartında
+  düz çubuk yerine kadran, ortada yarım ses sayısı. "TASLAK ÖLÇÜM" etiketi ve
+  doğrulanmamış uyarısı korundu.
+- Testler: `range_dial_test.dart` (açıklık/genişleme, render). Kadran ilk
+  ekranı doldurduğu için `range_ladder_test` skor kartına kaydırarak bakıyor.
+- Doğrulama: format temiz; `quality_check` tam turu 1575 test geçti. Son
+  analyze turunda tek bulgu bu işin dışında, eşzamanlı yazılan
+  `lib/choir/online/online_choir_controller.dart:8` doc yorumu. Görünüm
+  yalnız test render'ında (Ahem fontu) kontrol edildi; gerçek cihazda
+  bakılmadı.
+
+## 2026-11-10 — CHOIR-B1b Faz 1: çevrimiçi koro ekranları
+
+**Kullanıcı isteği:** "Faz 1 ekranlarına geç" (ADR-041 planı).
+
+### Uygulananlar
+- `lib/choir/online/`: `ChoirBackend` arayüzü + `ChoirBackendException`
+  (sunucu mesajı → `BackendProblem`), `SupabaseChoirBackend` (yalnız RPC +
+  RLS'li okuma), `OnlineChoirController`/`OnlineChoirScope`, `OnlineConfig`
+  (`SUPABASE_URL`, `SUPABASE_KEY` dart-define), `invite_code.dart`
+  (8 karakter, 0/O/1/I yok; QR `vocalart://join/KOD`), ekranlar
+  `online_section.dart` (giriş, koro kur), `online_join.dart` (kod/QR, istek,
+  `mobile_scanner`), `online_choir_screen.dart` (üyeler, istek onayı, parti,
+  partisyon şefi, çıkarma, ayrılma, silme; davet QR `qr_flutter`).
+- `choir_tab.dart`: sunuculu derlemede çevrimiçi bölüm başta, cihazdaki
+  korolar ve paket açma altında. `trainer_app.dart`/`main.dart`: yapılandırma
+  varsa `Supabase.initialize` ve denetleyici.
+- `supabase/migrations/20261110150000_choir_join_extras.sql`,
+  `supabase/tests/choir_join_test.sql`, `supabase/templates/sign_in_code.html`,
+  `config.toml` (kod şablonu, OTP 10 dk), `supabase/README.md`.
+- iOS `NSCameraUsageDescription` (TR/EN); Android INTERNET + CAMERA;
+  `scripts/release/verify_android_apk.py` beklenen izinler.
+- Testler: `test/choir/online_choir_test.dart` (kod ayrıştırma + 5 ekran
+  akışı, `support/fake_choir_backend.dart`), `online_backend_integration_test.dart`
+  (isteğe bağlı, gerçek yerel Supabase).
+
+### Doğrulama
+- `supabase test db`: 42/42. Entegrasyon (yerel Supabase + Mailpit): 2/2.
+- Release doğrulayıcı Python testleri: 4 dosya OK.
+- `dart tool/quality_check.dart`: temiz, **1584 test + 4 skip**.
+- `flutter build ios --simulator --debug` sunucu ayarıyla geçti; simülatörde
+  koro kartı ve giriş ekranı görüldü.
+
+### Sınırlar
+- Apple/Google girişi yok (hesap/kimlik bilgisi gerekir); yalnız e-posta kodu.
+- Gizlilik manifesti ve mağaza veri etiketleri güncellenmedi: sunuculu derleme
+  mağazaya çıkmadan önce e-posta/kullanıcı kimliği/ad beyan edilmeli.
+- Simülatörde uçtan uca akış ve gerçek cihazda QR okuma denenmedi.
+- Ödev, repertuvar ve kayıtlar çevrimiçi değil (Faz 2–3).
+
+## 2026-11-10 — CHOIR-B2/B3: Drive, repertuvar, ödev, kayıt, partisyon süzgeci
+
+**Kullanıcı isteği:** "diğer fazlara geç".
+
+### Uygulananlar
+- Sunucu: `supabase/migrations/20261110180000_choir_drive_media.sql` — `media`
+  (Drive dosya id'si istemciye kolon izniyle kapalı), `choir_items`
+  (ReferenceAsset/ChoirResource/Assignment JSON'u, yalnız şef yazar, ödev
+  yalnız korosunun repertuvarını gösterebilir), `choir_drive` + Vault
+  (`_store_drive`, `_drive_token`, yalnız service role), `can_upload_media`,
+  `can_read_media`, `drive_status`, `submit_take` v2 (kendi hazır kaydı +
+  var olan ödev, `take_kind`), `_add_feedback` sesli not sahipliği.
+- Edge Functions (`supabase/functions/`): `drive-oauth` (imzalı 10 dk state,
+  yalnız şef, kod → Vault, klasörler), `media` (upload/finalize/GET; finalize
+  Drive dosyasının appProperties.mediaId + boyut eşleşmesini ister), Google
+  Drive istemcisi, yalnız yerel adreste açılan disk-Drive.
+- Uygulama: `lib/choir/data/choir_remote.dart`, `ChoirStore` (remote,
+  `onlineChoirIds`, `meId`, `ensureMedia`, `applyOnline/syncOnline/forgetOnline`,
+  `leaderDecide`, `partTakes`, rol bilen `reviewQueue`, `canDecide`),
+  `lib/choir/online/supabase_choir_remote.dart`, `OnlineMirrorSync`,
+  çevrimiçi koro sayfasında Drive satırı + "Ödevler ve kayıtlar"; ekranlarda
+  çevrimiçi korolarda paylaşım sayfası yok, hata mesajları, partisyon şefi
+  kararları (`review_screen`), "Partimden kayıtlar" (`assignment_screen`),
+  lider kuyruğu (`choir_screen`). Paketler: `http`, `url_launcher`.
+- Testler: `supabase/tests/choir_media_test.sql`, `supabase/functions/tests/
+  media_test.ts`, `test/choir/online_work_test.dart`,
+  `online_work_screens_test.dart`, entegrasyon testine uçtan uca senaryo,
+  `support/fake_choir_remote.dart`.
+
+### Doğrulama
+- pgTAP 70/70; Deno 4/4; entegrasyon 3/3 (yerel Supabase + functions serve +
+  disk-Drive); `dart tool/quality_check.dart` temiz, **1594 test + 5 skip**.
+- Bulunan ve düzeltilen: Edge Function'da çift Authorization başlığı auth
+  sunucusunca reddediliyordu; supabase-dart `order()` varsayılanı azalan
+  olduğu için yorumlar ters sıradaydı.
+
+### Sınırlar
+- Gerçek Google Drive/OAuth ile denenmedi; uzak Supabase projesi ve Google
+  Cloud istemcisi yok. Drive'daki dosyalar koro/üye silinince kalır.
+- Kayıtlar sıkıştırılmadan WAV; büyük dosyada yükleme tek PUT (kaldığı yerden
+  devam yok); çevrimdışı yükleme kuyruğu yok, hata mesajı gösterilir.
+- Simülatör/cihazda denenmedi; PDF nota kayıt ekranında, push bildirim yok.
+
+## 2026-11-10 — CHOIR-B2 gerçek Google Drive ile yerel doğrulama
+
+- Google Cloud (koro hesabı, "My First Project"): kapsamlar `openid`,
+  `userinfo.email`, `drive.file` (hassas/kısıtlı kapsam yok); test kullanıcısı
+  koro hesabı; Web istemcisi `Vocalart Supabase`, yönlendirme
+  `http://127.0.0.1:54321/functions/v1/drive-oauth/callback`.
+- Sırlar yalnız `supabase/functions/.env.local` içinde (git yok sayıyor, 600).
+- Sonuç: izin → refresh token Vault'ta → klasörler oluştu → repertuvar dosyası
+  yüklendi, doğrulandı, aynı baytlarla okundu.
+- Açık: yayına alma (ana sayfa + gizlilik politikası), uzak proje yönlendirme
+  adresi, uygulama ekranlarıyla gerçek Drive denemesi, deneme koro klasörünün
+  Drive'dan silinmesi.

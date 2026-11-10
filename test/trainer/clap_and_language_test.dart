@@ -355,6 +355,49 @@ void main() {
     await tester.pumpWidget(const SizedBox());
   });
 
+  testWidgets('the turn waits for the first clap, then times out as usual', (
+    tester,
+  ) async {
+    final store = memoryStore({'onboardingDone': true, 'setupDone': true});
+    await store.load();
+    await tester.pumpWidget(app(store));
+    await settle(tester);
+    final ear = _Ear();
+    Navigator.of(tester.element(find.byType(HomeShell))).push(
+      MaterialPageRoute<void>(
+        builder: (_) => ClapRhythmScreen(player: _Player(), listener: ear),
+      ),
+    );
+    await settle(tester);
+    final rhythm = clapRhythmsEasyToHard.first;
+    await tester.tap(find.byKey(const Key('clap_start')));
+    await tester.pump();
+    await tester.pump();
+    await tester.pump(Duration(milliseconds: rhythm.onsetsMs.last + 600));
+    await tester.pump(Duration(milliseconds: (4 * 60000 / rhythm.bpm).round()));
+    await tester.pump();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump();
+    // Long silence: still the learner's turn, nothing judged yet.
+    await tester.pump(const Duration(seconds: 30));
+    expect(find.byKey(const Key('your_turn')), findsOneWidget);
+    expect(ear.stopped, isFalse);
+    // The first clap starts the timing; the rest follow at any later start.
+    for (final o in rhythm.onsetsMs) {
+      ear.clap(o + 31000);
+      await tester.pump(const Duration(milliseconds: 1));
+    }
+    await tester.pump(const Duration(seconds: 3));
+    await tester.pump();
+    expect(
+      tester.widget<Text>(find.byKey(const Key('clap_status'))).data,
+      'Ritmi yakaladın',
+    );
+    expect(ear.stopped, isTrue);
+    await tester.pumpWidget(const SizedBox());
+  });
+
   testWidgets('Settings switches the app language and remembers it', (
     tester,
   ) async {

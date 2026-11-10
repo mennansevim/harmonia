@@ -1,2 +1,3 @@
 /* Shown in the iOS microphone permission prompt. */
 "NSMicrophoneUsageDescription" = "Vocalart uses the microphone only when you start a recording, to record your voice on this device and play it back.";
+"NSCameraUsageDescription" = "Vocalart uses the camera only when you scan a choir invite QR code; no image is kept.";

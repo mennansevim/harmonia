@@ -28,6 +28,8 @@ DEBUG_CERTIFICATE_DN = "C=US, O=Android, CN=Android Debug"
 EXPECTED_PERMISSIONS = frozenset(
     {
         "android.permission.RECORD_AUDIO",
+        "android.permission.INTERNET",
+        "android.permission.CAMERA",
         "android.permission.RECEIVE_BOOT_COMPLETED",
         "android.permission.VIBRATE",
         "android.permission.POST_NOTIFICATIONS",

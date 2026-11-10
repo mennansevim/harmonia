@@ -1,5 +1,79 @@
 # Resonia — Current Roadmap
 
+**2026-11-10 — CHOIR-B2 gerçek Google Drive denemesi (yerel sunucu):** Koro
+hesabının (agoravoiceschoir@gmail.com) Google Cloud projesinde Web OAuth
+istemcisi oluşturuldu; uygulama "Testing" durumunda, koro hesabı test
+kullanıcısı (yayına alma için ana sayfa + gizlilik politikası adresi gerekiyor;
+Testing'de Drive izni 7 günde düşer). Yerel Edge Functions gerçek Google ile:
+izin sayfası → "Drive bağlandı", `Vocalart · Drive Deneme` klasörü
+(Kayıtlar/Repertuvar/Sesli notlar) koro Drive'ında oluştu, `media/upload` →
+Google'a doğrudan PUT → `finalize` → `GET` aynı baytları döndü. Uygulama
+ekranlarıyla (simülatör/cihaz) gerçek Drive akışı henüz denenmedi; uzak
+Supabase projesi ve SMTP ayarı yok.
+
+**2026-11-10 — CHOIR-B2/B3 Drive, repertuvar, ödev, kayıt ve partisyon
+süzgeci (ADR-041):** Çevrimiçi koronun ödev/kayıt ekranları mevcut koro
+ekranlarıdır; `ChoirStore` sunucudaki koroyu aynalar (`ChoirRemote`,
+`syncOnline`), değişiklik önce sunucuya gider, dosyalar ilk kullanımda iner
+(`ensureMedia`). Şef: koro sayfasından Drive'ı tarayıcıda bağlar (koro hesabı,
+`drive.file`); MIDI/nota/prova kaydı ve ödev sunucuya ve Drive'a gider. Korist:
+kaydı paylaşım sayfası yerine yükler; aynı partideki gönderilmiş kayıtları
+dinler. Partisyon şefi: "Partimin kayıtları" kuyruğu, dinle → **Şefe gönder**
+(not isteğe bağlı) / **Tekrar iste** (not zorunlu), sesli not. Şef kuyruğu
+yalnız ulaşan kayıtlar. Cihazdan çıkma: ayrılma/çıkarılma/silme/çıkışta koro
+cihazdan silinir. Sunucu: `20261110180000_choir_drive_media.sql` (media,
+choir_items, choir_drive + Vault, `can_upload_media`, `can_read_media`,
+`put_item`, kayıt sahiplik kontrolü), Edge Functions `drive-oauth` + `media`.
+**pgTAP 70/70, Deno 4/4, entegrasyon 3/3** (gerçek yerel Supabase + Edge
+Functions + disk-Drive: bağlama, MIDI, ödev, kayıt, başka parti reddi, şef
+bekler, lider sesli notla gönderir, şef dinler ve geri döner), uçtan uca
+sahte sunucu testleri 8/8, ekran testleri 2/2, kalite kapısı **1594 test +
+5 skip**. Açık: gerçek Google Drive ile hiç denenmedi (Google Cloud OAuth
+istemcisi ve uzak proje kullanıcıda), Drive'daki dosyalar koro silinince
+silinmiyor, PDF nota kayıt ekranında görünmüyor (Faz 4), AAC sıkıştırma yok
+(2 dk WAV ≈ 10 MB), push bildirim yok, cihaz/pilot denemesi yok.
+
+**2026-11-10 — CHOIR-B1b Faz 1 ekranları (çevrimiçi koro, ADR-041):**
+Yalnız `--dart-define=SUPABASE_URL/SUPABASE_KEY` verilen derlemede açılır;
+verilmezse koro modülü eskisi gibi cihazda. Koro sekmesinde: e-posta + 6 haneli
+kodla giriş, koro kur, davet kodu + QR (paylaş, yeni kod eskisini iptal eder,
+iptal), kodu yaz/QR okut → koro adı → ad + parti → katılma isteği (bekleyen
+istek görünür, geri alınabilir), şef: istekleri onayla/reddet + partiyi
+belirle, üyeleri partiye göre listele, parti değiştir, partisyon şefi yap,
+çıkar, koroyu sil; korist: partisi, üyeler, ayrıl. Ödev/kayıt hâlâ cihazda;
+çevrimiçi koroda "Drive bağlanınca" notu. Yeni SQL: `my_join_requests`,
+`cancel_join_request`, `delete_choir`; giriş kodu e-posta şablonu. İzinler:
+iOS kamera açıklaması (TR/EN), Android INTERNET + CAMERA (APK doğrulayıcı
+listesi güncellendi). **pgTAP 42/42**, gerçek yerel Supabase'e karşı
+entegrasyon testi 2/2 (katılım→onay→parti→partisyon şefi→başka koro reddi→
+ayrılma→silme; Mailpit'ten kodla giriş), ekran testleri 9/9, kalite kapısı
+**1584 test + 4 skip** (2'si isteğe bağlı entegrasyon). iOS simülatör derlemesi
+geçti; simülatörde koro kartı ve giriş ekranı açıldı, uçtan uca simülatör akışı
+tamamlanmadı. Açık: uzak Supabase projesi, Apple/Google girişi, gizlilik
+manifesti/mağaza etiketleri (sunuculu derleme e-posta/kimlik toplar),
+gerçek cihaz QR okuma, Faz 2 Drive.
+
+**2026-11-10 — Ses aralığı dairesel kadran:** `RangeDial` (270° kadran,
+ölçülen aralık yay + yelpaze, uç notalar dışta) aralık testi sonucunda ve
+Gelişim kartında düz çubuğun yerini aldı. 1575 test geçti; gerçek cihazda
+görsel kontrol yapılmadı.
+
+**2026-11-10 — CHOIR-B1a koro sunucusu: yetki kuralı + şema (ADR-041):**
+Kullanıcı kararları: Drive ana dosya deposu (koro adına hesap), PDF nota,
+kaydı aynı parti + partisyon şefi dinler, şef yalnız partisyon şefinin
+"şefe gönder" dediğini görür, tek şef, Apple/Google/e-posta girişi, pilot
+35 kişilik kendi koro. Kod: `ChoirMember.leadsPart`, `SubmissionStatus.forwarded`
++ `forward`/`requestRetake`, saf Dart `ChoirAccess`; `supabase/` (config +
+`20261110120000_choir_core.sql`: tablolar, RLS, katılım/parti/partisyon
+şefi/kayıt/değerlendirme fonksiyonları). **pgTAP 33/33** (yerel Supabase:
+korolar arası izolasyon, onaysız kişi, parti bazlı dinleme, şefe gönderilmeden
+görmeme, doğrudan yazım reddi, çıkarılan üye, iptal edilen davet, anonim).
+Kalite kapısı temiz: **1563 test + 2 skip**. Açık: Supabase/Google Cloud
+hesapları (kullanıcı yetkisi), Drive Edge Functions, uygulamada giriş/katılım/
+QR ekranları, uzak depo, PDF nota görüntüleme; gerçek cihaz ve pilot yok.
+Plan: Faz 1 hesap+katılım → Faz 2 Drive+repertuvar → Faz 3 kayıt+süzgeç →
+Faz 4 PDF nota, push, AAC, universal link.
+
 **2026-11-10 — Sonuç ekranı sadeleşti + HeroCard sağ boşluk hatası giderildi:**
 `HeroCard` içeriği artık kartın tüm genişliğini alır (skor halkası ortada).
 `SessionEnd`: ortalı başlık, tek özet satırı, ince seri satırı, kanıtlar tek
@@ -586,7 +660,19 @@ farkıyla söylenince ezgi kişinin oktavına taşınabilir (oktav hatası yine
 tuttu sayılmaz); 250 sent üstü "çok pes/tiz"; aynı "Sıra sende · Söyle!"
 bandı. Ritim tekrarında her dokunuş referansın tıkını çalar (önceden
 yüklenmiş 3 oynatıcı). 1287 test geçti; simülatörde alkış akışı görüldü,
-gerçek cihazda denenmedi.
+gerçek cihazda denenmedi. **2026-11-10 güncellemesi:** "Sıra sende"de bekleme
+süresi yok; otomatik bitirme sayacı ilk alkışla başlar ("Bitirdim" her zaman
+bitirir). 1563 test + 2 skip temiz; cihazda denenmedi.
+**2026-11-10 — Ezgi tekrarı otomatik bitiş:** Dinleme artık sabit 8 sn
+sürmüyor. `EchoEndDetector` canlı perde izinden (gösterim izi, puan değil)
+nota parçalarını sayar; beklenen nota sayısı duyulduktan sonra 700 ms,
+aksi halde 1,5 sn sessizlikte `finishResponse` çağrılır. Hiç ses yokken veya
+sürekli gürültüde 8 sn penceresi yedek kalır; "Bitirdim" her zaman bitirir.
+Değerlendirme yine tüm kayıt üzerinde. Eşikler sentetik dizilerle test edildi;
+gerçek cihaz/sesle ayarlanmadı. Canlı iz artık söylenen notalara göre
+yerleşir (`echoTraceX`): k'inci tutulan nota k'inci bandın içinde çizilir,
+hız fark etmez; tutulmakta olan nota kendi bandında büyür. Fazladan nota
+varsa düz zaman ölçeğine döner. Yalnız gösterim; puan değişmedi.
 
 **2026-11-05 — RANGE-VIS-01 aralık testi görselleri (B + C):** Dinleme
 sırasında hedef nota ±50 sentlik bir şerit; sesin, kalınlığı giriş

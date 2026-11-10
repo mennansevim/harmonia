@@ -1,2 +1,3 @@
 /* iOS mikrofon izni penceresinde görünür. */
 "NSMicrophoneUsageDescription" = "Vocalart, yalnızca kaydı başlattığınızda sesinizi cihazınızda kaydedip dinletebilmek için mikrofonu kullanır.";
+"NSCameraUsageDescription" = "Vocalart, kameranızı yalnızca koro davetinin QR kodunu okuttuğunuzda kullanır; görüntü kaydedilmez.";

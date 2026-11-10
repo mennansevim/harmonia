@@ -51,7 +51,9 @@ class Choir {
 }
 
 /// A person in one choir. Singers may be waiting for a part ([part] null);
-/// conductors never carry one.
+/// conductors never carry one. A [leadsPart] singer is that part's section
+/// leader: they hear their part's takes first and forward them to the
+/// conductor (CHOIR-B, 2026-11-10).
 class ChoirMember {
   ChoirMember({
     required this.userId,
@@ -60,6 +62,7 @@ class ChoirMember {
     required this.role,
     required this.joinedAt,
     this.part,
+    this.leadsPart = false,
   }) {
     if (userId.trim().isEmpty || choirId.trim().isEmpty) {
       throw ArgumentError('Member needs user and choir ids');
@@ -70,6 +73,9 @@ class ChoirMember {
     if (role == ChoirRole.conductor && part != null) {
       throw ArgumentError('A conductor has no voice part');
     }
+    if (leadsPart && (role != ChoirRole.singer || part == null)) {
+      throw ArgumentError('A section leader is a singer with a part');
+    }
   }
 
   final String userId;
@@ -79,10 +85,17 @@ class ChoirMember {
   final ChoirPart? part;
   final DateTime joinedAt;
 
+  /// Section leader of [part]. Moving the singer to another part ends it.
+  final bool leadsPart;
+
   bool get isSinger => role == ChoirRole.singer;
+  bool get isConductor => role == ChoirRole.conductor;
+
+  /// Leads [p] in this member's own choir.
+  bool leads(ChoirPart p) => leadsPart && part == p;
 
   /// The conductor's part assignment; `null` returns the singer to
-  /// "unassigned".
+  /// "unassigned". Leading does not carry over to another part.
   ChoirMember withPart(ChoirPart? next) => ChoirMember(
     userId: userId,
     choirId: choirId,
@@ -90,6 +103,18 @@ class ChoirMember {
     role: role,
     joinedAt: joinedAt,
     part: next,
+    leadsPart: leadsPart && next == part,
+  );
+
+  /// The conductor names or removes a section leader.
+  ChoirMember withLeading(bool next) => ChoirMember(
+    userId: userId,
+    choirId: choirId,
+    displayName: displayName,
+    role: role,
+    joinedAt: joinedAt,
+    part: part,
+    leadsPart: next,
   );
 
   Map<String, Object?> toJson() => {
@@ -99,6 +124,7 @@ class ChoirMember {
     'role': role.name,
     'part': part?.name,
     'joinedAt': writeTime(joinedAt),
+    if (leadsPart) 'leadsPart': true,
   };
 
   factory ChoirMember.fromJson(Map<String, Object?> json) => ChoirMember(
@@ -108,6 +134,7 @@ class ChoirMember {
     role: reqEnum(json, 'role', ChoirRole.values),
     part: optEnum(json, 'part', ChoirPart.values),
     joinedAt: reqTime(json, 'joinedAt'),
+    leadsPart: opt<bool>(json, 'leadsPart') ?? false,
   );
 }
 

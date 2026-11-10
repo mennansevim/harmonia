@@ -7,8 +7,10 @@ import 'package:path_provider/path_provider.dart';
 import '../../infrastructure/storage/json_file_store.dart';
 import '../domain/assignment.dart';
 import '../domain/choir.dart';
+import '../domain/choir_access.dart';
 import '../domain/resource.dart';
 import '../domain/submission.dart';
+import 'choir_remote.dart';
 
 abstract interface class ChoirPersistence {
   Future<Map<String, Object?>?> read();
@@ -45,9 +47,10 @@ class MemoryChoirPersistence implements ChoirPersistence {
 /// before it ever touches a path.
 final mediaIdPattern = RegExp(r'^[a-f0-9]{16,64}\.[a-z0-9]{1,5}$');
 
-/// On-device choir data (ADR-036 local-first). No server: every screen goes
-/// through this class, and a future sync adapter replaces [ChoirPersistence]
-/// and the bundle transport, not the screens.
+/// Choir data for the screens. Choirs made here or joined by package live on
+/// the device (ADR-036). Online choirs (ADR-041, [onlineChoirIds]) are a
+/// cached mirror of the server: changes go to [remote] first, then the
+/// mirror is pulled again; files are fetched on first use ([ensureMedia]).
 class ChoirStore extends ChangeNotifier {
   ChoirStore({
     required this.persistence,
@@ -81,6 +84,24 @@ class ChoirStore extends ChangeNotifier {
   final assignments = <Assignment>[];
   final submissions = <Submission>[];
   final resources = <ChoirResource>[];
+
+  /// The choir server, once the person signed in (ADR-041).
+  ChoirRemote? remote;
+
+  /// Choirs whose rows mirror the server.
+  final onlineChoirIds = <String>{};
+
+  bool isOnline(String choirId) =>
+      remote != null && onlineChoirIds.contains(choirId);
+
+  /// Who "I" am in [choirId]: the account on the server, this device's id
+  /// elsewhere.
+  String meId(String choirId) =>
+      isOnline(choirId) ? (remote!.userId ?? myId) : myId;
+
+  bool _mine(String memberId) =>
+      memberId == myId ||
+      (remote?.userId != null && memberId == remote!.userId);
 
   String newHex() {
     final buffer = StringBuffer();
@@ -122,6 +143,9 @@ class ChoirStore extends ChangeNotifier {
     assignments.addAll(rows('assignments').map(Assignment.fromJson));
     submissions.addAll(rows('submissions').map(Submission.fromJson));
     resources.addAll(rows('resources').map(ChoirResource.fromJson));
+    onlineChoirIds.addAll(
+      ((doc['online'] as List<Object?>?) ?? const []).cast<String>(),
+    );
   }
 
   Map<String, Object?> _toJson() => {
@@ -135,6 +159,7 @@ class ChoirStore extends ChangeNotifier {
     'assignments': [for (final a in assignments) a.toJson()],
     'submissions': [for (final s in submissions) s.toJson()],
     'resources': [for (final r in resources) r.toJson()],
+    'online': onlineChoirIds.toList(),
   };
 
   Future<void> save() async {
@@ -146,11 +171,51 @@ class ChoirStore extends ChangeNotifier {
   // Queries
 
   Choir? choir(String id) => choirs.where((c) => c.id == id).firstOrNull;
-  bool isConductor(Choir c) => c.conductorId == myId;
+  bool isConductor(Choir c) => c.conductorId == meId(c.id);
 
   ChoirMember? meIn(String choirId) => members
-      .where((m) => m.choirId == choirId && m.userId == myId)
+      .where((m) => m.choirId == choirId && m.userId == meId(choirId))
       .firstOrNull;
+
+  /// The rules of who hears and decides what (CHOIR-B).
+  ChoirAccess accessIn(String choirId) => ChoirAccess([
+    for (final m in members)
+      if (m.choirId == choirId) m,
+  ]);
+
+  /// [s]'s recording may be played by me.
+  bool canListen(Submission s) {
+    final me = meIn(s.choirId);
+    return me != null && accessIn(s.choirId).canListen(me, s);
+  }
+
+  /// I lead [s]'s part and it waits for me.
+  bool leadsReview(Submission s) {
+    final me = meIn(s.choirId);
+    return me != null && accessIn(s.choirId).canLeaderAct(me, s);
+  }
+
+  /// I may close [s] now, as conductor or as its part's leader.
+  bool canDecide(Submission s) {
+    final me = meIn(s.choirId);
+    if (me == null) return false;
+    final access = accessIn(s.choirId);
+    return access.canConductorReview(me, s) || access.canLeaderAct(me, s);
+  }
+
+  /// Sent takes of my part by others, newest first: what I may hear.
+  List<Submission> partTakes(String assignmentId, String pieceId) =>
+      submissions
+          .where(
+            (s) =>
+                s.assignmentId == assignmentId &&
+                s.pieceId == pieceId &&
+                !_mine(s.memberId) &&
+                s.status != SubmissionStatus.draft &&
+                canListen(s),
+          )
+          .toList()
+        ..sort((a, b) => b.submittedAt!.compareTo(a.submittedAt!));
 
   List<ChoirMember> singersOf(String choirId) =>
       members.where((m) => m.choirId == choirId && m.isSinger).toList()
@@ -184,7 +249,7 @@ class ChoirStore extends ChangeNotifier {
         (s) =>
             s.assignmentId == assignmentId &&
             s.pieceId == pieceId &&
-            s.memberId == myId,
+            _mine(s.memberId),
       )
       .firstOrNull;
 
@@ -196,11 +261,10 @@ class ChoirStore extends ChangeNotifier {
       )
       .toList();
 
-  /// Takes still waiting for the conductor, oldest first.
+  /// Takes waiting for my decision, oldest first: the conductor's (only
+  /// those that reached them), or a section leader's part.
   List<Submission> reviewQueue(String choirId) =>
-      submissions
-          .where((s) => s.choirId == choirId && s.awaitsConductor)
-          .toList()
+      submissions.where((s) => s.choirId == choirId && canDecide(s)).toList()
         ..sort((a, b) => a.submittedAt!.compareTo(b.submittedAt!));
 
   /// A singer's work still to send, soonest due first, for the Today card.
@@ -237,6 +301,129 @@ class ChoirStore extends ChangeNotifier {
   Future<String> mediaPath(String id) async {
     if (!mediaIdPattern.hasMatch(id)) throw ArgumentError('Bad media id');
     return '${(await _mediaDir()).path}/$id';
+  }
+
+  /// The local path of [id], fetched from the server first when this is an
+  /// online choir's file not yet on the device.
+  Future<String> ensureMedia(String id) async {
+    final path = await mediaPath(id);
+    final file = File(path);
+    if (!await file.exists() && remote != null) {
+      final part = File('$path.part');
+      await remote!.download(id, part);
+      await part.rename(path);
+    }
+    return path;
+  }
+
+  /// Gives a local file the server's media id, so it is never fetched back.
+  Future<String> _adopt(String localId, String serverId) async {
+    if (localId == serverId) return serverId;
+    final from = File(await mediaPath(localId));
+    final to = await mediaPath(serverId);
+    if (await from.exists()) await from.rename(to);
+    return serverId;
+  }
+
+  Future<String> _uploadLocal(
+    String choirId,
+    RemoteMediaKind kind,
+    String localId, {
+    String label = '',
+    String? work,
+    String? shelf,
+    String? part,
+  }) async {
+    final id = await remote!.upload(
+      choirId,
+      kind,
+      File(await mediaPath(localId)),
+      label: label,
+      work: work,
+      shelf: shelf,
+      part: part,
+    );
+    return _adopt(localId, id);
+  }
+
+  // Online mirror
+
+  /// Replaces this device's copy of an online choir with the server's.
+  /// My unsent drafts stay; personal library items a singer added stay.
+  Future<void> applyOnline(OnlineSnapshot snap) async {
+    final id = snap.choir.id;
+    onlineChoirIds.add(id);
+    final drafts = [
+      for (final s in submissions)
+        if (s.choirId == id &&
+            s.status == SubmissionStatus.draft &&
+            _mine(s.memberId))
+          s,
+    ];
+    final me = remote?.userId ?? myId;
+    final personal = snap.choir.conductorId == me
+        ? const <ChoirResource>[]
+        : [
+            for (final r in resources)
+              if (r.choirId == id && r.authorId == me) r,
+          ];
+    choirs
+      ..removeWhere((c) => c.id == id)
+      ..add(snap.choir);
+    members
+      ..removeWhere((m) => m.choirId == id)
+      ..addAll(snap.members);
+    references
+      ..removeWhere((r) => r.choirId == id)
+      ..addAll(snap.references);
+    assignments
+      ..removeWhere((a) => a.choirId == id)
+      ..addAll(snap.assignments);
+    resources
+      ..removeWhere((r) => r.choirId == id)
+      ..addAll(snap.resources)
+      ..addAll(personal.where((p) => !snap.resources.any((r) => r.id == p.id)));
+    submissions
+      ..removeWhere((s) => s.choirId == id)
+      ..addAll(snap.submissions);
+    // A draft survives unless the server already has a newer sent take for
+    // that piece (sent from another phone); a retake draft replaces the
+    // returned one it came from.
+    for (final d in drafts) {
+      final server = submissions
+          .where(
+            (s) =>
+                s.choirId == id &&
+                s.assignmentId == d.assignmentId &&
+                s.pieceId == d.pieceId &&
+                _mine(s.memberId),
+          )
+          .firstOrNull;
+      if (server == null) {
+        submissions.add(d);
+      } else if (server.status == SubmissionStatus.revisionRequested) {
+        submissions
+          ..remove(server)
+          ..add(d);
+      }
+    }
+    await save();
+  }
+
+  Future<void> syncOnline(String choirId) async {
+    if (remote == null) return;
+    await applyOnline(await remote!.pull(choirId));
+  }
+
+  /// Drops an online choir I no longer belong to (left, removed, deleted).
+  Future<void> forgetOnline(String choirId) async {
+    final choir = this.choir(choirId);
+    onlineChoirIds.remove(choirId);
+    if (choir != null) {
+      await forgetChoir(choir);
+    } else {
+      await save();
+    }
   }
 
   /// Copies a picked or recorded file in; the source is left alone.
@@ -285,9 +472,20 @@ class ChoirStore extends ChangeNotifier {
     required String fileName,
     required RightsDeclaration rights,
     required Map<int, ChoirPart> trackParts,
+    String? work,
   }) async {
+    var id = await addMedia(sourcePath, fileName);
+    if (isOnline(choir.id)) {
+      id = await _uploadLocal(
+        choir.id,
+        RemoteMediaKind.repertoire,
+        id,
+        label: fileName,
+        work: work,
+      );
+    }
     final asset = ReferenceAsset(
-      id: await addMedia(sourcePath, fileName),
+      id: id,
       choirId: choir.id,
       kind: ReferenceKind.midi,
       fileName: fileName,
@@ -295,6 +493,7 @@ class ChoirStore extends ChangeNotifier {
       uploadedAt: now.toUtc(),
       trackParts: trackParts,
     );
+    if (isOnline(choir.id)) await remote!.putReference(asset);
     references.add(asset);
     await save();
     return asset;
@@ -307,6 +506,9 @@ class ChoirStore extends ChangeNotifier {
       for (final r in references) r.id: r,
     });
     if (problems.isNotEmpty) throw ArgumentError(problems.join('; '));
+    if (isOnline(assignment.choirId)) {
+      await remote!.putAssignment(assignment);
+    }
     assignments
       ..removeWhere((a) => a.id == assignment.id)
       ..add(assignment);
@@ -314,11 +516,45 @@ class ChoirStore extends ChangeNotifier {
   }
 
   Future<void> addResource(ChoirResource resource) async {
-    resources.add(resource);
+    var item = resource;
+    final choir = this.choir(resource.choirId);
+    // The conductor's library goes to the choir; a singer's stays personal.
+    if (choir != null && isOnline(choir.id) && isConductor(choir)) {
+      if (item.fileId != null) {
+        item = ChoirResource(
+          id: item.id,
+          choirId: item.choirId,
+          kind: item.kind,
+          title: item.title,
+          authorId: item.authorId,
+          createdAt: item.createdAt,
+          text: item.text,
+          fileId: await _uploadLocal(
+            choir.id,
+            RemoteMediaKind.repertoire,
+            item.fileId!,
+            label: item.title,
+            shelf: switch (item.kind) {
+              ResourceKind.score => 'score',
+              ResourceKind.rehearsalRecording => 'rehearsal',
+              ResourceKind.note => 'other',
+            },
+          ),
+          fileName: item.fileName,
+          rehearsalOn: item.rehearsalOn,
+        );
+      }
+      await remote!.putResource(item);
+    }
+    resources.add(item);
     await save();
   }
 
   Future<void> removeResource(ChoirResource resource) async {
+    final choir = this.choir(resource.choirId);
+    if (choir != null && isOnline(choir.id) && isConductor(choir)) {
+      await remote!.deleteResource(resource);
+    }
     resources.removeWhere((r) => r.id == resource.id);
     await deleteMedia(resource.fileId);
     await save();
@@ -326,9 +562,65 @@ class ChoirStore extends ChangeNotifier {
 
   Future<void> markListened(Submission s) async {
     final me = meIn(s.choirId);
-    if (me == null || s.status != SubmissionStatus.submitted) return;
+    if (me == null || s.status != SubmissionStatus.submitted || !canDecide(s)) {
+      return;
+    }
+    if (isOnline(s.choirId)) {
+      // Best effort: listening is a hint, not a decision.
+      try {
+        await remote!.markListened(s);
+      } catch (_) {}
+    }
     _replace(s.markListened(me, now.toUtc()));
     await save();
+  }
+
+  /// A section leader forwards [submission] to the conductor or returns it
+  /// for a retake (that needs a note).
+  Future<Submission> leaderDecide({
+    required Submission submission,
+    required bool forward,
+    String text = '',
+    List<FeedbackTag> tags = const [],
+    List<FeedbackMark> marks = const [],
+    String? voiceNoteId,
+  }) async {
+    final me = meIn(submission.choirId)!;
+    var voice = voiceNoteId;
+    if (voice != null && isOnline(submission.choirId)) {
+      voice = await _uploadVoice(submission, voice);
+    }
+    final next = forward
+        ? submission.forward(
+            leader: me,
+            now: now.toUtc(),
+            text: text,
+            tags: tags,
+            marks: marks,
+            voiceNoteId: voice,
+          )
+        : submission.requestRetake(
+            leader: me,
+            now: now.toUtc(),
+            text: text,
+            tags: tags,
+            marks: marks,
+            voiceNoteId: voice,
+          );
+    if (isOnline(submission.choirId)) {
+      await remote!.leaderDecide(
+        submission,
+        forward: forward,
+        note: next.feedback.length > submission.feedback.length
+            ? next.feedback.last
+            : null,
+      );
+      await syncOnline(submission.choirId);
+      return submissions.firstWhere((s) => s.id == submission.id);
+    }
+    _replace(next);
+    await save();
+    return next;
   }
 
   Future<Submission> review({
@@ -339,6 +631,10 @@ class ChoirStore extends ChangeNotifier {
     List<FeedbackMark> marks = const [],
     String? voiceNoteId,
   }) async {
+    var voice = voiceNoteId;
+    if (voice != null && isOnline(submission.choirId)) {
+      voice = await _uploadVoice(submission, voice);
+    }
     final next = submission.review(
       conductor: meIn(submission.choirId)!,
       outcome: outcome,
@@ -346,8 +642,17 @@ class ChoirStore extends ChangeNotifier {
       text: text,
       tags: tags,
       marks: marks,
-      voiceNoteId: voiceNoteId,
+      voiceNoteId: voice,
     );
+    if (isOnline(submission.choirId)) {
+      await remote!.conductorReview(
+        submission,
+        accept: outcome == ReviewOutcome.accepted,
+        note: next.feedback.last,
+      );
+      await syncOnline(submission.choirId);
+      return submissions.firstWhere((s) => s.id == submission.id);
+    }
     _replace(next);
     await save();
     return next;
@@ -411,12 +716,61 @@ class ChoirStore extends ChangeNotifier {
   }
 
   /// Sent means handed to the OS share sheet; the app cannot know that the
-  /// conductor received it.
+  /// conductor received it. In an online choir it means uploaded and
+  /// accepted by the server.
   Future<Submission> markSent(Submission draft) async {
+    if (isOnline(draft.choirId)) return _sendOnline(draft);
     final next = draft.submit(now.toUtc());
     _replace(next);
     await save();
     return next;
+  }
+
+  /// The work a take belongs to, for its Drive folder.
+  String? _workOf(Submission s) => assignments
+      .where((a) => a.id == s.assignmentId)
+      .firstOrNull
+      ?.piece(s.pieceId)
+      ?.title;
+
+  /// A voice note goes beside the take it answers, named for its singer.
+  Future<String> _uploadVoice(Submission s, String localId) => _uploadLocal(
+    s.choirId,
+    RemoteMediaKind.voiceNote,
+    localId,
+    work: _workOf(s),
+    part: s.part.name,
+    label:
+        members
+            .where((m) => m.choirId == s.choirId && m.userId == s.memberId)
+            .firstOrNull
+            ?.displayName ??
+        '',
+  );
+
+  Future<Submission> _sendOnline(Submission draft) async {
+    final assignment = assignments.firstWhere(
+      (a) => a.id == draft.assignmentId,
+    );
+    final id = await _uploadLocal(
+      draft.choirId,
+      RemoteMediaKind.take,
+      draft.recordingId!,
+      work: _workOf(draft),
+      label: '${assignment.title} · deneme ${draft.attempt}',
+    );
+    final withUpload = draft.clearRecording().attachRecording(
+      assignment: assignment,
+      recordingId: id,
+      durationMs: draft.durationMs!,
+      kind: draft.takeKind!,
+    );
+    // Keep the uploaded name locally until the server has it.
+    _replace(withUpload);
+    await save();
+    await remote!.submitTake(withUpload.submit(now.toUtc()));
+    await syncOnline(draft.choirId);
+    return mySubmission(draft.assignmentId, draft.pieceId)!;
   }
 
   /// Leaves a choir and removes everything of it from this device.
@@ -429,6 +783,7 @@ class ChoirStore extends ChangeNotifier {
         ...s.feedback.map((f) => f.voiceNoteId),
       ],
     ];
+    onlineChoirIds.remove(choir.id);
     choirs.removeWhere((c) => c.id == choir.id);
     members.removeWhere((m) => m.choirId == choir.id);
     references.removeWhere((r) => r.choirId == choir.id);
@@ -447,6 +802,7 @@ class ChoirStore extends ChangeNotifier {
     assignments.clear();
     submissions.clear();
     resources.clear();
+    onlineChoirIds.clear();
     myName = null;
     recordingConsent = false;
     myId = newHex();

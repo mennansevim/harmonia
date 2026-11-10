@@ -10,6 +10,7 @@ import '../learn/skill_screen.dart';
 import '../state/trainer_store.dart';
 import '../settings/settings_tab.dart';
 import '../ui/kit.dart';
+import '../ui/range_dial.dart';
 import '../../domain/lang.dart';
 
 /// Progress tab: a choir-themed level from local XP, then the learner's own
@@ -238,8 +239,6 @@ class _HeroFigure extends StatelessWidget {
 class _RangeCard extends StatelessWidget {
   const _RangeCard({required this.store});
   final TrainerStore store;
-  static const _low = 36;
-  static const _high = 84;
 
   @override
   Widget build(BuildContext context) {
@@ -281,7 +280,6 @@ class _RangeCard extends StatelessWidget {
     }
     final (lo, hi) = range;
     String name(int m) => PitchClass.midiName(m, store.notation);
-    double at(int m) => ((m - _low) / (_high - _low)).clamp(0.0, 1.0);
     return AppCard(
       key: const Key('stats_range'),
       onTap: open,
@@ -294,44 +292,25 @@ class _RangeCard extends StatelessWidget {
               Tag(tr('TASLAK ÖLÇÜM', 'DRAFT MEASUREMENT'), color: TC.koro),
             ],
           ),
-          const SizedBox(height: 12),
-          ExcludeSemantics(
-            child: SizedBox(
-              height: 14,
-              child: LayoutBuilder(
-                builder: (context, c) => Stack(
-                  children: [
-                    Container(
-                      decoration: BoxDecoration(
-                        color: TC.line,
-                        borderRadius: BorderRadius.circular(7),
-                      ),
-                    ),
-                    Positioned(
-                      left: c.maxWidth * at(lo),
-                      width: math.max(14, c.maxWidth * (at(hi) - at(lo))),
-                      top: 0,
-                      bottom: 0,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: TC.limeSoft,
-                          border: Border.all(color: TC.teal),
-                          borderRadius: BorderRadius.circular(7),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+          const SizedBox(height: 8),
+          Center(
+            child: RangeDial(
+              low: lo,
+              high: hi,
+              notation: store.notation,
+              size: 220,
+              center: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    tr('${hi - lo} yarım ses', '${hi - lo} semitones'),
+                    style: TT.title,
+                  ),
+                  if (store.part case final part?)
+                    Text(part.title, style: TT.small),
+                ],
               ),
             ),
-          ),
-          const SizedBox(height: 6),
-          Row(
-            children: [
-              Text(name(_low), style: TT.small),
-              const Spacer(),
-              Text(name(_high), style: TT.small),
-            ],
           ),
           const SizedBox(height: 6),
           Text(

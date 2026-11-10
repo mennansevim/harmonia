@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../online/choir_backend.dart';
 import '../../trainer/ui/kit.dart';
 import '../audio/take_engine.dart';
 import '../domain/resource.dart';
@@ -197,7 +198,13 @@ class _ItemState extends State<_Item> {
       );
       return;
     }
-    final path = await scope.store.mediaPath(item.fileId!);
+    final String path;
+    try {
+      path = await scope.store.ensureMedia(item.fileId!);
+    } catch (_) {
+      if (mounted) toast(context, text.cannotOpen);
+      return;
+    }
     if (item.kind == ResourceKind.rehearsalRecording) {
       if (_player == null) {
         final player = _player = scope.newPlayer();
@@ -290,27 +297,37 @@ class _AddSheetState extends State<_AddSheet> {
     final messenger = ScaffoldMessenger.of(context);
     final choir = store.choir(widget.choirId)!;
     final file = _kind == ResourceKind.note ? null : _file;
-    await store.addResource(
-      ChoirResource(
-        id: store.newHex(),
-        choirId: choir.id,
-        kind: _kind,
-        title: _title.text.trim(),
-        authorId: store.myId,
-        createdAt: store.now.toUtc(),
-        text: _kind == ResourceKind.note ? _note.text.trim() : '',
-        fileId: file == null
-            ? null
-            : await store.addMedia(file.path, file.name),
-        fileName: file?.name,
-        rehearsalOn: _day?.toUtc(),
-      ),
-    );
+    try {
+      await store.addResource(
+        ChoirResource(
+          id: store.newHex(),
+          choirId: choir.id,
+          kind: _kind,
+          title: _title.text.trim(),
+          authorId: store.meId(widget.choirId),
+          createdAt: store.now.toUtc(),
+          text: _kind == ResourceKind.note ? _note.text.trim() : '',
+          fileId: file == null
+              ? null
+              : await store.addMedia(file.path, file.name),
+          fileName: file?.name,
+          rehearsalOn: _day?.toUtc(),
+        ),
+      );
+    } on ChoirBackendException catch (e) {
+      messenger.showSnackBar(
+        SnackBar(content: Text(text.backendProblem(e.problem))),
+      );
+      return;
+    }
     nav.pop();
+    final online = store.isOnline(choir.id);
     messenger.showSnackBar(
       SnackBar(
         content: Text(
-          store.isConductor(choir) ? text.shareLibraryHint : text.personalOnly,
+          store.isConductor(choir)
+              ? (online ? text.sharedWithChoir : text.shareLibraryHint)
+              : text.personalOnly,
         ),
       ),
     );

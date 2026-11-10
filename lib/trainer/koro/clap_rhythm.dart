@@ -498,10 +498,10 @@ class _ClapRhythmScreenState extends State<ClapRhythmScreen>
     final store = TrainerScope.read(context).store;
     final picked = await showClapStylePicker(
       context,
-      current: ClapStyle.at(store.clapStyle),
+      current: ClapStyle.named(store.clapLook),
     );
     if (picked == null || !mounted) return;
-    setState(() => store.clapStyle = picked.index);
+    setState(() => store.clapLook = picked.name);
     store.save();
   }
 
@@ -590,22 +590,23 @@ class _ClapRhythmScreenState extends State<ClapRhythmScreen>
       return;
     }
     if (!mounted || run != _run) return;
+    // No clock yet: the turn waits for the learner, and the first clap
+    // starts the timing (see [_armFinish]).
     setState(() => _step = _Step.yourTurn);
-    _armFinish(run);
   }
 
-  /// Ends the turn after a pause: the rhythm's longest gap plus the match
-  /// window once every clap is in, otherwise 2.5 s (6 s before the first).
+  /// Ends the turn after a pause once the learner has started: the rhythm's
+  /// longest gap plus the match window once every clap is in, otherwise
+  /// 2.5 s. Before the first clap nothing runs; "I am done" still ends it.
   void _armFinish(int run) {
     _finish?.cancel();
+    if (_claps.isEmpty) return;
     final onsets = _rhythm.onsetsMs;
     var longest = 0;
     for (var i = 1; i < onsets.length; i++) {
       longest = math.max(longest, onsets[i] - onsets[i - 1]);
     }
-    final wait = _claps.isEmpty
-        ? const Duration(seconds: 6)
-        : _claps.length >= onsets.length
+    final wait = _claps.length >= onsets.length
         ? Duration(
             milliseconds: math.max(
               600,
@@ -719,15 +720,15 @@ class _ClapRhythmScreenState extends State<ClapRhythmScreen>
                         shot: _cheers,
                         child: ClapStage(
                           cue: _cue,
-                          style: ClapStyle.at(
-                            TrainerScope.of(context).store.clapStyle,
+                          style: ClapStyle.named(
+                            TrainerScope.of(context).store.clapLook,
                           ),
                         ),
                       ),
                       if (_step == _Step.ready || _step == _Step.result)
                         _StyleChip(
-                          style: ClapStyle.at(
-                            TrainerScope.of(context).store.clapStyle,
+                          style: ClapStyle.named(
+                            TrainerScope.of(context).store.clapLook,
                           ),
                           onTap: _pickStyle,
                         ),
@@ -819,6 +820,12 @@ class _ClapRhythmScreenState extends State<ClapRhythmScreen>
       case _Step.countIn:
         return tr('Tempoyu tut…', 'Keep the tempo…');
       case _Step.yourTurn:
+        if (_claps.isEmpty) {
+          return tr(
+            'Hazır olunca başla; süre ilk alkışınla başlar · mikrofon açık',
+            'Start when ready; timing starts with your first clap · microphone on',
+          );
+        }
         return tr(
           '${_claps.length}/${_rhythm.onsetsMs.length} alkış · mikrofon açık',
           '${_claps.length}/${_rhythm.onsetsMs.length} claps · microphone on',

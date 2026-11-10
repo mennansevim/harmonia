@@ -15,6 +15,7 @@ import '../app/scope.dart';
 import '../domain/music.dart';
 import '../ui/audio_reactive_orb.dart';
 import '../ui/kit.dart';
+import '../ui/range_dial.dart';
 import 'range_ladder.dart';
 import 'range_score.dart';
 import 'range_visuals.dart';
@@ -602,11 +603,32 @@ class _RangeTestScreenState extends State<RangeTestScreen>
                     padding: const EdgeInsets.fromLTRB(20, 26, 20, 22),
                     child: Column(
                       children: [
-                        Text(
-                          '${name(low)} – ${name(high)}',
-                          key: const Key('range_result'),
-                          textAlign: TextAlign.center,
-                          style: TT.h1.copyWith(color: Colors.white),
+                        RangeDial(
+                          low: low,
+                          high: high,
+                          notation: notation,
+                          size: 260,
+                          dark: true,
+                          center: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                '${name(low)} – ${name(high)}',
+                                key: const Key('range_result'),
+                                textAlign: TextAlign.center,
+                                style: TT.h2.copyWith(color: Colors.white),
+                              ),
+                              if (store.part case final part?)
+                                Text(
+                                  part.title,
+                                  style: const TextStyle(
+                                    color: TC.heroMuted,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                            ],
+                          ),
                         ),
                         const SizedBox(height: 8),
                         Text(

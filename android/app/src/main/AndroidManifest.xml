@@ -2,6 +2,10 @@
     xmlns:tools="http://schemas.android.com/tools">
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <!-- Online choir (ADR-041): the choir server, and the camera only to
+         scan an invite QR code. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.CAMERA" />
     <!-- Imported files are copied into app-owned storage before they are
          opened. Remove broad permissions contributed by open_filex/media3. -->
     <uses-permission

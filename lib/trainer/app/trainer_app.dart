@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../app/app_services.dart';
 import '../../application/practice_reminder.dart';
 import '../../application/result_history.dart';
 import '../../choir/app/choir_scope.dart';
 import '../../choir/data/choir_store.dart';
+import '../../choir/online/online_choir_controller.dart';
+import '../../choir/online/supabase_choir_backend.dart';
+import '../../choir/online/supabase_choir_remote.dart';
 import '../../infrastructure/audio/orphan_audio_cleaner.dart';
 import '../../infrastructure/notifications/flutter_practice_reminder_platform.dart';
 import '../../infrastructure/storage/file_practice_preferences.dart';
@@ -35,6 +39,7 @@ class TrainerApp extends StatefulWidget {
     this.startupCleanup,
     this.purgeTempAudio,
     this.choir,
+    this.online,
   });
 
   final TrainerStore? store;
@@ -45,6 +50,10 @@ class TrainerApp extends StatefulWidget {
   final Future<void> Function()? startupCleanup;
   final Future<OrphanCleanupReport> Function()? purgeTempAudio;
   final ChoirStore? choir;
+
+  /// The online choir (ADR-041). Built from [OnlineConfig] when the app runs
+  /// with a server address; null keeps the choir on the device only.
+  final OnlineChoirController? online;
 
   @override
   State<TrainerApp> createState() => _TrainerAppState();
@@ -73,6 +82,15 @@ class _TrainerAppState extends State<TrainerApp> with WidgetsBindingObserver {
             ? getApplicationSupportDirectory
             : getTemporaryDirectory,
       );
+  // Only the real app (no injected store) talks to the configured server.
+  late final OnlineChoirController? _online =
+      widget.online ??
+      (widget.store == null && OnlineConfig.enabled
+          ? OnlineChoirController(
+              SupabaseChoirBackend(Supabase.instance.client),
+            )
+          : null);
+  OnlineMirrorSync? _mirror;
   final _navigator = GlobalKey<NavigatorState>();
   final _cleanup = ValueNotifier<OrphanCleanupReport?>(null);
 
@@ -85,6 +103,17 @@ class _TrainerAppState extends State<TrainerApp> with WidgetsBindingObserver {
       _audio.timbre = _store.timbre;
     }
     if (!_choir.loaded) _choir.load();
+    if (_online != null) {
+      if (widget.online == null) {
+        _choir.remote = SupabaseChoirRemote(
+          Supabase.instance.client,
+          functionsUrl: '${OnlineConfig.url}/functions/v1',
+          apiKey: OnlineConfig.key,
+        );
+      }
+      _mirror = OnlineMirrorSync(_choir, _online);
+      _online.start();
+    }
     WidgetsBinding.instance.addObserver(this);
     _language = _store.language;
     _store.addListener(_languageChanged);
@@ -117,6 +146,8 @@ class _TrainerAppState extends State<TrainerApp> with WidgetsBindingObserver {
     _audio.dispose();
     _cleanup.dispose();
     _choir.dispose();
+    _mirror?.dispose();
+    if (widget.online == null) _online?.dispose();
     super.dispose();
   }
 
@@ -160,51 +191,56 @@ class _TrainerAppState extends State<TrainerApp> with WidgetsBindingObserver {
       cleanup: _cleanup,
       child: ChoirScope.live(
         store: _choir,
-        child: MaterialApp(
-          title: 'Vocalart',
-          debugShowCheckedModeBanner: false,
-          navigatorKey: _navigator,
-          theme: trainerTheme(),
-          themeMode: ThemeMode.light,
-          // Settings can pin a language; otherwise Turkish on a Turkish
-          // device, English everywhere else.
-          locale: _language == null ? null : Locale(_language!),
-          supportedLocales: const [Locale('en'), Locale('tr')],
-          localizationsDelegates: GlobalMaterialLocalizations.delegates,
-          localeResolutionCallback: (locale, _) {
-            final turkish = locale?.languageCode == 'tr';
-            Lang.en = !turkish;
-            return Locale(turkish ? 'tr' : 'en');
-          },
-          // Layouts are audited up to 2x; iOS accessibility sizes reach about
-          // 3x, which splits words mid-syllable.
-          builder: (context, child) => MediaQuery.withClampedTextScaling(
-            maxScaleFactor: maxTextScale,
-            child: child!,
-          ),
-          home: ListenableBuilder(
-            listenable: _store,
-            builder: (context, _) {
-              if (!_store.loaded) {
-                return const Scaffold(
-                  backgroundColor: Colors.white,
-                  body: Center(
-                    child: TrainerBadge(
-                      color: TC.primary,
-                      icon: Ic.music2,
-                      size: 84,
-                    ),
-                  ),
-                );
-              }
-              if (!_store.onboardingDone) {
-                return OnboardingFlow(onFinished: _onboardingFinished);
-              }
-              return const HomeShell();
+        child: _withOnline(
+          MaterialApp(
+            title: 'Vocalart',
+            debugShowCheckedModeBanner: false,
+            navigatorKey: _navigator,
+            theme: trainerTheme(),
+            themeMode: ThemeMode.light,
+            // Settings can pin a language; otherwise Turkish on a Turkish
+            // device, English everywhere else.
+            locale: _language == null ? null : Locale(_language!),
+            supportedLocales: const [Locale('en'), Locale('tr')],
+            localizationsDelegates: GlobalMaterialLocalizations.delegates,
+            localeResolutionCallback: (locale, _) {
+              final turkish = locale?.languageCode == 'tr';
+              Lang.en = !turkish;
+              return Locale(turkish ? 'tr' : 'en');
             },
+            // Layouts are audited up to 2x; iOS accessibility sizes reach about
+            // 3x, which splits words mid-syllable.
+            builder: (context, child) => MediaQuery.withClampedTextScaling(
+              maxScaleFactor: maxTextScale,
+              child: child!,
+            ),
+            home: ListenableBuilder(
+              listenable: _store,
+              builder: (context, _) {
+                if (!_store.loaded) {
+                  return const Scaffold(
+                    backgroundColor: Colors.white,
+                    body: Center(
+                      child: TrainerBadge(
+                        color: TC.primary,
+                        icon: Ic.music2,
+                        size: 84,
+                      ),
+                    ),
+                  );
+                }
+                if (!_store.onboardingDone) {
+                  return OnboardingFlow(onFinished: _onboardingFinished);
+                }
+                return const HomeShell();
+              },
+            ),
           ),
         ),
       ),
     ),
   );
+
+  Widget _withOnline(Widget app) =>
+      _online == null ? app : OnlineChoirScope(controller: _online, child: app);
 }

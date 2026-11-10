@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 
+import '../online/choir_backend.dart';
 import '../../trainer/ui/kit.dart';
 import '../domain/assignment.dart';
 import '../domain/choir.dart';
@@ -83,9 +84,19 @@ class _AssignmentEditorState extends State<AssignmentEditor> {
       dueAt: _due?.toUtc(),
       maxRecordingSeconds: Assignment.maxAllowedRecordingSeconds,
     );
-    await store.publish(assignment);
-    final path = await scope.bundles.exportChoir(widget.choir);
-    await scope.files.share(path, origin: origin);
+    try {
+      await store.publish(assignment);
+    } on ChoirBackendException catch (e) {
+      if (mounted) {
+        setState(() => _busy = false);
+        toast(context, text.backendProblem(e.problem));
+      }
+      return;
+    }
+    if (!store.isOnline(widget.choir.id)) {
+      final path = await scope.bundles.exportChoir(widget.choir);
+      await scope.files.share(path, origin: origin);
+    }
     nav.pop();
   }
 
@@ -240,15 +251,25 @@ class _PieceEditorState extends State<PieceEditor> {
     setState(() => _busy = true);
     final nav = Navigator.of(context);
     final picked = _picked;
-    final ref = picked == null
-        ? null
-        : await store.addMidi(
-            choir: widget.choir,
-            sourcePath: picked.path,
-            fileName: picked.name,
-            rights: _rights!,
-            trackParts: _map,
-          );
+    final ReferenceAsset? ref;
+    try {
+      ref = picked == null
+          ? null
+          : await store.addMidi(
+              choir: widget.choir,
+              sourcePath: picked.path,
+              fileName: picked.name,
+              rights: _rights!,
+              trackParts: _map,
+              work: _title.text.trim(),
+            );
+    } on ChoirBackendException catch (e) {
+      if (mounted) {
+        setState(() => _busy = false);
+        toast(context, text.backendProblem(e.problem));
+      }
+      return;
+    }
     nav.pop(
       AssignmentPiece(
         id: store.newHex(),

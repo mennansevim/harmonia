@@ -37,6 +37,9 @@ void main() {
     expect(ClapStyle.values, hasLength(10));
     expect(ClapStyle.at(99), ClapStyle.notes);
     expect(ClapStyle.at(-1), ClapStyle.classic);
+    expect(ClapStyle.named(null), ClapStyle.rings);
+    expect(ClapStyle.named('nope'), ClapStyle.rings);
+    expect(ClapStyle.named('palmas'), ClapStyle.palmas);
   });
 
   testWidgets('the stage closes into an expected clap and then settles', (
@@ -148,22 +151,27 @@ void main() {
       tester.element(find.byType(HomeShell)),
     ).push(MaterialPageRoute<void>(builder: (_) => const ClapRhythmScreen()));
     await settle(tester);
+    // Nothing picked yet: the default look is the sound rings.
+    expect(
+      tester.widget<ClapStage>(find.byType(ClapStage)).style,
+      ClapStyle.rings,
+    );
     expect(find.byKey(const Key('clap_style')), findsOneWidget);
     await tester.tap(find.byKey(const Key('clap_style')));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 400));
     expect(find.byType(ClapDemo), findsWidgets);
-    await tester.tap(find.byKey(const Key('clap_style_rings')));
+    await tester.tap(find.byKey(const Key('clap_style_classic')));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 400));
-    expect(store.clapStyle, ClapStyle.rings.index);
+    expect(store.clapLook, ClapStyle.classic.name);
     await tester.runAsync(() async {
       final again = TrainerStore(disk);
       await again.load();
-      expect(again.clapStyle, ClapStyle.rings.index);
+      expect(again.clapLook, ClapStyle.classic.name);
     });
     final stage = tester.widget<ClapStage>(find.byType(ClapStage));
-    expect(stage.style, ClapStyle.rings);
+    expect(stage.style, ClapStyle.classic);
   });
 }
 

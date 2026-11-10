@@ -24,6 +24,14 @@ enum ClapStyle {
   static ClapStyle at(int index) =>
       values[index.clamp(0, values.length - 1).toInt()];
 
+  /// Shown until the learner picks one: the rings make the gap between
+  /// claps visible without crowding fast rhythms.
+  static const fallback = rings;
+
+  /// The style saved as [name], or [fallback] for none or an unknown name.
+  static ClapStyle named(String? name) =>
+      values.firstWhere((v) => v.name == name, orElse: () => fallback);
+
   String get title => switch (this) {
     classic => tr('Klasik', 'Classic'),
     rings => tr('Ses halkası', 'Sound rings'),
@@ -118,7 +126,7 @@ class ClapStage extends StatefulWidget {
   const ClapStage({
     super.key,
     required this.cue,
-    this.style = ClapStyle.classic,
+    this.style = ClapStyle.fallback,
     this.size = const Size(240, 170),
   });
 
