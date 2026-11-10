@@ -67,6 +67,7 @@ class _QuizViewState extends State<QuizView> {
   final Set<int> _wrongSounds = {};
   String? _correctPick;
   String? _reviewChoice;
+  bool? _yesChoice;
   int? _selectedSound;
   Timer? _countdown;
   int? _secondsLeft;
@@ -100,6 +101,7 @@ class _QuizViewState extends State<QuizView> {
       _wrongSounds.clear();
       _correctPick = null;
       _reviewChoice = null;
+      _yesChoice = null;
       _selectedSound = null;
       _status = _defaultPrompt;
     });
@@ -224,6 +226,7 @@ class _QuizViewState extends State<QuizView> {
 
   void _yesNo(bool yes) {
     if (_phase != _Phase.answering) return;
+    setState(() => _yesChoice = yes);
     yes == _q.isMatch ? _right(null) : _wrong(yes ? _q.target : null);
   }
 
@@ -528,6 +531,21 @@ class _QuizViewState extends State<QuizView> {
     if (paused && _phase == _Phase.answering && _secondsLeft != null) _tick();
   }
 
+  /// After the answer the correct button turns green with a tick, a wrong
+  /// pick turns coral with a cross; before it both stay neutral and bare.
+  bool get _yesNoShown => _phase == _Phase.done && _yesChoice != null;
+  Color _yesNoColor(bool yes) {
+    if (!_yesNoShown) return TC.card;
+    if (yes == _q.isMatch) return TC.green;
+    return yes == _yesChoice ? TC.coral : TC.card;
+  }
+
+  IconData? _yesNoIcon(bool yes) {
+    if (!_yesNoShown) return null;
+    if (yes == _q.isMatch) return Ic.check;
+    return yes == _yesChoice ? Ic.x : null;
+  }
+
   Widget _yesNoBody() => Column(
     children: [
       const SizedBox(height: 18),
@@ -552,10 +570,12 @@ class _QuizViewState extends State<QuizView> {
                       // right answer even when "no" was correct.
                       child: BigButton(
                         label: tr('Evet, bu', 'Yes, this one'),
-                        color: TC.card,
-                        icon: Ic.check,
+                        color: _yesNoColor(true),
+                        icon: _yesNoIcon(true),
                         onPressed: _phase == _Phase.answering
                             ? () => _yesNo(true)
+                            : _yesNoShown
+                            ? () {} // keep the result colours lit
                             : null,
                       ),
                     ),
@@ -568,10 +588,12 @@ class _QuizViewState extends State<QuizView> {
                       excludeSemantics: true,
                       child: BigButton(
                         label: tr('Hayır, değil', 'No, it isn\'t'),
-                        color: TC.card,
-                        icon: Ic.x,
+                        color: _yesNoColor(false),
+                        icon: _yesNoIcon(false),
                         onPressed: _phase == _Phase.answering
                             ? () => _yesNo(false)
+                            : _yesNoShown
+                            ? () {} // keep the result colours lit
                             : null,
                       ),
                     ),

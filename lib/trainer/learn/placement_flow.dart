@@ -72,6 +72,11 @@ class _PlacementFlowState extends State<PlacementFlow> {
     store.save();
   }
 
+  // Questions are kept per gate and round: build() must not redraw them.
+  final Map<String, List<QuizQuestion>> _questionCache = {};
+  List<QuizQuestion> _questionsFor(String key, QuizConfig config) =>
+      _questionCache.putIfAbsent(key, () => QuizGenerator(config).session());
+
   @override
   Widget build(BuildContext context) {
     if (_phase == _Phase.quiz) {
@@ -82,7 +87,7 @@ class _PlacementFlowState extends State<PlacementFlow> {
         key: ValueKey('placement_${gate.id}_$_round'),
         title: tr('Seviye testi · ${gate.title}', 'Placement · ${gate.title}'),
         color: trainerColor(widget.trainer),
-        questions: QuizGenerator(config).session(),
+        questions: _questionsFor('${gate.id}_$_round', config),
         showCounter: true,
         stopWhen: (records) {
           final correct = records.where((r) => r.correct).length;

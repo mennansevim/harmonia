@@ -156,4 +156,40 @@ void main() {
       expect(button.color, isNot(anyOf(TC.green, TC.coralDeep)), reason: label);
     }
   });
+
+  testWidgets('find: the chosen right sound is marked right, not wrong', (
+    tester,
+  ) async {
+    final binding = TestWidgetsFlutterBinding.ensureInitialized();
+    binding.platformDispatcher.views.first.physicalSize = const Size(
+      1170,
+      2532,
+    );
+    binding.platformDispatcher.views.first.devicePixelRatio = 3;
+    final store = memoryStore({'onboardingDone': true, 'setupDone': true});
+    await store.load();
+    await tester.pumpWidget(app(store));
+    await settle(tester);
+    final gen = QuizGenerator(
+      const QuizConfig(trainer: TrainerKind.pitch, pool: ['0', '2', '4']),
+      random: math.Random(5),
+    );
+    final q = gen.find(choices: 3);
+    tester
+        .state<NavigatorState>(find.byType(Navigator).first)
+        .push(
+          MaterialPageRoute<void>(
+            builder: (_) =>
+                QuizView(title: 't', questions: [q], onFinished: (_) {}),
+          ),
+        );
+    await settle(tester);
+    final letter = String.fromCharCode(65 + q.correctIndex);
+    await tester.tap(find.bySemanticsLabel('Ses $letter'));
+    await tester.pump();
+    await tester.tap(find.text('Bu ses'));
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.text('Tam isabet!'), findsOneWidget);
+    await tester.pump(const Duration(seconds: 1));
+  });
 }

@@ -49,6 +49,12 @@ class _LessonFlowState extends State<LessonFlow> with WidgetsBindingObserver {
     ),
     random: _random,
   );
+
+  /// Built once: build() re-runs on every rebuild, and fresh questions would
+  /// reshuffle the options under the learner's tap.
+  late final List<QuizQuestion> _practiceQuestions = widget.node.isGate
+      ? _gen.session()
+      : _gen.lessonPractice(widget.node);
   _Step _step = _Step.overview;
   int _page = 0;
   int _root = 0;
@@ -271,7 +277,7 @@ class _LessonFlowState extends State<LessonFlow> with WidgetsBindingObserver {
           ? node.title
           : tr('Ayırt et · ${node.title}', 'Tell apart · ${node.title}'),
       color: color,
-      questions: node.isGate ? _gen.session() : _gen.lessonPractice(node),
+      questions: _practiceQuestions,
       showCounter: true,
       forceHints: !node.isGate,
       onExit: () => Navigator.of(context).pop(false),
