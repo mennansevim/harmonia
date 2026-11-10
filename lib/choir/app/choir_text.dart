@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 
 import '../data/choir_bundle.dart';
+import '../online/choir_backend.dart';
 import '../domain/assignment.dart';
 import '../domain/choir.dart';
 import '../domain/part_ladder.dart';
@@ -495,6 +496,7 @@ class CT {
     SubmissionStatus.draft => _('Gönderilmedi', 'Not sent'),
     SubmissionStatus.submitted => _('Gönderildi', 'Sent'),
     SubmissionStatus.listened => _('Dinlendi', 'Listened to'),
+    SubmissionStatus.forwarded => _('Şefe gönderildi', 'Sent to conductor'),
     SubmissionStatus.accepted => _('Kabul edildi', 'Accepted'),
     SubmissionStatus.revisionRequested => _('Tekrar isteniyor', 'Please redo'),
   };
@@ -733,4 +735,191 @@ class CT {
   String get cannotOpen =>
       _('Bu dosya açılamadı.', 'This file could not be opened.');
   String by(String name) => _('Ekleyen: $name', 'Added by $name');
+
+  // Online choir (CHOIR-B1, ADR-041)
+  String get onlineTitle => _('Çevrimiçi koro', 'Online choir');
+  String get onlineBody => _(
+    'Şef koroyu kurar, sen davet koduyla katılırsın. Şef onaylayınca partin belirlenir.',
+    'The conductor sets up the choir and you join with an invite code. Once approved, your part is set.',
+  );
+  String get signIn => _('Giriş yap', 'Sign in');
+  String get signOut => _('Çıkış yap', 'Sign out');
+  String get signInTitle => _('E-postayla giriş', 'Sign in with email');
+  String get signInBody => _(
+    'E-posta adresine 6 haneli bir kod göndereceğiz. Şifre yok.',
+    'We will email you a 6-digit code. No password.',
+  );
+  String get emailField => _('E-posta adresin', 'Your email');
+  String get sendCode => _('Kodu gönder', 'Send the code');
+  String codeSentTo(String email) =>
+      _('$email adresine gelen kodu yaz.', 'Enter the code sent to $email.');
+  String get codeField => _('6 haneli kod', '6-digit code');
+  String get verify => _('Giriş yap', 'Sign in');
+  String get otherEmail => _('Başka adres', 'Different email');
+  String signedInAs(String email) =>
+      _('$email olarak girildi', 'Signed in as $email');
+  String get joinWithCode => _('Kodla katıl', 'Join with a code');
+  String get joinCodeTitle => _('Koroya katıl', 'Join a choir');
+  String get joinCodeBody => _(
+    'Şefin paylaştığı 8 karakterlik kodu yaz ya da QR kodunu okut.',
+    'Type the 8-character code from your conductor or scan their QR code.',
+  );
+  String get inviteCodeField => _('Davet kodu', 'Invite code');
+  String get scanQr => _('QR kodunu okut', 'Scan the QR code');
+  String get scanTitle =>
+      _('QR kodunu çerçeveye al', 'Fit the QR code in the frame');
+  String get notAnInvite =>
+      _('Bu bir davet kodu değil.', 'That is not an invite code.');
+  String get findChoir => _('Koroyu bul', 'Find the choir');
+  String get sendRequest => _('Katılma isteği gönder', 'Ask to join');
+  String get partOptional => _(
+    'Hangi partide söylüyorsun? Şef değiştirebilir.',
+    'Which part do you sing? Your conductor can change it.',
+  );
+  String get requestSent => _(
+    'İstek gönderildi. Şef onaylayınca koro burada açılır.',
+    'Request sent. The choir opens here once your conductor approves.',
+  );
+  String get waitingApproval =>
+      _('Şef onayı bekleniyor', 'Waiting for approval');
+  String get cancelRequest => _('İsteği geri al', 'Withdraw request');
+  String get myOnlineChoirs => _('Korolarım', 'My choirs');
+  String get deviceChoirs => _('Bu cihazdaki korolar', 'Choirs on this device');
+  String get createOnline => _('Koro kur', 'Set up a choir');
+  String get created => _(
+    'Koro kuruldu. Şimdi koristleri davet et.',
+    'Choir set up. Now invite your singers.',
+  );
+  String get inviteTitle => _('Davet et', 'Invite');
+  String get inviteBody => _(
+    'Koristler kodu yazar ya da QR\'ı okutur. Her istek senin onayına düşer.',
+    'Singers type the code or scan the QR. Every request waits for your approval.',
+  );
+  String inviteExpires(DateTime at) => _(
+    'Son gün ${at.day}.${at.month}.${at.year}',
+    'Valid until ${at.year}-${at.month}-${at.day}',
+  );
+  String inviteUses(int uses, int? max) => max == null
+      ? _('$uses kişi kullandı', 'Used by $uses')
+      : _('$uses / $max kullanıldı', '$uses of $max used');
+  String get shareCode => _('Kodu paylaş', 'Share the code');
+  String shareMessage(String choir, String code) => _(
+    '$choir korosuna Vocalart\'ta katıl: davet kodu $code',
+    'Join $choir on Vocalart with invite code $code',
+  );
+  String get newCode => _('Yeni kod oluştur', 'Make a new code');
+  String get revokeCode => _('Kodu iptal et', 'Revoke the code');
+  String get noActiveCode => _('Geçerli kod yok.', 'No valid code.');
+  String get requestsTitle => _('Katılma istekleri', 'Join requests');
+  String wantsPart(ChoirPart? p) => p == null
+      ? _('Parti seçmedi', 'No part chosen')
+      : _('${partName(p)} istiyor', 'Asks for ${partName(p)}');
+  String get approve => _('Onayla', 'Approve');
+  String get decline => _('Reddet', 'Decline');
+  String get approvePartHint => _('Partisini sen belirle.', 'Set their part.');
+  String get noPart => _('Partisiz', 'No part');
+  String get sectionLeader => _('Partisyon şefi', 'Section leader');
+  String get sectionLeaderHint => _(
+    'Bu partinin kayıtlarını önce o dinler, sonra sana gönderir.',
+    'They hear this part\'s takes first, then send them on to you.',
+  );
+  String get changePart => _('Partisi', 'Part');
+  String get removeFromChoir => _('Korodan çıkar', 'Remove from choir');
+  String removeConfirm(String name) => _(
+    '$name korodan çıkarılsın mı? Erişimi hemen kapanır.',
+    'Remove $name? Their access ends at once.',
+  );
+  String get leaveOnline => _('Korodan ayrıl', 'Leave the choir');
+  String get leaveConfirm => _(
+    'Korodan ayrılırsan yeniden katılmak için yeni bir davet gerekir.',
+    'If you leave, you will need a new invite to rejoin.',
+  );
+  String get deleteChoir => _('Koroyu sil', 'Delete the choir');
+  String deleteConfirm(String name) => _(
+    '$name ve tüm üyelikleri silinsin mi? Geri alınamaz.',
+    'Delete $name and all its memberships? This cannot be undone.',
+  );
+  String get confirm => _('Evet', 'Yes');
+  String get membersTitle => _('Üyeler', 'Members');
+  String membersCount(int n) => _('$n kişi', '$n people');
+  String get workComesLater => _(
+    'Ödevler, repertuvar ve kayıtlar koronun Drive hesabı bağlandığında burada olacak.',
+    'Assignments, repertoire and takes arrive here once the choir\'s Drive is connected.',
+  );
+  String get youLead => _('Partisyon şefisin', 'You lead your part');
+  String get retry => _('Yeniden dene', 'Try again');
+  String backendProblem(BackendProblem p) => switch (p) {
+    BackendProblem.inviteInvalid => _(
+      'Kod geçersiz, süresi dolmuş ya da iptal edilmiş.',
+      'The code is wrong, expired or revoked.',
+    ),
+    BackendProblem.alreadyMember => _(
+      'Bu koroda zaten varsın.',
+      'You are already in this choir.',
+    ),
+    BackendProblem.alreadyDecided => _(
+      'Bu istek zaten yanıtlandı.',
+      'This request was already answered.',
+    ),
+    BackendProblem.notAllowed => _(
+      'Bunu yapma yetkin yok.',
+      'You are not allowed to do that.',
+    ),
+    BackendProblem.wrongCode => _(
+      'Kod yanlış ya da süresi dolmuş.',
+      'The code is wrong or expired.',
+    ),
+    BackendProblem.driveMissing => _(
+      'Şef koronun Google Drive hesabını henüz bağlamadı.',
+      'Your conductor has not connected the choir\'s Google Drive yet.',
+    ),
+    BackendProblem.offline => _(
+      'Bağlantı yok. İnternetini kontrol edip yeniden dene.',
+      'No connection. Check your internet and try again.',
+    ),
+    BackendProblem.unknown => _(
+      'Bir şey ters gitti. Yeniden dene.',
+      'Something went wrong. Try again.',
+    ),
+  };
+
+  // Online choir work (CHOIR-B2/B3)
+  String get takeUploaded => _(
+    'Kayıt gönderildi. Partindekiler ve partisyon şefin dinleyebilir.',
+    'Take sent. Your part and its section leader can hear it.',
+  );
+  String get sharedWithChoir =>
+      _('Koroyla paylaşıldı.', 'Shared with the choir.');
+  String get forwardToConductor => _('Şefe gönder', 'Send to conductor');
+  String get leaderDecideTitle =>
+      _('Bu kayıt ne olsun?', 'What happens to this take?');
+  String get leaderQueue => _('Partimin kayıtları', 'My part\'s takes');
+  String get partTakesTitle => _('Partimden kayıtlar', 'Takes from my part');
+  String get partTakesHint => _(
+    'Yalnız partindekiler, partisyon şefin ve (kendisine gönderilince) şef dinler.',
+    'Only your part, its section leader and (once sent on) the conductor can hear these.',
+  );
+  String get forwarded => _('Şefe gönderildi.', 'Sent to the conductor.');
+  String get openOnlineWork =>
+      _('Ödevler ve kayıtlar', 'Assignments and takes');
+  String get openOnlineWorkSub => _(
+    'Repertuvar, ödevler, eşlikli kayıt, geri bildirim',
+    'Repertoire, assignments, accompanied takes, feedback',
+  );
+  String get driveTitle =>
+      _('Koronun Google Drive\'ı', 'Choir\'s Google Drive');
+  String driveConnected(String? email) => email == null
+      ? _('Bağlı', 'Connected')
+      : _('Bağlı · $email', 'Connected · $email');
+  String get driveConnect => _('Drive\'ı bağla', 'Connect Drive');
+  String get driveConnectHint => _(
+    'Koro adına açtığınız Google hesabıyla giriş yapın. Nota, MIDI ve kayıtlar o hesabın Drive\'ında tutulur.',
+    'Sign in with the choir\'s own Google account. Scores, MIDI and takes are kept in its Drive.',
+  );
+  String get driveWaiting => _(
+    'Şef Drive\'ı bağlayınca ödevler ve kayıtlar açılır.',
+    'Assignments and takes open once your conductor connects Drive.',
+  );
+  String get driveCheckAgain =>
+      _('Bağladım, kontrol et', 'Connected, check again');
 }

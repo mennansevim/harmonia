@@ -1,5 +1,36 @@
 # Resonia — Model devir ve genel işleyiş notu
 
+**2026-11-10 CHOIR-B2/B3:** Çevrimiçi koro işleri mevcut koro ekranlarından
+geçer; `ChoirStore.remote` + `onlineChoirIds` çevrimiçi korolarda her yazımı
+önce sunucuya gönderir, sonra `syncOnline` ile aynayı yeniler. Medya id'leri
+sunucu uuid'sinin `<32hex>.<ext>` hâli (`mediaIdOf`/`uuidOfMedia`). Drive
+dosya id'si istemciye hiç verilmez; yeni yetki kuralı ekleyen SQL'i,
+`ChoirAccess`'i, `FakeChoirRemote`'u ve pgTAP/Deno/Dart testlerini birlikte
+günceller. Gerçek Google bağlantısı için kullanıcı Google Cloud Web OAuth
+istemcisi + uzak proje sırları vermeli (`supabase/README.md`).
+
+**2026-11-10 CHOIR-B1b:** Faz 1 uygulama tarafı `lib/choir/online/` altında;
+yalnız `SUPABASE_URL` + `SUPABASE_KEY` dart-define ile açılır. Testte
+`FakeChoirBackend` SQL kurallarını taklit eder; kural değişirse SQL, Dart
+`ChoirAccess`, sahte sunucu ve üç test seti birlikte değişir. Yerel çalıştırma
+`supabase/README.md`. Sunuculu derlemeyi mağazaya göndermeden önce gizlilik
+manifesti/etiketleri güncellenmeli (kullanıcı kararı). Sıradaki: Faz 2 (Drive
+bağlantısı, repertuvar) — Google Cloud OAuth kurulumu ister.
+
+**2026-11-10 CHOIR-B1a (ADR-041):** Koro sunucusu kararı verildi: Supabase
+(kimlik, üyelik, durum, yetki) + koronun Google Drive'ı (yalnız dosya,
+`drive.file`, token sunucuda). Kural kaynağı `lib/choir/domain/choir_access.dart`
+ve `supabase/migrations/20261110120000_choir_core.sql`; birini değiştiren
+diğerini ve iki testi (`test/choir/choir_access_test.dart`,
+`supabase/tests/choir_isolation_test.sql`, `supabase test db`) güncellesin.
+Tablolara doğrudan yazım policy'si eklemeyin; değişiklikler rol kontrollü
+fonksiyonlardan geçer. Şef partisyon şefi olan partide yalnız `forwarded`
+kaydı görür (kullanıcı kararı). Sıradaki: Faz 1 uygulama tarafı (giriş, koro
+oluştur, davet kodu/QR, katılma isteği onayı, parti/partisyon şefi ataması,
+uzak depo). Uzak Supabase projesi, Google Cloud OAuth ve Apple Sign In için
+kullanıcı yetkisi gerekir; plan `~/.claude/plans/sunny-noodling-magpie.md`
+değil, ADR-041 + CURRENT_ROADMAP esas.
+
 **2026-11-09 HUM-06a:**
 `domain/human_review/human_review_operations.dart`, gerçek servis workflow'u
 değil; rerecord/reassign/waitlist/delay/withdraw/cancel/deliver geçişleri ile

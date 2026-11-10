@@ -7,17 +7,25 @@ import 'choir_json.dart';
 /// ```
 /// draft ──submit──▶ submitted ──listen──▶ listened
 ///   ▲                   │                    │
-///   │                   └──────review────────┤
-///   │                                        ▼
-///   └──retake── revisionRequested ◀── accepted | revisionRequested
+///   │                   ├──(leader) forward──┴──▶ forwarded
+///   │                   │                              │
+///   │                   └──────────review──────────────┤
+///   │                                                  ▼
+///   └──retake── revisionRequested ◀──── accepted | revisionRequested
 /// ```
 ///
-/// No state carries a score: in choir phase C1 the conductor listens and
-/// writes feedback; the app measures nothing.
+/// With a section leader on the part, the leader listens first and either
+/// forwards the take or asks for a retake; the conductor sees forwarded takes
+/// only (see `ChoirAccess`). A part with no other leader goes straight to the
+/// conductor. No state carries a score: people listen and write feedback;
+/// the app measures nothing.
 enum SubmissionStatus {
   draft,
   submitted,
   listened,
+
+  /// The section leader sent it on to the conductor.
+  forwarded,
   accepted,
   revisionRequested,
 }
@@ -156,6 +164,7 @@ class Submission {
     this.takeKind,
     this.submittedAt,
     this.listenedAt,
+    this.forwardedAt,
   }) : feedback = List.unmodifiable(feedback) {
     if (id.trim().isEmpty ||
         choirId.trim().isEmpty ||
@@ -178,6 +187,15 @@ class Submission {
     }
     if (listenedAt != null && status == SubmissionStatus.draft) {
       throw ArgumentError('A draft cannot be listened to');
+    }
+    if ((status == SubmissionStatus.forwarded) && forwardedAt == null) {
+      throw ArgumentError('A forwarded take needs forwardedAt');
+    }
+    if (forwardedAt != null &&
+        (status == SubmissionStatus.draft ||
+            status == SubmissionStatus.submitted ||
+            status == SubmissionStatus.listened)) {
+      throw ArgumentError('Only a forwarded or reviewed take has forwardedAt');
     }
   }
 
@@ -231,10 +249,21 @@ class Submission {
   final DateTime? submittedAt;
   final DateTime? listenedAt;
 
+  /// When the section leader forwarded this attempt to the conductor.
+  final DateTime? forwardedAt;
+
   /// All feedback across takes, oldest first.
   final List<Feedback> feedback;
 
+  /// Sent and not yet closed with feedback. Whether the conductor may see it
+  /// yet is `ChoirAccess.conductorSees`.
   bool get awaitsConductor =>
+      status == SubmissionStatus.submitted ||
+      status == SubmissionStatus.listened ||
+      status == SubmissionStatus.forwarded;
+
+  /// Waiting on the section leader (if the part has one).
+  bool get awaitsLeader =>
       status == SubmissionStatus.submitted ||
       status == SubmissionStatus.listened;
 
@@ -276,12 +305,62 @@ class Submission {
     return _copy(status: SubmissionStatus.submitted, submittedAt: now);
   }
 
-  /// The conductor played the take. Idempotent on an already listened one.
-  Submission markListened(ChoirMember conductor, DateTime now) {
-    _conductorOf(conductor);
-    if (status == SubmissionStatus.listened) return this;
+  /// The conductor or this part's section leader played the take.
+  /// Idempotent once listened or forwarded.
+  Submission markListened(ChoirMember reviewer, DateTime now) {
+    if (!_isLeaderOf(reviewer)) _conductorOf(reviewer);
+    if (status == SubmissionStatus.listened ||
+        status == SubmissionStatus.forwarded) {
+      return this;
+    }
     _require(SubmissionStatus.submitted, 'mark as listened');
     return _copy(status: SubmissionStatus.listened, listenedAt: now);
+  }
+
+  /// The section leader sends the take on to the conductor, optionally with
+  /// a note of their own.
+  Submission forward({
+    required ChoirMember leader,
+    required DateTime now,
+    String text = '',
+    List<FeedbackTag> tags = const [],
+    List<FeedbackMark> marks = const [],
+    String? voiceNoteId,
+  }) {
+    _leaderOf(leader);
+    if (!awaitsLeader) {
+      throw StateError('Cannot forward a ${status.name} submission');
+    }
+    return _copy(
+      status: SubmissionStatus.forwarded,
+      listenedAt: listenedAt ?? now,
+      forwardedAt: now,
+      feedback: _withNote(leader, now, text, tags, marks, voiceNoteId),
+    );
+  }
+
+  /// The section leader asks for a new take before it reaches the conductor.
+  Submission requestRetake({
+    required ChoirMember leader,
+    required DateTime now,
+    String text = '',
+    List<FeedbackTag> tags = const [],
+    List<FeedbackMark> marks = const [],
+    String? voiceNoteId,
+  }) {
+    _leaderOf(leader);
+    if (!awaitsLeader) {
+      throw StateError('Cannot return a ${status.name} submission');
+    }
+    final note = _withNote(leader, now, text, tags, marks, voiceNoteId);
+    if (identical(note, feedback)) {
+      throw ArgumentError('Say what to change when asking for a retake');
+    }
+    return _copy(
+      status: SubmissionStatus.revisionRequested,
+      listenedAt: listenedAt ?? now,
+      feedback: note,
+    );
   }
 
   /// Closes the current take with written feedback. Reviewing implies
@@ -352,6 +431,47 @@ class Submission {
     }
   }
 
+  bool _isLeaderOf(ChoirMember member) =>
+      member.choirId == choirId &&
+      member.leads(part) &&
+      member.userId != memberId;
+
+  void _leaderOf(ChoirMember member) {
+    if (!_isLeaderOf(member)) {
+      throw ArgumentError('Only another leader of this part does that');
+    }
+  }
+
+  /// [feedback] plus the leader's note, or [feedback] itself when they said
+  /// nothing.
+  List<Feedback> _withNote(
+    ChoirMember author,
+    DateTime now,
+    String text,
+    List<FeedbackTag> tags,
+    List<FeedbackMark> marks,
+    String? voiceNoteId,
+  ) {
+    if (text.trim().isEmpty &&
+        tags.isEmpty &&
+        marks.isEmpty &&
+        voiceNoteId == null) {
+      return feedback;
+    }
+    return [
+      ...feedback,
+      Feedback(
+        authorId: author.userId,
+        createdAt: now,
+        attempt: attempt,
+        text: text,
+        tags: tags,
+        marks: marks,
+        voiceNoteId: voiceNoteId,
+      ),
+    ];
+  }
+
   Submission _copy({
     SubmissionStatus? status,
     String? recordingId,
@@ -360,6 +480,7 @@ class Submission {
     bool clearRecording = false,
     DateTime? submittedAt,
     DateTime? listenedAt,
+    DateTime? forwardedAt,
     List<Feedback>? feedback,
   }) => Submission._(
     id: id,
@@ -375,6 +496,7 @@ class Submission {
     takeKind: clearRecording ? null : takeKind ?? this.takeKind,
     submittedAt: submittedAt ?? this.submittedAt,
     listenedAt: listenedAt ?? this.listenedAt,
+    forwardedAt: forwardedAt ?? this.forwardedAt,
     feedback: feedback ?? this.feedback,
   );
 
@@ -392,6 +514,7 @@ class Submission {
     'takeKind': takeKind?.name,
     'submittedAt': submittedAt == null ? null : writeTime(submittedAt!),
     'listenedAt': listenedAt == null ? null : writeTime(listenedAt!),
+    if (forwardedAt != null) 'forwardedAt': writeTime(forwardedAt!),
     'feedback': [for (final f in feedback) f.toJson()],
   };
 
@@ -409,6 +532,7 @@ class Submission {
     takeKind: optEnum(json, 'takeKind', TakeKind.values),
     submittedAt: optTime(json, 'submittedAt'),
     listenedAt: optTime(json, 'listenedAt'),
+    forwardedAt: optTime(json, 'forwardedAt'),
     feedback: [
       for (final f in req<List<Object?>>(json, 'feedback'))
         if (f is Map<String, Object?>)
@@ -428,6 +552,7 @@ class PartProgress {
     required this.singers,
     required this.notSent,
     required this.toReview,
+    this.forwarded = 0,
     required this.accepted,
     required this.revisionRequested,
   });
@@ -436,8 +561,12 @@ class PartProgress {
   final int singers;
   final int notSent;
 
-  /// Submitted or listened, waiting for written feedback.
+  /// Sent and waiting for written feedback (with the leader or the
+  /// conductor).
   final int toReview;
+
+  /// Of [toReview], those the section leader already forwarded.
+  final int forwarded;
   final int accepted;
   final int revisionRequested;
 }
@@ -464,7 +593,8 @@ List<PartProgress> assignmentProgress({
             if (m.isSinger && m.part == part && m.choirId == assignment.choirId)
               m,
         ];
-        var notSent = 0, toReview = 0, accepted = 0, revision = 0;
+        var notSent = 0, toReview = 0, forwarded = 0;
+        var accepted = 0, revision = 0;
         for (final m in singers) {
           final s = byMember[m.userId];
           if (s == null || s.part != part) {
@@ -476,6 +606,9 @@ List<PartProgress> assignmentProgress({
               notSent++;
             case SubmissionStatus.submitted || SubmissionStatus.listened:
               toReview++;
+            case SubmissionStatus.forwarded:
+              toReview++;
+              forwarded++;
             case SubmissionStatus.accepted:
               accepted++;
             case SubmissionStatus.revisionRequested:
@@ -487,6 +620,7 @@ List<PartProgress> assignmentProgress({
           singers: singers.length,
           notSent: notSent,
           toReview: toReview,
+          forwarded: forwarded,
           accepted: accepted,
           revisionRequested: revision,
         );

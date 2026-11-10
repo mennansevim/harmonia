@@ -4610,315 +4610,131 @@ yük dağılımı uygun mu, derin araştır." Uygulama kodu, rubrik, tolerans ve
   (progression) adları kapsanmadı; artık üçlüde Sol♯ klavyede La♭ adıyla
   görünür (enharmonik, tek ad tablosu). Cihazda denenmedi, IPA yok.
 
-## 2026-11-09 — PLACE-01 hedef parkuru, seviye sorusu ve yerleştirme testi
+## 2026-11-10 — CHOIR-B1a koro sunucusu: yetki kuralı ve Supabase şeması
 
-**Kullanıcı isteği:** Eğitim modeli esnek olsun; girişte yeni başlayan /
-tecrübeli ayrımı, test uzunluğu tecrübeye göre optimize. BENCH-MODEL-01
-oturumuyla iş bölümü yapıldı; sayı/yıldız düzeltmeleri oradan geldi.
+**Kullanıcı isteği:** Koro bölümünü plan modunda konuşmak; şef koro kurar,
+koristler QR/link ile katılır, ses grupları, Drive'da repertuvar ve kayıtlar,
+ödev, kimin gönderdiği, şefin dinleyip yorum bırakması. Kararlar ADR-041.
 
-- Hedef artık tek ders değil, sıralı bir **parkur** (`PracticeGoal.track`,
-  taslak, eğitimci onaysız): beginner Nota→Aralık→Akor; ear
-  Aralık→Akor→Dizi→Yürüyüş; exam Aralık→Nota→Akor→Dizi→Yürüyüş; choir
-  Aralık→Nota→Akor; voice Nota→Aralık; stage boş. `lesson` = parkurun ilki
-  (eski davranış aynı). `focusTrainer` hedef varsa parkurdaki ilk bitmemiş
-  yolu seçer; hedefsiz eski kayıtlar eski kuralla. Akor/Dizi/Yürüyüş ilk kez
-  rotaya giriyor. Ezgi/ritim/çok sesli lab'da, rota ve ustalık dışında.
-- Onboarding: hedef → **seviye** (yeni / biraz biliyorum / tecrübeli) →
-  dakika. `answers['level']`; Ayarlar'dan değişir. Hedef ve seviye bağımsız;
-  ikisi de tolerans, eşik veya içerik değiştirmez.
-- **Yerleştirme** (`placement.dart`, `placement_flow.dart`): parkurun ilk
-  yolunun kendi kapıları, `QuizConfig.forNode` uzunluğuyla (12 / final 20).
-  Erken bitirme `GateStop`: ceil(0,8·L) doğru = geçti, L−ihtiyaç+1 yanlış =
-  kaldı (12'de 10/3, 20'de 16/5); karar tam testle birebir aynı (tüm
-  doğru/yanlış sıralarıyla test edildi). Store'a doğruluk tam L'ye bölünerek
-  yazılır (10/12 = 0,83 → 2★; erken bitirme 3★ şişirmez). Başlangıç:
-  biraz → AD1'den yukarı, ilk kalışta durur; tecrübeli → sondan bir önceki
-  ara durak, geçerse final dahil yukarı, kalırsa geçene dek birer aşağı.
-  Sonuç mevcut `completeNode` kapı kuralıyla yazılır; `answers['placed']`.
-  Her turdan sonra "Burada durayım"; sonuç ekranda "yaklaşık".
-- `QuizView.stopWhen` (isteğe bağlı; null = eski davranış).
-- Ayarlar: Seviye ve "Seviyemi bul" (parkurdaki güncel yol).
-- Testler: `placement_test.dart` +18; 6 onboarding yürüyüşüne seviye adımı.
-  Tam kalite kapısı: format+analyze temiz, **1470 test + 2 opt-in skip**.
-- Sınırlar: 12 soruluk kapı düşük ayırt edici (BENCH-MODEL-01: %85'lik
-  öğrenci %74 geçer), yerleştirme ±1 durak yanılabilir; eşik değişmedi.
-  Geçen kapı önceki düğümleri stars:1 ile tamamlar ve atlanan öğelere tekrar
-  kartı oluşmaz (mevcut kural). Parkur sırası ve seviye metinleri eğitimci
-  onaysız; `exam` için ezgi/ritim tekrarı slotu kullanıcı kararı. Eski
-  `lib/domain/models/learner_profile.dart` `PracticeGoal`'u ayrı eski
-  katmanda (20+ dosya) kullanıldığı için kapsam dışı. Cihazda, gerçek
-  öğrenciyle denenmedi; IPA yok.
+### Uygulananlar
+- `lib/choir/domain/choir.dart`: `ChoirMember.leadsPart` (partisyon şefi;
+  parti değişince düşer), `leads()`, `withLeading()`, `isConductor`. JSON'da
+  yalnız true iken yazılır; eski veriler okunur.
+- `lib/choir/domain/submission.dart`: `SubmissionStatus.forwarded`,
+  `forwardedAt`, `forward` (not isteğe bağlı), `requestRetake` (not zorunlu),
+  `markListened` partisyon şefini de kabul eder, `PartProgress.forwarded`.
+- `lib/choir/domain/choir_access.dart`: kim durum görür, kim dinler, kim geri
+  bildirim okur, kim karar verir. Sunucu RLS'si ile aynı kural.
+- `supabase/`: `config.toml` (project_id resonia), migration (choirs, members,
+  invites, join_requests, submissions, feedback; RLS okuma; tablo yazımı
+  kapalı; `create_choir`, `create_invite`, `preview_invite`, `request_join`,
+  `decide_join`, `set_member_part`, `set_section_leader`, `remove_member`,
+  `submit_take`, `mark_listened`, `leader_decide`, `conductor_review`,
+  `can_listen`, `can_read_feedback`; anonim çağrı yok).
+- Testler: `test/choir/choir_access_test.dart`, `supabase/tests/choir_isolation_test.sql`.
 
-### 2026-11-09 — P0 tekrar kartı büyüme eşiği
-- `lib/trainer/domain/review_memory.dart`: `dueFraction` (= −ln(reviewTarget)/ln2)
-  eklendi; `answered` içinde `spaced` koşulu `Δ ≥ h·dueFraction`; sürüm
-  `hlr-lite-2`. `trainer_store.dart` değişmedi (sürüm farkında kartları zaten
-  sıfırlıyor).
-- Testler (`test/trainer/review_cards_test.dart`): vade anında ×2, vadeden
-  önce büyümez/reps artmaz, `dueFraction`↔`reviewTarget`, yanlış cevap h/2
-  (alt sınır 0,5), 90 günlük ziyaret simülasyonları (günlük ≤12 ve h=60,
-  haftalık ≤8, %85 doğrulukta <40), `hlr-lite-1` kaydı sıfırlanır ve xp
-  korunur. Eski 0,5 kuralına geri alınınca 4 yeni test başarısız oluyor.
-- Kalite kapısı: format+analyze+test temiz, 1477 test + 2 skip.
-- Etki: mevcut kullanıcıların tekrar kartları sıfırlanır.
-- Sınırlar: katsayı/eşik değerleri taslak, pilot verisiyle ayarlanacak;
-  simülasyon sentetik; cihazda ve gerçek öğrenciyle denenmedi.
+### Doğrulama
+- `supabase test db`: 33/33 (yerel Docker veritabanı).
+- `dart tool/quality_check.dart`: format + analyze temiz, **1563 test + 2 skip**.
 
-### 2026-11-09 — P1 Alkışla ritim tempo normalize kuralı ve seviye sırası
-- `lib/trainer/koro/clap_rhythm.dart`: `normalizeClapTempo` (sayı eşitse
-  ilk→son süreyi referansa ölçekler; eşit değilse, tek alkışta veya sıfır
-  sürede ölçeklemez), `clapSpanRatio`, `clapTempoNote` (eşik
-  `RhythmImitationOutcome.tempoHintThreshold` = %15; TR/EN). `_judge` normalize
-  edilmiş onsetleri analizöre verir; sonuç ipucuna tempo notu eklenir, geçme
-  kararı/skor/XP değişmez. `clapRhythmsEasyToHard` anahtarı: senkop, vuruş
-  dışı, süre ms, en kısa aralık, vuruş sayısı, katalog.
-- `tool/benchmark/rhythm_benchmark.dart` sıra kopyası güncellendi; yeniden
-  çalıştırıldı: corr(geçme, seviye) −0,37. Belge §5.5'e "Sonrası" eklendi.
-- Testler: %5/%10 yavaş-hızlı mükemmel echo yalnız normalizeyle geçer (eski
-  mutlak kural %10 yavaşta başarısız); 150 ms kaydırılmış alkış, eksik ve fazla
-  alkış hâlâ geçmez; eşit olmayan sayıda ölçekleme yok; tek alkış/sıfır süre
-  güvenli; tempo notu eşiği ve TR/EN; yeni sıra pairwise sabit; ekranda yavaş
-  ama doğru echo geçip "Tempo ≈ %30 yavaştı" der.
-- Kalite kapısı: format+analyze+test temiz, 1484 test + 2 skip.
-- Sınırlar: ±120/10 ms, EventRhythmAnalyzer, ClapOnsetDetector,
-  RhythmImitationEvaluator değişmedi. Simülasyon yeni kuralın geçme oranlarını
-  yeniden ölçmedi; gerçek insan alkışı ve cihaz denenmedi; dokunmatik Ritim
-  tekrarı drift açısından ayrıca doğrulanmadı. Mevcut clapLevel değerleri yeni
-  sırada farklı ritme denk gelebilir.
+### Sınırlar
+- Uzak Supabase projesi, Google Cloud OAuth, Drive Edge Functions, uygulamada
+  giriş/katılım ekranları, uzak depo ve `.resonia` geçişi yok. Uygulama hâlâ
+  cihazda çalışıyor; partisyon şefi yerel akışta atanamıyor.
+- Dart kuralı ile SQL kuralı ayrı testlerle kilitli; ortak test vektörü yok.
+- Gerçek cihaz, gerçek Drive hesabı ve pilot koro doğrulaması yapılmadı.
 
-### 2026-11-09 — P2 aralık skorundan genişlik çıkarıldı (`match-1`)
-- `lib/trainer/koro/range_score.dart`: `total` = 0,625·doğruluk + 0,375·ilk
-  deneme; genişlik ağırlığı kaldırıldı (`semitones`, `width`, `band`
-  betimleyici). Doğruluk = (ort. closeness − 60)/40·100 (0..100, yalnız
-  eşleşen takeler). `rangeScoreModelVersion = 'match-1'`.
-- `lib/trainer/state/trainer_store.dart`: yalnız `rangeScoreModel` anahtarı
-  (encode/decode); farklı/yok sürümde `rangeScores` yok sayılır. `resetAll`
-  zaten temizliyor; `koroRange` ayrı, dokunulmadı.
-- `lib/trainer/koro/range_test.dart`: kart başlığı "EŞLEME", genişlik çubuğu
-  yok, not "ses tipi veya yetenek değil", sıra metni "kendi önceki
-  denemelerine göre", açıklama diyaloğu yeni formüle göre; puan satırı Row →
-  Wrap (320 px / 1,8× yazıda 5,5 px taşıyordu).
-- Testler: genişlik puanı değiştirmez; 36 yarım ses gevşek 0, 14 temiz 100;
-  doğruluk 0/20/39 cent → 100/50/2,5; ölçülmemiş/ıskalanmış take aralık/skor
-  üretmez; eski/başka sürüm skorları silinir (xp, koroRange korunur); ekran
-  testi 73 puan, 320 px + 1,8× taşmaz; english_ui_test geçer.
-- `tool/benchmark/model_benchmark.dart` §B yeni formüle göre; çıktı belge
-  §4.2'ye işlendi: puan↔gerçek aralık 0,52 → −0,01.
-- Kalite kapısı: format+analyze+test temiz, 1488 test + 2 skip.
-- Sınırlar: kullanıcıların eski aralık skorları silinir; `range_ladder.dart`,
-  40 c / 2 deneme ve kalite kapısı değişmedi; ölçülen aralığın gürültülü
-  şarkıcıda düşük çıkması ve %11–20 skor-yok oranı sürüyor; gerçek şarkıcı ve
-  cihazda denenmedi; "Eşleme" metinleri eğitimci onaysız.
+## 2026-11-10 — CHOIR-B1b Faz 1: çevrimiçi koro ekranları
 
-### 2026-11-09 — P3 yıldız eşiği, kapı kanıtı ve başarısız kapı önerisi
-- `trainer_store.dart`: `starsFor` 3★ ≥%90 (`threeStarAccuracy`), 2★ ≥%80;
-  gerekçe/"pratik göstergesi" notu kodda. `completeNode(node, accuracy,
-  {correct, total})`: kapı denemesi günlüğü (`gateAttempts`, son 3, başarısız
-  denemeler dahil, ders yazılmaz), `gateEvidence` → `GateEvidence.consolidated`
-  (≥2 gün, ≥36 soru, ≥%80 birleşik). Şema geriye uyumlu: yeni anahtar,
-  bozuk girişler atlanır, `resetAll` temizler. %80 geçme, kilitler, ders kuralı
-  değişmedi.
-- `lesson_flow.dart`/`placement_flow.dart`: sorulan soru sayısı ve doğru
-  sayısı günlüğe gider; `GateStop` ve yerleştirme algoritması değişmedi
-  (erken bitirme yine tam uzunluğa bölünür).
-- `session_end.dart`: başarısız kapıda "Önceki dersi tekrar et" önerisi +
-  "Yeniden dene" (+ "Şimdilik bitir"); `lesson_flow.dart` önceki dersi veya
-  kapıyı yerinde açar.
-- `skill_screen.dart`: kapı düğümünde "iki ayrı günde doğrulandı" rozeti
-  (ikon + tooltip/semantik; ek satır 132 px düğüm yüksekliğini aştığı için
-  metin satırı yerine ikon).
-- Testler (`test/trainer/gate_evidence_test.dart`, `placement_test.dart`):
-  starsFor sınırları (0,79/0,80/0,89/0,90/0,94/0,95), 9/10 – 11/12 – 18/20,
-  10/12 = 2★ ve 11/12 = 3★, kapı 0,79 kalır/0,80 geçer, ders her zaman
-  tamam, kilit mantığı, günlük ≤3 ve eski veri, bozuk giriş, pekişti sınırları
-  (36 soru, %80, 2 gün), aynı gün konsolide olmaz, kilit/yıldız değişmez,
-  başarısız kapı önerisi TR/EN, rozet.
-- `tool/benchmark/model_benchmark.dart` §C yeni eşiğe göre; belge §4.3'e
-  P(3★) eski/yeni: gerçek %90'da ders %35→%74.
-- Kalite kapısı: format+analyze+test temiz, 1507 test + 2 skip.
-- Sınırlar: günlükte yerleştirme için sorulan soru sayısı tutulur (erken
-  geçiş yukarı yanlı doğruluk verebilir; sınır 36 soru); pekişti eşikleri
-  taslak, pilot/eğitimci onayı yok; 3★ daha ulaşılır (gerçek %70'lik öğrenci
-  derste %15 3★); ders yolu düğümlerinde 1,8× yazıda eskiden beri 6 px taşma
-  ve 320 px'te 1,3 px taşma (bu değişiklikten bağımsız) düzeltilmedi; cihazda
-  denenmedi.
+**Kullanıcı isteği:** "Faz 1 ekranlarına geç" (ADR-041 planı).
 
-### 2026-11-09 — P4 exam rotası tekrar alıştırması
-- `daily_route.dart`: `EchoStep {melody, clap}` (+`other`, `fromId`),
-  `echoStepMinMinutes = 5`; `DailyRoute.plan/routeFor` `lastEcho` ve
-  `echoDoneToday` alır; yalnız `exam` ve dakika >5 iken `echoStep`; `stepCount`
-  sayar. `pendingContent` (exam) mevcut metni korur ve "Makam melodileri,
-  solfej ve dikte henüz hazır değil; 2/3/4 sesli tekrar kayıt bekliyor."
-  ekler (TR/EN).
-- `trainer_store.dart`: `echoLast`/`echoDay` (encode/decode/resetAll, eski
-  kayıtta null, bilinmeyen tür yok sayılır), `echoedToday`, `markEchoDone`
-  (yalnız bunları yazar; XP/seri/gün/düğüm/hafıza/lab seviyesi dokunulmaz),
-  `route` getter (`routeFor` + echo geçmişi).
-- `home_shell.dart`: `route_echo` adımı "Tekrar alıştırması · melodi
-  yankısı/alkışla ritim", alt başlık "taslak ölçüm · mikrofon isteğe bağlı",
-  yapılınca "Bugün yapıldı". Mevcut `MelodyEchoScreen`/`ClapRhythmScreen`
-  açılır; melodi yankısı canlı ses yoksa Koro'daki gibi "yalnız cihazda" uyarır.
-  `beginTodayRoute` ve onboarding özeti `store.route` kullanır (özette echo
-  satırı).
-- `melody_echo.dart`/`clap_rhythm.dart`: isteğe bağlı `onRoundFinished`
-  (melodi: ölçüm alındı ve yeniden deneme gerekmedi; alkış: alkış duyuldu;
-  tur başına bir kez). Ölçüm/eşik kodu değişmedi.
-- Testler (`exam_echo_route_test.dart`, melody/clap testlerine sayaç): 3/5/10
-  dk adım kümeleri, dönüşümlü tür, diğer hedefler ve hedefsiz kayıt aynı, XP/
-  seri/ustalık değişmez, tek başına echo pratik günü değil, kalıcılık ve eski
-  kayıt, kart TR/EN, 5 dk'da yok, hazır olmayan 2/3/4 önerilmez.
-- Kalite kapısı: format+analyze+test temiz, 1525 test + 2 skip.
-- Sınırlar: cihazda ve gerçek mikrofonla denenmedi; lab ekranlarının ölçümü
-  taslak; yeni adım metinleri eğitimci onaysız; "~N dk" kullanıcı ayarı,
-  rotadan hesaplanan süre değil; İTÜ/İstanbul/MSGSÜ cevap biçimi doğrulanmadı
-  (rapor); Koro'da melodi "Ezgi tekrarı" diye geçiyor, rota prompt'taki
-  "melodi yankısı" adını kullanıyor (ad tutarlılığı kararı açık).
+### Uygulananlar
+- `lib/choir/online/`: `ChoirBackend` arayüzü + `ChoirBackendException`
+  (sunucu mesajı → `BackendProblem`), `SupabaseChoirBackend` (yalnız RPC +
+  RLS'li okuma), `OnlineChoirController`/`OnlineChoirScope`, `OnlineConfig`
+  (`SUPABASE_URL`, `SUPABASE_KEY` dart-define), `invite_code.dart`
+  (8 karakter, 0/O/1/I yok; QR `vocalart://join/KOD`), ekranlar
+  `online_section.dart` (giriş, koro kur), `online_join.dart` (kod/QR, istek,
+  `mobile_scanner`), `online_choir_screen.dart` (üyeler, istek onayı, parti,
+  partisyon şefi, çıkarma, ayrılma, silme; davet QR `qr_flutter`).
+- `choir_tab.dart`: sunuculu derlemede çevrimiçi bölüm başta, cihazdaki
+  korolar ve paket açma altında. `trainer_app.dart`/`main.dart`: yapılandırma
+  varsa `Supabase.initialize` ve denetleyici.
+- `supabase/migrations/20261110150000_choir_join_extras.sql`,
+  `supabase/tests/choir_join_test.sql`, `supabase/templates/sign_in_code.html`,
+  `config.toml` (kod şablonu, OTP 10 dk), `supabase/README.md`.
+- iOS `NSCameraUsageDescription` (TR/EN); Android INTERNET + CAMERA;
+  `scripts/release/verify_android_apk.py` beklenen izinler.
+- Testler: `test/choir/online_choir_test.dart` (kod ayrıştırma + 5 ekran
+  akışı, `support/fake_choir_backend.dart`), `online_backend_integration_test.dart`
+  (isteğe bağlı, gerçek yerel Supabase).
 
-### 2026-11-10 — P5 doğrulama pilotu: protokol, araç, şablonlar
-- Belgeler: `docs/research/PILOT_PROTOCOL_2026-11.md`;
-  `docs/research/pilot/{RECORDING_GUIDE.md, CONSENT_DRAFT.md,
-  manifest_template.json, pilot_meta_template.json, criteria_template.json}`.
-  Ölçütler taslaktır ve veriye bakılmadan kullanıcı/eğitimci tarafından
-  dondurulur; hukuk metni TASLAKTIR (incelenmedi); çocuk/ergen kapsam dışı.
-- `tool/benchmark/pilot_analysis.dart` (+ `detector_benchmark.dart`'tan
-  `runAll`/`algs` yeniden kullanımı): `AudioFixtureManifest` v1 + sidecar
-  `pilot_meta.json` (labelClass, device, route, room, labels, gateResult).
-  Veri yok/şablon/özet uyuşmazlığı/meta eksik → `PilotInputError`, çıkış 2;
-  sentetik veya enstrüman satırı karar tablosuna girmez; hüküm yalnız
-  `frozen: true` ölçüt dosyasıyla ve Wilson aralığına göre (PASS / FAIL /
-  inconclusive).
-- Testler (`test/tool/pilot_analysis_test.dart`): Wilson, outcome (doğru/
-  oktav/yanlış/çekimser), kappa, hüküm mantığı, eksik veri hatası, şablonların
-  reddi, eksik meta, bozuk etiket/route, değiştirilmiş dosya (hash), sentetik
-  satırların karar setine girmemesi, taslak ölçütle hüküm yok. Bir test
-  sentetik tonu YALNIZ kod yolunu denemek için "human holdout" ilan eder
-  (yorumla işaretli, sayılar sonuç değil).
-- Kalite kapısı: format+analyze+test temiz, 1538 test + 2 skip.
-- Sınırlar: gerçek katılımcı/rıza/kayıt/eğitimci yok; HİÇBİR sonuç üretilmedi
-  veya uydurulmadı; ölçüt sayıları öneri; alkış, aralık ve kart analizleri
-  için betik ve uygulama içi izinli günlük dışa aktarma YAZILMADI; telefon
-  CPU/frame süresi ölçülmedi; hukuk incelemesi ve eğitimci rubrik onayı yok.
+### Doğrulama
+- `supabase test db`: 42/42. Entegrasyon (yerel Supabase + Mailpit): 2/2.
+- Release doğrulayıcı Python testleri: 4 dosya OK.
+- `dart tool/quality_check.dart`: temiz, **1584 test + 4 skip**.
+- `flutter build ios --simulator --debug` sunucu ayarıyla geçti; simülatörde
+  koro kartı ve giriş ekranı görüldü.
 
-### 2026-11-10 — Alkışla ritim: 10 el alkışı animasyonu + kayıtlı alkış sesi yuvası
-- `lib/trainer/koro/clap_stage.dart` (yeni): `ClapStage` + `ClapCue` +
-  `ClapStagePainter`. Ortak hareket modeli: dinleme sırasında eller bir
-  sonraki vuruşa önceden kapanır (`expect`, en fazla 180 ms / aralığın %60'ı,
-  hızlanan yaklaşma), temasta avuç basılır, parmaklar geri esner, avuç
-  kızarır, 1.6 px sarsıntı; ardından kritik sönümlü geri açılma. Öğrencinin
-  alkışında (önceden bilinmez) eller anında kapanıp açılır. 3/4 görünüm:
-  ön-yüz el, yaklaşırken birbirine döner (x daralması), temasta biri öne biner.
-  Ticker yalnız hareket varken çalışır; azaltılmış harekette yalnız kısa temas.
-- 10 stil (`ClapStyle`): Klasik, Ses halkası, Kıvılcım, Hız izi, Tebeşir tozu,
-  Palmas (flamenko, parmaklar avuca), Kapalı avuç (boğuk, hava cebi), Işık,
-  Dalga formu, Notalar. Seçim alttaki çipten açılan sayfada (hepsi aynı ritmi
-  döngüde çalar); `TrainerStore.clapStyle` (geriye uyumlu, varsayılan Klasik).
-- Ses: kullanıcının verdiği `assets/audio/post-punk-clap.wav` (stereo 44.1 kHz,
-  0.39 s) `afconvert` ile mono PCM16 48 kHz `assets/audio/clap/clap.wav`'a
-  çevrildi ve pubspec'e eklendi. `loadClapSample`/`prepareClapSample`:
-  yeniden örnekleme, baştaki sessizliği kırpma, 400 ms, tepe 0.9; okunamazsa
-  sentez `renderClap` çalar. Lisans/kaynak kullanıcıdan teyit bekliyor.
-  Mikrofon alkış algılayıcısı (`ClapOnsetDetector`) bu sesle yeniden
-  ayarlanmadı; dinleme sesi hoparlörden gelir, öğrenci turunda çalmaz.
-- Testler `test/trainer/clap_stage_test.dart`: 10 stil × 5 faz × reduced boyama,
-  önceden kapanma ve durulma, örnek kırpma/normalizasyon, seçim + kalıcılık.
-- Kalite kapısı: format+analyze+test temiz, 1544 test + 2 skip.
-- Sınırlar: gerçek cihazda kare süresi/akıcılık ölçülmedi; kayıtlı sesin
-  lisansı teyit edilmedi; ses ile görsel temasın cihazdaki gecikme hizası denenmedi.
+### Sınırlar
+- Apple/Google girişi yok (hesap/kimlik bilgisi gerekir); yalnız e-posta kodu.
+- Gizlilik manifesti ve mağaza veri etiketleri güncellenmedi: sunuculu derleme
+  mağazaya çıkmadan önce e-posta/kullanıcı kimliği/ad beyan edilmeli.
+- Simülatörde uçtan uca akış ve gerçek cihazda QR okuma denenmedi.
+- Ödev, repertuvar ve kayıtlar çevrimiçi değil (Faz 2–3).
 
-### 2026-11-10 — Kayıtlı alkışta art arda çalışta patlama önlemi
-- Sorun: hızlı ritimde bir alkışın ~300 ms kuyruğu sonrakine biniyordu; toplam
-  1'i aşınca sert kırpma (çıtırtı) oluyordu; iz son alkıştan 300 ms sonra
-  kesiliyordu.
-- `renderClapTrack`: davul makinesi "choke" grubu gibi her yeni alkış
-  öncekinin kuyruğunu 6 ms'de söndürür (en çok 2 ses, yalnız 6 ms); iz son
-  alkış tamamen sönene kadar sürer; tepe >0.95 ise tüm iz ölçeklenir, asla
-  kırpılmaz. `prepareClapSample`: DC giderme, 0.5 ms fade-in, tepe 0.8
-  (`clapSamplePeak`) headroom.
-- Ölçüm (gerçek kayıtla, 16 alkış, 60/90/136/273 ms aralık): tepe 0.80,
-  tam ölçek örnek 0, iz 0 ile biter, örnekler arası en büyük sıçrama tek
-  alkışın kendi atağını aşmaz. Testle sabitlendi. Kalite kapısı: 1545 test
-  + 2 skip. Cihaz hoparlöründe dinleme denenmedi.
+## 2026-11-10 — CHOIR-B2/B3: Drive, repertuvar, ödev, kayıt, partisyon süzgeci
 
-### 2026-11-10 — Sonuç ekranı (SessionEnd) sadeleştirme + HeroCard genişlik hatası
-- Hata: `HeroCard` içindeki `Stack` varsayılan gevşek fit ile içeriği en geniş
-  satırına daraltıp sola yaslıyordu; ortalanmış skor halkası ve çipler kartın
-  solunda kalıyor, sağ taraf boş görünüyordu. `StackFit.passthrough` ile içerik
-  kartın tüm genişliğini alır (tüm HeroCard kullanımları için geçerli).
-- `lib/trainer/learn/session_end.dart` (tüm ders/ara durak/serbest çalışma
-  sonuçları): başlık-hüküm-not ortalandı; halka büyütüldü; halkayı tekrar eden
-  "%90 ilk deneme" / "10 soru" çipleri yerine tek özet satırı
-  ("%90 ilk denemede doğru") + ölçüm kaynağı satırı. Sarı seri bandı ince tek
-  satıra indi. Ölçüldü/Ölçülmedi/Deneysel kartları tek kartta satırlara
-  birleşti (durum etiketleri ve metinler aynı). "Sonraki adım" iç içe buton
-  yerine tek dokunulabilir satır (`retry_missed` satırın kendisi). XP ve soru
-  bazlı ayrıntı açılır bölümde kaldı. Ölçüm, skor, eşik ve kayıt mantığı
-  değişmedi.
-- Rakip inceleme: `design-exports/rakip-vokal-kocu` (Simply Sing sonuç ekranı:
-  ortalı başlık, tek skor görseli, kısa metrik satırı, tek ana aksiyon).
-- Test: `result_language_test` "soru" çipi beklentisi özet satırına güncellendi.
-  `test/trainer` 344 test geçti; format temiz; analyze yalnız bu işe ait
-  olmayan `lib/trainer/ui/rhythm_track.dart` 2 bulgusunu gösteriyor. Tam
-  koşuda `rhythm_imitation_screen_test` bir kez düştü, tek başına iki kez geçti
-  (yük altında zamanlama; bu değişiklikle ilgisiz).
-- Sınırlar: gerçek cihazda görsel kontrol yapılmadı (yalnız test render'ı ile
-  halka merkezi doğrulandı).
+**Kullanıcı isteği:** "diğer fazlara geç".
 
-### 2026-11-10 — Ses aralığı testi sonucu aynı sade düzene taşındı
-- `lib/trainer/koro/range_test.dart` sonuç aşaması: ortalı "SES ARALIĞI /
-  Test tamamlandı" başlığı; aralık (Fa3 – La4) ve yarım ses/oktav/nota satırı
-  mor HeroCard içinde; ardından eşleme puanı kartı, klavye haritası (kartta),
-  çalışma aralığı tek yumuşak kutu (ses tipi değildir uyarısı aynen); ses
-  grupları grafiği açılır "Ses gruplarıyla karşılaştır" bölümüne alındı;
-  "Bitti" + "Testi tekrarla" kaydırmanın altına sabitlendi. Puan, bant ve
-  kayıt mantığı değişmedi.
-- Test: `range_ladder_test` 320 px/1.8× kontrolünde bilgi düğmesine
-  `ensureVisible` yerine `scrollUntilVisible` ile gidiyor (tembel liste).
-- Kalite kapısı: format + analyze temiz, **1548 test + 2 skip** geçti.
-- Kapsam dışı: `rhythm_imitation_screen.dart` aynı anda başka bir yazıcı
-  tarafından değiştiriliyordu, çakışmamak için dokunulmadı.
-  `ChordDiagnosticScreen` uygulamada hiçbir yerden açılmıyor ve akor yolu
-  AGENTS kararıyla beklemede; taşınmadı. Cihazda görsel kontrol yapılmadı.
+### Uygulananlar
+- Sunucu: `supabase/migrations/20261110180000_choir_drive_media.sql` — `media`
+  (Drive dosya id'si istemciye kolon izniyle kapalı), `choir_items`
+  (ReferenceAsset/ChoirResource/Assignment JSON'u, yalnız şef yazar, ödev
+  yalnız korosunun repertuvarını gösterebilir), `choir_drive` + Vault
+  (`_store_drive`, `_drive_token`, yalnız service role), `can_upload_media`,
+  `can_read_media`, `drive_status`, `submit_take` v2 (kendi hazır kaydı +
+  var olan ödev, `take_kind`), `_add_feedback` sesli not sahipliği.
+- Edge Functions (`supabase/functions/`): `drive-oauth` (imzalı 10 dk state,
+  yalnız şef, kod → Vault, klasörler), `media` (upload/finalize/GET; finalize
+  Drive dosyasının appProperties.mediaId + boyut eşleşmesini ister), Google
+  Drive istemcisi, yalnız yerel adreste açılan disk-Drive.
+- Uygulama: `lib/choir/data/choir_remote.dart`, `ChoirStore` (remote,
+  `onlineChoirIds`, `meId`, `ensureMedia`, `applyOnline/syncOnline/forgetOnline`,
+  `leaderDecide`, `partTakes`, rol bilen `reviewQueue`, `canDecide`),
+  `lib/choir/online/supabase_choir_remote.dart`, `OnlineMirrorSync`,
+  çevrimiçi koro sayfasında Drive satırı + "Ödevler ve kayıtlar"; ekranlarda
+  çevrimiçi korolarda paylaşım sayfası yok, hata mesajları, partisyon şefi
+  kararları (`review_screen`), "Partimden kayıtlar" (`assignment_screen`),
+  lider kuyruğu (`choir_screen`). Paketler: `http`, `url_launcher`.
+- Testler: `supabase/tests/choir_media_test.sql`, `supabase/functions/tests/
+  media_test.ts`, `test/choir/online_work_test.dart`,
+  `online_work_screens_test.dart`, entegrasyon testine uçtan uca senaryo,
+  `support/fake_choir_remote.dart`.
 
-### 2026-11-10 — Ritim tekrarı: daha kolay kabul + canlı vuruş noktalarıyla yeniden tasarım
-- **Kullanıcı kararı:** "Ritim tekrarı zor; kabul derecesini düşür." Yalnız bu
-  alıştırma (dokunarak tekrar, Aksak ritim dahil) için:
-  - zamanında penceresi ±10 → **±50 ms**, aynı vuruş penceresi ±120 → **±160 ms**
-    (`RhythmImitationOutcome.onTimeToleranceMs/matchToleranceMs`; global
-    `RhythmAnalysisDefaults` ve Alkışla ritim değişmedi);
-  - tüm vuruşlar varsa ve genel hız referansın 0.8–1.25 katıysa dokunuşlar
-    önce referans süresine ölçeklenir (sabit ama biraz yavaş/hızlı tekrar
-    "hepsi geç" sayılmaz); hız uyarısı yine gösterilir, sonuçta
-    `tempoFitted` saklanır;
-  - ustalık ölçütü ortalama |sapma| 60 → **80 ms** (`RhythmNextStepPolicy`).
-  - Analizör sürümü `rhythm-imitation-2/first-tap-anchor-tempo-fit`: v1
-    sonuçları ayrı kohort; "sonraki adım" ilerlemesi v2 denemeleriyle yeniden
-    birikir. Eğitimci kalibrasyonu yok; değerler kullanıcı tercihidir.
-- **Ekran yeniden tasarımı** (`rhythm_imitation_screen.dart`, trainer kiti):
-  üst çubuk + ilerleme, seviye etiketi ve seçici, vuruş/BPM; ortak
-  `lib/trainer/ui/rhythm_track.dart` (`RhythmTrack`): üstte referans, altta
-  dokunuşlar. Dinlerken referans vuruşları zamanında yanar; dokunurken her
-  nokta anında belirir ve en yakın vuruşa uzaklığına göre renklenir (yeşil
-  ≤50, sarı ≤160, mercan dışı), sıradaki vuruşun yeri halka; "70 ms erken"
-  rozeti. Sonuçta eşleşen çiftler çizgiyle bağlı, ms etiketi, eksik halka,
-  fazla mercan; zamanında/kaymış/eksik-fazla sayaç kartı. Dokunma alanı ve
-  Dinle/Bitirdim altta sabit. Geçiş grafiği ve vuruş çipleri "Ölçüm
-  ayrıntısı"na taşındı. Alkışla ritim karşılaştırması da `RhythmTrack`'e
-  geçti (alkışlar canlı renkli). `TopBar` satırı 44→48 px (dokunma hedefi).
-- Kontrolcü: salt-okunur `referenceOnsetsMs`, `liveTapsMs` (yalnız çizim).
-- Testler güncellendi/eklendi: v2 pencereleri, tempo uyarlaması (1.2 → uyar,
-  1.4 → uyarlama yok), tek düzensiz vuruş geç, ekran akışı yeni düzenle,
-  a11y (kontrast, 48 px).
-- Kalite kapısı: format+analyze+test temiz, 1548 test + 2 skip. Gerçek
-  cihazda dokunma gecikmesi ve yeni eşiklerle öğrenci başarısı ölçülmedi.
+### Doğrulama
+- pgTAP 70/70; Deno 4/4; entegrasyon 3/3 (yerel Supabase + functions serve +
+  disk-Drive); `dart tool/quality_check.dart` temiz, **1594 test + 5 skip**.
+- Bulunan ve düzeltilen: Edge Function'da çift Authorization başlığı auth
+  sunucusunca reddediliyordu; supabase-dart `order()` varsayılanı azalan
+  olduğu için yorumlar ters sıradaydı.
 
-### 2026-11-10 — Ritim tekrarı sonucu aynı sade düzene taşındı
-- `lib/features/rhythm_imitation/rhythm_imitation_screen.dart` (bitmiş aşama):
-  tek birincil eylem kaydırmanın altına sabitlendi (sonraki adım eylemi →
-  `rhythm_apply_next`, yoksa `rhythm_retry`; hedefli tekrarda
-  `_GuidedActions`). "Sonraki adım" kartı içindeki BigButton kaldırıldı, kart
-  yalnız bilgi (ikon + başlık + gerekçe + taslak ölçüt notu). Alt alta duran
-  SoftButton + 3 TextLink tek kartta ikonlu satır listesine dönüştü (zor bölüm,
-  sonraki desen, puls kavramı, ölçüm ayrıntısı). Sayım kartı, özet, tempo
-  ipucu, ölçüm/kayıt/sonraki adım mantığı değişmedi.
-- Kalite kapısı: format + analyze temiz, **1548 test + 2 skip**.
-- Sınır: cihazda görsel kontrol yapılmadı.
+### Sınırlar
+- Gerçek Google Drive/OAuth ile denenmedi; uzak Supabase projesi ve Google
+  Cloud istemcisi yok. Drive'daki dosyalar koro/üye silinince kalır.
+- Kayıtlar sıkıştırılmadan WAV; büyük dosyada yükleme tek PUT (kaldığı yerden
+  devam yok); çevrimdışı yükleme kuyruğu yok, hata mesajı gösterilir.
+- Simülatör/cihazda denenmedi; PDF nota kayıt ekranında, push bildirim yok.
+
+## 2026-11-10 — CHOIR-B2 gerçek Google Drive ile yerel doğrulama
+
+- Google Cloud (koro hesabı, "My First Project"): kapsamlar `openid`,
+  `userinfo.email`, `drive.file` (hassas/kısıtlı kapsam yok); test kullanıcısı
+  koro hesabı; Web istemcisi `Vocalart Supabase`, yönlendirme
+  `http://127.0.0.1:54321/functions/v1/drive-oauth/callback`.
+- Sırlar yalnız `supabase/functions/.env.local` içinde (git yok sayıyor, 600).
+- Sonuç: izin → refresh token Vault'ta → klasörler oluştu → repertuvar dosyası
+  yüklendi, doğrulandı, aynı baytlarla okundu.
+- Açık: yayına alma (ana sayfa + gizlilik politikası), uzak proje yönlendirme
+  adresi, uygulama ekranlarıyla gerçek Drive denemesi, deneme koro klasörünün
+  Drive'dan silinmesi.

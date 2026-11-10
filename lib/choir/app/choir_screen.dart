@@ -41,6 +41,8 @@ class ChoirScreen extends StatelessWidget {
               if (me?.part != null && a.includes(me!.part!)) a,
           ];
     final queue = store.reviewQueue(choirId);
+    final online = store.isOnline(choirId);
+    final leads = me?.leadsPart ?? false;
     final singers = store.singersOf(choirId);
     void push(Widget screen) => Navigator.of(
       context,
@@ -58,6 +60,8 @@ class ChoirScreen extends StatelessWidget {
               icon: Ic.plus,
               onPressed: () => push(AssignmentEditor(choir: choir)),
             )
+          : online
+          ? null
           : OutlinedButton.icon(
               key: const Key('choir_open_file'),
               onPressed: () => openBundleFlow(context),
@@ -65,12 +69,12 @@ class ChoirScreen extends StatelessWidget {
               label: Text(text.openWorkFile),
             ),
       children: [
-        if (conductor)
+        if (conductor || leads)
           ChoirRow(
             key: const Key('choir_queue'),
             color: TC.sun,
             icon: Ic.headphones,
-            title: text.listeningQueue,
+            title: conductor ? text.listeningQueue : text.leaderQueue,
             subtitle: text.queueCount(queue.length),
             onTap: queue.isEmpty
                 ? null
@@ -123,18 +127,19 @@ class ChoirScreen extends StatelessWidget {
         if (!conductor && latest != null) ...[
           const SizedBox(height: 11),
           for (final p in latest.pieces) _PieceCard(piece: p, text: text),
-          Text(text.deviceOnly, style: TT.small),
+          if (!online) Text(text.deviceOnly, style: TT.small),
         ],
         if (conductor) ...[
-          Builder(
-            builder: (context) => ChoirRow(
-              key: const Key('choir_share'),
-              icon: Ic.share2,
-              title: text.shareChoir,
-              subtitle: text.shareChoirSub,
-              onTap: () => shareChoirPackage(context, choir),
+          if (!online)
+            Builder(
+              builder: (context) => ChoirRow(
+                key: const Key('choir_share'),
+                icon: Ic.share2,
+                title: text.shareChoir,
+                subtitle: text.shareChoirSub,
+                onTap: () => shareChoirPackage(context, choir),
+              ),
             ),
-          ),
           Caption(text.caps(text.singers)),
           if (singers.isEmpty) Text(text.singersEmpty, style: TT.small),
           for (final s in singers)
@@ -145,23 +150,25 @@ class ChoirScreen extends StatelessWidget {
             ),
         ],
         const SizedBox(height: 6),
-        TextLink(
-          text.leaveChoir,
-          onTap: () async {
-            final store = ChoirScope.read(context).store;
-            final nav = Navigator.of(context);
-            final ok = await confirmDialog(
-              context,
-              title: text.leaveTitle,
-              message: text.leaveBody,
-              cancel: text.cancel,
-              confirm: text.delete,
-            );
-            if (!ok) return;
-            nav.pop();
-            await store.forgetChoir(choir);
-          },
-        ),
+        // An online choir is left from its own page, where the server knows.
+        if (!online)
+          TextLink(
+            text.leaveChoir,
+            onTap: () async {
+              final store = ChoirScope.read(context).store;
+              final nav = Navigator.of(context);
+              final ok = await confirmDialog(
+                context,
+                title: text.leaveTitle,
+                message: text.leaveBody,
+                cancel: text.cancel,
+                confirm: text.delete,
+              );
+              if (!ok) return;
+              nav.pop();
+              await store.forgetChoir(choir);
+            },
+          ),
       ],
     );
   }

@@ -17,7 +17,7 @@ Future<RenderedPart> renderPiece({
   required PartMix mix,
 }) async {
   final asset = store.reference(piece.midiReferenceId!)!;
-  final bytes = await File(await store.mediaPath(asset.id)).readAsBytes();
+  final bytes = await File(await store.ensureMedia(asset.id)).readAsBytes();
   return _renderOff(
     bytes,
     asset.trackParts,

@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import '../../trainer/ui/kit.dart';
 import '../data/choir_bundle.dart';
 import '../domain/choir.dart';
+import '../online/online_choir_controller.dart';
+import '../online/online_section.dart';
 import 'assignment_screen.dart';
 import 'choir_scope.dart';
 import 'choir_screen.dart';
@@ -218,7 +220,18 @@ class ChoirTab extends StatelessWidget {
               child: Text(text.loadErrorBody, style: TT.body),
             ),
           ),
-        if (store.choirs.isEmpty)
+        if (OnlineChoirScope.maybeOf(context) != null) ...[
+          // Server build (ADR-041): the online choir leads; choirs kept on
+          // this device from packages stay reachable below it.
+          const OnlineChoirSection(),
+          // Mirrored online choirs open from the section above.
+          if (store.choirs.any((c) => !store.isOnline(c.id))) ...[
+            Caption(text.caps(text.deviceChoirs)),
+            for (final choir in store.choirs)
+              if (!store.isOnline(choir.id)) _ChoirCard(choir: choir),
+          ],
+          TextLink(text.openPackage, onTap: () => openBundleFlow(context)),
+        ] else if (store.choirs.isEmpty)
           ..._empty(context, text, create)
         else ...[
           Caption(text.caps(text.myChoirs)),

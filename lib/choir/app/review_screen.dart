@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import '../../trainer/ui/kit.dart';
 import '../audio/take_engine.dart';
 import '../domain/submission.dart';
+import '../online/choir_backend.dart';
 import 'choir_scope.dart';
 import 'choir_text.dart';
 import 'piece_audio.dart';
@@ -69,7 +70,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
     final id = _submission?.recordingId;
     if (id == null) return;
     try {
-      final path = await store.mediaPath(id);
+      final path = await store.ensureMedia(id);
       final length = await _player.open(path);
       if (mounted) setState(() => _length = length);
       final peaks = await peaksOfFile(path, _waveBars);
@@ -180,10 +181,53 @@ class _ReviewScreenState extends State<ReviewScreen> {
     }
   }
 
-  /// One send button, then the decision the singer needs to see.
+  bool get _saidSomething =>
+      _comment.text.trim().isNotEmpty ||
+      _marks.isNotEmpty ||
+      _voicePath != null;
+
+  /// One send button, then the decision the singer needs to see. A section
+  /// leader forwards (a note is optional) or asks for a retake.
   Future<void> _send(BuildContext button) async {
     final text = CT.of(context);
-    if (_comment.text.trim().isEmpty && _marks.isEmpty && _voicePath == null) {
+    final s = _submission;
+    if (s != null && ChoirScope.read(context).store.leadsReview(s)) {
+      final forward = await showTrainerSheet<bool>(
+        context,
+        (sheet) => Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(text.leaderDecideTitle, style: TT.h3),
+            const SizedBox(height: 14),
+            BigButton(
+              key: const Key('review_forward'),
+              label: text.forwardToConductor,
+              icon: Ic.send,
+              color: TC.sun,
+              onPressed: () => Navigator.pop(sheet, true),
+            ),
+            const SizedBox(height: 8),
+            OutlinedButton(
+              key: const Key('review_redo'),
+              onPressed: () => Navigator.pop(sheet, false),
+              child: Text(text.askRedo),
+            ),
+          ],
+        ),
+      );
+      if (forward == null || !mounted || !button.mounted) return;
+      if (!forward && !_saidSomething) {
+        toast(context, text.needFeedback);
+        return;
+      }
+      await _decide(
+        button,
+        forward ? ReviewOutcome.accepted : ReviewOutcome.revisionRequested,
+        leader: true,
+      );
+      return;
+    }
+    if (!_saidSomething) {
       toast(context, text.needFeedback);
       return;
     }
@@ -213,8 +257,13 @@ class _ReviewScreenState extends State<ReviewScreen> {
     if (outcome != null && button.mounted) await _decide(button, outcome);
   }
 
-  Future<void> _decide(BuildContext button, ReviewOutcome outcome) async {
+  Future<void> _decide(
+    BuildContext button,
+    ReviewOutcome outcome, {
+    bool leader = false,
+  }) async {
     final scope = ChoirScope.read(context);
+    final text = CT.of(context);
     final s = _submission;
     if (s == null) return;
     setState(() => _busy = true);
@@ -224,15 +273,38 @@ class _ReviewScreenState extends State<ReviewScreen> {
     final voice = _voicePath == null
         ? null
         : await scope.store.addMedia(_voicePath!, 'voice.wav');
-    final reviewed = await scope.store.review(
-      submission: s,
-      outcome: outcome,
-      text: _comment.text.trim(),
-      marks: _marks,
-      voiceNoteId: voice,
-    );
-    final path = await scope.bundles.exportFeedback(reviewed);
-    await scope.files.share(path, origin: origin);
+    final Submission reviewed;
+    try {
+      reviewed = leader
+          ? await scope.store.leaderDecide(
+              submission: s,
+              forward: outcome == ReviewOutcome.accepted,
+              text: _comment.text.trim(),
+              marks: _marks,
+              voiceNoteId: voice,
+            )
+          : await scope.store.review(
+              submission: s,
+              outcome: outcome,
+              text: _comment.text.trim(),
+              marks: _marks,
+              voiceNoteId: voice,
+            );
+    } on ChoirBackendException catch (e) {
+      if (mounted) {
+        setState(() => _busy = false);
+        toast(context, text.backendProblem(e.problem));
+      }
+      return;
+    }
+    // Online, the server already delivered it; on the device, the singer
+    // gets a file.
+    if (!scope.store.isOnline(s.choirId)) {
+      final path = await scope.bundles.exportFeedback(reviewed);
+      await scope.files.share(path, origin: origin);
+    } else if (leader && outcome == ReviewOutcome.accepted && mounted) {
+      toast(context, text.forwarded);
+    }
     nav.pop();
   }
 
@@ -264,7 +336,19 @@ class _ReviewScreenState extends State<ReviewScreen> {
       title: name,
       crumb: text.crumbReview,
       bottom: Builder(
-        builder: (button) => s.awaitsConductor
+        builder: (button) => store.isOnline(s.choirId)
+            ? (store.canDecide(s)
+                  ? BigButton(
+                      key: const Key('review_send'),
+                      label: store.leadsReview(s)
+                          ? text.forwardToConductor
+                          : text.sendFeedback,
+                      icon: Ic.send,
+                      busy: _busy,
+                      onPressed: () => _send(button),
+                    )
+                  : const SizedBox.shrink())
+            : s.awaitsConductor
             ? BigButton(
                 key: const Key('review_send'),
                 label: text.sendFeedback,
