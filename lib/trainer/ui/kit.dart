@@ -579,7 +579,11 @@ class HeroCard extends StatelessWidget {
         ],
       ),
       clipBehavior: Clip.antiAlias,
+      // passthrough: the content gets the card's full width. With the
+      // default loose fit a centred Column shrank to its widest line and sat
+      // on the left, leaving the right side of the card empty.
       child: Stack(
+        fit: StackFit.passthrough,
         children: [
           if (ring && orbs != HeroOrbs.none)
             ...switch (orbs) {
@@ -826,7 +830,7 @@ class TopBar extends StatelessWidget {
     child: Column(
       children: [
         SizedBox(
-          height: 44,
+          height: 48,
           child: Row(
             children: [
               leading ?? BackSquare(onTap: onBack),

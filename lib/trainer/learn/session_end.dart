@@ -185,6 +185,72 @@ class SessionEnd extends StatelessWidget {
             null,
           )
         : null;
+    // What was measured, not measured or experimental: one card, one row each.
+    final evidence = <_EvidenceRow>[
+      _EvidenceRow(
+        key: const Key('evidence_measured'),
+        status: measured
+            ? tr('ÖLÇÜLDÜ', 'MEASURED')
+            : tr('ÖLÇÜLMEDİ', 'NOT MEASURED'),
+        statusColor: measured ? TC.green : TC.muted,
+        title: !measured
+            ? tr('Dinleme yanıtları', 'Listening answers')
+            : weakest == null
+            ? tr(
+                'Tüm sesler ilk denemede doğru',
+                'Every sound right on the first try',
+              )
+            : tr(
+                '${label(weakest.key)} ayrımı',
+                'Telling ${label(weakest.key)} apart',
+              ),
+        body: !measured
+            ? tr(
+                'Yanıt olmadığı için doğru ya da yanlış sayılmadı.',
+                'With no answers, nothing counted as right or wrong.',
+              )
+            : weakest == null
+            ? tr(
+                'Bu turda karışan ses yok.',
+                'Nothing got mixed up this round.',
+              )
+            : missed.length == 1
+            ? tr(
+                '${weakest.value.$2 - weakest.value.$1} soruda karıştı',
+                'Mixed up in ${weakest.value.$2 - weakest.value.$1} questions',
+              )
+            : tr(
+                '${weakest.value.$2 - weakest.value.$1} soruda karıştı · '
+                    'toplam ${missed.length} seste hata var',
+                'Mixed up in ${weakest.value.$2 - weakest.value.$1} questions · '
+                    'mistakes on ${missed.length} sounds in all',
+              ),
+      ),
+      if (sang)
+        _EvidenceRow(
+          key: const Key('evidence_sing'),
+          status: tr('DENEYSEL', 'EXPERIMENTAL'),
+          statusColor: TC.amber,
+          title: tr('Söyle adımı', 'Singing step'),
+          body: tr(
+            'Söyleme puanlanmaz. Mikrofonu açtıysan gördüğün '
+                'sent farkı yalnız tanısaldı.',
+            'Singing is not scored. If you turned the microphone on, '
+                'the cent difference you saw was diagnostic only.',
+          ),
+        ),
+      if (store.breathedToday)
+        _EvidenceRow(
+          key: const Key('evidence_breath'),
+          status: tr('ÖLÇÜLMEDİ', 'NOT MEASURED'),
+          statusColor: TC.muted,
+          title: tr('Nefes', 'Breath'),
+          body: tr(
+            'Yönlendirme tamamlandı; kalite puanı üretilmedi.',
+            'Guidance completed; no quality score was produced.',
+          ),
+        ),
+    ];
     return Scaffold(
       backgroundColor: TC.canvas,
       body: Stack(
@@ -194,23 +260,39 @@ class SessionEnd extends StatelessWidget {
               children: [
                 Expanded(
                   child: ListView(
-                    padding: const EdgeInsets.fromLTRB(18, 24, 18, 16),
+                    padding: const EdgeInsets.fromLTRB(18, 28, 18, 16),
                     children: [
+                      // Centred header, like the result screen of every
+                      // competitor: what this was, what happened, one note.
                       Text(
                         (title ?? node?.title ?? kind.title).toUpperCase(),
+                        textAlign: TextAlign.center,
                         style: TT.caps.copyWith(color: color),
                       ),
                       const SizedBox(height: 6),
-                      Entrance(child: Text(verdict, style: TT.h2)),
+                      Entrance(
+                        child: Text(
+                          verdict,
+                          textAlign: TextAlign.center,
+                          style: TT.h2,
+                        ),
+                      ),
                       const SizedBox(height: 4),
-                      Entrance(index: 1, child: Text(note, style: TT.body)),
-                      const SizedBox(height: 18),
+                      Entrance(
+                        index: 1,
+                        child: Text(
+                          note,
+                          textAlign: TextAlign.center,
+                          style: TT.body,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
                       if (measured)
                         Entrance(
                           index: 2,
                           child: HeroCard(
                             ring: false,
-                            padding: const EdgeInsets.all(20),
+                            padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
                             child: Column(
                               children: [
                                 Semantics(
@@ -220,8 +302,8 @@ class SessionEnd extends StatelessWidget {
                                   ),
                                   excludeSemantics: true,
                                   child: SizedBox(
-                                    width: 128,
-                                    height: 128,
+                                    width: 140,
+                                    height: 140,
                                     // The ring fills up to the result.
                                     child: TweenAnimationBuilder<double>(
                                       tween: Tween(
@@ -248,7 +330,7 @@ class SessionEnd extends StatelessWidget {
                                               key: const Key('session_score'),
                                               style: const TextStyle(
                                                 color: Colors.white,
-                                                fontSize: 40,
+                                                fontSize: 44,
                                                 fontWeight: FontWeight.w800,
                                                 height: 1,
                                                 fontFeatures: [
@@ -256,7 +338,7 @@ class SessionEnd extends StatelessWidget {
                                                 ],
                                               ),
                                             ),
-                                            const SizedBox(height: 2),
+                                            const SizedBox(height: 4),
                                             Text(
                                               tr(
                                                 '/ ${s.total} ilk deneme',
@@ -273,7 +355,24 @@ class SessionEnd extends StatelessWidget {
                                     ),
                                   ),
                                 ),
-                                const SizedBox(height: 14),
+                                const SizedBox(height: 16),
+                                // One summary line instead of chips that
+                                // repeated the ring; XP stays in the details
+                                // (WIDE-03).
+                                Text(
+                                  tr(
+                                    '${percent(s.accuracy)} ilk denemede doğru',
+                                    '${percent(s.accuracy)} right on the first try',
+                                  ),
+                                  key: const Key('session_accuracy'),
+                                  textAlign: TextAlign.center,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
                                 Text(
                                   tr(
                                     '${kind.shortTitle} · dokunma yanıtlarından ölçüldü',
@@ -285,47 +384,20 @@ class SessionEnd extends StatelessWidget {
                                     fontSize: 12.5,
                                   ),
                                 ),
-                                const SizedBox(height: 12),
-                                // Wraps instead of overflowing on narrow screens
-                                // and large text.
-                                Wrap(
-                                  alignment: WrapAlignment.center,
-                                  spacing: 10,
-                                  runSpacing: 8,
-                                  children: [
-                                    _Stat(
-                                      value: percent(s.accuracy),
-                                      label: tr('ilk deneme', 'first try'),
-                                    ),
-                                    // Question count, not XP: XP is practice volume
-                                    // and lives in the details (WIDE-03).
-                                    _Stat(
-                                      value: '${s.total}',
-                                      label: tr('soru', 'questions'),
-                                    ),
-                                  ],
-                                ),
                               ],
                             ),
                           ),
                         ),
-                      if (store.practicedToday && store.streak > 0) ...[
-                        const SizedBox(height: 10),
-                        Container(
+                      if (store.practicedToday && store.streak > 0)
+                        Padding(
                           key: const Key('session_streak'),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 10,
-                          ),
-                          decoration: BoxDecoration(
-                            color: TC.sun.withValues(alpha: 0.25),
-                            borderRadius: BorderRadius.circular(14),
-                          ),
+                          padding: const EdgeInsets.only(top: 2, bottom: 6),
                           child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              const Icon(Ic.sun, color: TC.onSun),
-                              const SizedBox(width: 10),
-                              Expanded(
+                              const Icon(Ic.sun, color: TC.green, size: 18),
+                              const SizedBox(width: 6),
+                              Flexible(
                                 child: Text(
                                   tr(
                                     '${store.streak} gün üst üste çalıştın',
@@ -333,86 +405,39 @@ class SessionEnd extends StatelessWidget {
                                         ? 'You practised today'
                                         : 'You practised ${store.streak} days in a row',
                                   ),
-                                  style: TT.title.copyWith(color: TC.onSun),
+                                  style: TT.small.copyWith(
+                                    color: TC.ink,
+                                    fontWeight: FontWeight.w700,
+                                  ),
                                 ),
                               ),
                             ],
                           ),
                         ),
-                      ],
-                      const SizedBox(height: 12),
-                      _Evidence(
-                        key: const Key('evidence_measured'),
-                        status: measured
-                            ? tr('ÖLÇÜLDÜ', 'MEASURED')
-                            : tr('ÖLÇÜLMEDİ', 'NOT MEASURED'),
-                        statusColor: measured ? TC.green : TC.muted,
-                        title: !measured
-                            ? tr('Dinleme yanıtları', 'Listening answers')
-                            : weakest == null
-                            ? tr(
-                                'Tüm sesler ilk denemede doğru',
-                                'Every sound right on the first try',
-                              )
-                            : tr(
-                                '${label(weakest.key)} ayrımı',
-                                'Telling ${label(weakest.key)} apart',
-                              ),
-                        body: !measured
-                            ? tr(
-                                'Yanıt olmadığı için doğru ya da yanlış sayılmadı.',
-                                'With no answers, nothing counted as right or wrong.',
-                              )
-                            : weakest == null
-                            ? tr(
-                                'Bu turda karışan ses yok.',
-                                'Nothing got mixed up this round.',
-                              )
-                            : missed.length == 1
-                            ? tr(
-                                '${weakest.value.$2 - weakest.value.$1} soruda karıştı',
-                                'Mixed up in ${weakest.value.$2 - weakest.value.$1} questions',
-                              )
-                            : tr(
-                                '${weakest.value.$2 - weakest.value.$1} soruda karıştı · '
-                                    'toplam ${missed.length} seste hata var',
-                                'Mixed up in ${weakest.value.$2 - weakest.value.$1} questions · '
-                                    'mistakes on ${missed.length} sounds in all',
-                              ),
+                      const SizedBox(height: 8),
+                      AppCard(
+                        radius: 18,
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            for (var i = 0; i < evidence.length; i++) ...[
+                              if (i > 0)
+                                const Divider(height: 1, color: TC.line),
+                              evidence[i],
+                            ],
+                          ],
+                        ),
                       ),
-                      if (sang)
-                        _Evidence(
-                          key: Key('evidence_sing'),
-                          status: tr('DENEYSEL', 'EXPERIMENTAL'),
-                          statusColor: TC.amber,
-                          title: tr('Söyle adımı', 'Singing step'),
-                          body: tr(
-                            'Söyleme puanlanmaz. Mikrofonu açtıysan gördüğün '
-                                'sent farkı yalnız tanısaldı.',
-                            'Singing is not scored. If you turned the microphone on, '
-                                'the cent difference you saw was diagnostic only.',
-                          ),
-                        ),
-                      if (store.breathedToday)
-                        _Evidence(
-                          key: Key('evidence_breath'),
-                          status: tr('ÖLÇÜLMEDİ', 'NOT MEASURED'),
-                          statusColor: TC.muted,
-                          title: tr('Nefes', 'Breath'),
-                          body: tr(
-                            'Yönlendirme tamamlandı; kalite puanı üretilmedi.',
-                            'Guidance completed; no quality score was produced.',
-                          ),
-                        ),
                       if (nextStep != null) ...[
-                        const SizedBox(height: 4),
+                        const SizedBox(height: 10),
                         _NextStep(
                           title: nextStep.$1,
                           body: nextStep.$2,
                           action: nextStep.$3,
                         ),
                       ],
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 4),
                       Theme(
                         data: Theme.of(
                           context,
@@ -569,58 +594,64 @@ class SessionEnd extends StatelessWidget {
   }
 }
 
-/// The single suggested follow-up after a session (WIDE-03).
+/// The single suggested follow-up after a session (WIDE-03): one tappable
+/// row when it has an action, a plain line when it only informs.
 class _NextStep extends StatelessWidget {
   const _NextStep({required this.title, required this.body, this.action});
   final String title;
   final String body;
   final (String, VoidCallback)? action;
   @override
-  Widget build(BuildContext context) => Container(
-    key: const Key('session_next'),
-    padding: const EdgeInsets.all(12),
-    decoration: BoxDecoration(
-      color: TC.primarySoft,
-      borderRadius: BorderRadius.circular(15),
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Text(tr('SONRAKİ ADIM', 'NEXT STEP'), style: TT.caps),
-        const SizedBox(height: 6),
-        Row(
-          children: [
-            const Icon(Ic.sparkles, color: TC.primary),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: TT.title.copyWith(color: TC.primary, fontSize: 14.5),
-                  ),
-                  Text(body, style: TT.small),
-                ],
-              ),
+  Widget build(BuildContext context) {
+    final row = Padding(
+      padding: const EdgeInsets.fromLTRB(14, 12, 10, 12),
+      child: Row(
+        children: [
+          const Icon(Ic.sparkles, color: TC.primary, size: 22),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  tr('SONRAKİ ADIM', 'NEXT STEP'),
+                  style: TT.caps.copyWith(fontSize: 10),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  title,
+                  style: TT.title.copyWith(color: TC.primary, fontSize: 14.5),
+                ),
+                Text(body, style: TT.small),
+              ],
             ),
-          ],
-        ),
-        if (action != null) ...[
-          const SizedBox(height: 8),
-          SoftButton(
-            key: const Key('retry_missed'),
-            label: action!.$1,
-            onPressed: action!.$2,
           ),
+          if (action != null) ...[
+            const SizedBox(width: 8),
+            const Icon(Ic.chevronRight, color: TC.primary, size: 20),
+          ],
         ],
-      ],
-    ),
-  );
+      ),
+    );
+    return Material(
+      key: const Key('session_next'),
+      color: TC.primarySoft,
+      borderRadius: BorderRadius.circular(16),
+      clipBehavior: Clip.antiAlias,
+      child: action == null
+          ? row
+          : InkWell(
+              key: const Key('retry_missed'),
+              onTap: action!.$2,
+              child: Semantics(button: true, label: action!.$1, child: row),
+            ),
+    );
+  }
 }
 
-class _Evidence extends StatelessWidget {
-  const _Evidence({
+/// One line of the evidence card: a status tag, what it is about, the fact.
+class _EvidenceRow extends StatelessWidget {
+  const _EvidenceRow({
     super.key,
     required this.status,
     required this.statusColor,
@@ -633,23 +664,16 @@ class _Evidence extends StatelessWidget {
   final String body;
   @override
   Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.only(bottom: 8),
-    child: AppCard(
-      radius: 16,
-      padding: const EdgeInsets.fromLTRB(14, 13, 14, 13),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            status,
-            style: TT.caps.copyWith(fontSize: 10, color: statusColor),
-          ),
-          const SizedBox(height: 4),
-          Text(title, style: TT.title.copyWith(fontSize: 14.5)),
-          const SizedBox(height: 2),
-          Text(body, style: TT.small.copyWith(fontSize: 12.5)),
-        ],
-      ),
+    padding: const EdgeInsets.symmetric(vertical: 13),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(status, style: TT.caps.copyWith(fontSize: 10, color: statusColor)),
+        const SizedBox(height: 3),
+        Text(title, style: TT.title.copyWith(fontSize: 14.5)),
+        const SizedBox(height: 1),
+        Text(body, style: TT.small.copyWith(fontSize: 12.5)),
+      ],
     ),
   );
 }
@@ -715,33 +739,4 @@ class _ScoreRing extends CustomPainter {
 
   @override
   bool shouldRepaint(_ScoreRing old) => old.value != value;
-}
-
-class _Stat extends StatelessWidget {
-  const _Stat({required this.value, required this.label});
-  final String value;
-  final String label;
-  @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-    decoration: BoxDecoration(
-      color: TC.heroTile,
-      borderRadius: BorderRadius.circular(12),
-    ),
-    child: Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          value,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 14,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-        const SizedBox(width: 6),
-        Text(label, style: const TextStyle(color: TC.heroMuted, fontSize: 12)),
-      ],
-    ),
-  );
 }

@@ -577,69 +577,141 @@ class _RangeTestScreenState extends State<RangeTestScreen>
         final store = TrainerScope.of(context).store;
         final low = bounds.lowMidi;
         final high = bounds.highMidi;
-        return ListView(
-          padding: const EdgeInsets.all(24),
+        // Same shape as the lesson result: centred header, one hero with the
+        // result, supporting cards, the actions pinned under the scroll.
+        return Column(
           children: [
-            const Center(child: _IconTile(Ic.music2)),
-            const SizedBox(height: 8),
-            Text(
-              '${name(low)} – ${name(high)}',
-              key: const Key('range_result'),
-              textAlign: TextAlign.center,
-              style: TT.h1,
-            ),
-            const SizedBox(height: 4),
-            Text(
-              tr(
-                '${bounds.semitones} yarım ses · yaklaşık ${bounds.octaves.toStringAsFixed(1)} oktav · ${_ladder!.reached.length} nota tutturuldu',
-                '${bounds.semitones} semitones · about ${bounds.octaves.toStringAsFixed(1)} octaves · ${_ladder!.reached.length} notes matched',
-              ),
-              textAlign: TextAlign.center,
-              style: TT.body,
-            ),
-            if (_score case final score?) ...[
-              const SizedBox(height: 16),
-              _ScoreCard(score: score, rank: _rank, tests: _tests),
-            ],
-            const SizedBox(height: 20),
-            KeyboardMap(
-              low: (low - 3).clamp(rangeLadderNotes.first, low),
-              high: (high + 3).clamp(high, rangeLadderNotes.last),
-              reached: _ladder!.reached.toSet(),
-              notation: notation,
-              bracket: true,
-            ),
-            const SizedBox(height: 20),
-            _RangeChart(low: low, high: high, notation: notation),
-            const SizedBox(height: 20),
-            AppCard(
-              color: const Color(0xFFEEEBFF),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(18, 24, 18, 16),
                 children: [
-                  Text(tr('ÇALIŞMA ARALIĞI', 'PRACTICE RANGE'), style: TT.caps),
-                  const SizedBox(height: 4),
                   Text(
-                    store.part?.title ?? tr('Belirsiz', 'Unclear'),
-                    style: TT.h3,
+                    tr('SES ARALIĞI', 'VOCAL RANGE'),
+                    textAlign: TextAlign.center,
+                    style: TT.caps.copyWith(color: TC.koro),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    tr('Test tamamlandı', 'Test complete'),
+                    textAlign: TextAlign.center,
+                    style: TT.h2,
+                  ),
+                  const SizedBox(height: 18),
+                  HeroCard(
+                    ring: false,
+                    padding: const EdgeInsets.fromLTRB(20, 26, 20, 22),
+                    child: Column(
+                      children: [
+                        Text(
+                          '${name(low)} – ${name(high)}',
+                          key: const Key('range_result'),
+                          textAlign: TextAlign.center,
+                          style: TT.h1.copyWith(color: Colors.white),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          tr(
+                            '${bounds.semitones} yarım ses · yaklaşık ${bounds.octaves.toStringAsFixed(1)} oktav · ${_ladder!.reached.length} nota tutturuldu',
+                            '${bounds.semitones} semitones · about ${bounds.octaves.toStringAsFixed(1)} octaves · ${_ladder!.reached.length} notes matched',
+                          ),
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            color: TC.heroMuted,
+                            fontSize: 12.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (_score case final score?) ...[
+                    _ScoreCard(score: score, rank: _rank, tests: _tests),
+                    const SizedBox(height: 10),
+                  ],
+                  AppCard(
+                    radius: 18,
+                    padding: const EdgeInsets.fromLTRB(12, 14, 12, 14),
+                    child: KeyboardMap(
+                      low: (low - 3).clamp(rangeLadderNotes.first, low),
+                      high: (high + 3).clamp(high, rangeLadderNotes.last),
+                      reached: _ladder!.reached.toSet(),
+                      notation: notation,
+                      bracket: true,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  const SizedBox(height: 10),
+                  Container(
+                    key: const Key('range_practice_part'),
+                    padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+                    decoration: BoxDecoration(
+                      color: TC.primarySoft,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          tr('ÇALIŞMA ARALIĞI', 'PRACTICE RANGE'),
+                          style: TT.caps.copyWith(fontSize: 10),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          store.part?.title ?? tr('Belirsiz', 'Unclear'),
+                          style: TT.title.copyWith(color: TC.primary),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          tr(
+                            'Dersler bu aralıkta çalar; Ayarlar\'dan değiştirebilirsin. Bu bir ses tipi kararı değildir: ses rengi, geçiş bölgeleri ve rahat tessitura ölçülmedi.',
+                            'Lessons play in this range; you can change it in Settings. This is not a voice type: timbre, passaggi and comfortable tessitura were not measured.',
+                          ),
+                          style: TT.small,
+                        ),
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 4),
-                  Text(
-                    tr(
-                      'Dersler bu aralıkta çalar; Ayarlar\'dan değiştirebilirsin. Bu bir ses tipi kararı değildir: ses rengi, geçiş bölgeleri ve rahat tessitura ölçülmedi.',
-                      'Lessons play in this range; you can change it in Settings. This is not a voice type: timbre, passaggi and comfortable tessitura were not measured.',
+                  // The voice-part comparison is reference material, one tap
+                  // away instead of a second chart on the page.
+                  Theme(
+                    data: Theme.of(
+                      context,
+                    ).copyWith(dividerColor: Colors.transparent),
+                    child: ExpansionTile(
+                      key: const Key('range_parts'),
+                      tilePadding: const EdgeInsets.symmetric(horizontal: 4),
+                      childrenPadding: const EdgeInsets.fromLTRB(4, 0, 4, 8),
+                      title: Text(
+                        tr(
+                          'SES GRUPLARIYLA KARŞILAŞTIR',
+                          'COMPARE WITH VOICE PARTS',
+                        ),
+                        style: TT.caps,
+                      ),
+                      children: [
+                        _RangeChart(low: low, high: high, notation: notation),
+                      ],
                     ),
-                    style: TT.small,
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 20),
-            BigButton(
-              label: tr('Bitti', 'Done'),
-              onPressed: () => Navigator.pop(context),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  BigButton(
+                    label: tr('Bitti', 'Done'),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                  TextLink(
+                    tr('Testi tekrarla', 'Repeat the test'),
+                    onTap: _restart,
+                  ),
+                ],
+              ),
             ),
-            TextLink(tr('Testi tekrarla', 'Repeat the test'), onTap: _restart),
           ],
         );
     }
@@ -683,6 +755,7 @@ class _ScoreCard extends StatelessWidget {
     ];
     return AppCard(
       key: const Key('range_score'),
+      radius: 18,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

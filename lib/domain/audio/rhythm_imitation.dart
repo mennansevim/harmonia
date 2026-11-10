@@ -37,9 +37,12 @@ class RhythmImitationOutcome {
     this.guided = false,
     this.referenceOnsetsMs = const [],
     this.userOnsetsMs = const [],
+    this.tempoFitted = false,
   });
 
-  static const version = 'rhythm-imitation-1/first-tap-anchor';
+  /// v2 (2026-11-10, user decision: echoes were too hard to pass): wider
+  /// windows below and a gentle tempo fit. v1 results form their own cohort.
+  static const version = 'rhythm-imitation-2/first-tap-anchor-tempo-fit';
 
   final RhythmImitationStatus status;
 
@@ -58,9 +61,22 @@ class RhythmImitationOutcome {
   /// is a definition, so it is never a timing measurement.
   final List<int> referenceOnsetsMs, userOnsetsMs;
 
-  /// The evaluator's unchanged windows, mirrored for display.
-  static const matchToleranceMs = RhythmAnalysisDefaults.toleranceMs;
-  static const onTimeToleranceMs = RhythmAnalysisDefaults.onTimeToleranceMs;
+  /// True when the taps were scaled to the reference span before matching
+  /// (see [tempoFitMin]); [userOnsetsMs] are then the scaled taps.
+  final bool tempoFitted;
+
+  /// Echo windows. Listen-then-repeat has no shared clock and touch adds
+  /// its own jitter, so a tap within ±[onTimeToleranceMs] is on time (v1:
+  /// 10 ms) and within ±[matchToleranceMs] still the same beat (v1: 120 ms).
+  /// Wider than [RhythmAnalysisDefaults]; used only by this exercise.
+  static const matchToleranceMs = 160;
+  static const onTimeToleranceMs = 50;
+
+  /// When every beat was tapped and the overall speed is within this
+  /// ratio of the reference, taps are scaled to the reference span first,
+  /// so a steady but slightly slow/fast echo is not read as a row of late or
+  /// early beats. [spanRatio] still reports the speed.
+  static const tempoFitMin = 0.8, tempoFitMax = 1.25;
 
   bool get isMeasured => status == RhythmImitationStatus.measured;
 
@@ -101,6 +117,7 @@ class RhythmImitationOutcome {
             ).toJson(),
         'retentionCheck': retentionCheck,
         'spanRatio': spanRatio,
+        'tempoFitted': tempoFitted,
         if (a != null) ...{
           'matched': a.matchedCount,
           'missed': a.missedCount,
@@ -292,9 +309,25 @@ class RhythmImitationEvaluator {
       for (final t in tapTimestamps)
         (t - first).inMicroseconds ~/ 1000 + reference.first,
     ];
+    final referenceSpan = reference.last - reference.first;
+    final userSpan = user.last - user.first;
+    final ratio = userSpan / referenceSpan;
+    final fit =
+        user.length == reference.length &&
+        userSpan > 0 &&
+        ratio >= RhythmImitationOutcome.tempoFitMin &&
+        ratio <= RhythmImitationOutcome.tempoFitMax;
+    final compared = fit
+        ? [
+            for (final u in user)
+              ((u - user.first) / ratio).round() + user.first,
+          ]
+        : user;
     final request = RhythmAnalysisRequest(
       expectedOnsetsMs: reference.sublist(1),
-      userOnsetsMs: user.sublist(1),
+      userOnsetsMs: compared.sublist(1),
+      toleranceMs: RhythmImitationOutcome.matchToleranceMs,
+      onTimeToleranceMs: RhythmImitationOutcome.onTimeToleranceMs,
     );
     final analysis = await EventRhythmAnalyzer().analyze(request);
     // Same early/late deadband the analyzer uses for its counts.
@@ -325,17 +358,16 @@ class RhythmImitationEvaluator {
           offsetMs: step.offsetMs,
         ),
     ];
-    final referenceSpan = reference.last - reference.first;
-    final userSpan = user.last - user.first;
     return RhythmImitationOutcome._(
       status: RhythmImitationStatus.measured,
       analysis: analysis,
       timeline: List.unmodifiable(timeline),
-      spanRatio: userSpan / referenceSpan,
+      spanRatio: ratio,
       referencePlays: referencePlays,
       guided: guided,
       referenceOnsetsMs: List.unmodifiable(reference),
-      userOnsetsMs: List.unmodifiable(user),
+      userOnsetsMs: List.unmodifiable(compared),
+      tempoFitted: fit,
     );
   }
 }

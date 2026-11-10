@@ -51,23 +51,49 @@ void main() {
     expect(o.tempoDiffers, isFalse);
   });
 
-  test('much slower tapping flags tempo and loses matches', () async {
+  test('a steady echo up to 25% off tempo is fitted, still flagged', () async {
     final o = await _eval(_taps([0, 900, 1800, 2700]));
     expect(o.spanRatio, closeTo(1.2, 0.01));
-    expect(o.tempoDiffers, isTrue);
+    expect(o.tempoFitted, isTrue);
+    expect(o.tempoDiffers, isTrue, reason: 'the speed hint still shows');
+    expect(o.analysis!.missedCount, 0);
+    expect(
+      o.timeline.skip(1).map((e) => e.verdict),
+      everyElement(BeatVerdict.onTime),
+    );
+  });
+
+  test('much slower tapping is not fitted and loses matches', () async {
+    final o = await _eval(_taps([0, 1050, 2100, 3150]));
+    expect(o.spanRatio, closeTo(1.4, 0.01));
+    expect(o.tempoFitted, isFalse);
     expect(o.analysis!.missedCount, greaterThan(0));
     expect(o.analysis!.timingAccuracy.value, lessThan(100));
   });
 
-  test('slight drag within tolerance is reported late, not missed', () async {
+  test('a slight steady drag now counts as on time', () async {
     final o = await _eval(_taps([0, 800, 1580, 2340]));
-    expect(o.analysis!.lateCount, 3);
     expect(o.analysis!.missedCount, 0);
-    expect(
-      o.timeline.skip(1).map((e) => e.verdict),
-      everyElement(BeatVerdict.late),
-    );
+    expect(o.analysis!.lateCount, 0);
     expect(o.tempoDiffers, isFalse);
+  });
+
+  test('one uneven beat inside the window is late, not missed', () async {
+    final o = await _eval(_taps([0, 750, 1600, 2250]));
+    expect(o.analysis!.missedCount, 0);
+    expect(o.analysis!.lateCount, 1);
+    expect(o.timeline[2].verdict, BeatVerdict.late);
+    expect(o.timeline[2].offsetMs, 100);
+  });
+
+  test('echo windows: 50 ms on time, 160 ms same beat', () async {
+    expect(RhythmImitationOutcome.onTimeToleranceMs, 50);
+    expect(RhythmImitationOutcome.matchToleranceMs, 160);
+    final near = await _eval(_taps([0, 790, 1500, 2250]));
+    expect(near.timeline[1].verdict, BeatVerdict.onTime);
+    final far = await _eval(_taps([0, 750, 1650, 2250]));
+    expect(far.timeline[2].verdict, BeatVerdict.late);
+    expect(far.analysis!.missedCount, 0);
   });
 
   test('same tap count with wrong rhythm is not success', () async {

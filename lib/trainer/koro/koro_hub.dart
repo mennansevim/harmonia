@@ -205,6 +205,7 @@ class _KoroHubState extends State<KoroHub> {
           RhythmImitationScreen(
             history: scope.history,
             patterns: draftAksakPatterns,
+            title: tr('Aksak ritim', 'Odd-metre rhythm'),
           ),
           legacy: true,
         ),

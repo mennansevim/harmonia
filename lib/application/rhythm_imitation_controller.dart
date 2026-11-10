@@ -273,6 +273,17 @@ class RhythmImitationController extends ChangeNotifier {
   /// Number of beats the current reference (pattern or excerpt) has.
   int get expectedTaps => _referenceMs.length;
 
+  /// The current reference onsets (pattern or excerpt), ms from 0. For
+  /// drawing the beat track only.
+  List<int> get referenceOnsetsMs => List.unmodifiable(_referenceMs);
+
+  /// Taps of the attempt so far, ms after the first tap (so the first tap
+  /// sits on the first beat). For live feedback only: the scored values are
+  /// the outcome's.
+  List<int> get liveTapsMs => [
+    for (final t in _taps) (t - _taps.first).inMicroseconds ~/ 1000,
+  ];
+
   Future<void> finish() async {
     if (phase != RhythmImitationPhase.tapping &&
         phase != RhythmImitationPhase.awaitingTaps) {

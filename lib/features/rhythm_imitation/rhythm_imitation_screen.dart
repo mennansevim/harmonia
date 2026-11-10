@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 
 import '../../app/theme/resonia_theme.dart';
@@ -13,13 +14,14 @@ import '../../domain/content/rhythm_patterns.dart';
 import '../../infrastructure/audio/click_track.dart';
 import '../../infrastructure/audio/tap_sound.dart';
 import '../../infrastructure/audio/just_audio_clip_player.dart';
-import '../common/sound/playback_visual.dart';
-import '../common/sound/waveform_playback_view.dart';
 import '../common/ui/resonia_ui.dart';
 import '../learning/next_step_text.dart';
 import '../learning/micro_lesson_screen.dart';
 import 'transient_alignment.dart';
 import '../../domain/lang.dart';
+import '../../domain/learning/rhythm_next_step.dart';
+import '../../trainer/ui/kit.dart';
+import '../../trainer/ui/rhythm_track.dart';
 
 class RhythmImitationScreen extends StatefulWidget {
   const RhythmImitationScreen({
@@ -30,6 +32,7 @@ class RhythmImitationScreen extends StatefulWidget {
     this.initialPatternId,
     this.retentionCheck = false,
     this.tapSound,
+    this.title,
   });
 
   /// The click heard on each tap. Defaults to the device player only when
@@ -40,27 +43,32 @@ class RhythmImitationScreen extends StatefulWidget {
   final ReferenceClipPlayer? player;
   final ResultHistoryRepository? history;
   final List<RhythmPattern>? patterns;
+
+  /// Top bar title; "Rhythm echo" by default.
+  final String? title;
   @override
   State<RhythmImitationScreen> createState() => _RhythmImitationScreenState();
 }
 
 class _RhythmImitationScreenState extends State<RhythmImitationScreen>
-    with WidgetsBindingObserver {
+    with WidgetsBindingObserver, SingleTickerProviderStateMixin {
   late final List<RhythmPattern> patterns = orderedEasyToHard(
     widget.patterns ?? draftRhythmPatterns,
   );
   late final RhythmImitationController controller;
-  late final VisualizingClipPlayer _visual;
+  late final Ticker _playhead;
   TapSound? _tapSound;
   bool _details = false;
+
+  /// Reference beats already heard while it plays; null otherwise.
+  int? _lit;
+  RhythmImitationPhase? _seenPhase;
 
   @override
   void initState() {
     super.initState();
     controller = RhythmImitationController(
-      player: _visual = VisualizingClipPlayer(
-        widget.player ?? JustAudioClipPlayer(),
-      ),
+      player: widget.player ?? JustAudioClipPlayer(),
       renderReference: (ms) => renderClickTrack(ms).encode(),
       initialPattern: patterns.firstWhere(
         (p) => p.exercise.exercise.id == widget.initialPatternId,
@@ -69,10 +77,35 @@ class _RhythmImitationScreenState extends State<RhythmImitationScreen>
       history: widget.history,
       catalog: patterns,
     )..retentionCheck = widget.retentionCheck;
+    controller.addListener(_onPhase);
+    _playhead = createTicker(_onPlayhead);
     _tapSound =
         widget.tapSound ??
         (widget.player == null ? (JustAudioTapSound()..warmUp()) : null);
     WidgetsBinding.instance.addObserver(this);
+  }
+
+  /// Lights the reference beats in time while the reference plays.
+  void _onPhase() {
+    final phase = controller.phase;
+    if (phase == _seenPhase) return;
+    _seenPhase = phase;
+    if (phase == RhythmImitationPhase.listening) {
+      _lit = 0;
+      if (_playhead.isActive) _playhead.stop();
+      _playhead.start();
+    } else {
+      _lit = null;
+      if (_playhead.isActive) _playhead.stop();
+    }
+  }
+
+  void _onPlayhead(Duration elapsed) {
+    final ms = elapsed.inMilliseconds;
+    final onsets = controller.referenceOnsetsMs;
+    final lit = onsets.where((o) => o <= ms).length;
+    if (lit != _lit) setState(() => _lit = lit);
+    if (ms > onsets.last + 400) _playhead.stop();
   }
 
   @override
@@ -86,6 +119,8 @@ class _RhythmImitationScreenState extends State<RhythmImitationScreen>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    controller.removeListener(_onPhase);
+    _playhead.dispose();
     controller.dispose();
     _tapSound?.close();
     super.dispose();
@@ -93,260 +128,410 @@ class _RhythmImitationScreenState extends State<RhythmImitationScreen>
 
   @override
   Widget build(BuildContext context) {
-    final text = Theme.of(context).textTheme;
     return ListenableBuilder(
       listenable: controller,
       builder: (context, _) {
         final c = controller;
-        // A finished attempt swaps the listen card and tap pad for the
-        // result and its actions, so nothing important sits below the fold.
         final finished = c.phase == RhythmImitationPhase.finished;
         final selectable =
             c.phase == RhythmImitationPhase.idle ||
             c.phase == RhythmImitationPhase.awaitingTaps ||
             c.phase == RhythmImitationPhase.finished;
-        final progress = switch (c.phase) {
-          RhythmImitationPhase.idle => c.referencePlays > 0 ? .34 : 0.0,
-          RhythmImitationPhase.listening => .2,
-          RhythmImitationPhase.awaitingTaps => .4,
-          RhythmImitationPhase.tapping => .7,
-          RhythmImitationPhase.evaluating => .9,
-          RhythmImitationPhase.finished || RhythmImitationPhase.closed => 1.0,
-        };
-        return LessonScaffold(
-          progress: progress,
-          top: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
+        final index = patterns.indexOf(c.pattern);
+        final protocol = c.pattern.exercise.protocol;
+        final o = c.outcome;
+        return Scaffold(
+          backgroundColor: TC.canvas,
+          body: SafeArea(
+            child: Column(
               children: [
-                LevelPicker(
-                  keyPrefix: 'rhythm',
-                  choices: [
-                    for (final p in patterns)
-                      LevelChoice(
-                        id: p.exercise.exercise.id,
-                        title: p.title,
-                        subtitle: p.description,
-                      ),
-                  ],
-                  selectedId: c.pattern.exercise.exercise.id,
-                  onSelected: selectable
-                      ? (id) => c.selectPattern(
-                          patterns.firstWhere(
-                            (p) => p.exercise.exercise.id == id,
-                          ),
-                        )
-                      : null,
+                TopBar(
+                  title: widget.title ?? tr('Ritim tekrarı', 'Rhythm echo'),
+                  progress: (index + 1) / patterns.length,
+                  progressColor: TC.koro,
                 ),
-                if (c.retentionCheck || c.isGuided)
-                  Padding(
-                    padding: const EdgeInsets.only(top: ResoniaSpacing.xs),
-                    child: Wrap(
-                      spacing: ResoniaSpacing.xs,
-                      runSpacing: ResoniaSpacing.xs,
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.fromLTRB(20, 4, 20, 16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        if (c.retentionCheck)
-                          StatusPill(
-                            tr('Tek dinleme', 'Single listen'),
-                            key: Key('rhythm_retention_label'),
-                            tone: PillTone.warning,
+                        Wrap(
+                          alignment: WrapAlignment.center,
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          spacing: 8,
+                          runSpacing: 6,
+                          children: [
+                            Tag(
+                              tr(
+                                'SEVİYE ${index + 1}/${patterns.length}',
+                                'LEVEL ${index + 1}/${patterns.length}',
+                              ),
+                              color: TC.koro,
+                            ),
+                            if (c.retentionCheck)
+                              Tag(
+                                tr('Tek dinleme', 'Single listen'),
+                                key: const Key('rhythm_retention_label'),
+                                color: TC.amber,
+                              ),
+                            if (c.isGuided)
+                              Tag(
+                                tr('Hedefli tekrar', 'Targeted repeat'),
+                                key: const Key('rhythm_guided_label'),
+                                color: TC.amber,
+                              ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Center(
+                          child: LevelPicker(
+                            keyPrefix: 'rhythm',
+                            choices: [
+                              for (final p in patterns)
+                                LevelChoice(
+                                  id: p.exercise.exercise.id,
+                                  title: p.title,
+                                  subtitle: p.description,
+                                ),
+                            ],
+                            selectedId: c.pattern.exercise.exercise.id,
+                            onSelected: selectable
+                                ? (id) => c.selectPattern(
+                                    patterns.firstWhere(
+                                      (p) => p.exercise.exercise.id == id,
+                                    ),
+                                  )
+                                : null,
                           ),
-                        if (c.isGuided)
-                          StatusPill(
-                            tr('Hedefli tekrar', 'Targeted repeat'),
-                            key: Key('rhythm_guided_label'),
-                            tone: PillTone.warning,
+                        ),
+                        Text(
+                          tr(
+                            '${c.expectedTaps} vuruş · ${protocol.tempoBpm.round()} BPM',
+                            '${c.expectedTaps} beats · ${protocol.tempoBpm.round()} BPM',
+                          ),
+                          textAlign: TextAlign.center,
+                          style: TT.small,
+                        ),
+                        if (c.pattern.review !=
+                            ContentReviewStatus.educatorApproved)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 4),
+                            child: Text(
+                              tr(
+                                'Taslak içerik — eğitimci onayı bekliyor. ${c.pattern.description}',
+                                'Draft content — awaiting educator approval. ${c.pattern.description}',
+                              ),
+                              key: const Key('rhythm_draft_label'),
+                              textAlign: TextAlign.center,
+                              style: TT.small.copyWith(
+                                fontSize: 11.5,
+                                color: TC.muted,
+                              ),
+                            ),
+                          ),
+                        const SizedBox(height: 14),
+                        _track(c),
+                        const SizedBox(height: 10),
+                        Text(
+                          _headline(c),
+                          key: const Key('rhythm_headline'),
+                          textAlign: TextAlign.center,
+                          style: TT.h3,
+                        ),
+                        const SizedBox(height: 4),
+                        Semantics(
+                          liveRegion: true,
+                          child: Text(
+                            _status(c),
+                            key: const Key('rhythm_status'),
+                            textAlign: TextAlign.center,
+                            style: TT.small,
+                          ),
+                        ),
+                        if (c.phase == RhythmImitationPhase.tapping)
+                          _LiveOffset(controller: c),
+                        if (c.tapsDuringReference > 0 && !finished)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 6),
+                            child: Text(
+                              tr(
+                                'Referans çalarken ${c.tapsDuringReference} dokunuş oldu; bunlar değerlendirilmedi.',
+                                '${c.tapsDuringReference} taps came while the reference played; they were not assessed.',
+                              ),
+                              textAlign: TextAlign.center,
+                              style: TT.small,
+                            ),
+                          ),
+                        if (c.playbackFailed)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 6),
+                            child: Text(
+                              tr(
+                                'Referans çalınamadı. Yeniden deneyebilirsin.',
+                                'The reference could not play. You can try again.',
+                              ),
+                              key: const Key('rhythm_playback_error'),
+                              textAlign: TextAlign.center,
+                              style: TT.small.copyWith(color: TC.coralDeep),
+                            ),
+                          ),
+                        if (o != null && finished) ...[
+                          const SizedBox(height: 14),
+                          _Result(outcome: o),
+                          if (c.isGuided)
+                            _GuidedActions(controller: c)
+                          else
+                            ..._resultActions(c, o),
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
+                if (!finished)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 14),
+                    child: Column(
+                      children: [
+                        _TapPad(controller: c, sound: _tapSound),
+                        const SizedBox(height: 10),
+                        if (c.phase == RhythmImitationPhase.tapping)
+                          BigButton(
+                            key: const Key('rhythm_finish'),
+                            onPressed: c.finish,
+                            icon: Ic.check,
+                            label: tr('Bitirdim', 'I am done'),
+                          )
+                        else
+                          BigButton(
+                            key: const Key('rhythm_listen'),
+                            onPressed: c.canListen ? c.listen : null,
+                            icon: Ic.volume2,
+                            color: c.referencePlays == 0 ? TC.sun : TC.card,
+                            label: c.referencePlays == 0
+                                ? tr(
+                                    'Dinle (0/${c.maxReferencePlays})',
+                                    'Listen (0/${c.maxReferencePlays})',
+                                  )
+                                : tr(
+                                    'Tekrar dinle (${c.referencePlays}/${c.maxReferencePlays})',
+                                    'Listen again (${c.referencePlays}/${c.maxReferencePlays})',
+                                  ),
                           ),
                       ],
                     ),
                   ),
               ],
             ),
-            const SizedBox(height: ResoniaSpacing.md),
-            Text(
-              c.isGuided
-                  ? tr(
-                      'Zor bölümü dinle, sonra tekrar et',
-                      'Hear the hard part, then repeat it',
-                    )
-                  : tr(
-                      'Dinle, sonra aynı ritme dokun',
-                      'Listen, then tap the same rhythm',
-                    ),
-              style: text.headlineSmall,
-            ),
-            if (!finished) ...[
-              const SizedBox(height: ResoniaSpacing.xs),
-              Text(
-                tr(
-                  'İlk dokunuşun başlangıç sayılır; sonrakiler tempoyla karşılaştırılır.',
-                  'Your first tap counts as the start; the rest are compared with the tempo.',
-                ),
-                style: text.bodyMedium?.copyWith(color: context.palette.muted),
-              ),
-            ],
-            if (c.pattern.review != ContentReviewStatus.educatorApproved)
-              Padding(
-                padding: const EdgeInsets.only(top: ResoniaSpacing.xs),
-                child: Text(
-                  tr(
-                    'Taslak içerik — eğitimci onayı bekliyor. ${c.pattern.description}',
-                    'Draft content — awaiting educator approval. ${c.pattern.description}',
-                  ),
-                  key: const Key('rhythm_draft_label'),
-                  style: text.bodySmall?.copyWith(color: context.palette.muted),
-                ),
-              ),
-            const SizedBox(height: ResoniaSpacing.md),
-            if (!finished) ...[
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(ResoniaSpacing.md),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      WaveformPlaybackView(
-                        playback: _visual.current,
-                        height: 64,
-                        idleLabel: tr(
-                          'Ritim burada çalacak',
-                          'The rhythm will play here',
-                        ),
-                      ),
-                      const SizedBox(height: ResoniaSpacing.sm),
-                      ChunkyButton(
-                        key: const Key('rhythm_listen'),
-                        onPressed: c.canListen ? c.listen : null,
-                        icon: Icons.volume_up_rounded,
-                        tone: c.referencePlays == 0
-                            ? ChunkyTone.primary
-                            : ChunkyTone.neutral,
-                        label: tr(
-                          'Dinle (${c.referencePlays}/${c.maxReferencePlays})',
-                          'Listen (${c.referencePlays}/${c.maxReferencePlays})',
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              _TapPad(controller: c, sound: _tapSound),
-            ],
-            Semantics(
-              liveRegion: true,
-              child: Text(
-                _status(c),
-                key: const Key('rhythm_status'),
-                style: text.titleMedium,
-              ),
-            ),
-            if (c.phase == RhythmImitationPhase.tapping) ...[
-              const SizedBox(height: ResoniaSpacing.sm),
-              ChunkyButton(
-                key: const Key('rhythm_finish'),
-                onPressed: c.finish,
-                tone: ChunkyTone.success,
-                icon: Icons.check_rounded,
-                label: tr('Bitirdim', 'I am done'),
-              ),
-            ],
-            if (c.tapsDuringReference > 0 && !finished)
-              Text(
-                tr(
-                  'Referans çalarken ${c.tapsDuringReference} dokunuş oldu; bunlar değerlendirilmedi.',
-                  '${c.tapsDuringReference} taps came while the reference played; they were not assessed.',
-                ),
-              ),
-            if (c.playbackFailed)
-              Text(
-                tr(
-                  'Referans çalınamadı. Yeniden deneyebilirsin.',
-                  'The reference could not play. You can try again.',
-                ),
-                key: Key('rhythm_playback_error'),
-              ),
-            if (c.outcome case final o? when finished) ...[
-              const SizedBox(height: ResoniaSpacing.sm),
-              _Result(outcome: o),
-              if (c.isGuided)
-                _GuidedActions(controller: c)
-              else ...[
-                const SizedBox(height: ResoniaSpacing.md),
-                if (c.nextStep != null)
-                  _NextStepCard(controller: c)
-                else
-                  ChunkyButton(
-                    key: const Key('rhythm_retry'),
-                    onPressed: c.retry,
-                    icon: Icons.replay_rounded,
-                    label: tr('Tekrar dene', 'Try again'),
-                  ),
-                if (c.suggestedGuidedSegment != null) ...[
-                  const SizedBox(height: ResoniaSpacing.sm),
-                  OutlinedButton.icon(
-                    key: const Key('rhythm_start_guided'),
-                    onPressed: c.startGuidedSegment,
-                    icon: const Icon(Icons.center_focus_strong_rounded),
-                    label: Text(
-                      tr('Zor bölümü çalış', 'Practise the hard part'),
-                    ),
-                  ),
-                ],
-                if (c.nextStep == null && c.followingPattern != null)
-                  TextButton(
-                    key: const Key('rhythm_next_pattern'),
-                    onPressed: c.advancePattern,
-                    child: Text(
-                      tr(
-                        'Sonraki desene geç: ${c.followingPattern!.title}',
-                        'Next pattern: ${c.followingPattern!.title}',
-                      ),
-                    ),
-                  ),
-                if (c.suggestedGuidedSegment != null)
-                  TextButton.icon(
-                    key: const Key('rhythm_concept_review'),
-                    onPressed: () => Navigator.of(context).push(
-                      MaterialPageRoute<void>(
-                        builder: (_) => MicroLessonScreen(
-                          lesson: draftMicroLessons
-                              .forSkill('pulse-tap')
-                              .single,
-                        ),
-                      ),
-                    ),
-                    icon: const Icon(Icons.menu_book_outlined),
-                    label: Text(
-                      tr(
-                        'Puls kavramı (isteğe bağlı taslak metin)',
-                        'The idea of pulse (optional draft text)',
-                      ),
-                    ),
-                  ),
-                if (o.isMeasured)
-                  TextButton(
-                    key: const Key('rhythm_details'),
-                    onPressed: () => setState(() => _details = !_details),
-                    child: Text(
-                      _details
-                          ? tr('Ayrıntıyı gizle', 'Hide details')
-                          : tr('Ölçüm ayrıntısı', 'Measurement details'),
-                    ),
-                  ),
-                if (_details && o.isMeasured) _Details(outcome: o),
-                if (_saveText(c) case final saved?)
-                  Text(
-                    saved,
-                    key: const Key('rhythm_saved'),
-                    style: text.bodySmall?.copyWith(
-                      color: context.palette.muted,
-                    ),
-                  ),
-              ],
-            ],
-          ],
+          ),
         );
       },
+    );
+  }
+
+  Widget _track(RhythmImitationController c) {
+    final o = c.outcome;
+    if (o != null &&
+        c.phase == RhythmImitationPhase.finished &&
+        o.isMeasured &&
+        o.referenceOnsetsMs.isNotEmpty) {
+      return RhythmTrack(
+        reference: o.referenceOnsetsMs,
+        taps: o.userOnsetsMs,
+        goodMs: RhythmImitationOutcome.onTimeToleranceMs,
+        windowMs: RhythmImitationOutcome.matchToleranceMs,
+        links: [
+          for (final e in o.timeline)
+            if (e.referenceIndex != null && e.userIndex != null)
+              RhythmLink(
+                e.referenceIndex!,
+                e.userIndex!,
+                e.verdict == BeatVerdict.anchor ? null : e.offsetMs,
+              ),
+        ],
+      );
+    }
+    return RhythmTrack(
+      reference: c.referenceOnsetsMs,
+      taps: c.phase == RhythmImitationPhase.tapping ? c.liveTapsMs : const [],
+      lit: _lit,
+      goodMs: RhythmImitationOutcome.onTimeToleranceMs,
+      windowMs: RhythmImitationOutcome.matchToleranceMs,
+    );
+  }
+
+  List<Widget> _resultActions(
+    RhythmImitationController c,
+    RhythmImitationOutcome o,
+  ) => [
+    const SizedBox(height: 14),
+    if (c.nextStep != null)
+      _NextStepCard(controller: c)
+    else
+      BigButton(
+        key: const Key('rhythm_retry'),
+        onPressed: c.retry,
+        icon: Ic.rotateCcw,
+        label: tr('Tekrar dinle ve dene', 'Listen and try again'),
+      ),
+    if (c.suggestedGuidedSegment != null) ...[
+      const SizedBox(height: 10),
+      SoftButton(
+        key: const Key('rhythm_start_guided'),
+        onPressed: c.startGuidedSegment,
+        label: tr('Zor bölümü çalış', 'Practise the hard part'),
+      ),
+    ],
+    if (c.nextStep == null && c.followingPattern != null)
+      TextLink(
+        tr(
+          'Sonraki desene geç: ${c.followingPattern!.title}',
+          'Next pattern: ${c.followingPattern!.title}',
+        ),
+        key: const Key('rhythm_next_pattern'),
+        onTap: c.advancePattern,
+      ),
+    if (c.suggestedGuidedSegment != null)
+      TextLink(
+        tr(
+          'Puls kavramı (isteğe bağlı taslak metin)',
+          'The idea of pulse (optional draft text)',
+        ),
+        key: const Key('rhythm_concept_review'),
+        onTap: () => Navigator.of(context).push(
+          MaterialPageRoute<void>(
+            builder: (_) => MicroLessonScreen(
+              lesson: draftMicroLessons.forSkill('pulse-tap').single,
+            ),
+          ),
+        ),
+      ),
+    if (o.isMeasured)
+      TextLink(
+        _details
+            ? tr('Ayrıntıyı gizle', 'Hide details')
+            : tr('Ölçüm ayrıntısı', 'Measurement details'),
+        key: const Key('rhythm_details'),
+        onTap: () => setState(() => _details = !_details),
+      ),
+    if (_details && o.isMeasured) _Details(outcome: o),
+    if (_saveText(c) case final saved?)
+      Text(
+        saved,
+        key: const Key('rhythm_saved'),
+        textAlign: TextAlign.center,
+        style: TT.small.copyWith(fontSize: 11.5, color: TC.muted),
+      ),
+  ];
+}
+
+/// The draft "clean echo" criterion, read off one outcome: every beat
+/// answered, nothing extra, mean offset within the mastery limit.
+bool _clean(RhythmImitationOutcome o) {
+  final a = o.analysis;
+  return o.isMeasured &&
+      a != null &&
+      a.missedCount == 0 &&
+      a.extraCount == 0 &&
+      (a.averageAbsoluteOffsetMs ?? 0) <=
+          RhythmNextStepPolicy.maxMeanAbsOffsetMs;
+}
+
+String _headline(RhythmImitationController c) {
+  switch (c.phase) {
+    case RhythmImitationPhase.idle:
+      return c.isGuided
+          ? tr(
+              'Zor bölümü dinle, sonra tekrar et',
+              'Hear the hard part, then repeat it',
+            )
+          : tr('Dinle, sonra aynı ritme dokun', 'Listen, then tap it back');
+    case RhythmImitationPhase.listening:
+      return tr('Dinle', 'Listen');
+    case RhythmImitationPhase.awaitingTaps:
+      return tr('Sıra sende', 'Your turn');
+    case RhythmImitationPhase.tapping:
+      return '${c.tapCount} / ${c.expectedTaps}';
+    case RhythmImitationPhase.evaluating:
+      return tr('Karşılaştırılıyor…', 'Comparing…');
+    case RhythmImitationPhase.finished:
+      final o = c.outcome;
+      if (o == null || !o.isMeasured) {
+        return tr('Ölçüm alınamadı', 'No measurement');
+      }
+      if (_clean(o)) return tr('Ritmi yakaladın', 'You caught the rhythm');
+      final a = o.analysis!;
+      return a.missedCount + a.extraCount == 0
+          ? tr('Çok yakın', 'Very close')
+          : tr('Henüz tam değil', 'Not quite yet');
+    case RhythmImitationPhase.closed:
+      return '';
+  }
+}
+
+/// Last tap against its nearest beat, as you play.
+class _LiveOffset extends StatelessWidget {
+  const _LiveOffset({required this.controller});
+  final RhythmImitationController controller;
+  @override
+  Widget build(BuildContext context) {
+    final taps = controller.liveTapsMs;
+    if (taps.length < 2) {
+      return const SizedBox(height: 28);
+    }
+    final off = RhythmTrack.liveOffsets(
+      controller.referenceOnsetsMs,
+      taps,
+    ).last;
+    final tone = RhythmTrack.toneOf(
+      off,
+      good: RhythmImitationOutcome.onTimeToleranceMs,
+      window: RhythmImitationOutcome.matchToleranceMs,
+    );
+    final label = switch (tone) {
+      RhythmTone.good || RhythmTone.anchor => tr('Tam zamanında', 'On time'),
+      RhythmTone.near =>
+        off > 0
+            ? tr('$off ms geç', '$off ms late')
+            : tr('${-off} ms erken', '${-off} ms early'),
+      RhythmTone.off => tr('Vuruşu kaçırdın', 'Off the beat'),
+    };
+    final colour = RhythmTrack.colorOf(tone);
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: Center(
+        child: Container(
+          key: const Key('rhythm_live_offset'),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+          decoration: BoxDecoration(
+            color: soft(colour),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 9,
+                height: 9,
+                decoration: BoxDecoration(
+                  color: colour,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              const SizedBox(width: 6),
+              Flexible(
+                child: Text(
+                  label,
+                  style: TT.small.copyWith(
+                    color: TC.ink,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
@@ -427,11 +612,8 @@ class _TapPadState extends State<_TapPad> with SingleTickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final palette = context.palette;
     final c = widget.controller;
     final active = c.acceptsTaps;
-    final text = Theme.of(context).textTheme;
     return Semantics(
       button: true,
       enabled: active,
@@ -453,77 +635,69 @@ class _TapPadState extends State<_TapPad> with SingleTickerProviderStateMixin {
           }
           if (!ResoniaMotion.reduced(context)) _pulse.forward(from: 0);
         },
-        child: Container(
-          height: 136,
-          padding: const EdgeInsets.all(ResoniaSpacing.md),
-          margin: const EdgeInsets.symmetric(vertical: ResoniaSpacing.sm),
-          decoration: BoxDecoration(
-            color: active ? palette.coral : scheme.surfaceContainerHigh,
-            borderRadius: BorderRadius.circular(28),
-            boxShadow: active
-                ? [
+        child: AnimatedBuilder(
+          animation: _pulse,
+          builder: (context, child) {
+            final t = Curves.easeOutCubic.transform(_pulse.value);
+            final pressed = _pulse.isAnimating && _pulse.value < 0.25;
+            return Container(
+              height: 132,
+              width: double.infinity,
+              margin: EdgeInsets.only(top: pressed ? 4 : 0),
+              decoration: BoxDecoration(
+                color: active ? TC.sun : const Color(0xFFEDE8EE),
+                borderRadius: BorderRadius.circular(28),
+                border: Border.all(
+                  color: active ? TC.ink : TC.line,
+                  width: active ? 2 : 1.5,
+                ),
+                boxShadow: [
+                  if (!pressed)
                     BoxShadow(
-                      color: Color.lerp(palette.coral, Colors.black, .28)!,
+                      color: active ? TC.limeShadow : TC.cardShadow,
                       offset: const Offset(0, 5),
                     ),
-                  ]
-                : null,
-          ),
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              AnimatedBuilder(
-                animation: _pulse,
-                builder: (context, _) {
-                  final t = Curves.easeOutCubic.transform(_pulse.value);
-                  return Opacity(
-                    opacity: (1 - t) * (_pulse.isAnimating ? 0.5 : 0),
-                    child: Container(
-                      width: 80 + 160 * t,
-                      height: 80 + 160 * t,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 4),
-                      ),
-                    ),
-                  );
-                },
+                ],
               ),
-              FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.touch_app_rounded,
-                      size: 32,
-                      color: active ? Colors.white : palette.muted,
-                    ),
-                    const SizedBox(height: ResoniaSpacing.xs),
-                    Text(
-                      active
-                          ? tr('Buraya dokun', 'Tap here')
-                          : tr(
-                              'Dinledikten sonra açılır',
-                              'Opens after you listen',
-                            ),
-                      textAlign: TextAlign.center,
-                      style: text.titleLarge?.copyWith(
-                        color: active ? Colors.white : palette.muted,
-                      ),
-                    ),
-                    if (c.phase == RhythmImitationPhase.tapping)
-                      Text(
-                        '${c.tapCount}',
-                        style: text.displaySmall?.copyWith(
-                          color: Colors.white,
-                          fontFeatures: const [FontFeature.tabularFigures()],
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  if (_pulse.isAnimating)
+                    Opacity(
+                      opacity: (1 - t) * 0.6,
+                      child: Container(
+                        width: 70 + 170 * t,
+                        height: 70 + 170 * t,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: TC.ink, width: 3),
                         ),
                       ),
-                  ],
-                ),
+                    ),
+                  child!,
+                ],
               ),
-            ],
+            );
+          },
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Ic.pointer, size: 30, color: active ? TC.onSun : TC.faint),
+                const SizedBox(height: 6),
+                Text(
+                  active
+                      ? tr('Buraya dokun', 'Tap here')
+                      : tr(
+                          'Dinledikten sonra açılır',
+                          'Opens after you listen',
+                        ),
+                  textAlign: TextAlign.center,
+                  style: TT.h3.copyWith(color: active ? TC.onSun : TC.faint),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -536,24 +710,21 @@ class _Result extends StatelessWidget {
   final RhythmImitationOutcome outcome;
   @override
   Widget build(BuildContext context) {
-    final text = Theme.of(context).textTheme;
     if (!outcome.isMeasured) {
-      return Card(
+      return AppCard(
         key: const Key('rhythm_result'),
-        child: Padding(
-          padding: const EdgeInsets.all(ResoniaSpacing.md),
-          child: Text(
-            outcome.status == RhythmImitationStatus.tooFewTaps
-                ? tr(
-                    'Ölçüm alınamadı — puanlanmadı. Ritmi karşılaştırmak için en az iki vuruş gerekli.',
-                    'No measurement — not scored. At least two taps are needed to compare the rhythm.',
-                  )
-                : tr(
-                    'Ölçüm alınamadı — puanlanmadı. Yeniden dene.',
-                    'No measurement — not scored. Try again.',
-                  ),
-            key: const Key('rhythm_result_summary'),
-          ),
+        child: Text(
+          outcome.status == RhythmImitationStatus.tooFewTaps
+              ? tr(
+                  'Ölçüm alınamadı — puanlanmadı. Ritmi karşılaştırmak için en az iki vuruş gerekli.',
+                  'No measurement — not scored. At least two taps are needed to compare the rhythm.',
+                )
+              : tr(
+                  'Ölçüm alınamadı — puanlanmadı. Yeniden dene.',
+                  'No measurement — not scored. Try again.',
+                ),
+          key: const Key('rhythm_result_summary'),
+          style: TT.body,
         ),
       );
     }
@@ -581,55 +752,93 @@ class _Result extends StatelessWidget {
       summary.write(tr(', ${a.lateCount} geç', ', ${a.lateCount} late'));
     }
     summary.write('.');
-    return Card(
+    final onTime = outcome.timeline
+        .where((e) => e.verdict == BeatVerdict.onTime)
+        .length;
+    final clean = _clean(outcome);
+    return AppCard(
       key: const Key('rhythm_result'),
-      child: Padding(
-        padding: const EdgeInsets.all(ResoniaSpacing.md),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // The status line already says a targeted repeat is not scored.
-            Text(
-              summary.toString(),
-              key: const Key('rhythm_result_summary'),
-              style: text.titleMedium,
+      color: clean ? TC.limeSoft : TC.card,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              for (final (n, label, colour) in [
+                (onTime, tr('zamanında', 'on time'), TC.teal),
+                (
+                  a.earlyCount + a.lateCount,
+                  tr('kaymış', 'off a bit'),
+                  TC.amber,
+                ),
+                (
+                  a.missedCount + a.extraCount,
+                  tr('eksik/fazla', 'missed/extra'),
+                  TC.coral,
+                ),
+              ])
+                Expanded(
+                  child: _Count(n: n, label: label, colour: colour),
+                ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          // The status line already says a targeted repeat is not scored.
+          Text(
+            summary.toString(),
+            key: const Key('rhythm_result_summary'),
+            style: TT.body.copyWith(color: TC.ink),
+          ),
+          if (outcome.tempoDiffers)
+            Padding(
+              padding: const EdgeInsets.only(top: 6),
+              child: Text(
+                outcome.spanRatio! > 1
+                    ? tr(
+                        'Genel olarak referanstan yavaş çaldın; vuruşlar giderek geç kaldı.',
+                        'Overall you played slower than the reference; the taps fell further behind.',
+                      )
+                    : tr(
+                        'Genel olarak referanstan hızlı çaldın; vuruşlar giderek erken geldi.',
+                        'Overall you played faster than the reference; the taps came earlier and earlier.',
+                      ),
+                key: const Key('rhythm_tempo_hint'),
+                style: TT.small.copyWith(color: TC.warn),
+              ),
             ),
-            if (outcome.tempoDiffers)
-              Padding(
-                padding: const EdgeInsets.only(top: ResoniaSpacing.xs),
-                child: Text(
-                  outcome.spanRatio! > 1
-                      ? tr(
-                          'Genel olarak referanstan yavaş çaldın; vuruşlar giderek geç kaldı.',
-                          'Overall you played slower than the reference; the taps fell further behind.',
-                        )
-                      : tr(
-                          'Genel olarak referanstan hızlı çaldın; vuruşlar giderek erken geldi.',
-                          'Overall you played faster than the reference; the taps came earlier and earlier.',
-                        ),
-                  key: const Key('rhythm_tempo_hint'),
-                ),
-              ),
-            if (TransientAlignmentData.fromOutcome(outcome) case final data?)
-              Padding(
-                padding: const EdgeInsets.only(top: ResoniaSpacing.sm),
-                child: TransientAlignmentView(
-                  key: ObjectKey(outcome),
-                  data: data,
-                  showSnapToggle: !outcome.guided,
-                ),
-              )
-            else
-              // Without the graph the per-beat list is the only timeline.
-              Padding(
-                padding: const EdgeInsets.only(top: ResoniaSpacing.sm),
-                child: _BeatChips(outcome: outcome),
-              ),
-          ],
-        ),
+        ],
       ),
     );
   }
+}
+
+class _Count extends StatelessWidget {
+  const _Count({required this.n, required this.label, required this.colour});
+  final int n;
+  final String label;
+  final Color colour;
+  @override
+  Widget build(BuildContext context) => Column(
+    children: [
+      Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 10,
+            height: 10,
+            decoration: BoxDecoration(color: colour, shape: BoxShape.circle),
+          ),
+          const SizedBox(width: 5),
+          Text('$n', style: TT.h2),
+        ],
+      ),
+      Text(
+        label,
+        textAlign: TextAlign.center,
+        style: TT.small.copyWith(fontSize: 11.5),
+      ),
+    ],
+  );
 }
 
 class _BeatChips extends StatelessWidget {
@@ -659,34 +868,32 @@ class _GuidedActions extends StatelessWidget {
   Widget build(BuildContext context) {
     final next = controller.followingPattern;
     return Padding(
-      padding: const EdgeInsets.only(top: ResoniaSpacing.sm),
+      padding: const EdgeInsets.only(top: 14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          ChunkyButton(
+          BigButton(
             key: const Key('rhythm_exit_guided'),
             onPressed: controller.exitGuidedSegment,
-            icon: Icons.arrow_forward_rounded,
+            icon: Ic.arrowRight,
             label: tr(
               'Devam: tam deseni çal',
               'Continue: play the full pattern',
             ),
           ),
-          TextButton(
+          TextLink(
+            tr('Bu bölümü tekrar et', 'Repeat this part'),
             key: const Key('rhythm_retry'),
-            onPressed: controller.retry,
-            child: Text(tr('Bu bölümü tekrar et', 'Repeat this part')),
+            onTap: controller.retry,
           ),
           if (next != null)
-            TextButton(
-              key: const Key('rhythm_next_pattern'),
-              onPressed: controller.advancePattern,
-              child: Text(
-                tr(
-                  'Sonraki desene geç: ${next.title}',
-                  'Skip to the next pattern: ${next.title}',
-                ),
+            TextLink(
+              tr(
+                'Sonraki desene geç: ${next.title}',
+                'Skip to the next pattern: ${next.title}',
               ),
+              key: const Key('rhythm_next_pattern'),
+              onTap: controller.advancePattern,
             ),
         ],
       ),
@@ -760,11 +967,19 @@ class _Details extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (TransientAlignmentData.fromOutcome(outcome) != null)
+          if (TransientAlignmentData.fromOutcome(outcome) case final data?)
             Padding(
               padding: const EdgeInsets.only(bottom: ResoniaSpacing.sm),
-              child: _BeatChips(outcome: outcome),
+              child: TransientAlignmentView(
+                key: ObjectKey(outcome),
+                data: data,
+                showSnapToggle: !outcome.guided,
+              ),
             ),
+          Padding(
+            padding: const EdgeInsets.only(bottom: ResoniaSpacing.sm),
+            child: _BeatChips(outcome: outcome),
+          ),
           Text(
             tr(
               'Deneysel zamanlama puanı: ${a.timingAccuracy.value?.toStringAsFixed(0) ?? "Ölçülmedi"}',
@@ -801,34 +1016,31 @@ class _NextStepCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final (title, reason, action) = nextStepText(controller.nextStep!);
-    return Card(
+    return AppCard(
       key: const Key('rhythm_next_step'),
-      child: Padding(
-        padding: const EdgeInsets.all(ResoniaSpacing.md),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              tr('Sonraki adım', 'Next step'),
-              style: Theme.of(context).textTheme.labelLarge,
-            ),
-            Text(title, style: Theme.of(context).textTheme.titleMedium),
-            Text(reason),
-            if (action.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(top: ResoniaSpacing.sm),
-                child: FilledButton(
-                  key: const Key('rhythm_apply_next'),
-                  onPressed: controller.applyNextStep,
-                  child: Text(action),
-                ),
-              ),
-            Text(
-              draftCriterionNote,
-              style: Theme.of(context).textTheme.bodySmall,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(tr('SONRAKİ ADIM', 'NEXT STEP'), style: TT.crumb),
+          const SizedBox(height: 4),
+          Text(title, style: TT.h3),
+          const SizedBox(height: 2),
+          Text(reason, style: TT.body),
+          if (action.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            BigButton(
+              key: const Key('rhythm_apply_next'),
+              onPressed: controller.applyNextStep,
+              icon: Ic.arrowRight,
+              label: action,
             ),
           ],
-        ),
+          const SizedBox(height: 8),
+          Text(
+            draftCriterionNote,
+            style: TT.small.copyWith(fontSize: 11, color: TC.muted),
+          ),
+        ],
       ),
     );
   }

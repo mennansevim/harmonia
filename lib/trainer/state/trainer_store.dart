@@ -211,6 +211,9 @@ class TrainerStore extends ChangeNotifier {
   /// Clap-back rhythm reached (0-based, easy to hard). Practice progress only.
   int clapLevel = 0;
 
+  /// Look of the clapping hands ([ClapStyle] index). Cosmetic only.
+  int clapStyle = 0;
+
   /// App language picked in Settings: 'tr', 'en', or null for the device's.
   String? language;
 
@@ -317,6 +320,7 @@ class TrainerStore extends ChangeNotifier {
     rangeScores.clear();
     melodyEchoLevel = 0;
     clapLevel = 0;
+    clapStyle = 0;
     breathDay = null;
     echoLast = null;
     echoDay = null;
@@ -602,6 +606,7 @@ class TrainerStore extends ChangeNotifier {
     'rangeScoreModel': rangeScoreModelVersion,
     'melodyEchoLevel': melodyEchoLevel,
     'clapLevel': clapLevel,
+    'clapStyle': clapStyle,
     'breathDay': breathDay,
     'echoLast': echoLast?.id,
     'echoDay': echoDay,
@@ -735,6 +740,7 @@ class TrainerStore extends ChangeNotifier {
       );
     melodyEchoLevel = (get<int>(doc, 'melodyEchoLevel') ?? 0).clamp(0, 99);
     clapLevel = (get<int>(doc, 'clapLevel') ?? 0).clamp(0, 99);
+    clapStyle = (get<int>(doc, 'clapStyle') ?? 0).clamp(0, 9);
     breathDay = get<String>(doc, 'breathDay');
     echoLast = EchoStepInfo.fromId(get<String>(doc, 'echoLast'));
     echoDay = get<String>(doc, 'echoDay');

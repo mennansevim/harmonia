@@ -4798,3 +4798,100 @@ oturumuyla iş bölümü yapıldı; sayı/yıldız düzeltmeleri oradan geldi.
   veya uydurulmadı; ölçüt sayıları öneri; alkış, aralık ve kart analizleri
   için betik ve uygulama içi izinli günlük dışa aktarma YAZILMADI; telefon
   CPU/frame süresi ölçülmedi; hukuk incelemesi ve eğitimci rubrik onayı yok.
+
+### 2026-11-10 — Alkışla ritim: 10 el alkışı animasyonu + kayıtlı alkış sesi yuvası
+- `lib/trainer/koro/clap_stage.dart` (yeni): `ClapStage` + `ClapCue` +
+  `ClapStagePainter`. Ortak hareket modeli: dinleme sırasında eller bir
+  sonraki vuruşa önceden kapanır (`expect`, en fazla 180 ms / aralığın %60'ı,
+  hızlanan yaklaşma), temasta avuç basılır, parmaklar geri esner, avuç
+  kızarır, 1.6 px sarsıntı; ardından kritik sönümlü geri açılma. Öğrencinin
+  alkışında (önceden bilinmez) eller anında kapanıp açılır. 3/4 görünüm:
+  ön-yüz el, yaklaşırken birbirine döner (x daralması), temasta biri öne biner.
+  Ticker yalnız hareket varken çalışır; azaltılmış harekette yalnız kısa temas.
+- 10 stil (`ClapStyle`): Klasik, Ses halkası, Kıvılcım, Hız izi, Tebeşir tozu,
+  Palmas (flamenko, parmaklar avuca), Kapalı avuç (boğuk, hava cebi), Işık,
+  Dalga formu, Notalar. Seçim alttaki çipten açılan sayfada (hepsi aynı ritmi
+  döngüde çalar); `TrainerStore.clapStyle` (geriye uyumlu, varsayılan Klasik).
+- Ses: kullanıcının verdiği `assets/audio/post-punk-clap.wav` (stereo 44.1 kHz,
+  0.39 s) `afconvert` ile mono PCM16 48 kHz `assets/audio/clap/clap.wav`'a
+  çevrildi ve pubspec'e eklendi. `loadClapSample`/`prepareClapSample`:
+  yeniden örnekleme, baştaki sessizliği kırpma, 400 ms, tepe 0.9; okunamazsa
+  sentez `renderClap` çalar. Lisans/kaynak kullanıcıdan teyit bekliyor.
+  Mikrofon alkış algılayıcısı (`ClapOnsetDetector`) bu sesle yeniden
+  ayarlanmadı; dinleme sesi hoparlörden gelir, öğrenci turunda çalmaz.
+- Testler `test/trainer/clap_stage_test.dart`: 10 stil × 5 faz × reduced boyama,
+  önceden kapanma ve durulma, örnek kırpma/normalizasyon, seçim + kalıcılık.
+- Kalite kapısı: format+analyze+test temiz, 1544 test + 2 skip.
+- Sınırlar: gerçek cihazda kare süresi/akıcılık ölçülmedi; kayıtlı sesin
+  lisansı teyit edilmedi; ses ile görsel temasın cihazdaki gecikme hizası denenmedi.
+
+### 2026-11-10 — Kayıtlı alkışta art arda çalışta patlama önlemi
+- Sorun: hızlı ritimde bir alkışın ~300 ms kuyruğu sonrakine biniyordu; toplam
+  1'i aşınca sert kırpma (çıtırtı) oluyordu; iz son alkıştan 300 ms sonra
+  kesiliyordu.
+- `renderClapTrack`: davul makinesi "choke" grubu gibi her yeni alkış
+  öncekinin kuyruğunu 6 ms'de söndürür (en çok 2 ses, yalnız 6 ms); iz son
+  alkış tamamen sönene kadar sürer; tepe >0.95 ise tüm iz ölçeklenir, asla
+  kırpılmaz. `prepareClapSample`: DC giderme, 0.5 ms fade-in, tepe 0.8
+  (`clapSamplePeak`) headroom.
+- Ölçüm (gerçek kayıtla, 16 alkış, 60/90/136/273 ms aralık): tepe 0.80,
+  tam ölçek örnek 0, iz 0 ile biter, örnekler arası en büyük sıçrama tek
+  alkışın kendi atağını aşmaz. Testle sabitlendi. Kalite kapısı: 1545 test
+  + 2 skip. Cihaz hoparlöründe dinleme denenmedi.
+
+### 2026-11-10 — Sonuç ekranı (SessionEnd) sadeleştirme + HeroCard genişlik hatası
+- Hata: `HeroCard` içindeki `Stack` varsayılan gevşek fit ile içeriği en geniş
+  satırına daraltıp sola yaslıyordu; ortalanmış skor halkası ve çipler kartın
+  solunda kalıyor, sağ taraf boş görünüyordu. `StackFit.passthrough` ile içerik
+  kartın tüm genişliğini alır (tüm HeroCard kullanımları için geçerli).
+- `lib/trainer/learn/session_end.dart` (tüm ders/ara durak/serbest çalışma
+  sonuçları): başlık-hüküm-not ortalandı; halka büyütüldü; halkayı tekrar eden
+  "%90 ilk deneme" / "10 soru" çipleri yerine tek özet satırı
+  ("%90 ilk denemede doğru") + ölçüm kaynağı satırı. Sarı seri bandı ince tek
+  satıra indi. Ölçüldü/Ölçülmedi/Deneysel kartları tek kartta satırlara
+  birleşti (durum etiketleri ve metinler aynı). "Sonraki adım" iç içe buton
+  yerine tek dokunulabilir satır (`retry_missed` satırın kendisi). XP ve soru
+  bazlı ayrıntı açılır bölümde kaldı. Ölçüm, skor, eşik ve kayıt mantığı
+  değişmedi.
+- Rakip inceleme: `design-exports/rakip-vokal-kocu` (Simply Sing sonuç ekranı:
+  ortalı başlık, tek skor görseli, kısa metrik satırı, tek ana aksiyon).
+- Test: `result_language_test` "soru" çipi beklentisi özet satırına güncellendi.
+  `test/trainer` 344 test geçti; format temiz; analyze yalnız bu işe ait
+  olmayan `lib/trainer/ui/rhythm_track.dart` 2 bulgusunu gösteriyor. Tam
+  koşuda `rhythm_imitation_screen_test` bir kez düştü, tek başına iki kez geçti
+  (yük altında zamanlama; bu değişiklikle ilgisiz).
+- Sınırlar: gerçek cihazda görsel kontrol yapılmadı (yalnız test render'ı ile
+  halka merkezi doğrulandı); diğer özel sonuç ekranları (ritim taklidi, akor
+  tanısı, ses aralığı) bu düzene taşınmadı.
+
+### 2026-11-10 — Ritim tekrarı: daha kolay kabul + canlı vuruş noktalarıyla yeniden tasarım
+- **Kullanıcı kararı:** "Ritim tekrarı zor; kabul derecesini düşür." Yalnız bu
+  alıştırma (dokunarak tekrar, Aksak ritim dahil) için:
+  - zamanında penceresi ±10 → **±50 ms**, aynı vuruş penceresi ±120 → **±160 ms**
+    (`RhythmImitationOutcome.onTimeToleranceMs/matchToleranceMs`; global
+    `RhythmAnalysisDefaults` ve Alkışla ritim değişmedi);
+  - tüm vuruşlar varsa ve genel hız referansın 0.8–1.25 katıysa dokunuşlar
+    önce referans süresine ölçeklenir (sabit ama biraz yavaş/hızlı tekrar
+    "hepsi geç" sayılmaz); hız uyarısı yine gösterilir, sonuçta
+    `tempoFitted` saklanır;
+  - ustalık ölçütü ortalama |sapma| 60 → **80 ms** (`RhythmNextStepPolicy`).
+  - Analizör sürümü `rhythm-imitation-2/first-tap-anchor-tempo-fit`: v1
+    sonuçları ayrı kohort; "sonraki adım" ilerlemesi v2 denemeleriyle yeniden
+    birikir. Eğitimci kalibrasyonu yok; değerler kullanıcı tercihidir.
+- **Ekran yeniden tasarımı** (`rhythm_imitation_screen.dart`, trainer kiti):
+  üst çubuk + ilerleme, seviye etiketi ve seçici, vuruş/BPM; ortak
+  `lib/trainer/ui/rhythm_track.dart` (`RhythmTrack`): üstte referans, altta
+  dokunuşlar. Dinlerken referans vuruşları zamanında yanar; dokunurken her
+  nokta anında belirir ve en yakın vuruşa uzaklığına göre renklenir (yeşil
+  ≤50, sarı ≤160, mercan dışı), sıradaki vuruşun yeri halka; "70 ms erken"
+  rozeti. Sonuçta eşleşen çiftler çizgiyle bağlı, ms etiketi, eksik halka,
+  fazla mercan; zamanında/kaymış/eksik-fazla sayaç kartı. Dokunma alanı ve
+  Dinle/Bitirdim altta sabit. Geçiş grafiği ve vuruş çipleri "Ölçüm
+  ayrıntısı"na taşındı. Alkışla ritim karşılaştırması da `RhythmTrack`'e
+  geçti (alkışlar canlı renkli). `TopBar` satırı 44→48 px (dokunma hedefi).
+- Kontrolcü: salt-okunur `referenceOnsetsMs`, `liveTapsMs` (yalnız çizim).
+- Testler güncellendi/eklendi: v2 pencereleri, tempo uyarlaması (1.2 → uyar,
+  1.4 → uyarlama yok), tek düzensiz vuruş geç, ekran akışı yeni düzenle,
+  a11y (kontrast, 48 px).
+- Kalite kapısı: format+analyze+test temiz, 1548 test + 2 skip. Gerçek
+  cihazda dokunma gecikmesi ve yeni eşiklerle öğrenci başarısı ölçülmedi.

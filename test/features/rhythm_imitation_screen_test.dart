@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:resonia/application/result_history.dart';
 import 'package:resonia/domain/content/rhythm_patterns.dart';
-import 'package:resonia/features/common/ui/resonia_ui.dart';
 import 'package:resonia/features/learning/micro_lesson_screen.dart';
 import 'package:resonia/features/rhythm_imitation/rhythm_imitation_screen.dart';
+import 'package:resonia/trainer/ui/kit.dart';
 
 import '../support/fake_clip_player.dart';
 
@@ -65,10 +65,13 @@ void main() {
       find.text('4 vuruşun 3 tanesi eşleşti (ilki başlangıç), 1 eksik.'),
       findsOneWidget,
     );
-    // The result replaces the tap pad; per-beat chips live in details.
+    // The result replaces the tap pad; the beat track shows the answer and
+    // the alignment graph and per-beat chips live in details.
     expect(find.byKey(const Key('rhythm_tap_pad')), findsNothing);
     expect(find.byKey(const Key('rhythm_listen')), findsNothing);
-    expect(find.byKey(const Key('rhythm_alignment')), findsOneWidget);
+    expect(find.byKey(const Key('rhythm_track')), findsOneWidget);
+    expect(find.text('Henüz tam değil'), findsOneWidget);
+    expect(find.byKey(const Key('rhythm_alignment')), findsNothing);
     expect(find.text('Başlangıç'), findsNothing);
     expect(find.byKey(const Key('rhythm_retry')), findsOneWidget);
     await tester.scrollUntilVisible(
@@ -78,6 +81,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('rhythm_details')));
     await tester.pumpAndSettle();
+    expect(find.byKey(const Key('rhythm_alignment')), findsOneWidget);
     expect(find.text('Başlangıç'), findsOneWidget);
     expect(find.text('Eksik'), findsOneWidget);
     expect(find.text('Doğru!'), findsNothing);
@@ -228,7 +232,7 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('rhythm_exit_guided')), findsOneWidget);
-    expect(find.byType(ChunkyButton), findsOneWidget);
+    expect(find.byType(BigButton), findsOneWidget);
     await tester.tap(find.byKey(const Key('rhythm_next_pattern')));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('rhythm_guided_label')), findsNothing);

@@ -50,7 +50,9 @@ class RhythmNextStepPolicy {
   /// [masteryStreak] valid attempts have no missed/extra beat and a mean
   /// absolute offset ≤ [maxMeanAbsOffsetMs].
   static const masteryStreak = 2;
-  static const maxMeanAbsOffsetMs = 60.0;
+
+  /// v2: 80 ms (v1: 60), with the wider echo windows (user decision).
+  static const maxMeanAbsOffsetMs = 80.0;
 
   /// Retention check opens on a later calendar day (local time).
   static bool laterDay(DateTime a, DateTime b) => _laterDay(a, b);

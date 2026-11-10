@@ -281,7 +281,12 @@ void main() {
     await tester.pump();
     final overflow = tester.takeException();
     expect(overflow, isNull);
-    await tester.ensureVisible(find.byKey(const Key('range_score_info')));
+    // The result list builds lazily; scroll to the score card first.
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('range_score_info')),
+      120,
+      scrollable: find.byType(Scrollable).first,
+    );
     await tester.tap(find.byKey(const Key('range_score_info')));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('range_score_explain')), findsOneWidget);

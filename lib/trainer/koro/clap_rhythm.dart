@@ -18,7 +18,9 @@ import '../../infrastructure/audio/plugin_audio_lab_backend.dart';
 import '../app/scope.dart';
 import '../ui/applause_burst.dart';
 import '../ui/kit.dart';
+import '../ui/rhythm_track.dart';
 import 'aksak_patterns.dart';
+import 'clap_stage.dart';
 import 'your_turn.dart';
 
 enum RhythmFamily { western, turkish }
@@ -223,25 +225,118 @@ List<double> renderClap({int sampleRateHz = 48000}) {
   return [for (final v in out) v / peak * 0.9];
 }
 
-/// Claps on [onsetsMs], mixed from one [renderClap].
+/// The recorded clap, mono PCM16 WAV (converted from the user-supplied
+/// `assets/audio/post-punk-clap.wav`). If it cannot be read
+/// [loadClapSample] returns null and the synthesised [renderClap] plays.
+const clapSampleAsset = 'assets/audio/clap/clap.wav';
+
+/// The recorded clap at [sampleRateHz], peak-normalised to 0.9 and trimmed
+/// to 400 ms, or null when it is missing or unreadable.
+Future<List<double>?> loadClapSample({
+  AssetBundle? bundle,
+  int sampleRateHz = 48000,
+}) async {
+  try {
+    final data = await (bundle ?? rootBundle).load(clapSampleAsset);
+    final wav = Pcm16Wav.decode(data.buffer.asUint8List());
+    return prepareClapSample(wav, sampleRateHz: sampleRateHz);
+  } catch (_) {
+    return null;
+  }
+}
+
+/// Peak of a prepared clap: headroom so a choked overlap (see
+/// [renderClapTrack]) never reaches full scale.
+const clapSamplePeak = 0.8;
+
+/// Resamples (linear) [wav] to [sampleRateHz], removes DC, drops leading
+/// silence so the transient lands on the onset (with a 0.5 ms fade-in, so
+/// the cut is not a click), trims to 400 ms with a 30 ms fade-out and
+/// normalises the peak to [clapSamplePeak].
+List<double>? prepareClapSample(Pcm16Wav wav, {int sampleRateHz = 48000}) {
+  final src = wav.samples;
+  if (src.isEmpty) return null;
+  final ratio = wav.sampleRateHz / sampleRateHz;
+  final n = (src.length / ratio).floor();
+  final out = List<double>.generate(n, (i) {
+    final x = i * ratio;
+    final j = x.floor();
+    final f = x - j;
+    final a = src[j.clamp(0, src.length - 1)];
+    final b = src[(j + 1).clamp(0, src.length - 1)];
+    return a + (b - a) * f;
+  });
+  if (out.isEmpty) return null;
+  final dc = out.fold(0.0, (m, v) => m + v) / out.length;
+  for (var i = 0; i < out.length; i++) {
+    out[i] -= dc;
+  }
+  final peak = out.fold(0.0, (m, v) => math.max(m, v.abs()));
+  if (peak < 1e-4) return null;
+  final start = math.max(
+    0,
+    out.indexWhere((v) => v.abs() >= peak * 0.05) - sampleRateHz ~/ 2000,
+  );
+  final keep = math.min(out.length - start, (0.4 * sampleRateHz).round());
+  final clip = out.sublist(start, start + keep);
+  final fadeIn = math.min(clip.length, sampleRateHz ~/ 2000);
+  for (var i = 0; i < fadeIn; i++) {
+    clip[i] *= i / fadeIn;
+  }
+  final fade = math.min(clip.length, (0.03 * sampleRateHz).round());
+  for (var i = 0; i < fade; i++) {
+    clip[clip.length - 1 - i] *= i / fade;
+  }
+  return [for (final v in clip) v / peak * clapSamplePeak];
+}
+
+/// How long a clap's tail takes to die when the next clap arrives.
+const clapChokeMs = 6;
+
+/// Claps on [onsetsMs], mixed from [clap] (a recorded sample) or, without
+/// one, from [renderClap].
+///
+/// Back-to-back claps never pile up: like a drum machine's choke group,
+/// each new clap fades the previous one's tail out over [clapChokeMs], so
+/// at most two voices overlap and only for those few milliseconds. The
+/// track runs until the last clap has fully rung out (at least [tailMs]),
+/// and if the mix still peaks above 0.95 the whole track is scaled down
+/// instead of clipped, so nothing ever crackles.
 Pcm16Wav renderClapTrack(
   List<int> onsetsMs, {
   int sampleRateHz = 48000,
   int tailMs = 300,
+  List<double>? clap,
 }) {
   if (onsetsMs.isEmpty) throw ArgumentError('Clap track needs onsets');
-  final clap = renderClap(sampleRateHz: sampleRateHz);
-  final length = ((onsetsMs.last + tailMs) * sampleRateHz / 1000).ceil();
+  final voice = clap ?? renderClap(sampleRateHz: sampleRateHz);
+  final starts = [
+    for (final ms in onsetsMs) (ms * sampleRateHz / 1000).round(),
+  ];
+  final length = math.max(
+    starts.last + voice.length,
+    ((onsetsMs.last + tailMs) * sampleRateHz / 1000).ceil(),
+  );
+  final choke = math.max(1, clapChokeMs * sampleRateHz ~/ 1000);
   final samples = List<double>.filled(length, 0);
-  for (final onset in onsetsMs) {
-    final start = (onset * sampleRateHz / 1000).round();
-    for (var i = 0; i < clap.length && start + i < length; i++) {
-      samples[start + i] += clap[i];
+  for (var k = 0; k < starts.length; k++) {
+    final start = starts[k];
+    final next = k + 1 < starts.length ? starts[k + 1] : null;
+    for (var i = 0; i < voice.length && start + i < length; i++) {
+      var g = 1.0;
+      if (next != null && start + i >= next) {
+        final f = start + i - next;
+        if (f >= choke) break;
+        g = 1 - f / choke;
+      }
+      samples[start + i] += voice[i] * g;
     }
   }
+  final peak = samples.fold(0.0, (m, v) => math.max(m, v.abs()));
+  final gain = peak > 0.95 ? 0.95 / peak : 1.0;
   return Pcm16Wav(
     sampleRateHz: sampleRateHz,
-    samples: [for (final s in samples) s.clamp(-1.0, 1.0)],
+    samples: [for (final s in samples) s * gain],
   );
 }
 
@@ -337,10 +432,8 @@ class _ClapRhythmScreenState extends State<ClapRhythmScreen>
   late final List<ClapRhythm> _ladder = clapRhythmsEasyToHard;
   late int _level;
   late ClapRhythm _rhythm;
-  late final AnimationController _clap = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 140),
-  );
+  final ClapCue _cue = ClapCue();
+  List<double>? _sample;
   Ticker? _ticker;
   ReferenceClipPlayer? _player;
   ClapListener? _ear;
@@ -360,6 +453,7 @@ class _ClapRhythmScreenState extends State<ClapRhythmScreen>
     super.initState();
     _level = 0;
     _rhythm = _ladder.first;
+    loadClapSample().then((s) => _sample = s);
   }
 
   @override
@@ -378,7 +472,7 @@ class _ClapRhythmScreenState extends State<ClapRhythmScreen>
     _run++;
     _ticker?.dispose();
     _finish?.cancel();
-    _clap.dispose();
+    _cue.dispose();
     _player?.close();
     final ear = _ear;
     if (ear != null) unawaited(ear.stop().whenComplete(ear.close));
@@ -398,9 +492,18 @@ class _ClapRhythmScreenState extends State<ClapRhythmScreen>
     }
   }
 
-  void _bang() => _clap.forward(from: 0).then((_) {
-    if (mounted) _clap.reverse();
-  });
+  void _bang() => _cue.strike();
+
+  Future<void> _pickStyle() async {
+    final store = TrainerScope.read(context).store;
+    final picked = await showClapStylePicker(
+      context,
+      current: ClapStyle.at(store.clapStyle),
+    );
+    if (picked == null || !mounted) return;
+    setState(() => store.clapStyle = picked.index);
+    store.save();
+  }
 
   /// Listen → count-in → your turn, as one run.
   Future<void> _go() async {
@@ -415,7 +518,7 @@ class _ClapRhythmScreenState extends State<ClapRhythmScreen>
       _result = null;
       _claps.clear();
     });
-    await _playWav(renderClapTrack(onsets).encode());
+    await _playWav(renderClapTrack(onsets, clap: _sample).encode());
     if (!mounted || run != _run) return;
     final done = Completer<void>();
     _ticker = createTicker((elapsed) {
@@ -427,6 +530,10 @@ class _ClapRhythmScreenState extends State<ClapRhythmScreen>
       }
       if (hit) {
         _bang();
+        // The hands start closing into the next clap before it lands.
+        if (_next < onsets.length) {
+          _cue.expect(Duration(milliseconds: onsets[_next] - ms));
+        }
         setState(() => _hit = _next - 1);
       }
       if (ms >= onsets.last + 500) {
@@ -610,8 +717,20 @@ class _ClapRhythmScreenState extends State<ClapRhythmScreen>
                       const SizedBox(height: 20),
                       ApplauseBurst(
                         shot: _cheers,
-                        child: _Hands(clap: _clap),
+                        child: ClapStage(
+                          cue: _cue,
+                          style: ClapStyle.at(
+                            TrainerScope.of(context).store.clapStyle,
+                          ),
+                        ),
                       ),
+                      if (_step == _Step.ready || _step == _Step.result)
+                        _StyleChip(
+                          style: ClapStyle.at(
+                            TrainerScope.of(context).store.clapStyle,
+                          ),
+                          onTap: _pickStyle,
+                        ),
                       const SizedBox(height: 14),
                       if (_step == _Step.yourTurn)
                         YourTurnCue(
@@ -643,6 +762,7 @@ class _ClapRhythmScreenState extends State<ClapRhythmScreen>
                           reference: r.onsetsMs,
                           claps: _claps,
                           result: _step == _Step.result ? result : null,
+                          judged: _step == _Step.result,
                         )
                       else
                         _Beats(rhythm: r, hit: _hit),
@@ -823,276 +943,90 @@ class _ClapRhythmScreenState extends State<ClapRhythmScreen>
   }
 }
 
-/// Reference claps above, the learner's below, anchored on the first clap.
-/// Matched pairs are joined and labelled with their offset; missed reference
-/// claps stay hollow, extra claps are coral.
+/// Reference claps above, the learner's below, anchored on the first clap
+/// (see [RhythmTrack]): live while clapping, joined pairs once judged.
 class _ClapCompare extends StatelessWidget {
   const _ClapCompare({
     required this.reference,
     required this.claps,
     required this.result,
+    required this.judged,
   });
   final List<int> reference;
   final List<int> claps;
   final RhythmAnalysisResult? result;
+  final bool judged;
   @override
-  Widget build(BuildContext context) => Semantics(
-    label: tr(
-      'Referans ${reference.length} alkış, sen ${claps.length} alkış',
-      'Reference ${reference.length} claps, you ${claps.length} claps',
-    ),
-    child: ExcludeSemantics(
-      child: SizedBox(
-        key: const Key('clap_compare'),
-        height: 132,
-        width: double.infinity,
-        child: CustomPaint(
-          painter: _ComparePainter(
-            base: DefaultTextStyle.of(context).style,
-            reference: reference,
-            claps: claps,
-            result: result,
-          ),
-        ),
-      ),
-    ),
-  );
-}
-
-class _ComparePainter extends CustomPainter {
-  _ComparePainter({
-    required this.base,
-    required this.reference,
-    required this.claps,
-    required this.result,
-  });
-  final TextStyle base;
-  final List<int> reference, claps;
-  final RhythmAnalysisResult? result;
-
-  void _text(Canvas c, String s, Offset at, Color colour, {bool bold = false}) {
-    final p = TextPainter(
-      text: TextSpan(
-        text: s,
-        style: base.merge(
-          TT.small.copyWith(
-            fontSize: 11,
-            color: colour,
-            fontWeight: bold ? FontWeight.w800 : FontWeight.w600,
-            letterSpacing: bold ? 1.2 : 0,
-          ),
-        ),
-      ),
-      textDirection: TextDirection.ltr,
-    )..layout();
-    p.paint(c, at - Offset(p.width / 2, p.height / 2));
-  }
-
-  @override
-  void paint(Canvas canvas, Size size) {
+  Widget build(BuildContext context) {
     final first = claps.isEmpty ? 0 : claps.first;
     final mine = [for (final c in claps) c - first + reference.first];
-    final end = math.max(reference.last, mine.isEmpty ? 0 : mine.last) + 150;
-    const left = 12.0;
-    final w = size.width - left * 2;
-    double x(int ms) => left + w * ms / end;
-    const yRef = 34.0, yYou = 104.0;
-    _text(
-      canvas,
-      tr('REFERANS', 'REFERENCE'),
-      Offset(size.width / 2, 8),
-      TC.muted,
-      bold: true,
+    final r = result;
+    return KeyedSubtree(
+      key: const Key('clap_compare'),
+      child: RhythmTrack(
+        reference: reference,
+        taps: mine,
+        goodMs: 60,
+        windowMs: RhythmAnalysisDefaults.toleranceMs,
+        links: !judged
+            ? null
+            : [
+                for (final m in r?.alignment ?? const <RhythmEventMatch>[])
+                  if (m.isMatched)
+                    RhythmLink(m.referenceIndex!, m.userIndex!, m.offsetMs),
+              ],
+      ),
     );
-    _text(
-      canvas,
-      tr('SEN', 'YOU'),
-      Offset(size.width / 2, size.height - 8),
-      TC.muted,
-      bold: true,
-    );
-    final track = Paint()
-      ..color = TC.line
-      ..strokeWidth = 2;
-    canvas.drawLine(Offset(left, yRef), Offset(left + w, yRef), track);
-    canvas.drawLine(Offset(left, yYou), Offset(left + w, yYou), track);
-    final matchedRef = <int>{}, matchedYou = <int>{};
-    for (final m in result?.alignment ?? const <RhythmEventMatch>[]) {
-      if (!m.isMatched) continue;
-      matchedRef.add(m.referenceIndex!);
-      matchedYou.add(m.userIndex!);
-      final a = Offset(x(reference[m.referenceIndex!]), yRef + 9);
-      final b = Offset(x(mine[m.userIndex!]), yYou - 9);
-      final off = m.offsetMs ?? 0;
-      final colour = off.abs() <= 60 ? TC.teal : TC.amber;
-      canvas.drawLine(
-        a,
-        b,
-        Paint()
-          ..color = colour
-          ..strokeWidth = 2,
-      );
-      if (off.abs() > 25) {
-        _text(
-          canvas,
-          '${off > 0 ? '+' : ''}$off',
-          (a + b) / 2 + const Offset(16, 0),
-          colour,
-        );
-      }
-    }
-    for (var i = 0; i < reference.length; i++) {
-      final c = Offset(x(reference[i]), yRef);
-      final missed = result != null && !matchedRef.contains(i);
-      canvas.drawCircle(c, 8, Paint()..color = missed ? TC.card : TC.koro);
-      if (missed) {
-        canvas.drawCircle(
-          c,
-          8,
-          Paint()
-            ..style = PaintingStyle.stroke
-            ..strokeWidth = 2
-            ..color = TC.coral,
-        );
-      }
-    }
-    for (var i = 0; i < mine.length; i++) {
-      final extra = result != null && !matchedYou.contains(i);
-      canvas.drawCircle(
-        Offset(x(mine[i]), yYou),
-        8,
-        Paint()..color = extra ? TC.coral : TC.sun,
-      );
-      canvas.drawCircle(
-        Offset(x(mine[i]), yYou),
-        8,
-        Paint()
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 2
-          ..color = TC.ink,
-      );
-    }
   }
-
-  @override
-  bool shouldRepaint(_ComparePainter old) => true;
 }
 
-/// Two palms seen from the side that swing in from the wrist and meet on
-/// every clap, with a burst at the moment of contact.
-class _Hands extends StatelessWidget {
-  const _Hands({required this.clap});
-  final Animation<double> clap;
+/// Small pill under the hands: the current clap look, tap to change.
+class _StyleChip extends StatelessWidget {
+  const _StyleChip({required this.style, required this.onTap});
+  final ClapStyle style;
+  final VoidCallback onTap;
+
   @override
-  Widget build(BuildContext context) => ExcludeSemantics(
-    child: AnimatedBuilder(
-      animation: clap,
-      builder: (context, _) => CustomPaint(
-        size: const Size(220, 150),
-        painter: _ClapPainter(Curves.easeOut.transform(clap.value)),
+  Widget build(BuildContext context) => Semantics(
+    button: true,
+    label: tr(
+      'Alkış görünümü: ${style.title}. Değiştir',
+      'Clap look: ${style.title}. Change',
+    ),
+    excludeSemantics: true,
+    child: GestureDetector(
+      key: const Key('clap_style'),
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color: TC.card,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: TC.line, width: 1.5),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Ic.sparkles, size: 15, color: TC.primary),
+              const SizedBox(width: 6),
+              Text(
+                style.title,
+                style: TT.small.copyWith(
+                  color: TC.ink,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(width: 4),
+              const Icon(Ic.chevronDown, size: 15, color: TC.muted),
+            ],
+          ),
+        ),
       ),
     ),
   );
-}
-
-class _ClapPainter extends CustomPainter {
-  _ClapPainter(this.v);
-
-  /// 0 = hands open, 1 = palms together.
-  final double v;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final cx = size.width / 2;
-    final wrist = size.height - 14;
-    final glow = Paint()..color = TC.sun.withValues(alpha: 0.35 + 0.45 * v);
-    canvas.drawCircle(Offset(cx, wrist - 56), 50 + 16 * v, glow);
-    _hand(canvas, cx, wrist, left: true);
-    _hand(canvas, cx, wrist, left: false);
-    if (v > 0.55) _burst(canvas, Offset(cx, wrist - 112), (v - 0.55) / 0.45);
-  }
-
-  void _hand(Canvas canvas, double cx, double wrist, {required bool left}) {
-    final s = left ? -1.0 : 1.0;
-    canvas.save();
-    // Pivot on the wrist: open hands lean out, closed fingertips meet.
-    canvas.translate(cx + s * (30 + 16 * (1 - v)), wrist);
-    canvas.rotate(s * (0.36 * (1 - v) - 0.18 * v));
-    if (left) canvas.scale(-1, 1);
-    // Palm facing the viewer, thumb on the inner side (toward the clap).
-    final parts = <(Offset, double, RRect)>[
-      (
-        Offset.zero,
-        0,
-        RRect.fromLTRBR(-23, -58, 23, -8, const Radius.circular(16)),
-      ),
-      for (final (x, top) in [
-        (-15.0, -90.0),
-        (-5.0, -99.0),
-        (5.0, -97.0),
-        (15.0, -86.0),
-      ])
-        (
-          Offset(x, -50),
-          math.pi,
-          RRect.fromLTRBR(-5.5, -6, 5.5, -top - 50, const Radius.circular(5.5)),
-        ),
-      (
-        const Offset(-18, -26),
-        2.45,
-        RRect.fromLTRBR(-6.5, -4, 6.5, 34, const Radius.circular(6.5)),
-      ),
-    ];
-    void each(void Function(RRect r) draw) {
-      for (final (at, angle, r) in parts) {
-        canvas.save();
-        canvas.translate(at.dx, at.dy);
-        canvas.rotate(angle);
-        draw(r);
-        canvas.restore();
-      }
-    }
-
-    // Thick ink first, then fill on top: one clean silhouette outline.
-    final outline = Paint()
-      ..color = TC.ink
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 6.4;
-    each((r) => canvas.drawRRect(r, outline));
-    final skin = Paint()..color = TC.card;
-    each((r) => canvas.drawRRect(r, skin));
-    final crease = Paint()
-      ..color = TC.ink.withValues(alpha: 0.35)
-      ..strokeWidth = 2
-      ..strokeCap = StrokeCap.round;
-    for (final x in [-10.0, 0.0, 10.0]) {
-      canvas.drawLine(Offset(x, -78), Offset(x, -56), crease);
-    }
-    final cuff = RRect.fromLTRBR(-20, -12, 20, 4, const Radius.circular(6));
-    canvas.drawRRect(cuff, Paint()..color = TC.primary);
-    canvas.drawRRect(
-      cuff,
-      Paint()
-        ..color = TC.ink
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 3.2,
-    );
-    canvas.restore();
-  }
-
-  void _burst(Canvas canvas, Offset at, double t) {
-    final p = Paint()
-      ..color = TC.primary.withValues(alpha: 1 - t * 0.6)
-      ..strokeWidth = 3.4
-      ..strokeCap = StrokeCap.round;
-    for (final a in [-2.35, -1.9, -1.57, -1.24, -0.8]) {
-      final d = Offset(math.cos(a), math.sin(a));
-      canvas.drawLine(at + d * (10 + 6 * t), at + d * (20 + 10 * t), p);
-    }
-  }
-
-  @override
-  bool shouldRepaint(_ClapPainter old) => old.v != v;
 }
 
 /// The onsets on a time line; claps already heard are filled.

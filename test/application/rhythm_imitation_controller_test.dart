@@ -73,8 +73,8 @@ void main() {
     }
     expect(slow.finishWait, slow.idleTimeout);
     slow.registerTap(const Duration(milliseconds: 2250));
-    // Quarters at 80 bpm: 750 ms gap + unchanged 120 ms match window.
-    expect(slow.finishWait, const Duration(milliseconds: 870));
+    // Quarters at 80 bpm: 750 ms gap + the 160 ms echo match window.
+    expect(slow.finishWait, const Duration(milliseconds: 910));
     await slow.finish();
     expect(slow.phase, RhythmImitationPhase.finished);
     player.end = Completer();

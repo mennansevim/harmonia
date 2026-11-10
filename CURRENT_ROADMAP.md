@@ -1,5 +1,32 @@
 # Resonia — Current Roadmap
 
+**2026-11-10 — Sonuç ekranı sadeleşti + HeroCard sağ boşluk hatası giderildi:**
+`HeroCard` içeriği artık kartın tüm genişliğini alır (skor halkası ortada).
+`SessionEnd`: ortalı başlık, tek özet satırı, ince seri satırı, kanıtlar tek
+kartta, sonraki adım tek dokunulabilir satır. Ölçüm/skor mantığı değişmedi.
+Cihazda görsel kontrol yapılmadı; ritim taklidi/akor/aralık sonuç ekranları
+henüz bu düzende değil.
+
+**2026-11-10 — Ritim tekrarı: kabul gevşetildi + canlı noktalı yeni ekran
+(kullanıcı kararı; kod + test):** Zamanında ±10→±50 ms, eşleşme ±120→±160 ms,
+0.8–1.25× sabit tempo sapması uyarlanır (uyarı kalır), ustalık |sapma| 60→80 ms;
+analizör v2, v1 kohortu ayrı. Ekran trainer diliyle yeniden tasarlandı: dinlerken
+vuruşlar yanar, dokunurken her nokta anında renkli belirir, sonuçta bağlı çiftler
+ve sayaçlar. Ortak `RhythmTrack` Alkışla ritim'de de kullanılıyor. Kayıtlı alkış
+sesinde art arda çalışta kırpma/çıtırtı giderildi (choke + headroom). Kalite
+kapısı temiz: **1548 test + 2 skip**. Eğitimci kalibrasyonu ve cihazda dokunma
+gecikmesi ölçümü yok.
+
+**2026-11-10 — Alkışla ritim: 10 el alkışı animasyonu (kod + test):** Yeni
+`ClapStage`: eller dinleme sırasında vuruşa önceden kapanır, temasta basılma/
+esneme/sarsıntı, sönümlü geri açılma; 3/4 görünüm el çizimi. 10 stil seçilebilir
+(Klasik, Ses halkası, Kıvılcım, Hız izi, Tebeşir tozu, Palmas, Kapalı avuç, Işık,
+Dalga formu, Notalar), seçim kalıcı. Dinleme turunda artık kullanıcının verdiği
+kayıtlı alkış çalar (`post-punk-clap.wav` → mono 48 kHz `assets/audio/clap/
+clap.wav`; okunamazsa sentez). Lisansı teyit bekliyor. Kalite kapısı temiz:
+**1544 test + 2 skip**. Cihazda akıcılık ve ses–
+görüntü hizası denenmedi.
+
 **2026-11-10 — P5 doğrulama pilotu hazırlığı (belge + araç; veri YOK):**
 `docs/research/PILOT_PROTOCOL_2026-11.md` (perde ≥100 etiketli holdout, alkış,
 aralık test–tekrar, 4 haftalık kart; önceden kayıtlı ölçüt yordamı; rıza/hak/

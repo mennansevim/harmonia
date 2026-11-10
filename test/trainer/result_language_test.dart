@@ -93,7 +93,8 @@ void main() {
   ) async {
     await _show(tester, _summary(3));
     expect(find.text('XP'), findsNothing);
-    expect(find.text('soru'), findsOneWidget);
+    // One summary line replaces the chips that repeated the ring.
+    expect(find.text('%75 ilk denemede doğru'), findsOneWidget);
     await _openDetails(tester);
     expect(
       find.text('+32 XP · pratik puanı, beceri ölçümü değil'),

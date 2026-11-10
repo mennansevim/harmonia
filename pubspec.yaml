@@ -79,6 +79,7 @@ flutter:
   assets:
     - assets/audio/piano/chords/catalog.json
     - assets/audio/piano/notes/
+    - assets/audio/clap/clap.wav
 
   # SIL OFL 1.1: licences in assets/fonts/OFL-*.txt. Static Latin subsets cut
   # from the Google Fonts variable sources so FontWeight selects them reliably.
