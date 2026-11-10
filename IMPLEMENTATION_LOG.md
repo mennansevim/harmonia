@@ -4861,8 +4861,23 @@ oturumuyla iş bölümü yapıldı; sayı/yıldız düzeltmeleri oradan geldi.
   koşuda `rhythm_imitation_screen_test` bir kez düştü, tek başına iki kez geçti
   (yük altında zamanlama; bu değişiklikle ilgisiz).
 - Sınırlar: gerçek cihazda görsel kontrol yapılmadı (yalnız test render'ı ile
-  halka merkezi doğrulandı); diğer özel sonuç ekranları (ritim taklidi, akor
-  tanısı, ses aralığı) bu düzene taşınmadı.
+  halka merkezi doğrulandı).
+
+### 2026-11-10 — Ses aralığı testi sonucu aynı sade düzene taşındı
+- `lib/trainer/koro/range_test.dart` sonuç aşaması: ortalı "SES ARALIĞI /
+  Test tamamlandı" başlığı; aralık (Fa3 – La4) ve yarım ses/oktav/nota satırı
+  mor HeroCard içinde; ardından eşleme puanı kartı, klavye haritası (kartta),
+  çalışma aralığı tek yumuşak kutu (ses tipi değildir uyarısı aynen); ses
+  grupları grafiği açılır "Ses gruplarıyla karşılaştır" bölümüne alındı;
+  "Bitti" + "Testi tekrarla" kaydırmanın altına sabitlendi. Puan, bant ve
+  kayıt mantığı değişmedi.
+- Test: `range_ladder_test` 320 px/1.8× kontrolünde bilgi düğmesine
+  `ensureVisible` yerine `scrollUntilVisible` ile gidiyor (tembel liste).
+- Kalite kapısı: format + analyze temiz, **1548 test + 2 skip** geçti.
+- Kapsam dışı: `rhythm_imitation_screen.dart` aynı anda başka bir yazıcı
+  tarafından değiştiriliyordu, çakışmamak için dokunulmadı.
+  `ChordDiagnosticScreen` uygulamada hiçbir yerden açılmıyor ve akor yolu
+  AGENTS kararıyla beklemede; taşınmadı. Cihazda görsel kontrol yapılmadı.
 
 ### 2026-11-10 — Ritim tekrarı: daha kolay kabul + canlı vuruş noktalarıyla yeniden tasarım
 - **Kullanıcı kararı:** "Ritim tekrarı zor; kabul derecesini düşür." Yalnız bu
@@ -4895,3 +4910,15 @@ oturumuyla iş bölümü yapıldı; sayı/yıldız düzeltmeleri oradan geldi.
   a11y (kontrast, 48 px).
 - Kalite kapısı: format+analyze+test temiz, 1548 test + 2 skip. Gerçek
   cihazda dokunma gecikmesi ve yeni eşiklerle öğrenci başarısı ölçülmedi.
+
+### 2026-11-10 — Ritim tekrarı sonucu aynı sade düzene taşındı
+- `lib/features/rhythm_imitation/rhythm_imitation_screen.dart` (bitmiş aşama):
+  tek birincil eylem kaydırmanın altına sabitlendi (sonraki adım eylemi →
+  `rhythm_apply_next`, yoksa `rhythm_retry`; hedefli tekrarda
+  `_GuidedActions`). "Sonraki adım" kartı içindeki BigButton kaldırıldı, kart
+  yalnız bilgi (ikon + başlık + gerekçe + taslak ölçüt notu). Alt alta duran
+  SoftButton + 3 TextLink tek kartta ikonlu satır listesine dönüştü (zor bölüm,
+  sonraki desen, puls kavramı, ölçüm ayrıntısı). Sayım kartı, özet, tempo
+  ipucu, ölçüm/kayıt/sonraki adım mantığı değişmedi.
+- Kalite kapısı: format + analyze temiz, **1548 test + 2 skip**.
+- Sınır: cihazda görsel kontrol yapılmadı.

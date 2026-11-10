@@ -4,8 +4,11 @@
 `HeroCard` içeriği artık kartın tüm genişliğini alır (skor halkası ortada).
 `SessionEnd`: ortalı başlık, tek özet satırı, ince seri satırı, kanıtlar tek
 kartta, sonraki adım tek dokunulabilir satır. Ölçüm/skor mantığı değişmedi.
-Cihazda görsel kontrol yapılmadı; ritim taklidi/akor/aralık sonuç ekranları
-henüz bu düzende değil.
+Ses aralığı testi sonucu da aynı düzene taşındı (HeroCard'da aralık, puan
+kartı, klavye, açılır ses grubu grafiği, sabit alt butonlar). Kalite kapısı
+temiz: **1548 test + 2 skip**. Ritim tekrarı sonucu da taşındı (sabit tek
+birincil buton, bilgi kartı, seçenek listesi). Cihazda görsel kontrol
+yapılmadı; kullanılmayan akor tanı ekranı taşınmadı.
 
 **2026-11-10 — Ritim tekrarı: kabul gevşetildi + canlı noktalı yeni ekran
 (kullanıcı kararı; kod + test):** Zamanında ±10→±50 ms, eşleşme ±120→±160 ms,

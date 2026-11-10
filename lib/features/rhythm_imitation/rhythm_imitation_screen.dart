@@ -279,15 +279,37 @@ class _RhythmImitationScreenState extends State<RhythmImitationScreen>
                         if (o != null && finished) ...[
                           const SizedBox(height: 14),
                           _Result(outcome: o),
-                          if (c.isGuided)
-                            _GuidedActions(controller: c)
-                          else
-                            ..._resultActions(c, o),
+                          if (!c.isGuided) ..._resultActions(c, o),
                         ],
                       ],
                     ),
                   ),
                 ),
+                // Like the lesson result: the one primary action is pinned
+                // under the scroll, everything else is a quiet option above.
+                if (o != null && finished)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 4, 20, 14),
+                    child: c.isGuided
+                        ? _GuidedActions(controller: c)
+                        : c.nextStep != null &&
+                              nextStepText(c.nextStep!).$3.isNotEmpty
+                        ? BigButton(
+                            key: const Key('rhythm_apply_next'),
+                            onPressed: c.applyNextStep,
+                            icon: Ic.arrowRight,
+                            label: nextStepText(c.nextStep!).$3,
+                          )
+                        : BigButton(
+                            key: const Key('rhythm_retry'),
+                            onPressed: c.retry,
+                            icon: Ic.rotateCcw,
+                            label: tr(
+                              'Tekrar dinle ve dene',
+                              'Listen and try again',
+                            ),
+                          ),
+                  ),
                 if (!finished)
                   Padding(
                     padding: const EdgeInsets.fromLTRB(20, 0, 20, 14),
@@ -364,57 +386,70 @@ class _RhythmImitationScreenState extends State<RhythmImitationScreen>
     RhythmImitationController c,
     RhythmImitationOutcome o,
   ) => [
-    const SizedBox(height: 14),
-    if (c.nextStep != null)
-      _NextStepCard(controller: c)
-    else
-      BigButton(
-        key: const Key('rhythm_retry'),
-        onPressed: c.retry,
-        icon: Ic.rotateCcw,
-        label: tr('Tekrar dinle ve dene', 'Listen and try again'),
-      ),
-    if (c.suggestedGuidedSegment != null) ...[
+    if (c.nextStep != null) ...[
       const SizedBox(height: 10),
-      SoftButton(
-        key: const Key('rhythm_start_guided'),
-        onPressed: c.startGuidedSegment,
-        label: tr('Zor bölümü çalış', 'Practise the hard part'),
+      _NextStepCard(controller: c),
+    ],
+    // The other ways on, one quiet list instead of stacked buttons/links.
+    if (c.suggestedGuidedSegment != null ||
+        (c.nextStep == null && c.followingPattern != null) ||
+        o.isMeasured) ...[
+      const SizedBox(height: 10),
+      AppCard(
+        radius: 18,
+        padding: EdgeInsets.zero,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: _divided([
+            if (c.suggestedGuidedSegment != null)
+              _OptionRow(
+                key: const Key('rhythm_start_guided'),
+                icon: Ic.crosshair,
+                label: tr('Zor bölümü çalış', 'Practise the hard part'),
+                onTap: c.startGuidedSegment,
+              ),
+            if (c.nextStep == null && c.followingPattern != null)
+              _OptionRow(
+                key: const Key('rhythm_next_pattern'),
+                icon: Ic.skipForward,
+                label: tr(
+                  'Sonraki desene geç: ${c.followingPattern!.title}',
+                  'Next pattern: ${c.followingPattern!.title}',
+                ),
+                onTap: c.advancePattern,
+              ),
+            if (c.suggestedGuidedSegment != null)
+              _OptionRow(
+                key: const Key('rhythm_concept_review'),
+                icon: Ic.bookOpen,
+                label: tr(
+                  'Puls kavramı (isteğe bağlı taslak metin)',
+                  'The idea of pulse (optional draft text)',
+                ),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => MicroLessonScreen(
+                      lesson: draftMicroLessons.forSkill('pulse-tap').single,
+                    ),
+                  ),
+                ),
+              ),
+            if (o.isMeasured)
+              _OptionRow(
+                key: const Key('rhythm_details'),
+                icon: Ic.info,
+                label: _details
+                    ? tr('Ayrıntıyı gizle', 'Hide details')
+                    : tr('Ölçüm ayrıntısı', 'Measurement details'),
+                trailing: _details ? Ic.chevronUp : Ic.chevronDown,
+                onTap: () => setState(() => _details = !_details),
+              ),
+          ]),
+        ),
       ),
     ],
-    if (c.nextStep == null && c.followingPattern != null)
-      TextLink(
-        tr(
-          'Sonraki desene geç: ${c.followingPattern!.title}',
-          'Next pattern: ${c.followingPattern!.title}',
-        ),
-        key: const Key('rhythm_next_pattern'),
-        onTap: c.advancePattern,
-      ),
-    if (c.suggestedGuidedSegment != null)
-      TextLink(
-        tr(
-          'Puls kavramı (isteğe bağlı taslak metin)',
-          'The idea of pulse (optional draft text)',
-        ),
-        key: const Key('rhythm_concept_review'),
-        onTap: () => Navigator.of(context).push(
-          MaterialPageRoute<void>(
-            builder: (_) => MicroLessonScreen(
-              lesson: draftMicroLessons.forSkill('pulse-tap').single,
-            ),
-          ),
-        ),
-      ),
-    if (o.isMeasured)
-      TextLink(
-        _details
-            ? tr('Ayrıntıyı gizle', 'Hide details')
-            : tr('Ölçüm ayrıntısı', 'Measurement details'),
-        key: const Key('rhythm_details'),
-        onTap: () => setState(() => _details = !_details),
-      ),
     if (_details && o.isMeasured) _Details(outcome: o),
+    const SizedBox(height: 8),
     if (_saveText(c) case final saved?)
       Text(
         saved,
@@ -868,8 +903,9 @@ class _GuidedActions extends StatelessWidget {
   Widget build(BuildContext context) {
     final next = controller.followingPattern;
     return Padding(
-      padding: const EdgeInsets.only(top: 14),
+      padding: EdgeInsets.zero,
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           BigButton(
@@ -1015,33 +1051,90 @@ class _NextStepCard extends StatelessWidget {
   final RhythmImitationController controller;
   @override
   Widget build(BuildContext context) {
-    final (title, reason, action) = nextStepText(controller.nextStep!);
-    return AppCard(
+    // The action itself is the pinned primary button under the scroll.
+    final (title, reason, _) = nextStepText(controller.nextStep!);
+    return Container(
       key: const Key('rhythm_next_step'),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+      padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+      decoration: BoxDecoration(
+        color: TC.primarySoft,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(tr('SONRAKİ ADIM', 'NEXT STEP'), style: TT.crumb),
-          const SizedBox(height: 4),
-          Text(title, style: TT.h3),
-          const SizedBox(height: 2),
-          Text(reason, style: TT.body),
-          if (action.isNotEmpty) ...[
-            const SizedBox(height: 12),
-            BigButton(
-              key: const Key('rhythm_apply_next'),
-              onPressed: controller.applyNextStep,
-              icon: Ic.arrowRight,
-              label: action,
+          const Padding(
+            padding: EdgeInsets.only(top: 2),
+            child: Icon(Ic.sparkles, color: TC.primary, size: 22),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  tr('SONRAKİ ADIM', 'NEXT STEP'),
+                  style: TT.caps.copyWith(fontSize: 10),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  title,
+                  style: TT.title.copyWith(color: TC.primary, fontSize: 14.5),
+                ),
+                const SizedBox(height: 2),
+                Text(reason, style: TT.small),
+                const SizedBox(height: 6),
+                Text(
+                  draftCriterionNote,
+                  style: TT.small.copyWith(fontSize: 11, color: TC.muted),
+                ),
+              ],
             ),
-          ],
-          const SizedBox(height: 8),
-          Text(
-            draftCriterionNote,
-            style: TT.small.copyWith(fontSize: 11, color: TC.muted),
           ),
         ],
       ),
     );
   }
 }
+
+/// One quiet option under the result: icon, label, chevron; full-row tap.
+class _OptionRow extends StatelessWidget {
+  const _OptionRow({
+    super.key,
+    required this.icon,
+    required this.label,
+    required this.onTap,
+    this.trailing = Ic.chevronRight,
+  });
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+  final IconData trailing;
+  @override
+  Widget build(BuildContext context) => Semantics(
+    button: true,
+    child: InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(14, 13, 10, 13),
+        child: Row(
+          children: [
+            Icon(icon, color: TC.koro, size: 20),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(label, style: TT.title.copyWith(fontSize: 14)),
+            ),
+            Icon(trailing, color: TC.muted, size: 18),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+List<Widget> _divided(List<Widget> rows) => [
+  for (var i = 0; i < rows.length; i++) ...[
+    if (i > 0) const Divider(height: 1, color: TC.line),
+    rows[i],
+  ],
+];
