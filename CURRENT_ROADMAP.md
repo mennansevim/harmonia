@@ -53,6 +53,11 @@ tamamlanmadı. Açık: uzak Supabase projesi, Apple/Google girişi, gizlilik
 manifesti/mağaza etiketleri (sunuculu derleme e-posta/kimlik toplar),
 gerçek cihaz QR okuma, Faz 2 Drive.
 
+**2026-11-10 — Ses aralığı dairesel kadran:** `RangeDial` (270° kadran,
+ölçülen aralık yay + yelpaze, uç notalar dışta) aralık testi sonucunda ve
+Gelişim kartında düz çubuğun yerini aldı. 1575 test geçti; gerçek cihazda
+görsel kontrol yapılmadı.
+
 **2026-11-10 — CHOIR-B1a koro sunucusu: yetki kuralı + şema (ADR-041):**
 Kullanıcı kararları: Drive ana dosya deposu (koro adına hesap), PDF nota,
 kaydı aynı parti + partisyon şefi dinler, şef yalnız partisyon şefinin
@@ -637,6 +642,37 @@ Sınır: fiziksel iPhone'da his/dokunsal/kare süresi henüz görülmedi; mevcut
 alkış algılama hâlâ enerji onseti (`ClapOnsetDetector`), alkış
 sınıflandırması değil. Sıradaki: seviye görselleştirici, sonra iOS
 SoundAnalysis değerlendirmesi. Tam kapı **1299 test + 2 skip temiz (format, analyze, test)**.
+
+**2026-11-05 — ECHO-TRAIN-01 alkış eğitimi, canlı ezgi grafiği, dokunma
+sesi (simülatör geri bildirimi):** Alkışla ritim artık bir eğitim modülü:
+dinle (eller alkışlar) → tempoda 4'lük sayım → titreşim + "başla" sesi →
+limon "SIRA SENDE · Alkışla!" bandı, mikrofon açık → alkışlar canlı olarak
+"Sen" çizgisine düşer → referansla vuruş vuruş karşılaştırma (ortak ritim
+eşleştiricisi, değişmeyen ±120 ms; ilk alkış çapa, gecikme sayılmaz) →
+tam eşleşmede sonraki ritim. 12 ritim kolaydan zora (senkop → vuruş dışı →
+en kısa aralık → alkış sayısı); seviye `TrainerStore.clapLevel`. Alkış sesi
+yeniden sentezlendi (3–4 mikro patlama + 1,2 kHz gövde + oda yansıması).
+`ClapOnsetDetector` (5 ms enerji sıçraması, 90 ms bekleme, 150 ms ısınma)
+yalnız sentetik alkışla test edildi; gerçek alkış/cihaz/oda ölçülmedi.
+Ezgi tekrarı: söylerken referans bantları ve canlı perde izi aynı grafikte
+(süre referansa esnetilir, çünkü yalnız sıra/perde karşılaştırılır); oktav
+farkıyla söylenince ezgi kişinin oktavına taşınabilir (oktav hatası yine
+tuttu sayılmaz); 250 sent üstü "çok pes/tiz"; aynı "Sıra sende · Söyle!"
+bandı. Ritim tekrarında her dokunuş referansın tıkını çalar (önceden
+yüklenmiş 3 oynatıcı). 1287 test geçti; simülatörde alkış akışı görüldü,
+gerçek cihazda denenmedi. **2026-11-10 güncellemesi:** "Sıra sende"de bekleme
+süresi yok; otomatik bitirme sayacı ilk alkışla başlar ("Bitirdim" her zaman
+bitirir). 1563 test + 2 skip temiz; cihazda denenmedi.
+**2026-11-10 — Ezgi tekrarı otomatik bitiş:** Dinleme artık sabit 8 sn
+sürmüyor. `EchoEndDetector` canlı perde izinden (gösterim izi, puan değil)
+nota parçalarını sayar; beklenen nota sayısı duyulduktan sonra 700 ms,
+aksi halde 1,5 sn sessizlikte `finishResponse` çağrılır. Hiç ses yokken veya
+sürekli gürültüde 8 sn penceresi yedek kalır; "Bitirdim" her zaman bitirir.
+Değerlendirme yine tüm kayıt üzerinde. Eşikler sentetik dizilerle test edildi;
+gerçek cihaz/sesle ayarlanmadı. Canlı iz artık söylenen notalara göre
+yerleşir (`echoTraceX`): k'inci tutulan nota k'inci bandın içinde çizilir,
+hız fark etmez; tutulmakta olan nota kendi bandında büyür. Fazladan nota
+varsa düz zaman ölçeğine döner. Yalnız gösterim; puan değişmedi.
 
 **2026-11-05 — RANGE-VIS-01 aralık testi görselleri (B + C):** Dinleme
 sırasında hedef nota ±50 sentlik bir şerit; sesin, kalınlığı giriş

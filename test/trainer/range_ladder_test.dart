@@ -260,6 +260,12 @@ void main() {
     // (83−60)/40·100 = 57.5, all on the first try:
     // 0.625·57.5 + 0.375·100 = 73. The 16-semitone width is not scored.
     expect(store.rangeScores, [73]);
+    // The dial fills the first screen; the lazy list builds the score next.
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('range_score_note')),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
     expect(find.text('73'), findsOneWidget);
     expect(find.text('İlk testin'), findsOneWidget);
     expect(find.byKey(const Key('range_score_note')), findsOneWidget);

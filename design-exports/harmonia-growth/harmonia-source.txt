@@ -1,0 +1,293 @@
+<div id="harmonia-growth-preview" class="viz-dotted-background">
+  <div class="hg-phone" aria-label="Harmonia gelir odaklı ürün akışı taslağı">
+    <header class="hg-status">
+      <span>09:41</span>
+      <span class="hg-demo">TASLAK</span>
+      <span aria-label="Bağlantı ve pil">● 87%</span>
+    </header>
+
+    <main>
+      <section class="hg-screen is-active" data-screen="today" aria-label="Bugün ekranı">
+        <div class="hg-topline">
+          <div>
+            <p class="hg-eyebrow">29 EKİM · 4 GÜNLÜK SERİ</p>
+            <h2>Bugün sesini aç</h2>
+          </div>
+          <button class="hg-avatar cursor-interaction" aria-label="Profil">MS</button>
+        </div>
+
+        <article class="hg-hero">
+          <div class="hg-hero-copy">
+            <span class="hg-pill">12 DAKİKA</span>
+            <h3>Tenor için günlük rota</h3>
+            <p>Nefesi hazırla, aralığı duy, tek sesi söyle. Sonuçta yalnız ölçülenleri gör.</p>
+          </div>
+          <div class="hg-orbit" aria-hidden="true"><span>♪</span></div>
+        </article>
+
+        <div class="hg-sequence" aria-label="Günlük çalışma adımları">
+          <div class="hg-step is-ready"><b>1</b><span><strong>Nefes</strong><small>2 dk · yönlendirmeli</small></span><i data-lucide="check" aria-hidden="true"></i></div>
+          <div class="hg-step"><b>2</b><span><strong>Dinle</strong><small>4 dk · aralık ve derece</small></span><em>Şimdi</em></div>
+          <div class="hg-step"><b>3</b><span><strong>Söyle</strong><small>6 dk · isteğe bağlı mikrofon</small></span><i data-lucide="mic" aria-hidden="true"></i></div>
+        </div>
+
+        <button class="hg-primary cursor-interaction" data-go="train">Çalışmaya başla <i data-lucide="arrow-right" aria-hidden="true"></i></button>
+        <p class="hg-footnote">İlk günlük rota ücretsiz. Kayıt yüklenmez; mikrofon adımı atlanabilir.</p>
+      </section>
+
+      <section class="hg-screen" data-screen="train" aria-label="Nefes ve ses çalışması ekranı" hidden>
+        <div class="hg-topline">
+          <button class="hg-icon-button cursor-interaction" data-go="today" aria-label="Bugüne dön"><i data-lucide="chevron-left" aria-hidden="true"></i></button>
+          <div><p class="hg-eyebrow">ADIM 1 / 3</p><h2>Nefesi hazırla</h2></div>
+          <span class="hg-time">01:20</span>
+        </div>
+
+        <article class="hg-breath-card">
+          <div class="hg-breath-ring" aria-label="Dört saniye nefes al"><span>4</span><small>Nefes al</small></div>
+          <div class="hg-breath-phases" aria-label="Nefes döngüsü">
+            <span class="is-current">Al 4</span><span>Tut 2</span><span>Ver 6</span>
+          </div>
+          <p>Omuzlarını serbest bırak. Zorlanırsan dur; bu egzersiz tıbbi değerlendirme değildir.</p>
+        </article>
+
+        <div class="hg-mini-grid">
+          <article><i data-lucide="wind" aria-hidden="true"></i><strong>3 döngü</strong><small>Tamamlanan</small></article>
+          <article><i data-lucide="volume-2" aria-hidden="true"></i><strong>Sessiz mod</strong><small>Mikrofon kapalı</small></article>
+        </div>
+
+        <button class="hg-primary cursor-interaction" id="hg-breath-toggle">Duraklat <i data-lucide="pause" aria-hidden="true"></i></button>
+        <button class="hg-secondary cursor-interaction" data-go="result">Örnek sonucu gör</button>
+      </section>
+
+      <section class="hg-screen" data-screen="result" aria-label="Açıklayıcı sonuç ekranı" hidden>
+        <div class="hg-topline">
+          <button class="hg-icon-button cursor-interaction" data-go="train" aria-label="Çalışmaya dön"><i data-lucide="chevron-left" aria-hidden="true"></i></button>
+          <div><p class="hg-eyebrow">ÖRNEK VERİ · GERÇEK ÖLÇÜM DEĞİL</p><h2>Bugünkü sonuç</h2></div>
+        </div>
+
+        <article class="hg-score-card">
+          <div class="hg-score"><span>7</span><small>/ 8 ilk deneme</small></div>
+          <div><strong>Dereceyi ayırt etme</strong><p>Dokunma yanıtlarından ölçüldü</p></div>
+        </article>
+
+        <div class="hg-evidence">
+          <article class="is-measured"><span>ÖLÇÜLDÜ</span><strong>Re–mi ayrımı</strong><p>1 soruda karıştı</p><button class="cursor-interaction">Yanlışı tekrar et</button></article>
+          <article><span>ÖLÇÜLMEDİ</span><strong>Nefes desteği</strong><p>Yönlendirme tamamlandı; kalite puanı üretilmedi.</p></article>
+          <article><span>DENEYSEL</span><strong>Tek ses adayı</strong><p>+18 cent tanısal fark; başarı puanına eklenmedi.</p></article>
+        </div>
+
+        <div class="hg-next"><i data-lucide="sparkles" aria-hidden="true"></i><span><strong>Yarın 5 dakikalık tekrar</strong><small>Re–mi ayrımıyla başlayacak</small></span></div>
+        <button class="hg-primary cursor-interaction" data-go="premium">Programı kişiselleştir</button>
+      </section>
+
+      <section class="hg-screen" data-screen="premium" aria-label="Şeffaf üyelik ekranı" hidden>
+        <div class="hg-topline">
+          <button class="hg-icon-button cursor-interaction" data-go="result" aria-label="Sonuca dön"><i data-lucide="chevron-left" aria-hidden="true"></i></button>
+          <div><p class="hg-eyebrow">ŞEFFAF ÜYELİK</p><h2>Önce değeri gör</h2></div>
+        </div>
+
+        <div class="hg-plan-tabs" role="tablist" aria-label="Üyelik seçenekleri">
+          <button class="is-selected cursor-interaction" role="tab" aria-selected="true" data-plan="premium">Premium</button>
+          <button class="cursor-interaction" role="tab" aria-selected="false" data-plan="plus">Plus</button>
+        </div>
+
+        <article class="hg-plan" data-plan-panel="premium">
+          <span class="hg-pill">ÖNERİLEN</span>
+          <h3>Premium</h3>
+          <div class="hg-price"><strong>249 ₺</strong><span>/ ay · örnek fiyat</span></div>
+          <ul>
+            <li><i data-lucide="check" aria-hidden="true"></i> Günlük kişisel çalışma rotası</li>
+            <li><i data-lucide="check" aria-hidden="true"></i> Ayrıntılı hata tekrarı ve rapor</li>
+            <li><i data-lucide="check" aria-hidden="true"></i> Koro ve konservatuvar programları</li>
+          </ul>
+          <button class="hg-primary cursor-interaction">7 gün dene</button>
+          <p>Deneme yalnız yıllık planda değil; iptal tarihi ve yenileme tutarı satın almadan önce görünür.</p>
+        </article>
+
+        <article class="hg-plan" data-plan-panel="plus" hidden>
+          <span class="hg-pill">PİLOT KONTENJAN</span>
+          <h3>Plus · gerçek eğitimci</h3>
+          <div class="hg-price"><strong>799 ₺</strong><span>/ ay · örnek fiyat</span></div>
+          <ul>
+            <li><i data-lucide="check" aria-hidden="true"></i> Premium’daki her şey</li>
+            <li><i data-lucide="check" aria-hidden="true"></i> Ayda 1 yazılı eğitimci değerlendirmesi</li>
+            <li><i data-lucide="check" aria-hidden="true"></i> Açık teslim süresi ve kayıt silme seçeneği</li>
+          </ul>
+          <button class="hg-primary cursor-interaction">Pilot sırasına katıl</button>
+          <p>AI yorumu eğitimci yorumu diye sunulmaz. Kontenjan ve maliyet pilotta doğrulanır.</p>
+        </article>
+      </section>
+    </main>
+
+    <nav class="hg-nav" aria-label="Örnek uygulama gezintisi">
+      <button class="is-active cursor-interaction" data-nav="today"><i data-lucide="sun" aria-hidden="true"></i><span>Bugün</span></button>
+      <button class="cursor-interaction" data-nav="train"><i data-lucide="activity" aria-hidden="true"></i><span>Çalış</span></button>
+      <button class="cursor-interaction" data-nav="result"><i data-lucide="chart-no-axes-column-increasing" aria-hidden="true"></i><span>Sonuç</span></button>
+      <button class="cursor-interaction" data-nav="premium"><i data-lucide="gem" aria-hidden="true"></i><span>Üyelik</span></button>
+    </nav>
+    <div class="hg-live sr-only" aria-live="polite"></div>
+  </div>
+</div>
+
+<style>
+  #harmonia-growth-preview { padding: 22px 12px; display: grid; place-items: center; }
+  #harmonia-growth-preview .hg-phone {
+    --hg-accent: #5b46f5;
+    --hg-accent-deep: #3825bf;
+    --hg-ink: light-dark(#17183a, #f6f4ff);
+    --hg-body: light-dark(#515478, #c7c5da);
+    --hg-muted: light-dark(#73779a, #a9a7bd);
+    --hg-canvas: light-dark(#f7f7fc, #171727);
+    --hg-card: light-dark(#ffffff, #242439);
+    --hg-soft: light-dark(#eeebff, #302b58);
+    --hg-line: light-dark(#e5e4ef, #3a3950);
+    --hg-good: light-dark(#147d62, #6fe2bc);
+    width: min(100%, 390px); min-height: 720px; overflow: hidden;
+    background: var(--hg-canvas); color: var(--hg-ink); border-radius: 30px;
+    box-shadow: 0 20px 50px light-dark(rgba(34,27,74,.18), rgba(0,0,0,.36));
+    font-family: ui-rounded, "SF Pro Rounded", "SF Pro Display", system-ui, sans-serif;
+    display: grid; grid-template-rows: auto 1fr auto;
+  }
+  #harmonia-growth-preview * { box-sizing: border-box; }
+  #harmonia-growth-preview button { font: inherit; }
+  #harmonia-growth-preview .hg-status { display:flex; justify-content:space-between; align-items:center; padding:12px 18px 4px; font-size:12px; font-weight:700; }
+  #harmonia-growth-preview .hg-demo { background:var(--hg-soft); color:var(--hg-accent); padding:3px 7px; border-radius:99px; letter-spacing:.08em; }
+  #harmonia-growth-preview main { min-height: 0; }
+  #harmonia-growth-preview .hg-screen { padding: 12px 18px 18px; animation: hg-in .22s ease-out; }
+  #harmonia-growth-preview .hg-topline { display:flex; align-items:center; gap:11px; margin-bottom:16px; }
+  #harmonia-growth-preview .hg-topline > div { flex:1; min-width:0; }
+  #harmonia-growth-preview h2, #harmonia-growth-preview h3, #harmonia-growth-preview p { margin:0; }
+  #harmonia-growth-preview h2 { font-size:27px; line-height:1.12; letter-spacing:-.025em; }
+  #harmonia-growth-preview h3 { font-size:19px; line-height:1.2; }
+  #harmonia-growth-preview .hg-eyebrow { color:var(--hg-muted); font-size:11px; font-weight:800; letter-spacing:.11em; margin-bottom:3px; }
+  #harmonia-growth-preview .hg-avatar, #harmonia-growth-preview .hg-icon-button { border:0; width:40px; height:40px; border-radius:13px; color:var(--hg-accent); background:var(--hg-soft); font-weight:800; display:grid; place-items:center; flex:none; }
+  #harmonia-growth-preview .hg-time { color:var(--hg-accent); font-variant-numeric:tabular-nums; font-weight:800; }
+  #harmonia-growth-preview .hg-hero { position:relative; overflow:hidden; background:linear-gradient(135deg,var(--hg-accent),var(--hg-accent-deep)); color:white; border-radius:24px; padding:20px; min-height:178px; display:flex; align-items:flex-end; }
+  #harmonia-growth-preview .hg-hero-copy { position:relative; z-index:2; max-width:240px; }
+  #harmonia-growth-preview .hg-hero h3 { margin:11px 0 7px; font-size:22px; }
+  #harmonia-growth-preview .hg-hero p { color:rgba(255,255,255,.84); font-size:14px; line-height:1.42; }
+  #harmonia-growth-preview .hg-pill { display:inline-block; background:rgba(255,255,255,.17); border-radius:99px; padding:5px 9px; font-size:11px; font-weight:800; letter-spacing:.07em; }
+  #harmonia-growth-preview .hg-orbit { position:absolute; right:-31px; top:-24px; width:152px; height:152px; border-radius:50%; border:24px solid rgba(255,255,255,.12); display:grid; place-items:center; font-size:42px; transform:rotate(12deg); }
+  #harmonia-growth-preview .hg-sequence { margin:13px 0; display:grid; gap:8px; }
+  #harmonia-growth-preview .hg-step { display:flex; align-items:center; gap:10px; background:var(--hg-card); border-radius:16px; padding:12px; }
+  #harmonia-growth-preview .hg-step b { display:grid; place-items:center; width:30px; height:30px; border-radius:10px; background:var(--hg-soft); color:var(--hg-accent); }
+  #harmonia-growth-preview .hg-step span { flex:1; display:grid; gap:2px; }
+  #harmonia-growth-preview .hg-step strong { font-size:14px; }
+  #harmonia-growth-preview .hg-step small { color:var(--hg-muted); font-size:12px; }
+  #harmonia-growth-preview .hg-step em { font-size:11px; font-style:normal; color:var(--hg-accent); background:var(--hg-soft); border-radius:99px; padding:5px 8px; font-weight:800; }
+  #harmonia-growth-preview .hg-step.is-ready svg { color:var(--hg-good); }
+  #harmonia-growth-preview .hg-primary, #harmonia-growth-preview .hg-secondary { width:100%; min-height:50px; border:0; border-radius:16px; font-weight:800; display:flex; justify-content:center; align-items:center; gap:8px; }
+  #harmonia-growth-preview .hg-primary { color:white; background:var(--hg-accent); box-shadow:inset 0 -4px 0 var(--hg-accent-deep); padding-bottom:4px; }
+  #harmonia-growth-preview .hg-secondary { margin-top:8px; color:var(--hg-accent); background:var(--hg-soft); }
+  #harmonia-growth-preview .hg-footnote { text-align:center; color:var(--hg-muted); font-size:11.5px; line-height:1.35; margin-top:9px; }
+  #harmonia-growth-preview .hg-breath-card { background:var(--hg-card); border-radius:24px; padding:22px 18px; text-align:center; }
+  #harmonia-growth-preview .hg-breath-ring { width:168px; height:168px; margin:0 auto 18px; border-radius:50%; background:radial-gradient(circle, var(--hg-card) 55%, transparent 57%), conic-gradient(var(--hg-accent) 0 72%, var(--hg-soft) 72% 100%); display:grid; place-content:center; box-shadow:0 0 0 12px var(--hg-soft); }
+  #harmonia-growth-preview .hg-breath-ring span { font-size:48px; font-weight:800; line-height:1; }
+  #harmonia-growth-preview .hg-breath-ring small { color:var(--hg-muted); margin-top:5px; }
+  #harmonia-growth-preview .hg-breath-phases { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin-bottom:14px; }
+  #harmonia-growth-preview .hg-breath-phases span { background:var(--hg-soft); color:var(--hg-muted); padding:8px 4px; border-radius:10px; font-size:12px; font-weight:700; }
+  #harmonia-growth-preview .hg-breath-phases .is-current { background:var(--hg-accent); color:white; }
+  #harmonia-growth-preview .hg-breath-card p, #harmonia-growth-preview .hg-plan p { color:var(--hg-muted); font-size:12px; line-height:1.42; }
+  #harmonia-growth-preview .hg-mini-grid { display:grid; grid-template-columns:1fr 1fr; gap:9px; margin:10px 0; }
+  #harmonia-growth-preview .hg-mini-grid article { background:var(--hg-card); border-radius:15px; padding:12px; display:grid; grid-template-columns:auto 1fr; gap:2px 8px; align-items:center; }
+  #harmonia-growth-preview .hg-mini-grid svg { grid-row:1 / 3; color:var(--hg-accent); }
+  #harmonia-growth-preview .hg-mini-grid strong { font-size:13px; }
+  #harmonia-growth-preview .hg-mini-grid small { color:var(--hg-muted); font-size:11px; }
+  #harmonia-growth-preview .hg-score-card { background:linear-gradient(135deg,var(--hg-accent),var(--hg-accent-deep)); color:white; border-radius:22px; padding:18px; display:flex; align-items:center; gap:16px; }
+  #harmonia-growth-preview .hg-score { width:92px; flex:none; border-right:1px solid rgba(255,255,255,.28); }
+  #harmonia-growth-preview .hg-score span { font-size:43px; font-weight:800; line-height:1; }
+  #harmonia-growth-preview .hg-score small { display:block; color:rgba(255,255,255,.74); margin-top:3px; }
+  #harmonia-growth-preview .hg-score-card p { color:rgba(255,255,255,.75); font-size:12px; margin-top:4px; }
+  #harmonia-growth-preview .hg-evidence { display:grid; gap:8px; margin:12px 0; }
+  #harmonia-growth-preview .hg-evidence article { background:var(--hg-card); border-radius:16px; padding:13px 14px; }
+  #harmonia-growth-preview .hg-evidence span { display:block; color:var(--hg-muted); font-size:10px; letter-spacing:.1em; font-weight:800; margin-bottom:4px; }
+  #harmonia-growth-preview .hg-evidence .is-measured span { color:var(--hg-good); }
+  #harmonia-growth-preview .hg-evidence strong { font-size:14px; }
+  #harmonia-growth-preview .hg-evidence p { color:var(--hg-muted); font-size:12px; margin-top:2px; }
+  #harmonia-growth-preview .hg-evidence button { border:0; color:var(--hg-accent); background:var(--hg-soft); border-radius:10px; padding:7px 9px; margin-top:8px; font-size:12px; font-weight:800; }
+  #harmonia-growth-preview .hg-next { display:flex; gap:10px; align-items:center; padding:12px; margin-bottom:10px; color:var(--hg-accent); background:var(--hg-soft); border-radius:15px; }
+  #harmonia-growth-preview .hg-next span { display:grid; gap:2px; }
+  #harmonia-growth-preview .hg-next small { color:var(--hg-muted); }
+  #harmonia-growth-preview .hg-plan-tabs { display:grid; grid-template-columns:1fr 1fr; background:var(--hg-soft); border-radius:14px; padding:4px; margin-bottom:12px; }
+  #harmonia-growth-preview .hg-plan-tabs button { border:0; background:transparent; color:var(--hg-muted); padding:10px; border-radius:11px; font-weight:800; }
+  #harmonia-growth-preview .hg-plan-tabs .is-selected { background:var(--hg-card); color:var(--hg-accent); box-shadow:0 2px 9px rgba(20,20,50,.08); }
+  #harmonia-growth-preview .hg-plan { background:var(--hg-card); border-radius:24px; padding:20px; }
+  #harmonia-growth-preview .hg-plan > .hg-pill { color:var(--hg-accent); background:var(--hg-soft); }
+  #harmonia-growth-preview .hg-plan h3 { margin-top:14px; font-size:24px; }
+  #harmonia-growth-preview .hg-price { display:flex; align-items:baseline; gap:6px; margin:7px 0 16px; }
+  #harmonia-growth-preview .hg-price strong { font-size:31px; }
+  #harmonia-growth-preview .hg-price span { color:var(--hg-muted); font-size:12px; }
+  #harmonia-growth-preview .hg-plan ul { list-style:none; padding:0; margin:0 0 18px; display:grid; gap:12px; }
+  #harmonia-growth-preview .hg-plan li { display:flex; gap:9px; align-items:flex-start; font-size:13px; line-height:1.35; }
+  #harmonia-growth-preview .hg-plan li svg { color:var(--hg-good); flex:none; }
+  #harmonia-growth-preview .hg-plan > p { margin-top:10px; text-align:center; }
+  #harmonia-growth-preview .hg-nav { display:grid; grid-template-columns:repeat(4,1fr); background:var(--hg-card); padding:7px 8px 10px; }
+  #harmonia-growth-preview .hg-nav button { border:0; background:transparent; color:var(--hg-muted); min-height:50px; border-radius:13px; display:grid; place-items:center; align-content:center; gap:2px; font-size:10.5px; font-weight:700; }
+  #harmonia-growth-preview .hg-nav button.is-active { color:var(--hg-accent); background:var(--hg-soft); }
+  #harmonia-growth-preview .hg-nav svg { width:20px; height:20px; }
+  @keyframes hg-in { from { opacity:0; transform:translateY(5px); } to { opacity:1; transform:none; } }
+  @media (prefers-reduced-motion: reduce) { #harmonia-growth-preview .hg-screen { animation:none; } }
+  @media (max-width: 350px) {
+    #harmonia-growth-preview { padding-inline:0; }
+    #harmonia-growth-preview .hg-phone { border-radius:22px; }
+    #harmonia-growth-preview .hg-screen { padding-inline:14px; }
+    #harmonia-growth-preview .hg-hero { min-height:164px; }
+    #harmonia-growth-preview .hg-orbit { opacity:.55; }
+  }
+</style>
+
+<script>
+  (() => {
+    const root = document.getElementById('harmonia-growth-preview');
+    const phone = root.querySelector('.hg-phone');
+    const live = root.querySelector('.hg-live');
+    const names = { today: 'Bugün', train: 'Çalışma', result: 'Sonuç', premium: 'Üyelik' };
+
+    function showScreen(name) {
+      root.querySelectorAll('[data-screen]').forEach((screen) => {
+        const active = screen.dataset.screen === name;
+        screen.hidden = !active;
+        screen.classList.toggle('is-active', active);
+      });
+      root.querySelectorAll('[data-nav]').forEach((button) => {
+        button.classList.toggle('is-active', button.dataset.nav === name);
+      });
+      live.textContent = `${names[name]} ekranı açıldı`;
+    }
+
+    root.querySelectorAll('[data-nav]').forEach((button) => button.addEventListener('click', () => showScreen(button.dataset.nav)));
+    root.querySelectorAll('[data-go]').forEach((button) => button.addEventListener('click', () => showScreen(button.dataset.go)));
+
+    const breath = root.querySelector('#hg-breath-toggle');
+    let paused = false;
+    breath.addEventListener('click', () => {
+      paused = !paused;
+      breath.innerHTML = paused ? 'Devam et <i data-lucide="play" aria-hidden="true"></i>' : 'Duraklat <i data-lucide="pause" aria-hidden="true"></i>';
+      live.textContent = paused ? 'Nefes döngüsü duraklatıldı' : 'Nefes döngüsü devam ediyor';
+      if (globalThis.lucide) lucide.createIcons({ attrs: { width: 16, height: 16 } });
+    });
+
+    root.querySelectorAll('[data-plan]').forEach((button) => button.addEventListener('click', () => {
+      const plan = button.dataset.plan;
+      root.querySelectorAll('[data-plan]').forEach((tab) => {
+        const selected = tab.dataset.plan === plan;
+        tab.classList.toggle('is-selected', selected);
+        tab.setAttribute('aria-selected', String(selected));
+      });
+      root.querySelectorAll('[data-plan-panel]').forEach((panel) => { panel.hidden = panel.dataset.planPanel !== plan; });
+      live.textContent = `${plan === 'plus' ? 'Plus' : 'Premium'} planı gösteriliyor`;
+    }));
+
+    const design = { accent: '#5b46f5', radius: 30 };
+    function renderDesign() {
+      phone.style.setProperty('--hg-accent', design.accent);
+      phone.style.borderRadius = `${design.radius}px`;
+    }
+    renderDesign();
+    if (globalThis.Tweak) {
+      const tweak = new Tweak({ container: phone, onChange: renderDesign });
+      tweak.addColorPicker(design, 'accent', { label: 'Vurgu rengi', reference: '--hg-accent' });
+      tweak.addSlider(design, 'radius', { label: 'Dış köşe', min: 12, max: 40, unit: 'px', reference: 'phone.radius' });
+    }
+  })();
+</script>
